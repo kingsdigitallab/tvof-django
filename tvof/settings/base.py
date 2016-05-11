@@ -25,7 +25,8 @@ PROJECT_TITLE = 'Change the title in the settings'
 ADMINS = ()
 MANAGERS = ADMINS
 
-ALLOWED_HOSTS = ['127.0.0.1:8000', '127.0.0.1', 'localhost', ]
+ALLOWED_HOSTS = ['127.0.0.1:8000', '127.0.0.1', 'localhost',
+                 'tvof-stg.kdl.kcl.ac.uk']
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#caches
 # https://docs.djangoproject.com/en/dev/topics/cache/
