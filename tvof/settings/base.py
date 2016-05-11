@@ -8,7 +8,8 @@ For production settings see
 https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 """
 # from ddhldap.settings import *
-
+import getpass
+import logging
 import os
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -24,7 +25,7 @@ PROJECT_TITLE = 'Change the title in the settings'
 ADMINS = ()
 MANAGERS = ADMINS
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['127.0.0.1:8000', '127.0.0.1', 'localhost', ]
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#caches
 # https://docs.djangoproject.com/en/dev/topics/cache/
@@ -55,15 +56,32 @@ DEBUG = False
 TEMPLATE_DEBUG = False
 
 INSTALLED_APPS = (
-    'grappelli',
+
+    'wagtail.wagtailforms',
+    'wagtail.wagtailredirects',
+    'wagtail.wagtailembeds',
+    'wagtail.wagtailsites',
+    'wagtail.wagtailusers',
+    'wagtail.wagtailsnippets',
+    'wagtail.wagtaildocs',
+    'wagtail.wagtailimages',
+    'wagtail.wagtailsearch',
+    'wagtail.wagtailadmin',
+    'wagtail.wagtailcore',
+
+    'taggit',
+    'modelcluster',
+
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'compressor',
 
     'require',
+    'cms',
 )
 
 INSTALLED_APPS += (
@@ -73,7 +91,7 @@ INSTALLED_APPS += (
 INTERNAL_IPS = ('127.0.0.1', )
 
 # https://docs.djangoproject.com/en/dev/topics/logging/
-import logging
+
 
 LOGGING_ROOT = os.path.join(BASE_DIR, 'logs')
 LOGGING_LEVEL = logging.WARN
@@ -140,6 +158,8 @@ MIDDLEWARE_CLASSES = (
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'wagtail.wagtailcore.middleware.SiteMiddleware',
+    'wagtail.wagtailredirects.middleware.RedirectMiddleware',
 )
 
 ROOT_URLCONF = PROJECT_NAME + '.urls'
@@ -293,7 +313,7 @@ REQUIRE_ENVIRONMENT = 'node'
 # FABRIC
 # -----------------------------------------------------------------------------
 
-import getpass
+
 FABRIC_USER = getpass.getuser()
 
 # -----------------------------------------------------------------------------
@@ -302,3 +322,8 @@ FABRIC_USER = getpass.getuser()
 
 # Google Analytics ID
 GA_ID = ''
+
+WAGTAIL_SITE_NAME = 'TVOF'
+
+
+WAGTAIL_APPEND_SLASH = False

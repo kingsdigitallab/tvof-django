@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% load staticfiles compress require %}
+
+{% block extra_head %}
+{% endblock %}
+
+{% block title %}{% endblock %}
+
+{% block main %}
+<div class="splash-image">
+	<img src="{% static 'images/header.jpg' %}" alt="Noah's Ark">
+</div>
+{{ block.super }}
+{% endblock %}
+
+{% block extra_footer %}
+{% endblock %}
