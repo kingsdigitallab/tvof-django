@@ -1,4 +1,6 @@
-{% if pages %}
+
+{% if page.get_descendants %}
+{# if pages #}
     {% load wagtailcore_tags %}
 
     {% if title %}
@@ -6,7 +8,8 @@
     {% endif %}
 
     <ul class="menu vertical side-menu">
-    {% for page in pages %}
+    {# for page in pages #}
+    {% for page in page.get_descendants %}
         <li>
             <a href="{% pageurl page %}">{{ page.title }}</a>
         </li>

@@ -4,22 +4,22 @@
 <div class="row">
 	<div class="large-3 columns">
 		{% block index_page_children %}
-		{% include "wagtailbase/includes/index_page_children.html" with title="In this section" %}
+		{% include "cms/includes/index_page_children.html" with title="In this section" %}
 		{% endblock %}
 	</div>
 	<div class="large-9 columns">
 		{% block index_page_introduction %}
-		{% include "wagtailbase/includes/introduction.html" with introduction=self.introduction only %}
+		{% include "cms/includes/introduction.html" with introduction=self.introduction only %}
 		{% endblock %}
 	</div>
 </div>
 
 {% block attachments %}
-{% include "wagtailbase/includes/attachments.html" with attachments=self.attachments.all title="Attachments" %}
+{% include "cms/includes/attachments.html" with attachments=self.attachments.all title="Attachments" %}
 {% endblock %}
 
 {% block related_links %}
-{% include "wagtailbase/includes/related_links.html" with related_links=self.related_links.all title="Related links" %}
+{% include "cms/includes/related_links.html" with related_links=self.related_links.all title="Related links" %}
 {% endblock %}
 
 {% endblock %}
