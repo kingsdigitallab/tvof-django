@@ -12,7 +12,7 @@ from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
 from wagtail.contrib.wagtailroutablepage.templatetags.\
      wagtailroutablepage_tags import routablepageurl
 
-from wagtailbase.util import unslugify
+from cms.util import unslugify
 
 import logging
 logger = logging.getLogger(__name__)
@@ -20,7 +20,7 @@ logger = logging.getLogger(__name__)
 register = template.Library()
 
 
-@register.inclusion_tag('wagtailbase/tags/breadcrumbs.html',
+@register.inclusion_tag('cms/tags/breadcrumbs.html',
                         takes_context=True)
 def breadcrumbs(context, root, current_page, extra=None):
     """Returns the pages that are part of the breadcrumb trail of the current
@@ -95,7 +95,7 @@ def is_current_or_ancestor(page, current_page):
     return current_page.is_current_or_ancestor(page)
 
 
-@register.inclusion_tag('wagtailbase/tags/latest_blog_post.html',
+@register.inclusion_tag('cms/tags/latest_blog_post.html',
                         takes_context=True)
 def latest_blog_post(context, parent=None):
     """Returns the latest blog post that is child of the given parent. If no
@@ -110,7 +110,7 @@ def latest_blog_post(context, parent=None):
     return {'request': context['request'], 'post': post}
 
 
-@register.inclusion_tag('wagtailbase/tags/featured_blog_post.html',
+@register.inclusion_tag('cms/tags/featured_blog_post.html',
                         takes_context=True)
 def featured_blog_post(context, parent=None):
     """Returns the latest featured blog post that is child of the
@@ -126,7 +126,7 @@ def featured_blog_post(context, parent=None):
     return {'request': context['request'], 'post': post}
 
 
-@register.inclusion_tag('wagtailbase/tags/latest_n_blog_posts.html',
+@register.inclusion_tag('cms/tags/latest_n_blog_posts.html',
                         takes_context=True)
 def latest_n_blog_posts(context, nentries, parent=None):
     """Returns an array with the latest blog posts that are children of the
@@ -145,7 +145,7 @@ def latest_n_blog_posts(context, nentries, parent=None):
     return {'request': context['request'], 'posts': posts}
 
 
-@register.inclusion_tag('wagtailbase/tags/local_menu.html', takes_context=True)
+@register.inclusion_tag('cms/tags/local_menu.html', takes_context=True)
 def local_menu(context, current_page=None):
     """Retrieves the secondary links for the 'also in this section' links -
     either the children or siblings of the current page."""
@@ -170,7 +170,7 @@ def local_menu(context, current_page=None):
             'menu_pages': menu_pages, 'menu_label': label}
 
 
-@register.inclusion_tag('wagtailbase/tags/main_menu.html', takes_context=True)
+@register.inclusion_tag('cms/tags/main_menu.html', takes_context=True)
 def main_menu(context, root, current_page=None):
     """Returns the main menu items, the children of the root page. Only live
     pages that have the show_in_menus setting on are returned."""
@@ -206,7 +206,7 @@ def archiveurl(context, page, *args):
     """
 
     logger.warning(
-        ('DEPRECATED: wagtailbase tag archiveurl is depracated. '
+        ('DEPRECATED: cms tag archiveurl is depracated. '
          'Use routablepageurl from wagtail.contrib.wagtailroutablepage '
          'templatetag instead.'))
 
