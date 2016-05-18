@@ -3,7 +3,6 @@
 {% if page.get_descendants %}
 
 <div class="stream-field">
-	{{ content }}
 	{% for child in content %}
 		{% if child.block_type = 'image_and_text' %}
 			{% if child.value.alignment = 'left' %}

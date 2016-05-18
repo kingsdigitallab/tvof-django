@@ -1,0 +1,31 @@
+{% load wagtailcore_tags %}
+
+<ul class="{{ class }}">
+    {% for post in self.get_descendants %}
+    <li>
+
+		{% block blog_post_title %}
+		<h2 class="posttitle">
+		    <a href="{{ post.url }}">{{ post.title }}</a>
+		</h2>
+		<section class="postcontent">
+		    {% for child in post.blogpost.content %} 
+				<p>{% if child.block_type = 'paragraph' %}
+					{{ child.value|richtext|truncatewords:25 }}
+				{% endif %}</p>
+			{% endfor %}
+
+		</section>
+		{% endblock %}
+
+
+
+
+    </li>
+    {% empty %}
+        <li>Sorry, nothing to show here.</li>
+    {% endfor %}
+</ul>
+
+{% include "cms/includes/pagination.html" with pages=posts %}
+
