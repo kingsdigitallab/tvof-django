@@ -4,9 +4,28 @@
 
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.fields import StreamField
-from wagtail.wagtailcore import blocks
+from wagtail.wagtailcore.blocks import *  # noqa
 from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailimages.blocks import ImageChooserBlock
+
+from django import forms
+
+
+class ImageFormatChoiceBlock(FieldBlock):
+    """Doc string."""
+
+    field = forms.ChoiceField(choices=(
+        ('left', 'Left'), ('centre', 'Centre'), ('right', 'Right'),
+    ))
+
+
+class ImageAndTextBlock(StructBlock):
+    """Doc string."""
+
+    text = RichTextBlock()
+    image = ImageChooserBlock()
+    caption = RichTextBlock()
+    alignment = ImageFormatChoiceBlock()
 
 
 class HomePage(Page):
@@ -20,10 +39,11 @@ class IndexPage(Page):
 
     subpage_types = ['IndexPage', 'RichTextPage', 'BlogIndexPage']
     content = StreamField([
-        ('heading', blocks.CharBlock(classname="")),
-        ('paragraph', blocks.RichTextBlock()),
+        ('heading', CharBlock(classname="")),
+        ('paragraph', RichTextBlock()),
         ('image', ImageChooserBlock()),
-        ('image_caption', blocks.CharBlock(classname="richtext-caption")),
+        ('image_caption', CharBlock(classname="richtext-caption")),
+        ('image_and_text', ImageAndTextBlock()),
     ])
 
 IndexPage.content_panels = [
@@ -36,10 +56,11 @@ class RichTextPage(Page):
     """Streamfield richtextpage."""
 
     content = StreamField([
-        ('heading', blocks.CharBlock(classname="")),
-        ('paragraph', blocks.RichTextBlock()),
+        ('heading', CharBlock(classname="")),
+        ('paragraph', RichTextBlock()),
         ('image', ImageChooserBlock()),
-        ('image_caption', blocks.CharBlock(classname="richtext-caption")),
+        ('image_caption', CharBlock(classname="richtext-caption")),
+        ('image_and_text', ImageAndTextBlock()),
     ])
 
 RichTextPage.content_panels = [
@@ -59,3 +80,10 @@ class BlogPost(Page):
     """Blog post."""
 
     search_name = "Blog post"
+    content = StreamField([
+        ('heading', CharBlock(classname="")),
+        ('paragraph', RichTextBlock()),
+        ('image', ImageChooserBlock()),
+        ('image_caption', CharBlock(classname="richtext-caption")),
+        ('image_and_text', ImageAndTextBlock()),
+    ])

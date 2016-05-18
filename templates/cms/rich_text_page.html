@@ -5,7 +5,13 @@
 {{ block.super }}
 
 
-{{ page.content }}
+<div class="row">
+	<div class="large-12 columns">
+		{% block streamfield %}
+                {% include "cms/includes/streamfield.html" with content=self.content %}
+		{% endblock %}
+	</div>
+</div>
 
 
 {% block related_links %}
