@@ -4,7 +4,7 @@
 #Fabric
 #flake8
 #ipython
-tox
+#tox
 backports.shutil-get-terminal-size==1.0.0
 beautifulsoup4==4.4.1
 decorator==4.0.9
