@@ -1,6 +1,8 @@
 {% if post %}
 {% load wagtailcore_tags cms_tags %}
 
+<script id="dsq-count-scr" src="//tvof.disqus.com/count.js" async></script>
+
 <article class="post" id="post{{ post.id }}">
     <header>
 
@@ -13,6 +15,17 @@
     <section class="postcontent">
 
         {% include "cms/includes/streamfield.html" with content=post.content %}
+        
+        <div id="disqus_thread"></div>
+            <script>
+                var page_url = window.location.url
+                var disqus_config = function () { this.page.url = page_url; 
+                    this.page.identifier = {{ post.id }}; };
+                (function() { var d = document, s = d.createElement('script'); s.src = '//tvof.disqus.com/embed.js'; s.setAttribute('data-timestamp', +new Date()); (d.head || d.body).appendChild(s); })();
+            </script>
+            <noscript>Please enable JavaScript to view the <a href="https://disqus.com/?ref_noscript" rel="nofollow">comments powered by Disqus.</a>
+            </noscript>
+        
     </section>
 
 
