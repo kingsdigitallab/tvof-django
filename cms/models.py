@@ -20,6 +20,11 @@ class ImageFormatChoiceBlock(FieldBlock):
     ))
 
 
+class ImageAndCaptionBlock(StructBlock):
+    """Image and caption streamfield"""
+    images = ImageChooserBlock()
+    caption = RichTextBlock()
+
 class ImageAndTextBlock(StructBlock):
     """Doc string."""
 
@@ -44,6 +49,7 @@ class IndexPage(Page):
         ('paragraph', RichTextBlock()),
         ('image', ImageChooserBlock()),
         ('image_caption', CharBlock(classname="richtext-caption")),
+        ('image_and_caption', ImageAndCaptionBlock()),
         ('image_and_text', ImageAndTextBlock()),
     ])
 
@@ -61,6 +67,7 @@ class RichTextPage(Page):
         ('paragraph', RichTextBlock()),
         ('image', ImageChooserBlock()),
         ('image_caption', CharBlock(classname="richtext-caption")),
+        ('image_and_caption', ImageAndCaptionBlock()),
         ('image_and_text', ImageAndTextBlock()),
     ])
 
@@ -86,6 +93,7 @@ class BlogPost(Page):
         ('paragraph', RichTextBlock()),
         ('image', ImageChooserBlock()),
         ('image_caption', CharBlock(classname="richtext-caption")),
+        ('image_and_caption', ImageAndCaptionBlock()),
         ('image_and_text', ImageAndTextBlock()),
     ], null=True, blank=True)
 

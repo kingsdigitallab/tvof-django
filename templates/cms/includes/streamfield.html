@@ -28,6 +28,14 @@
 					</div>
 				</div>
 			 {% endif %}
+        {% elif child.block_type = 'image_and_caption' %}                         
+                <div class="row">
+                        <div class="large-8 columns">
+                                <img src="{{ child.value.images.file.url }}"></img>
+                                <br>
+                                <span class="richtext-caption">{{ child.value.caption }}</span>
+                        </div>
+                </div>               
 		{% else %}
 			{{  child }}
 		{% endif %}	
@@ -63,6 +71,14 @@
                                         </div>
                                 </div>
                          {% endif %}
+                {% elif child.block_type = 'image_and_caption' %}                         
+                                <div class="row">
+                                        <div class="large-12 columns">
+                                                <img src="{{ child.value.images.file.url }}"></img>
+                                                <br>
+                                                <span class="richtext-caption">{{ child.value.caption }}</span>
+                                        </div>
+                                </div>                
                 {% else %}            
                         {{  child }}
                 {% endif %}
