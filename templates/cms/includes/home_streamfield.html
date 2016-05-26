@@ -1,0 +1,45 @@
+{% load wagtailcore_tags wagtailimages_tags %}
+
+<div class="stream-field">
+        {% for child in content %}
+                {% if child.block_type = 'image_and_text' %}
+                        {% if child.value.alignment = 'left' %}
+                                <div class="row">
+                                        <div class="richtext-image large-4 columns">
+                                                <!--<img src="{{ child.value.image.file.url }}"></img>-->
+                                                {% image child.value.image width-500 %}
+                                                <br>
+                                                <span class="richtext-caption">{{ child.value.caption }}</span>
+                                        </div>
+                                        <div class="large-8 columns rich-text"
+                                                {{ child.value.text }} 
+                                        </div>
+                                </div>
+                        {% elif child.value.alignment = 'right' %}
+                                <div class="row">
+                                        <div class="large-8 columns rich-text">
+                                                {{ child.value.text }} 
+                                        </div>
+                                        <div class="richtext-image large-4 columns">
+                                                <!--<img src="{{ child.value.image.file.url }}"></img>-->
+                                                {% image child.value.image width-500 %}
+                                                <br>
+                                                <span class="richtext-caption">{{ child.value.caption }}</span>
+                                        </div>
+                                </div>
+                         {% endif %}
+                {% elif child.block_type = 'image_and_caption' %}                         
+                                <div class="row">
+                                        <div class="richtext-image large-12 columns">
+                                                <!--<img src="{{ child.value.images.file.url }}"></img>-->
+                                                {% image child.value.images width-2000 %}
+                                                <br>
+                                                <span class="richtext-caption">{{ child.value.caption }}</span>
+                                        </div>
+                                </div>                
+                {% else %}            
+                        {{  child }}
+                {% endif %}
+        {% endfor %}
+</div>
+

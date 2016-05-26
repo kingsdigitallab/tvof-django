@@ -36,8 +36,17 @@ class ImageAndTextBlock(StructBlock):
 
 class HomePage(Page):
     """Basic home page."""
-
     subpage_types = ['IndexPage', 'RichTextPage', 'BlogIndexPage']
+    content = StreamField([
+        ('paragraph', RichTextBlock()),
+        ('image_and_caption', ImageAndCaptionBlock()),
+    ])
+
+
+HomePage.content_panels = [
+    FieldPanel('title'),
+    StreamFieldPanel('content'),
+]
 
 
 class IndexPage(Page):
