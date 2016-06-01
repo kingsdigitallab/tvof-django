@@ -29,14 +29,14 @@
                                 </div>
                          {% endif %}
                 {% elif child.block_type = 'image_and_caption' %}                         
-                                <div class="row">
-                                        <div class="richtext-image large-12 columns">
+                               <!-- <div class="row">
+                                        <div class="richtext-image large-12 columns"> -->
                                                 <!--<img src="{{ child.value.images.file.url }}"></img>-->
-                                                {% image child.value.images width-2000 %}
-                                                <br>
+        	<!--                                        {% image child.value.images width-2000 %}
+	                                                <br>
                                                 <span class="richtext-caption">{{ child.value.caption }}</span>
                                         </div>
-                                </div>                
+                                </div>                -->
                 {% else %}            
                         {{  child }}
                 {% endif %}
