@@ -1,7 +1,10 @@
 {% load wagtailcore_tags %}
 
 <ul class="{{ class }}">
-    {% for post in self.get_descendants %}
+
+    {% for post in self.get_descendants|dictsortreversed:"latest_revision_created_at" %}
+
+
     <li>
 
 		{% block blog_post_title %}
