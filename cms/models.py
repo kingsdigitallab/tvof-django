@@ -121,9 +121,13 @@ class BlogIndexPage(Page):
 
     @property
     def posts(self):
-        """Return a list of the blog posts that are children of this page."""
-        return BlogPost.objects.filter(
-            live=True, path__startswith=self.path).order_by('-date')
+        return BlogPost.objects.all().order_by('-latest_revision_created_at')
+
+    #@property
+    #def posts(self):
+    #    """Return a list of the blog posts that are children of this page."""
+    #    return BlogPost.objects.filter(
+    #        live=True, path__startswith=self.path).order_by('-date')
 
     @property
     def active_months(self):
