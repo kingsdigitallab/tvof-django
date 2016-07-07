@@ -80,13 +80,13 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'compressor',
-
     'require',
     'cms',
 )
 
 INSTALLED_APPS += (
     # your project apps here
+    'tvof',
 )
 
 INTERNAL_IPS = ('127.0.0.1', )
