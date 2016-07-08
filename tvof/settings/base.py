@@ -87,6 +87,7 @@ INSTALLED_APPS = (
 
 INSTALLED_APPS += (
     # your project apps here
+    'kiln',
 )
 
 INTERNAL_IPS = ('127.0.0.1', )
@@ -267,6 +268,14 @@ COMPRESS_PRECOMPILERS = (
 # -----------------------------------------------------------------------------
 
 GRAPPELLI_ADMIN_TITLE = PROJECT_TITLE
+
+# -----------------------------------------------------------------------------
+# Kiln
+# https://github.com/kcl-ddh/django-kiln
+# -----------------------------------------------------------------------------
+
+KILN_CONTEXT_PATH = 'k/'
+KILN_BASE_URL = 'localhost:8180'
 
 # -----------------------------------------------------------------------------
 # Django-Require

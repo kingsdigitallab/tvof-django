@@ -22,6 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "private_network", ip: "192.168.33.99"
 
   config.vm.provider "virtualbox" do |provider|
+ #   provider.gui = true
     provider.customize ["modifyvm", :id, "--memory", "1024"]
   end
 

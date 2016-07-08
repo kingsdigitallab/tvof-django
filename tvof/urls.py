@@ -14,11 +14,12 @@ from wagtail.wagtailsearch.urls import frontend as wagtailsearch_frontend_urls
 wagtailsearch_register_signal_handlers()
 
 admin.autodiscover()
-
 urlpatterns = patterns('',
                        # url(r'^browse/', include(promrep_urls)),
                        # url(r'^grappelli/', include('grappelli.urls')),
                        url(r'^admin/', include(admin.site.urls)),
+                       url('^{path}'.format(path=settings.KILN_CONTEXT_PATH),
+                           include('kiln.urls')),
                        )
 
 try:
