@@ -25,8 +25,7 @@ PROJECT_TITLE = 'Change the title in the settings'
 ADMINS = ()
 MANAGERS = ADMINS
 
-ALLOWED_HOSTS = ['127.0.0.1:8000', '127.0.0.1', 'localhost',
-                 'tvof-stg.kdl.kcl.ac.uk']
+ALLOWED_HOSTS = []
 
 # https://docs.djangoproject.com/en/dev/ref/settings/#caches
 # https://docs.djangoproject.com/en/dev/topics/cache/
@@ -275,7 +274,7 @@ GRAPPELLI_ADMIN_TITLE = PROJECT_TITLE
 # -----------------------------------------------------------------------------
 
 KILN_CONTEXT_PATH = 'k/'
-KILN_BASE_URL = 'localhost:8180'
+KILN_BASE_URL = 'http://localhost:8180'
 
 # -----------------------------------------------------------------------------
 # Django-Require
