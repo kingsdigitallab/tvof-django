@@ -18,7 +18,7 @@ def process_to_json(request, kiln_url, template):
     kiln_base_url = settings.KILN_BASE_URL
     if kiln_base_url[-1] != '/':
         kiln_base_url = kiln_base_url + '/'
-    url = kiln_base_url + kiln_url + query_string
+    url = kiln_base_url + 'backend/' + kiln_url + query_string
 
     # Send the request to Kiln.
     r = requests.get(url)
@@ -65,7 +65,7 @@ def process(request, kiln_url, template):
     kiln_base_url = settings.KILN_BASE_URL
     if kiln_base_url[-1] != '/':
         kiln_base_url = kiln_base_url + '/'
-    url = kiln_base_url + kiln_url + query_string
+    url = kiln_base_url + 'backend/' + kiln_url + query_string
 
     # Send the request to Kiln.
     r = requests.get(url)
@@ -74,7 +74,7 @@ def process(request, kiln_url, template):
     root = ET.fromstring(response)
 
     # Element names that are expected in the response.
-    element_names = ['title', 'css', 'js', 'header', 'breadcrumbs', 'content']
+    element_names = ['title', 'metadata', 'navigation', 'content']
 
     # Parameters to be passed to the template.
     params = {}
@@ -83,11 +83,11 @@ def process(request, kiln_url, template):
         params[element_name] = ''
         element = root.find(element_name)
 
-        if element:
+        if element is not None:
             if len(element):
                 for child in element:
-                    params[element_name] += ET.tostring(child,
-                                                        encoding='utf-8')
+                    params[element_name] += ET.tostring(
+                        child, encoding='utf-8')
             elif element.text:
                 params[element_name] = element.text
 
