@@ -25,6 +25,7 @@ class ImageAndCaptionBlock(StructBlock):
     images = ImageChooserBlock()
     caption = RichTextBlock()
 
+
 class ImageAndTextBlock(StructBlock):
     """Doc string."""
 
