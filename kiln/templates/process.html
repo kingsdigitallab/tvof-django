@@ -1,33 +1,54 @@
 {% extends "base.html" %}
 
 {% block meta_title %}
-{{ title }}
-{% endblock %}
-
-{% block extra_css %}
-{% if css %}
-{% autoescape off %}
-{{ css }}
-{% endautoescape %}
-{% endif %}
-{% endblock %}
-
-{% block extra_js %}
-{% if js %}
-{% autoescape off %}
-{{ js }}
-{% endautoescape %}
-{% endif %}
+{{ title|striptags }}
 {% endblock %}
 
 {% block title %}
 {% autoescape off %}
-{{ header }}
+{{ title }}
 {% endautoescape %}
 {% endblock %}
 
 {% block main %}
 {% autoescape off %}
+{{ navigation }}
 {{ content }}
 {% endautoescape %}
+{% endblock %}
+
+{% block footer_scripts %}
+<script>
+    $('*[data-corresp]').hover(function() {
+        $(this).toggleClass('show-me-the-finger underline-me');
+    });
+
+    $('*[data-corresp]').click(function() {
+        var $this = $(this);
+        var corresp = $this.data('corresp');
+        var $target = $('' + corresp);
+
+        $('.highlight-me').toggleClass('highlight-me');
+
+        $this.toggleClass('highlight-me');
+
+        if (corresp.indexOf(' ') > 1) {
+            var ids = corresp.split(' ');
+            $target = $('' + ids[0]);
+            $target.nextUntil('' + ids[1]).andSelf().toggleClass('highlight-me');
+        } else {
+            $target.toggleClass('highlight-me');
+        }
+
+        if ($target.length) {
+            var thisTop = $this.offset().top;
+            var targetTop = $target.offset().top;
+            var top = thisTop - Math.abs(targetTop - thisTop);
+
+            $('html, body').animate({
+                scrollTop: top
+            }, 1000);
+        }
+    });
+</script>
 {% endblock %}
