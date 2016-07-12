@@ -1,20 +1,19 @@
-from ..models import BlogPost, HomePage
+import logging
 
+from cms.util import unslugify
 from django import template
 from django.conf import settings
-from django.utils.text import slugify
 from django.template.defaultfilters import stringfilter
-
+from django.utils.text import slugify
+from \
+    wagtail.contrib.wagtailroutablepage.templatetags.wagtailroutablepage_tags \
+    import routablepageurl
 
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
 
-from wagtail.contrib.wagtailroutablepage.templatetags.\
-     wagtailroutablepage_tags import routablepageurl
+from ..models import BlogPost, HomePage
 
-from cms.util import unslugify
-
-import logging
 logger = logging.getLogger(__name__)
 
 register = template.Library()
