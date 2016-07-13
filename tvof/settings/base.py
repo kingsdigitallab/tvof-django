@@ -79,7 +79,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'compressor',
-
     'require',
     'cms',
 )
@@ -87,6 +86,7 @@ INSTALLED_APPS = (
 INSTALLED_APPS += (
     # your project apps here
     'kiln',
+    'tvof',
 )
 
 INTERNAL_IPS = ('127.0.0.1', )
@@ -333,6 +333,5 @@ FABRIC_USER = getpass.getuser()
 GA_ID = ''
 
 WAGTAIL_SITE_NAME = 'TVOF'
-
 
 WAGTAIL_APPEND_SLASH = False

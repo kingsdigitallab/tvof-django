@@ -5,7 +5,7 @@
 {% endblock %}
 
 {% block title %}
-<div class="row">
+<div class="row" id="manuscripts-title">
     {% for t in texts %}
     <div class="large-{{ number_of_columns }} columns">
         <h1>{{ t.title|safe }}</h1>
@@ -43,6 +43,12 @@
                 </ul>
             </li>
         </ul>
+    </div>
+    {% endfor %}
+</div>
+<div class="row" id="manuscripts-content">
+    {% for t in texts %}
+    <div class="large-{{ number_of_columns }} columns">
         {{ t.content|safe }}
     </div>
     {% endfor %}
