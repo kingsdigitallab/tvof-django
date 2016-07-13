@@ -1,20 +1,42 @@
 {% extends "base.html" %}
 
 {% block meta_title %}
-{{ title|striptags }}
+{{ texts.0.title|striptags }}
 {% endblock %}
 
 {% block title %}
-{% autoescape off %}
-{{ title }}
-{% endautoescape %}
+<div class="row">
+    {% for t in texts %}
+    <div class="large-{{ number_of_columns }} columns">
+        <h1>{{ t.title|safe }}</h1>
+    </div>
+    {% endfor %}
+</div>
 {% endblock %}
 
 {% block main %}
-{% autoescape off %}
-{{ navigation }}
-{{ content }}
-{% endautoescape %}
+<div class="row">
+    {% for t in texts %}
+    <div class="large-{{ number_of_columns }} columns">
+        <ul class="dropdown menu" data-dropdown-menu="">
+          <li>
+            <a>
+                {% if number_of_texts > 1 %}Change text to
+                {% else %}Compare with{% endif %}
+            </a>
+            <ul class="menu">
+                {% for v in t.versions %}
+                <li>
+                    <a href="{{ v.url }}">{{ v.name }}</a>
+                </li>
+                {% endfor %}
+            </ul>
+        </li>
+    </ul>
+    {{ t.content|safe }}
+</div>
+{% endfor %}
+</div>
 {% endblock %}
 
 {% block footer_scripts %}
