@@ -23,7 +23,7 @@
 {% endblock %}
 
 {% block index_page_children %}
-{% include "cms/includes/blog_index_posts.html" with class="posts" %}
+{% include "cms/includes/blog_index_posts.html" with posts=self.get_descendant %}
 {% endblock %}
 
 {% block latest_blog_post %}{% endblock %}

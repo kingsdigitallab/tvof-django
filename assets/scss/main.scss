@@ -92,9 +92,9 @@ a.ext-links {
 
 /* Navigation */
 
-nav {
-	background: $primary-color;
 
+nav {
+	background-color: #1c2434;
 	a {
 		color: $white;
 		&:hover {
@@ -102,7 +102,7 @@ nav {
 			background: scale-color($primary-color, $lightness: 20%);
 		}
 		&:after {
-			border-color: transparent transparent transparent $white !important;
+			border-color: $white transparent transparent transparent !important;
 		}
 	}
 
@@ -111,7 +111,7 @@ nav {
 	}
 
 	.title-bar {
-		background: $primary-color;
+		background: #1c2434;
 	}
 
 	.menu,
@@ -119,6 +119,23 @@ nav {
 		z-index: 9;
 	}
 }
+
+@media screen and (max-width: 575px) {
+nav {
+	background-color: #1c2434;
+	a {
+		color: $white;
+		&:hover {
+			color: scale-color($primary-color, $lightness: 80%);
+			background: scale-color($primary-color, $lightness: 20%);
+		}
+		&:after {
+			border-color: transparent transparent transparent $white!important;
+		}
+	}
+}
+}
+
 
 /* Main content area */
 
@@ -144,6 +161,7 @@ nav {
 	.richtext-image {
 		padding-top: 1rem;
 		padding-bottom: 1rem;
+		text-align: center;
 
 		&.float-right {
 			padding-left: 1rem;
@@ -176,9 +194,9 @@ nav {
 	}
 
 	.side-menu {
-		background: scale-color($primary-color, $lightness: 30%);
+		background: #42547a;
 		li {
-			border-bottom: 1px solid scale-color($primary-color, $lightness: 40%);
+			border-bottom: 1px solid #5871a4;
 			a {
 				color: white !important;
 			}
@@ -188,7 +206,7 @@ nav {
 	.menu > li > a {
 		// color: $primary-color;
 		&:hover {
-			background: scale-color($primary-color, $lightness: 40%);
+			background: #5871a4;
 		}
 	}
 

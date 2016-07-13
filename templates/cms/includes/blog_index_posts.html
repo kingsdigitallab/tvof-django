@@ -1,19 +1,27 @@
 {% load wagtailcore_tags %}
 
 <ul class="{{ class }}">
-    {% for post in self.get_descendants %}
+
+    {% for post in self.get_descendants|dictsortreversed:"go_live_at" %}
+
+
     <li>
 
 		{% block blog_post_title %}
 		<h2 class="posttitle">
 		    <a href="{{ post.url }}">{{ post.title }}</a>
 		</h2>
+		<p>by {{ post.owner }}, {{ post.go_live_at }}</p>
 		<section class="postcontent">
 		    {% for child in post.blogpost.content %} 
-				<p>{% if child.block_type = 'paragraph' %}
-					{{ child.value|richtext|truncatewords:25 }}
-				{% endif %}</p>
-			{% endfor %}
+				<p>
+				{% if child.block_type = 'paragraph' %}
+					{% if forloop.first %}
+					{{ child.value|richtext|truncatewords:15 }}
+					{% endif %}
+				{% endif %}
+				</p>
+                    {% endfor %}
 
 		</section>
 		{% endblock %}
