@@ -64,6 +64,14 @@ def _send_to_kiln_and_process_response(request, kiln_url):
             params['texts'][idx]['content'] = ET.tostring(
                 text_el.find('content'))
 
+            params['texts'][idx]['toc'] = []
+            toc_els = text_el.findall('toc/item')
+            for item_el in toc_els:
+                params['texts'][idx]['toc'].append({
+                    'name': ET.tostring(item_el.find('*')),
+                    'id': item_el.get('id')
+                })
+
             params['texts'][idx]['versions'] = []
             version_els = text_el.findall('versions/version')
             for version_el in version_els:

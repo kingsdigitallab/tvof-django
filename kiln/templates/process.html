@@ -18,24 +18,34 @@
 <div class="row">
     {% for t in texts %}
     <div class="large-{{ number_of_columns }} columns">
-        <ul class="dropdown menu" data-dropdownnu="">
-          <li>
-            <a>
-                {% if number_of_texts > 1 %}Change text to
-                {% else %}Compare with{% endif %}
-            </a>
-            <ul class="menu">
-                {% for v in t.versions %}
-                <li>
-                    <a href="{{ v.url }}">{{ v.name }}</a>
-                </li>
-                {% endfor %}
-            </ul>
-        </li>
-    </ul>
-    {{ t.content|safe }}
-</div>
-{% endfor %}
+        <ul class="dropdown menu" data-dropdown-menu>
+            <li>
+                <a>Table of contents</a>
+                <ul class="menu">
+                    {% for i in t.toc %}
+                    <li>
+                        <a href="#{{ i.id }}">{{ i.name|striptags|safe }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <li>
+                <a>
+                    {% if number_of_texts > 1 %}Change manuscript to
+                    {% else %}Compare with{% endif %}
+                </a>
+                <ul class="menu">
+                    {% for v in t.versions %}
+                    <li>
+                        <a href="{{ v.url }}">{{ v.name }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+        {{ t.content|safe }}
+    </div>
+    {% endfor %}
 </div>
 {% endblock %}
 
