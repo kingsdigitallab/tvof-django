@@ -18,7 +18,7 @@
 <div class="row">
     {% for t in texts %}
     <div class="large-{{ number_of_columns }} columns">
-        <ul class="dropdown menu" data-dropdown-menu="">
+        <ul class="dropdown menu" data-dropdownnu="">
           <li>
             <a>
                 {% if number_of_texts > 1 %}Change text to
@@ -42,7 +42,7 @@
 {% block footer_scripts %}
 <script>
     $('*[data-corresp]').hover(function() {
-        $(this).toggleClass('show-me-the-finger underline-me');
+        $(this).toggleClass('show-the-finger underline');
     });
 
     $('*[data-corresp]').click(function() {
@@ -50,16 +50,16 @@
         var corresp = $this.data('corresp');
         var $target = $('' + corresp);
 
-        $('.highlight-me').toggleClass('highlight-me');
+        $('.highlight').toggleClass('highlight');
 
-        $this.toggleClass('highlight-me');
+        $this.toggleClass('highlight');
 
         if (corresp.indexOf(' ') > 1) {
             var ids = corresp.split(' ');
             $target = $('' + ids[0]);
-            $target.nextUntil('' + ids[1]).andSelf().toggleClass('highlight-me');
+            $target.nextUntil('' + ids[1]).andSelf().toggleClass('highlight');
         } else {
-            $target.toggleClass('highlight-me');
+            $target.toggleClass('highlight');
         }
 
         if ($target.length) {
