@@ -14,3 +14,4 @@ pillow
 psycopg2
 requests
 wagtail
+html5lib==0.9999999
