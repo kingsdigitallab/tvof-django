@@ -61,4 +61,5 @@ target/
 .vagrant/
 local.py
 logs/
+playbook.retry
 static/
