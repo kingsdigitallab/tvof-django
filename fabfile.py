@@ -16,10 +16,10 @@ sys.path.append(project_root)
 
 django.project('tvof')
 
-REPOSITORY = ''
+REPOSITORY = 'https://github.com/kingsdigitallab/tvof-django.git'
 
 env.user = settings.FABRIC_USER
-env.hosts = ['']
+env.hosts = ['tvof.kdl.kcl.ac.uk']
 env.root_path = '/vol/tvof/webroot/'
 env.envs_path = os.path.join(env.root_path, 'envs')
 
@@ -60,7 +60,7 @@ def liv():
 
 def set_srvr_vars():
     env.path = os.path.join(env.root_path, env.srvr, 'django',
-                            'shakespeare400-django')
+                            'tvof-django')
     env.within_virtualenv = 'source {}'.format(
         os.path.join(env.envs_path, env.srvr, 'bin', 'activate'))
 
