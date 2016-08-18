@@ -73,7 +73,7 @@
         if (corresp.indexOf(' ') > 1) {
             var ids = corresp.split(' ');
             $target = $('' + ids[0]);
-            $target.nextUntil('' + ids[1]).andSelf().toggleClass('highlight');
+            $target.nextUntil('' + ids[1]).andSelf().next(ids[1]).andSelf().toggleClass('highlight');
         } else {
             $target.toggleClass('highlight');
         }
