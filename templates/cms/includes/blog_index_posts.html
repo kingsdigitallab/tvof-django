@@ -13,13 +13,13 @@
 		<h2 class="posttitle">
 		    <a href="{{ post.url }}">{{ post.title }}</a>
 		</h2>
-		<p>by {{ post.owner|title }}, {{ post.latest_revision_created_at }}</p>
+		<p><em>by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at }}</em></p>
 		<section class="postcontent">
 		    {% for child in post.blogpost.content %} 
 				<p>
 				{% if child.block_type = 'paragraph' %}
 					{% if forloop.first %}
-					{{ child.value|richtext|truncatewords:15 }}
+					<em>{{ child.value|richtext|truncatewords:15 }}</em>
 					{% endif %}
 				{% endif %}
 				</p>
