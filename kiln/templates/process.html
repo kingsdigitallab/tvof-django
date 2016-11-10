@@ -8,7 +8,7 @@
 <div class="row" id="manuscripts-title">
     {% for t in texts %}
     <div class="large-{{ number_of_columns }} columns">
-        <h1>{{ t.title|safe }}</h1>
+        <h1>{{ t.title|safe }} <small>{{ t.version }}</small></h1>
     </div>
     {% endfor %}
 </div>
@@ -35,9 +35,9 @@
                     {% else %}Compare with{% endif %}
                 </a>
                 <ul class="menu">
-                    {% for v in t.versions %}
-                    <li>
-                        <a href="{{ v.url }}">{{ v.name }}</a>
+                    {% for m in t.manuscripts %}
+                    <li {% if m.active %}class="active"{% endif %}>
+                        <a href="{{ m.url }}">{{ m.name }}</a>
                     </li>
                     {% endfor %}
                 </ul>

@@ -52,8 +52,9 @@ def _send_to_kiln_and_process_response(request, kiln_url):
         url_offset = 2
 
         if number_of_texts == 1:
-            current_url.append('text to compare')
-            url_offset = 3
+            url_offset = 4
+            current_url.append('manuscript to compare')
+            current_url.append('version to compare')
 
         if len(text_el):
             params['texts'].append({})
@@ -61,6 +62,7 @@ def _send_to_kiln_and_process_response(request, kiln_url):
             name = text_el.get('name')
             params['texts'][idx]['name'] = name
             params['texts'][idx]['title'] = text_el.find('title').text
+            params['texts'][idx]['version'] = text_el.find('version').text
             params['texts'][idx]['content'] = ET.tostring(
                 text_el.find('content'))
 
@@ -72,17 +74,23 @@ def _send_to_kiln_and_process_response(request, kiln_url):
                     'id': item_el.get('id')
                 })
 
-            params['texts'][idx]['versions'] = []
-            version_els = text_el.findall('versions/version')
-            for version_el in version_els:
-                version_name = version_el.get('name')
+            params['texts'][idx]['manuscripts'] = []
+            manuscript_els = text_el.findall('manuscripts/manuscript')
+            for manuscript_el in manuscript_els:
+                manuscript_name = manuscript_el.get('name')
 
-                current_url[idx + url_offset] = version_name
+                version_els = manuscript_el.findall('versions/version')
+                for version_el in version_els:
+                    version_name = version_el.get('name')
 
-                params['texts'][idx]['versions'].append({
-                    'name': version_el.get('name'),
-                    'url': '/' + '/'.join(current_url) + '/'
-                })
+                    current_url[idx * 2 + url_offset] = manuscript_name
+                    current_url[idx * 2 + url_offset + 1] = version_name
+
+                    params['texts'][idx]['manuscripts'].append({
+                        'name': manuscript_name + ': ' + version_name,
+                        'active': version_el.get('active', False),
+                        'url': '/' + '/'.join(current_url) + '/'
+                    })
 
     return params
 
