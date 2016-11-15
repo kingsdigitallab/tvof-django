@@ -63,18 +63,26 @@
 
     $('*[data-corresp]').click(function() {
         var $this = $(this);
-        var corresp = $this.data('corresp');
-        var $target = $('' + corresp);
+        var $corresps = $this.data('corresp').split(' ');
+        var $target = null;
 
         $('.highlight').toggleClass('highlight');
 
         $this.toggleClass('highlight');
 
-        if (corresp.indexOf(' ') > 1) {
-            var ids = corresp.split(' ');
-            $target = $('' + ids[0]);
-            $target.nextUntil('' + ids[1]).andSelf().next(ids[1]).andSelf().toggleClass('highlight');
+        $corresps.forEach(function(value) {
+            var $item = $('' + value);
+
+            if ($item.length == 0) {
+                $corresps.pop(value);
+            }
+        });
+
+        if ($corresps.length > 1) {
+            $target = $('' + $corresps[0]);
+            $target.nextUntil('' + $corresps[1]).andSelf().next($corresps[1]).andSelf().toggleClass('highlight');
         } else {
+            $target = $('' + $corresps[0]);
             $target.toggleClass('highlight');
         }
 
