@@ -1,7 +1,7 @@
 app: {name: tvof}
 postgresql: {admin_user: postgres, cluster_name: main, cluster_reset: false, default_auth_method: trust,
   encoding: UTF-8, initial_data_file: data.sql, locale: en_GB.UTF-8, user: tvof,
-  version: 9.1}
+  version: 9.4}
 project_root: /vagrant
 python: {requirements: requirements-vagrant.txt, virtualenv_location: /home/vagrant/venv}
 system_packages: [ack-grep, zsh, vim-nox, python-dev, python-pip, python-psycopg2,
