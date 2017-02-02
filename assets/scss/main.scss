@@ -5,15 +5,16 @@
 /****
 
 Global styles
-	External links
-	Responsive iframe
-	Show more / Show less
+    External links
+    Responsive iframe
+    Show more / Show less
 Header
 Navigation
 Main content area
-	Images
-	Notes
-	Quick tips or Disclaimer
+    Images
+    Notes
+    Quick tips or Disclaimer
+    Text viewer
 Footer
 Typography
 
@@ -22,30 +23,30 @@ Typography
 /* Global styles */
 
 .badge {
-	vertical-align: text-top;
+    vertical-align: text-top;
 }
 
 .off-canvas-wrapper button {
-	margin: 0;
+    margin: 0;
 }
 
 .off-canvas-content {
-	background: none !important;
+    background: none !important;
 }
 
 .off-canvas.position-left {
-	padding-right: 1rem;
+    padding-right: 1rem;
 }
 
 // External links
 
 a.ext-links {
-	&:before {
-		content: "\f14c";
-		font-family: "FontAwesome";
-		font-size: .875em;
-		padding-right: 4px;
-	}
+    &:before {
+        content: "\f14c";
+        font-family: "FontAwesome";
+        font-size: .875em;
+        padding-right: 4px;
+    }
 }
 
 // Responsive iframe
@@ -61,78 +62,78 @@ a.ext-links {
     border: 3px solid scale-color($secondary-color, $lightness: 50%);
 
     iframe {
-	    position: absolute;
-	    top: 0;
-	    left: 0;
-	    width: 100%;
-	    height: 100%;
-	}
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+    }
 }
 
 // Show more / Show less
 
 .darker {
-	background: scale-color($primary-color, $lightness: 30%) !important;
+    background: scale-color($primary-color, $lightness: 30%) !important;
 }
 
 /* Header */
 
 .header {
-	color: white;
-	h1 {
-		margin-top: 2rem;
-		font-weight: 700;
-		text-shadow: 0 0 5px #000;
+    color: white;
+    h1 {
+        margin-top: 2rem;
+        font-weight: 700;
+        text-shadow: 0 0 5px #000;
 
-		a {
-			color: $white;
-		}
-	}
+        a {
+            color: $white;
+        }
+    }
 }
 
 /* Navigation */
 
 
 nav {
-	background-color: #1c2434;
-	a {
-		color: $white;
-		&:hover {
-			color: scale-color($primary-color, $lightness: 80%);
-			background: scale-color($primary-color, $lightness: 20%);
-		}
-		&:after {
-			border-color: $white transparent transparent transparent !important;
-		}
-	}
+    background-color: #1c2434;
+    a {
+        color: $white;
+        &:hover {
+            color: scale-color($primary-color, $lightness: 80%);
+            background: scale-color($primary-color, $lightness: 20%);
+        }
+        &:after {
+            border-color: $white transparent transparent transparent !important;
+        }
+    }
 
-	.active {
-		background: scale-color($primary-color, $lightness: -20%);
-	}
+    .active {
+        background: scale-color($primary-color, $lightness: -20%);
+    }
 
-	.title-bar {
-		background: #1c2434;
-	}
+    .title-bar {
+        background: #1c2434;
+    }
 
-	.menu,
-	.menu > * {
-		z-index: 9;
-	}
+    .menu,
+    .menu > * {
+        z-index: 9;
+    }
 }
 
 @media screen and (max-width: 575px) {
 nav {
-	background-color: #1c2434;
-	a {
-		color: $white;
-		&:hover {
-			color: scale-color($primary-color, $lightness: 80%);
-			background: scale-color($primary-color, $lightness: 20%);
-		}
-		&:after {
-			border-color: transparent transparent transparent $white!important;
-		}
-	}
+    background-color: #1c2434;
+    a {
+        color: $white;
+        &:hover {
+            color: scale-color($primary-color, $lightness: 80%);
+            background: scale-color($primary-color, $lightness: 20%);
+        }
+        &:after {
+            border-color: transparent transparent transparent $white!important;
+        }
+    }
 }
 }
 
@@ -140,116 +141,127 @@ nav {
 /* Main content area */
 
 .main {
-	background: scale-color($almost-black, $lightness: 85%);
+    background: scale-color($almost-black, $lightness: 85%);
 
-	h1 {
-		border-bottom: 1px solid scale-color($primary-color, $lightness: 50%);
-		margin: 1rem 0;
-	}
+    h1 {
+        border-bottom: 1px solid scale-color($primary-color, $lightness: 50%);
+        margin: 1rem 0;
+    }
 
-	h3 {
-		font-size: 1.5rem;
-	}
+    h3 {
+        font-size: 1.5rem;
+    }
 
-	h4 {
-		font-size: 1.25rem;
-		color: scale-color($almost-black, $lightness: 15%);
-	}
+    h4 {
+        font-size: 1.25rem;
+        color: scale-color($almost-black, $lightness: 15%);
+    }
 
-	// Images
+    // Images
 
-	.richtext-image {
-		padding-top: 1rem;
-		padding-bottom: 1rem;
-		text-align: center;
+    .richtext-image {
+        padding-top: 1rem;
+        padding-bottom: 1rem;
+        text-align: center;
 
-		&.float-right {
-			padding-left: 1rem;
-			width: 50%;
-		}
-		&.float-left {
-			padding-right: 1rem;
-			width: 50%;
-		}
-		&.float-center {
-			padding-left: 1rem;
-			padding-right: 1rem;
-			width: 50%;
-		}
-	}
+        &.float-right {
+            padding-left: 1rem;
+            width: 50%;
+        }
+        &.float-left {
+            padding-right: 1rem;
+            width: 50%;
+        }
+        &.float-center {
+            padding-left: 1rem;
+            padding-right: 1rem;
+            width: 50%;
+        }
+    }
 
-	.richtext-caption {
-		font-style: italic;
-		font-size: .75rem;
-		line-height: 1.125;
-	}
+    .richtext-caption {
+        font-style: italic;
+        font-size: .75rem;
+        line-height: 1.125;
+    }
 
-	// Splash image - homepage
-	.splash-image {
-		margin: 1rem 0;
+    // Splash image - homepage
+    .splash-image {
+        margin: 1rem 0;
 
-		img {
-			width: 100%;
-		}
-	}
+        img {
+            width: 100%;
+        }
+    }
 
-	.side-menu {
-		background: #42547a;
-		li {
-			border-bottom: 1px solid #5871a4;
-			a {
-				color: white !important;
-			}
-		}
-	}
+    .side-menu {
+        background: #42547a;
+        li {
+            border-bottom: 1px solid #5871a4;
+            a {
+                color: white !important;
+            }
+        }
+    }
 
-	.menu > li > a {
-		// color: $primary-color;
-		&:hover {
-			background: #5871a4;
-		}
-	}
+    .menu > li > a {
+        // color: $primary-color;
+        &:hover {
+            background: #5871a4;
+        }
+    }
 
-	// Notes
+    // Notes
 
-	.notes {
-		padding: .5rem 1rem;
-		background: scale-color($secondary-color, $lightness: 70%);
-		border-top: 1px solid $secondary-color;
-		font-size: .9375rem;
-		p {
-			line-height: 1.25rem;
-		}
-	}
+    .notes {
+        padding: .5rem 1rem;
+        background: scale-color($secondary-color, $lightness: 70%);
+        border-top: 1px solid $secondary-color;
+        font-size: .9375rem;
+        p {
+            line-height: 1.25rem;
+        }
+    }
 
-	// Quick tips or Disclaimer
+    // Quick tips or Disclaimer
 
-	.quick-tips {
-		font-size: .875em;
-		padding: .5rem 1rem;
-		background: scale-color($secondary-color, $lightness: 70%);
-		margin-bottom: .5rem;
-		h3 {
-			font-size: 1.125rem;
-		}
-	}
+    .quick-tips {
+        font-size: .875em;
+        padding: .5rem 1rem;
+        background: scale-color($secondary-color, $lightness: 70%);
+        margin-bottom: .5rem;
+        h3 {
+            font-size: 1.125rem;
+        }
+    }
+
+    // Text viewer
+
+    sup.note {
+        padding-left: 5px;
+        &:after {
+            content: "\f075";
+            font-family: "FontAwesome";
+            padding-left: 3px;
+        }
+    }
 }
 
 /* Footer */
 
 footer {
-	color: white;
-	a {
-		color: white;
-	}
-	background: $body-background;
-	padding: 1rem 0;
+    color: white;
+    a {
+        color: white;
+    }
+    background: $body-background;
+    padding: 1rem 0;
 
-	.logo {
-		img {
-			max-width: 120px;
-		}
-	}
+    .logo {
+        img {
+            max-width: 120px;
+        }
+    }
 }
 
 /* Typography */
