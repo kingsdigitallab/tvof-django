@@ -5,6 +5,7 @@
 /****
 
 Global styles
+    Colours and text styles
     External links
     Responsive iframe
     Show more / Show less
@@ -36,6 +37,24 @@ Typography
 
 .off-canvas.position-left {
     padding-right: 1rem;
+}
+
+// Colours and text styles
+
+.orange {
+    color: orange !important;
+}
+
+.red {
+    color: red !important;
+}
+
+.strikethrough {
+    text-decoration: line-through !important;
+}
+
+.uppercase {
+    text-transform: uppercase !important;
 }
 
 // External links
