@@ -4,40 +4,32 @@
 
     {% for post in self.get_descendants|dictsortreversed:"go_live_at" %}
 
+        {% if post.live %}
+            <li>
+                {% block blog_post_title %}
+                    <h2 class="posttitle">
+                        <a href="{{ post.url }}">{{ post.title }}</a>
+                    </h2>
+                    <p>by {{ post.owner }}, {{ post.go_live_at }}</p>
+                    <section class="postcontent">
+                        {% for child in post.blogpost.content %} 
+                            <p>
+                            {% if child.block_type = 'paragraph' %}
+                                {% if forloop.first %}
+                                {{ child.value|richtext|truncatewords:15 }}
+                                {% endif %}
+                            {% endif %}
+                            </p>
+                        {% endfor %}
+                    </section>
+                {% endblock %}
+            </li>
+        {% endif %}
 
-    <li>
-
-		{% block blog_post_title %}
-		<h2 class="posttitle">
-		    <a href="{{ post.url }}">{{ post.title }}</a>
-		</h2>
-		<p>by {{ post.owner }}, {{ post.go_live_at }}</p>
-		<section class="postcontent">
-		    {% for child in post.blogpost.content %} 
-				<p>
-				{% if child.block_type = 'paragraph' %}
-					{% if forloop.first %}
-					{{ child.value|richtext|truncatewords:15 }}
-					{% endif %}
-				{% endif %}
-				</p>
-                    {% endfor %}
-
-		</section>
-		{% endblock %}
-
-
-	{% endif %}
-
-    </li>
     {% empty %}
-    <li>Sorry, nothing to show here.</li>
-
-
-
+        <li>Sorry, nothing to show here.</li>
     {% endfor %}
-
-	
+    
 </ul>
 
 {% include "cms/includes/pagination.html" with pages=posts %}
