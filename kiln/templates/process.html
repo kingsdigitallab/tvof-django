@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block meta_title %}
+{{ texts.0.title|striptags }}
+{% endblock %}
+
+{% block title %}
+<div class="row" id="manuscripts-title">
+    {% for t in texts %}
+    <div class="large-{{ number_of_columns }} columns">
+        <h1>{{ t.title|safe }} <small>{{ t.version }}</small></h1>
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block main %}
+<div class="row">
+    {% for t in texts %}
+    <div class="large-{{ number_of_columns }} columns">
+        <ul class="dropdown menu" data-dropdown-menu>
+            <li>
+                <a>Table of contents</a>
+                <ul class="menu">
+                    {% for i in t.toc %}
+                    <li>
+                        <a href="#{{ i.id }}">{{ i.name|striptags|safe }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+            <li>
+                <a>
+                    {% if number_of_texts > 1 %}Change manuscript to
+                    {% else %}Compare with{% endif %}
+                </a>
+                <ul class="menu">
+                    {% for m in t.manuscripts %}
+                    <li {% if m.active %}class="active"{% endif %}>
+                        <a href="{{ m.url }}">{{ m.name }}</a>
+                    </li>
+                    {% endfor %}
+                </ul>
+            </li>
+        </ul>
+    </div>
+    {% endfor %}
+</div>
+<div class="row" id="manuscripts-content">
+    {% for t in texts %}
+    <div class="large-{{ number_of_columns }} columns">
+        {{ t.content|safe }}
+    </div>
+    {% endfor %}
+</div>
+{% endblock %}
+
+{% block footer_scripts %}
+<script>
+    $('*[data-corresp]').hover(function() {
+        $(this).toggleClass('show-the-finger underline');
+    });
+
+    $('*[data-corresp]').click(function() {
+        var $this = $(this);
+        var $corresps = $this.data('corresp').split(' ');
+        var $target = null;
+
+        $('.highlight').toggleClass('highlight');
+
+        $this.toggleClass('highlight');
+
+        $corresps.forEach(function(value) {
+            var $item = $('' + value);
+
+            if ($item.length == 0) {
+                $corresps.pop(value);
+            }
+        });
+
+        if ($corresps.length > 1) {
+            $target = $('' + $corresps[0]);
+            $target.nextUntil('' + $corresps[1]).andSelf().next($corresps[1]).andSelf().toggleClass('highlight');
+        } else {
+            $target = $('' + $corresps[0]);
+            $target.toggleClass('highlight');
+        }
+
+        if ($target.length) {
+            var thisTop = $this.offset().top;
+            var targetTop = $target.offset().top;
+            var top = thisTop - Math.abs(targetTop - thisTop);
+
+            $('html, body').animate({
+                scrollTop: top
+            }, 1000);
+        }
+    });
+</script>
+{% endblock %}

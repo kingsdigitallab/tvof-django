@@ -2,10 +2,8 @@
 
 <ul class="{{ class }}">
 
-    {% for post in self.get_descendants|dictsortreversed:"latest_revision_created_at" %}
+    {% for post in self.get_descendants|dictsortreversed:"go_live_at" %}
 
-
-	{% if post.live %}
 
     <li>
 
@@ -13,13 +11,13 @@
 		<h2 class="posttitle">
 		    <a href="{{ post.url }}">{{ post.title }}</a>
 		</h2>
-		<p><em>by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at }}</em></p>
+		<p>by {{ post.owner }}, {{ post.go_live_at }}</p>
 		<section class="postcontent">
 		    {% for child in post.blogpost.content %} 
 				<p>
 				{% if child.block_type = 'paragraph' %}
 					{% if forloop.first %}
-					<em>{{ child.value|richtext|truncatewords:15 }}</em>
+					{{ child.value|richtext|truncatewords:15 }}
 					{% endif %}
 				{% endif %}
 				</p>

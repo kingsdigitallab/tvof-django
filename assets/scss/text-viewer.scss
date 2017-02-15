@@ -1,0 +1,12 @@
+.highlight {
+    background-color: #ece4b7;
+}
+
+.show-the-finger {
+    cursor: pointer;
+}
+
+.underline {
+    text-decoration: underline;
+    text-decoration-color: scale-color($primary-color, $lightness: 50%);
+}

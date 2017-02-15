@@ -1,42 +1,57 @@
 """This is the URLS."""
 from django.conf import settings
-from django.conf.urls import include, patterns, url
+from django.conf.urls import include, url
 from django.contrib import admin
-# from django.core.urlresolvers import reverse
-# from django.views.generic.base import RedirectView
 from wagtail.wagtailadmin import urls as wagtailadmin_urls
+from wagtail.wagtaildocs import urls as wagtaildocs_urls
 from wagtail.wagtailcore import urls as wagtail_urls
-# from wagtail.wagtaildocs import urls as wagtaildocs_urls
 from wagtail.wagtailsearch.signal_handlers import \
     register_signal_handlers as wagtailsearch_register_signal_handlers
 from wagtail.wagtailsearch.urls import frontend as wagtailsearch_frontend_urls
-
-wagtailsearch_register_signal_handlers()
+from django.views.generic import RedirectView
 
 admin.autodiscover()
+wagtailsearch_register_signal_handlers()
 
-urlpatterns = patterns('',
-                       # url(r'^browse/', include(promrep_urls)),
-                       # url(r'^grappelli/', include('grappelli.urls')),
-                       url(r'^admin/', include(admin.site.urls)),
-                       )
+kiln_path = settings.KILN_CONTEXT_PATH
+
+urlpatterns = [
+    url(r'^grappelli/', include('grappelli.urls')),
+    url(r'^admin/', include(admin.site.urls)),
+    url('^{path}'.format(path=kiln_path),
+        include('kiln.urls')),
+]
 
 try:
     if settings.DEBUG:
         import debug_toolbar
-        urlpatterns += patterns('',
-                                url(r'^__debug__/',
-                                    include(debug_toolbar.urls)),
-                                )
+        urlpatterns += [
+            url(r'^__debug__/',
+                include(debug_toolbar.urls)),
+        ]
 
 except ImportError:
     pass
 
-urlpatterns += patterns('',
-                        url(r'^search/', include(wagtailsearch_frontend_urls)),
-                        url(r'^wagtail/', include(wagtailadmin_urls)),
-                        url(r'', include(wagtail_urls)),
-                        )
+# GN: redirects to texts from menu.
+# we do it here because Wagtail doesn't allow menu items to link to arbitrary
+# url this is a temporary setting.
+# TODO: use a more general mapping in the future
+urlpatterns += [
+    url(r'^histoire-ancienne/?$',
+        RedirectView.as_view(
+            url='%stexts/Fr_20125/semi-diplomatic/' % kiln_path,
+            permanent=False
+        )
+        ),
+]
+
+urlpatterns += [
+    url(r'^documents/', include(wagtaildocs_urls)),
+    url(r'^search/', include(wagtailsearch_frontend_urls)),
+    url(r'^wagtail/', include(wagtailadmin_urls)),
+    url(r'', include(wagtail_urls)),
+]
 
 if settings.DEBUG:
     from django.conf.urls.static import static

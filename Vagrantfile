@@ -7,7 +7,7 @@ VAGRANTFILE_API_VERSION = "2"
 Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.insert_key = false
 
-  config.vm.box = "puphpet/debian75-x64"
+  config.vm.box = "debian/contrib-jessie64"
 
   config.vm.provision "ansible" do |ansible|
     ansible.playbook = ".vagrant_provisioning/playbook.yml"
@@ -22,6 +22,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "private_network", ip: "192.168.33.99"
 
   config.vm.provider "virtualbox" do |provider|
+ #   provider.gui = true
     provider.customize ["modifyvm", :id, "--memory", "1024"]
   end
 
@@ -31,7 +32,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   # vagrant-hostupdater configuration
   config.vm.define "tvof" do |machine|
-    machine.vm.box = "puphpet/debian75-x64"
+    machine.vm.box = "debian/contrib-jessie64"
     machine.vm.hostname = "tvof.vagrant"
     machine.vm.network "private_network", ip: "192.168.33.99"
   end

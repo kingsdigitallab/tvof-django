@@ -40,7 +40,11 @@
                         </div>
                 </div>               
 		{% else %}
-			{{  child }}
+                <div class="row">
+                        <div class="large-12 columns rich-text">
+                            {{ child }}
+                        </div>
+                </div>   
 		{% endif %}	
 	{% endfor %}
 </div>
@@ -59,7 +63,7 @@
                                                 <br>
                                                 <span class="richtext-caption">{{ child.value.caption }}</span>
                                         </div>
-                                        <div class="large-8 columns rich-text"
+                                        <div class="large-8 columns rich-text">
                                                 {{ child.value.text }} 
                                         </div>
                                 </div>
@@ -86,7 +90,11 @@
                                         </div>
                                 </div>                
                 {% else %}            
-                        {{  child }}
+                                <div class="row">
+                                         <div class="rich-text large-12 columns">
+                                        {{ child }}
+                                        </div>
+                                </div>   
                 {% endif %}
         {% endfor %}
 </div>
