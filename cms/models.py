@@ -63,6 +63,7 @@ class IndexPage(Page):
         ('image_and_text', ImageAndTextBlock()),
     ])
 
+
 IndexPage.content_panels = [
     FieldPanel('title'),
     StreamFieldPanel('content'),
@@ -80,6 +81,7 @@ class RichTextPage(Page):
         ('image_and_caption', ImageAndCaptionBlock()),
         ('image_and_text', ImageAndTextBlock()),
     ])
+
 
 RichTextPage.content_panels = [
     FieldPanel('title'),
@@ -106,6 +108,7 @@ class BlogPost(Page):
         ('image_and_caption', ImageAndCaptionBlock()),
         ('image_and_text', ImageAndTextBlock()),
     ], null=True, blank=True)
+
 
 BlogPost.content_panels = [
     FieldPanel('title'),
