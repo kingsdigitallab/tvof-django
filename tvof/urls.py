@@ -37,14 +37,15 @@ except ImportError:
 # we do it here because Wagtail doesn't allow menu items to link to arbitrary
 # url this is a temporary setting.
 # TODO: use a more general mapping in the future
-urlpatterns += [
-    url(r'^histoire-ancienne/?$',
-        RedirectView.as_view(
-            url='%stexts/Fr_20125/semi-diplomatic/' % kiln_path,
-            permanent=False
-        )
-        ),
-]
+if not getattr(settings, 'TVOF_HIDE_TEXTS', False):
+    urlpatterns += [
+        url(r'^histoire-ancienne/?$',
+            RedirectView.as_view(
+                url='%stexts/Fr_20125/semi-diplomatic/' % kiln_path,
+                permanent=False
+            )
+            ),
+    ]
 
 urlpatterns += [
     url(r'^documents/', include(wagtaildocs_urls)),
