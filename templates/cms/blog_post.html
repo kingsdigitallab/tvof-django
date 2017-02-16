@@ -5,28 +5,14 @@
 
 {% block main %}
 
-{% include "cms/includes/blog_post_body.html" with post=self %}
-
-{% block attachments %}
-{{ block.super }}
-{% endblock %}
-
-{% block related_links %}
-{{ block.super }}
-{% endblock %}
-
-{% are_comments_allowed as allow_comments %}
-{% if allow_comments %}
-{% block comments %}
-<div id="disqus_thread"></div>
-{% endblock %}
-{% endif %}
+    {% include "cms/includes/blog_post_body.html" with post=self %}
+    
+    {% block attachments %}
+        {{ block.super }}
+    {% endblock %}
+    
+    {% block related_links %}
+        {{ block.super }}
+    {% endblock %}
 
 {% endblock %}
-
-{% are_comments_allowed as allow_comments %}
-{% if allow_comments %}
-{% block footer_scripts %}
-{% include "wagtailbase/includes/disqus_setup.html" %}
-{% endblock %}
-{% endif %}
