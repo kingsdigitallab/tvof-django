@@ -27,6 +27,7 @@ def whitelister_element_rules():
                                   'height': True}),
     }
 
+
 hooks.register('construct_whitelister_element_rules',
                whitelister_element_rules)
 
@@ -39,6 +40,7 @@ def editor_css():
                        """,
                        settings.STATIC_URL,
                        'vendor/font-awesome/scss/font-awesome.scss')
+
 
 hooks.register('insert_editor_css', editor_css)
 
@@ -58,5 +60,6 @@ def editor_js():
             registerHalloPlugin('editHtmlButton');
         </script>
         """)
+
 
 hooks.register('insert_editor_js', editor_js)
