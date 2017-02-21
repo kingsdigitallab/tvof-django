@@ -256,6 +256,20 @@ nav {
 
     // Text viewer
 
+    .critToLower {
+        text-transform: lowercase;
+    }
+
+    .critToSup {
+        font-size: rem-calc(12);
+        vertical-align: super;
+    }
+
+    .seg-num {
+        font-size: rem-calc(13);
+        font-weight: 700;
+    }
+
     sup.note {
         padding-left: 5px;
         &:after {
