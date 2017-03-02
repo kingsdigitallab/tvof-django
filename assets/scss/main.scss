@@ -49,10 +49,6 @@ Typography
     color: red !important;
 }
 
-.strikethrough {
-    text-decoration: line-through !important;
-}
-
 .uppercase {
     text-transform: uppercase !important;
 }
@@ -256,6 +252,11 @@ nav {
 
     // Text viewer - TEI
 
+    .tei-cb,
+    .tei-pb {
+        color: teal;
+    }
+
     .tei-corr {
 
     }
@@ -269,13 +270,28 @@ nav {
         vertical-align: super;
     }
 
+    .tei-del {
+        text-decoration: line-through !important;
+    }
+
+    .tei-fw {
+        color: green;
+    }
+
+    .tei-initial {
+        color: red;
+    }
+
     .tei-seg-num {
         font-size: rem-calc(13);
         font-weight: 700;
     }
 
     sup {
-        &.tei-note {
+        &.tei-note,
+        &.tei-gen,
+        &.tei-source,
+        &.tei-trad {
             padding-left: 5px;
             &:after {
                 content: "\f075";
@@ -285,20 +301,35 @@ nav {
         }
 
         &.tei-gen {
+            &:after {
+                color: red;
+            }
+        }
 
+        &.tei-note {
+            &:after {
+                color: scale-color($secondary-color, $lightness: 30%);
+            }
         }
 
         &.tei-source {
-
+            &:after {
+                color: scale-color($primary-color, $lightness: 40%);
+            }
         }
 
         &.tei-trad {
-
+            &:after {
+                color: scale-color($tertiary-color, $lightness: 50%);
+            }
         }
     }
 
     .tei-unclear {
-
+        &:before {
+            content: "?";
+            color: $tertiary-color;
+        }
     }
 }
 
