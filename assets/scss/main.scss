@@ -15,7 +15,7 @@ Main content area
     Images
     Notes
     Quick tips or Disclaimer
-    Text viewer
+    Text viewer - TEI
 Footer
 Typography
 
@@ -47,10 +47,6 @@ Typography
 
 .red {
     color: red !important;
-}
-
-.strikethrough {
-    text-decoration: line-through !important;
 }
 
 .uppercase {
@@ -141,19 +137,19 @@ nav {
 }
 
 @media screen and (max-width: 575px) {
-nav {
-    background-color: #1c2434;
-    a {
-        color: $white;
-        &:hover {
-            color: scale-color($primary-color, $lightness: 80%);
-            background: scale-color($primary-color, $lightness: 20%);
-        }
-        &:after {
-            border-color: transparent transparent transparent $white!important;
+    nav {
+        background-color: #1c2434;
+        a {
+            color: $white;
+            &:hover {
+                color: scale-color($primary-color, $lightness: 80%);
+                background: scale-color($primary-color, $lightness: 20%);
+            }
+            &:after {
+                border-color: transparent transparent transparent $white!important;
+            }
         }
     }
-}
 }
 
 
@@ -254,28 +250,85 @@ nav {
         }
     }
 
-    // Text viewer
+    // Text viewer - TEI
 
-    .critToLower {
+    .tei-cb,
+    .tei-pb {
+        color: teal;
+    }
+
+    .tei-corr {
+
+    }
+
+    .tei-critToLower {
         text-transform: lowercase;
     }
 
-    .critToSup {
+    .tei-critToSup {
         font-size: rem-calc(12);
         vertical-align: super;
     }
 
-    .seg-num {
+    .tei-del {
+        text-decoration: line-through !important;
+    }
+
+    .tei-fw {
+        color: green;
+    }
+
+    .tei-initial {
+        color: red;
+    }
+
+    .tei-seg-num {
         font-size: rem-calc(13);
         font-weight: 700;
     }
 
-    sup.note {
-        padding-left: 5px;
-        &:after {
-            content: "\f075";
-            font-family: "FontAwesome";
-            padding-left: 3px;
+    sup {
+        &.tei-note,
+        &.tei-gen,
+        &.tei-source,
+        &.tei-trad {
+            padding-left: 5px;
+            &:after {
+                content: "\f075";
+                font-family: "FontAwesome";
+                padding-left: 3px;
+            }
+        }
+
+        &.tei-gen {
+            &:after {
+                color: red;
+            }
+        }
+
+        &.tei-note {
+            &:after {
+                color: scale-color($secondary-color, $lightness: 30%);
+            }
+        }
+
+        &.tei-source {
+            &:after {
+                color: scale-color($primary-color, $lightness: 40%);
+            }
+        }
+
+        &.tei-trad {
+            &:after {
+                color: scale-color($tertiary-color, $lightness: 50%);
+            }
+        }
+    }
+
+    .tei-unclear {
+        &:before {
+            content: "?";
+            color: $tertiary-color;
         }
     }
 }
