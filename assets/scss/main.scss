@@ -1,6 +1,7 @@
 @import 'settings';
-@import 'text-viewer';
 @import '../vendor/foundation-sites/scss/foundation';
+@import 'text-viewer';
+@import '../vendor/motion-ui/motion-ui';
 
 /****
 
@@ -46,7 +47,7 @@ Typography
 }
 
 .red {
-    color: red !important;
+    color: scale-color($secondary-color, $lightness: 25%);
 }
 
 .uppercase {
@@ -152,11 +153,15 @@ nav {
     }
 }
 
+.menu.submenu.is-dropdown-submenu {
+    background: $primary-color;
+}
+
 
 /* Main content area */
 
 .main {
-    background: scale-color($almost-black, $lightness: 85%);
+    background: scale-color($almost-black, $lightness: 94%);
 
     h1 {
         border-bottom: 1px solid scale-color($primary-color, $lightness: 50%);
@@ -169,7 +174,7 @@ nav {
 
     h4 {
         font-size: 1.25rem;
-        color: scale-color($almost-black, $lightness: 15%);
+        //color: scale-color($almost-black, $lightness: 15%);
     }
 
     // Images
@@ -226,11 +231,19 @@ nav {
         }
     }
 
+    .is-submenu-item {
+        border-bottom: 1px solid $dark-gray;
+
+        a {
+            color: $light-gray;
+        }
+    }
+
     // Notes
 
     .notes {
         padding: .5rem 1rem;
-        background: scale-color($secondary-color, $lightness: 70%);
+        //background: scale-color($secondary-color, $lightness: 70%);
         border-top: 1px solid $secondary-color;
         font-size: .9375rem;
         p {
@@ -251,6 +264,29 @@ nav {
     }
 
     // Text viewer - TEI
+
+    #manuscripts-content,
+    #manuscripts-title {
+        h1, h2 {
+            padding-top: rem-calc(24);
+            padding-left: rem-calc(16);
+
+            small,
+            small {
+                color: $dark-gray;
+            }
+        }
+    }
+
+    .tei.body {
+        margin-bottom: rem-calc(24);
+        padding-left: rem-calc(16);
+        padding-right: rem-calc(36);
+
+        h4 {
+            margin-top: rem-calc(24);
+        }
+    }
 
     .tei-cb,
     .tei-pb {
@@ -279,7 +315,7 @@ nav {
     }
 
     .tei-initial {
-        color: red;
+        color: scale-color($secondary-color, $lightness: 25%);
     }
 
     .tei-seg-num {
@@ -302,7 +338,7 @@ nav {
 
         &.tei-gen {
             &:after {
-                color: red;
+                color: scale-color($success-color, $lightness: 30%);
             }
         }
 
@@ -351,6 +387,5 @@ footer {
 }
 
 /* Typography */
-
 
 @include foundation-everything;
