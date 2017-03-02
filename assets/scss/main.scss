@@ -15,7 +15,7 @@ Main content area
     Images
     Notes
     Quick tips or Disclaimer
-    Text viewer
+    Text viewer - TEI
 Footer
 Typography
 
@@ -141,19 +141,19 @@ nav {
 }
 
 @media screen and (max-width: 575px) {
-nav {
-    background-color: #1c2434;
-    a {
-        color: $white;
-        &:hover {
-            color: scale-color($primary-color, $lightness: 80%);
-            background: scale-color($primary-color, $lightness: 20%);
-        }
-        &:after {
-            border-color: transparent transparent transparent $white!important;
+    nav {
+        background-color: #1c2434;
+        a {
+            color: $white;
+            &:hover {
+                color: scale-color($primary-color, $lightness: 80%);
+                background: scale-color($primary-color, $lightness: 20%);
+            }
+            &:after {
+                border-color: transparent transparent transparent $white!important;
+            }
         }
     }
-}
 }
 
 
@@ -254,29 +254,51 @@ nav {
         }
     }
 
-    // Text viewer
+    // Text viewer - TEI
 
-    .critToLower {
+    .tei-corr {
+
+    }
+
+    .tei-critToLower {
         text-transform: lowercase;
     }
 
-    .critToSup {
+    .tei-critToSup {
         font-size: rem-calc(12);
         vertical-align: super;
     }
 
-    .seg-num {
+    .tei-seg-num {
         font-size: rem-calc(13);
         font-weight: 700;
     }
 
-    sup.note {
-        padding-left: 5px;
-        &:after {
-            content: "\f075";
-            font-family: "FontAwesome";
-            padding-left: 3px;
+    sup {
+        &.tei-note {
+            padding-left: 5px;
+            &:after {
+                content: "\f075";
+                font-family: "FontAwesome";
+                padding-left: 3px;
+            }
         }
+
+        &.tei-gen {
+
+        }
+
+        &.tei-source {
+
+        }
+
+        &.tei-trad {
+
+        }
+    }
+
+    .tei-unclear {
+
     }
 }
 
