@@ -367,8 +367,9 @@ nav {
 
     .tei-unclear {
         &:before {
-            content: "?";
             color: $tertiary-color;
+            content: "\f128";
+            font-family: "FontAwesome";
         }
     }
 }
