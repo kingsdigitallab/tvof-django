@@ -294,7 +294,11 @@ nav {
     }
 
     .tei-corr {
-
+        background-color: scale-color(yellow, $lightness: 50%);
+        &:after {
+            content: "\f24a";
+            font-family: "FontAwesome";
+        }
     }
 
     .tei-critToLower {
