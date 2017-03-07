@@ -18,6 +18,20 @@ def process_to_json(request, kiln_url, template):
     return JsonResponse(params)
 
 
+@gzip_page
+def process(request, kiln_url, template):
+    """Processes a request that needs to be sent to Kiln."""
+    params = _send_to_kiln_and_process_response(request, kiln_url)
+
+    # TODO: temporary hack, will find a more general way to branch processing
+    # later
+    if 'texts/' not in kiln_url:
+        template = 'kiln_page.html'
+
+    return render_to_response(template, params,
+                              context_instance=RequestContext(request))
+
+
 def _send_to_kiln_and_process_response(request, kiln_url):
     # Construct the URL for the request to the Kiln server.
     query_string = request.META.get('QUERY_STRING')
@@ -29,13 +43,23 @@ def _send_to_kiln_and_process_response(request, kiln_url):
 
     # Send the request to Kiln.
     r = requests.get(url)
-    response = r.text.encode('utf-8')
+
+    response = r.text
 
     # Create a new XML tree from the response.
-    root = ET.fromstring(response)
+    root = ET.fromstring(response.encode('utf-8'))
 
     # Parameters to be passed to the template.
     params = {}
+
+    if 'texts/' not in kiln_url:
+        params['title'] = 'Bibliography'
+        # params['content'] = root.findall('.//div[@id="bibliography"]')[0]
+        if root.tag == 'data':
+            root.tag = 'div'
+        params['content'] = root
+        params['content'] = ET.tostring(params['content'])
+        return params
 
     text_els = root.findall('texts/text')
     number_of_texts = len(text_els)
@@ -93,12 +117,3 @@ def _send_to_kiln_and_process_response(request, kiln_url):
                     })
 
     return params
-
-
-@gzip_page
-def process(request, kiln_url, template):
-    """Processes a request that needs to be sent to Kiln."""
-    params = _send_to_kiln_and_process_response(request, kiln_url)
-
-    return render_to_response(template, params,
-                              context_instance=RequestContext(request))
