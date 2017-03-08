@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% block extra_head %}
+    {{ block.super }}
+    
+    {# TODO: temporary, move this to a .scss file #}
+    <style>
+        .hidden { display: none; }
+    </style>
+    
+{% endblock %}
+
+{% block main %}
+    <div id="text-viewer">
+        <div class="text-pane hidden" id="pane-template">
+            pane
+            <div class="controls">
+                controls
+            </div>
+            <div class="content">
+                text
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ block.super }}
+    
+    {# TODO: temporary, move this to a .js file #}
+    <script>
+        $(function() {
+            function Viewer(root, options) {
+                this.root = root;
+                this.options = options;
+                
+                funcio
+            }
+            
+            function Pane(viewer, options) {
+                this.viewer = viewer;
+                this.options = options;
+            }
+            
+            var viewer = Viewer('#text-viewer');
+            viewer.load('Fr_20125/critical/section/588/');
+        });
+    </script>
+{% endblock %}
