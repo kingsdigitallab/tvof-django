@@ -42,7 +42,6 @@ def _send_to_kiln_and_process_response(request, kiln_url):
     url = kiln_base_url + 'backend/' + kiln_url + query_string
 
     # Send the request to Kiln.
-    print url
     r = requests.get(url)
 
     response = r.text
