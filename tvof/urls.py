@@ -13,12 +13,12 @@ from django.views.generic import RedirectView
 admin.autodiscover()
 wagtailsearch_register_signal_handlers()
 
-kiln_path = settings.KILN_CONTEXT_PATH
+kiln_root = settings.KILN_CONTEXT_PATH
 
 urlpatterns = [
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),
-    url('^{path}'.format(path=kiln_path),
+    url('^{path}'.format(path=kiln_root),
         include('kiln.urls')),
 ]
 
@@ -37,15 +37,16 @@ except ImportError:
 # we do it here because Wagtail doesn't allow menu items to link to arbitrary
 # url this is a temporary setting.
 # TODO: use a more general mapping in the future
-if not getattr(settings, 'TVOF_HIDE_TEXTS', False):
-    urlpatterns += [
-        url(r'^histoire-ancienne/?$',
-            RedirectView.as_view(
-                url='%stexts/Fr_20125/semi-diplomatic/' % kiln_path,
-                permanent=False
-            )
-            ),
-    ]
+urlpatterns += [
+    url(r'^{}/?$'.format(wagtail_path),
+        RedirectView.as_view(
+            url='/{}{}'.format(
+                kiln_root, kiln_path),
+            permanent=False
+    )
+    )
+    for wagtail_path, kiln_path in settings.TVOF_WEBPATH_TO_KILN.iteritems()
+]
 
 urlpatterns += [
     url(r'^documents/', include(wagtaildocs_urls)),

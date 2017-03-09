@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block meta_title %}
+    {{ title }}
+{% endblock %}
+
+{% block title %}
+    <h1>{{ title }}</h1>
+{% endblock %}
+
+{% block main %}
+    {{ content|safe }}
+{% endblock %}

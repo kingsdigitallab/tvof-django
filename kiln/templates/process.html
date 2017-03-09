@@ -8,7 +8,7 @@
 <div class="row" id="manuscripts-title">
     {% for t in texts %}
     <div class="large-{{ number_of_columns }} columns">
-        <h1>{{ t.title|safe }} <small>{{ t.version }}</small></h1>
+        <h2>{{ t.title|safe }} <small>{{ t.version }}</small></h2>
     </div>
     {% endfor %}
 </div>
@@ -31,7 +31,7 @@
             </li>
             <li>
                 <a>
-                    {% if number_of_texts > 1 %}Change manuscript to
+                    {% if number_of_texts > 1 %}Change to
                     {% else %}Compare with{% endif %}
                 </a>
                 <ul class="menu">
@@ -58,7 +58,7 @@
 {% block footer_scripts %}
 <script>
     $('*[data-corresp]').hover(function() {
-        $(this).toggleClass('show-the-finger underline');
+        $(this).toggleClass('cursor-pointer underline');
     });
 
     $('*[data-corresp]').click(function() {

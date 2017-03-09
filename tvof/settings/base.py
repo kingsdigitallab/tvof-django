@@ -22,7 +22,10 @@ PROJECT_TITLE = 'Change the title in the settings'
 # https://docs.djangoproject.com/en/dev/ref/settings/#id6
 # -----------------------------------------------------------------------------
 
-ADMINS = ()
+ADMINS = (
+    # ('Miguel Vieira', 'jose.m.vieira@kcl.ac.uk'),
+    ('Geoffroy Noel', 'geoffroy.noel@kcl.ac.uk'),
+)
 MANAGERS = ADMINS
 
 ALLOWED_HOSTS = []
@@ -123,11 +126,15 @@ LOGGING = {
             'level': 'DEBUG',
             'class': 'logging.StreamHandler',
             'formatter': 'simple'
+        },
+        'mail_admins': {
+            'level': 'ERROR',
+            'class': 'django.utils.log.AdminEmailHandler'
         }
     },
     'loggers': {
         'django': {
-            'handlers': ['file'],
+            'handlers': ['file', 'mail_admins'],
             'level': LOGGING_LEVEL,
             'propagate': True
         },
@@ -235,6 +242,20 @@ if not os.path.exists(MEDIA_ROOT):
     os.makedirs(MEDIA_ROOT)
 
 # -----------------------------------------------------------------------------
+# EMAIL SETTINGS
+# -----------------------------------------------------------------------------
+
+EMAIL_HOST = 'smtp.kcl.ac.uk'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_USE_TLS = False
+DEFAULT_FROM_EMAIL = 'noreply@kcl.ac.uk'
+# Sender of error messages to ADMINS and MANAGERS
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+EMAIL_SUBJECT_PREFIX = '[Django {}] '.format(PROJECT_NAME)
+
+# -----------------------------------------------------------------------------
 # Sessions
 # https://docs.djangoproject.com/en/1.8/ref/settings/#sessions
 # -----------------------------------------------------------------------------
@@ -335,3 +356,16 @@ GA_ID = ''
 WAGTAIL_SITE_NAME = 'TVOF'
 
 WAGTAIL_APPEND_SLASH = False
+
+# -----------------------------------------------------------------------------
+# TVOF
+# -----------------------------------------------------------------------------
+
+TVOF_URL_TEXT = 'histoire-ancienne'
+# The relative web path to some dynamic pages (i.e. not served by wagtail)
+TVOF_WEBPATH_TO_KILN = {
+    '{}/edition'.format(TVOF_URL_TEXT):
+        'texts/Fr20125/semi-diplomatic/',
+    '{}/bibliography'.format(TVOF_URL_TEXT):
+        'bibliography/',
+}
