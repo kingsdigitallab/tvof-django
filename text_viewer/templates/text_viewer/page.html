@@ -1,18 +1,25 @@
 {% extends "base.html" %}
+{% load staticfiles compress require cms_tags %}
 
 {% block extra_head %}
     {{ block.super }}
     
     {# TODO: temporary, move this to a .scss file #}
     <style>
-        .hidden { display: none; }
+        #pane-template { display: none; }
     </style>
     
 {% endblock %}
 
 {% block main %}
-    <div id="text-viewer">
-        <div class="text-pane hidden" id="pane-template">
+    <div id="text-panes">
+        <div class="text-pane layout-center">
+        </div>
+
+        <div class="text-pane layout-east">
+        </div>
+    
+        <div class="text-pane" id="pane-template">
             pane
             <div class="controls">
                 controls
@@ -24,26 +31,8 @@
     </div>
 {% endblock %}
 
-{% block scripts %}
+{% block extra_js %}
     {{ block.super }}
-    
-    {# TODO: temporary, move this to a .js file #}
-    <script>
-        $(function() {
-            function Viewer(root, options) {
-                this.root = root;
-                this.options = options;
-                
-                funcio
-            }
-            
-            function Pane(viewer, options) {
-                this.viewer = viewer;
-                this.options = options;
-            }
-            
-            var viewer = Viewer('#text-viewer');
-            viewer.load('Fr_20125/critical/section/588/');
-        });
-    </script>
+    {# TODO: load this with require.js #}
+    <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
 {% endblock %}
