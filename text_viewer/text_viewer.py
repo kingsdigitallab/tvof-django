@@ -13,13 +13,8 @@ class TextViewerAPI(object):
         pass
 
     def add_error(self, code, message):
-        print 'e1'
         error = {'code': code, 'message': message}
-        print 'e2'
-        print self.errors
-        print self
-        self.errors.push(error)
-        print 'e3'
+        self.errors.append(error)
 
     def process_request(self, request, path):
         self.response = {}
@@ -30,9 +25,12 @@ class TextViewerAPI(object):
 
         if not self.requested_path[0]:
             self.request_documents()
-
-        if len(self.requested_path) > 1:
-            self.request_view()
+        elif len(self.requested_path) == 1:
+            self.request_document()
+        elif len(self.requested_path) == 4:
+            self.request_chunk()
+        else:
+            self.add_error('invalid_call', 'Invalid API call')
 
     def request_documents(self):
         ''' Add the list of all documents to self.response['documents']
@@ -49,7 +47,7 @@ class TextViewerAPI(object):
 
         self.response = {'documents': documents}
 
-    def request_view(self):
+    def request_chunk(self):
         '''
         document = self.requested_path[0]
         view = self.requested_path[1]

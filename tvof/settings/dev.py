@@ -14,6 +14,12 @@ DATABASES = {
     },
 }
 
+# Disable email notification for errors
+# because dev is used for local installs
+# which may not have an smtp set up
+# and will make things hang on error.
+ADMINS = []
+
 LOGGING_LEVEL = logging.DEBUG
 
 LOGGING['loggers']['tvof']['level'] = LOGGING_LEVEL
