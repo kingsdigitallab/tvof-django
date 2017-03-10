@@ -40,7 +40,8 @@ class TextViewerAPITvof(TextViewerAPI):
            any location in any view of the document.
         '''
         # TODO: improve kiln pipeline for this call
-        xml = self.fetch_xml_from_kiln(self.requested_path[0], 'critical')
+        document_slug = self.requested_path[0]
+        xml = self.fetch_xml_from_kiln(document_slug, 'critical')
 
         views = []
         for version in xml.findall('.//versions/version'):
@@ -68,7 +69,9 @@ class TextViewerAPITvof(TextViewerAPI):
             views.append(view)
 
         self.response = {
-            'views': views
+            'slug': document_slug,
+            'label': document_slug,
+            'views': views,
         }
 
     def get_location_info_from_xml(self, xml, location_type):

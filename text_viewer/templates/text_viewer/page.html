@@ -6,26 +6,41 @@
     
     {# TODO: temporary, move this to a .scss file #}
     <style>
-        #text-pane-template { display: none; }
+        #text-pane-template { 
+            display: none;
+        }
+        .text-pane {
+            border: 1px solid grey; 
+        }
     </style>
     
 {% endblock %}
 
 {% block main %}
-    <div id="text-panes">
-        <div id="text-pane-center" class="text-pane">
-            CENTER
-        </div>
-        <div id="text-pane-east" class="text-pane">
-            EAST
-        </div>
-        {% verbatim %}
-        <div id="text-pane-template">
-            PANE TEMPLATE
-            {{ pane_slug }}
-        </div>
-        {% endverbatim %}
+    <div id="text-pane-center" class="text-pane large-6 columns">
+        CENTER
     </div>
+    <div id="text-pane-east" class="text-pane large-6 columns">
+        EAST
+    </div>
+    {% verbatim %}
+        <div id="text-pane-template">
+            <div class="controls">
+                {{ document.label }} 
+                > 
+                <select name="view" v-model="view.slug">
+                    <option v-for="view in views" v-bind:value="view.slug">
+                        {{ view.label }}
+                    </option>
+                </select> 
+                > 
+                {{ location_type }}
+                > 
+                {{ location }}
+            </div>
+            <div class="text-chunk" v-html="chunk"></div>
+        </div>
+    {% endverbatim %}
 {% endblock %}
 
 {% block extra_js %}
