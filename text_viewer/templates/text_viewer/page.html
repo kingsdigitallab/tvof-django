@@ -6,33 +6,31 @@
     
     {# TODO: temporary, move this to a .scss file #}
     <style>
-        #pane-template { display: none; }
+        #text-pane-template { display: none; }
     </style>
     
 {% endblock %}
 
 {% block main %}
     <div id="text-panes">
-        <div class="text-pane layout-center">
+        <div id="text-pane-center" class="text-pane">
+            CENTER
         </div>
-
-        <div class="text-pane layout-east">
+        <div id="text-pane-east" class="text-pane">
+            EAST
         </div>
-    
-        <div class="text-pane" id="pane-template">
-            pane
-            <div class="controls">
-                controls
-            </div>
-            <div class="content">
-                text
-            </div>
+        {% verbatim %}
+        <div id="text-pane-template">
+            PANE TEMPLATE
+            {{ pane_slug }}
         </div>
+        {% endverbatim %}
     </div>
 {% endblock %}
 
 {% block extra_js %}
     {{ block.super }}
     {# TODO: load this with require.js #}
+    <script src="{% static 'vendor/vue/vue.js' %}"></script>
     <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
 {% endblock %}
