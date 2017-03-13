@@ -24,14 +24,18 @@ class TextViewerAPITvof(TextViewerAPI):
 
     def request_documents(self):
         # TODO: kiln pipeline for returning all texts under a path
-        documents = [
+        self.response = {'documents': self.fetch_documents()}
+
+    def fetch_documents(self):
+        # TODO: kiln pipeline for returning all texts under a path
+        ret = [
             {
                 'slug': 'Fr20125',
                 'label': 'Fr20125',
             },
         ]
 
-        self.response = {'documents': documents}
+        return ret
 
     def request_document(self):
         '''Returns all the views for a given document
@@ -42,6 +46,10 @@ class TextViewerAPITvof(TextViewerAPI):
         '''
         # TODO: improve kiln pipeline for this call
         document_slug = self.requested_path[0]
+
+        if not document_slug:
+            document_slug = self.request_documents()[0]['slug']
+
         xml = self.fetch_xml_from_kiln(document_slug, 'critical')
 
         views = []
@@ -109,14 +117,28 @@ class TextViewerAPITvof(TextViewerAPI):
         location_type = path.pop() if path else ''
         location = path.pop() if path else ''
 
+        if document in ['default', '']:
+            document = self.fetch_documents()[0]['slug']
+        if view in ['default', '']:
+            # TODO: get it from the xml
+            view = 'semi-diplomatic'
+
         xml = self.fetch_xml_from_kiln(document, view)
 
         chunk = None
+
+        if location_type in ['default', '']:
+            # TODO: get it from the xml
+            location_type = 'section'
 
         # extract chunk
         if location_type == 'section':
             if location == 'all':
                 chunk = xml.find('content')
+            if location == 'default':
+                xpath = ur".//div[@class='tei body']/div[@id]"
+                chunk = xml.find(xpath)
+                location = unicode(int(chunk.attrib['id'][-5:]))
             else:
                 xpath = ur".//div[@id='edfr20125_%s']" % location.zfill(5)
                 chunk = xml.find(xpath)

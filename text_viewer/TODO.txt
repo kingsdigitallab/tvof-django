@@ -2,7 +2,7 @@ TODO
 
 SERVER
     . error management
-    !! partial path resolution & defaults
+    [DONE] partial path resolution & defaults
 
 CLIENT
     [DONE] show only chunk
@@ -10,21 +10,21 @@ CLIENT
     [DONE] add location selector
     [DONE] change location
     [DONE] side by side view
-    (). add view selector
-    (). change view
-    . prev, next arrows
+    [DONE] add view selector
+    [DONE] change view
     . one or two panes
-    . reflect changes in URL
     . sync locations
+    . prev, next arrows
+    . reflect changes in URL
     . boxing?
     . range of locations (+x-y)
     . narrower drop downs
 
 NON-FUNCTIONAL
-    ! remove excessive number of loading at startup
-        . watch
-        . document call, only if doc is different
-    ! remove blocking call to API
+    [DONE] remove excessive number of loading at startup
+        [DONE] watch
+        [DONE] document call, only if doc is different
+    [DONE] remove blocking call to API
     . error managements
     . production version of vue.js
     . use require.js
