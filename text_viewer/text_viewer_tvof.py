@@ -17,6 +17,7 @@ class TextViewerAPITvof(TextViewerAPI):
     location_types = [
         {
             'slug': 'section',
+            'label': 'Section',
             'xpath': './/div[@class="tei body"]/div[@id]',
         }
     ]
@@ -48,12 +49,12 @@ class TextViewerAPITvof(TextViewerAPI):
             slug = version.attrib.get('name', 'undefined')
             view = {
                 'slug': slug,
+                'label': slug,
             }
 
             # add location types and locations
             view['location_types'] = []
-            view_xml = self.fetch_xml_from_kiln(
-                self.requested_path[0], slug)
+            view_xml = self.fetch_xml_from_kiln(self.requested_path[0], slug)
             for location_type in self.location_types:
                 locations = []
                 for location_xml in view_xml.findall(location_type['xpath']):
@@ -62,6 +63,7 @@ class TextViewerAPITvof(TextViewerAPI):
                     locations.append(location)
                 location_type_info = {
                     'slug': location_type['slug'],
+                    'label': location_type['label'],
                     'locations': locations,
                 }
                 view['location_types'].append(location_type_info)

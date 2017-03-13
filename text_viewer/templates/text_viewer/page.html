@@ -34,9 +34,13 @@
                     </option>
                 </select> 
                 > 
-                {{ location_type }}
+                {{ location_type.label }}
                 > 
-                {{ location }}
+                <select name="location" v-model="location.slug">
+                    <option v-for="location in locations" v-bind:value="location.slug" v-html="location.label_long">
+                        
+                    </option>
+                </select> 
             </div>
             <div class="text-chunk" v-html="chunk"></div>
         </div>
