@@ -52,4 +52,47 @@
     {# TODO: load this with require.js #}
     <script src="{% static 'vendor/vue/vue.js' %}"></script>
     <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
+    
+    <script>
+        $('*[data-corresp]').hover(function() {
+            $(this).toggleClass('cursor-pointer underline');
+        });
+    
+        $('*[data-corresp]').click(function() {
+            var $this = $(this);
+            var $corresps = $this.data('corresp').split(' ');
+            var $target = null;
+    
+            $('.highlight').toggleClass('highlight');
+    
+            $this.toggleClass('highlight');
+    
+            $corresps.forEach(function(value) {
+                var $item = $('' + value);
+    
+                if ($item.length == 0) {
+                    $corresps.pop(value);
+                }
+            });
+    
+            if ($corresps.length > 1) {
+                $target = $('' + $corresps[0]);
+                $target.nextUntil('' + $corresps[1]).andSelf().next($corresps[1]).andSelf().toggleClass('highlight');
+            } else {
+                $target = $('' + $corresps[0]);
+                $target.toggleClass('highlight');
+            }
+    
+            if ($target.length) {
+                var thisTop = $this.offset().top;
+                var targetTop = $target.offset().top;
+                var top = thisTop - Math.abs(targetTop - thisTop);
+    
+                $('html, body').animate({
+                    scrollTop: top
+                }, 1000);
+            }
+        });
+    </script>
+    
 {% endblock %}
