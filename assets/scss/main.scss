@@ -263,6 +263,12 @@ nav {
         }
     }
 
+    // Bibliography - TEI
+
+    .tei-bibl:target {
+        background-color: #ece4b7;
+    }
+
     // Text viewer - TEI
 
     #manuscripts-content,

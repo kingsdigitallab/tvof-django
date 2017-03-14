@@ -88,7 +88,8 @@ def _send_to_kiln_and_process_response(request, kiln_url):
             params['texts'][idx]['title'] = text_el.find('title').text
             params['texts'][idx]['version'] = text_el.find('version').text
             params['texts'][idx]['content'] = ET.tostring(
-                text_el.find('content'))
+                get_processed_content(text_el.find('content'))
+            )
 
             params['texts'][idx]['toc'] = []
             toc_els = text_el.findall('toc/item')
@@ -134,5 +135,23 @@ def get_url_change_to(kiln_url, idx, manuscript_name, version_name):
     parts[change_idx: change_idx + 2] = [manuscript_name, version_name]
     ret = '/' + \
         settings.KILN_CONTEXT_PATH.strip('/') + '/' + '/'.join(parts) + '/'
-    print ret
+    return ret
+
+
+def get_processed_content(xml):
+    '''translate the hyperlinks to the biblio entries
+    <a href="Montorsi_2016a">Montorsi (2016a)</a>
+    =>
+    <a href="/k/bibliography/#Montorsi_2016a">Montorsi (2016a)</a>
+    '''
+    ret = xml
+
+    # translate the hyperlinks to the biblio entries
+    for link in xml.findall('.//a[@href]'):
+        link.attrib['href'] = ur'/{}/bibliography/#{}'.format(
+            settings.KILN_CONTEXT_PATH.strip('/'),
+            link.attrib['href']
+        )
+        link.attrib['target'] = '_blank'
+
     return ret
