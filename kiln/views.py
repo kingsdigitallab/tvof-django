@@ -18,6 +18,20 @@ def process_to_json(request, kiln_url, template):
     return JsonResponse(params)
 
 
+@gzip_page
+def process(request, kiln_url, template):
+    """Processes a request that needs to be sent to Kiln."""
+    params = _send_to_kiln_and_process_response(request, kiln_url)
+
+    # TODO: temporary hack, will find a more general way to branch processing
+    # later
+    if 'texts/' not in kiln_url:
+        template = 'kiln_page.html'
+
+    return render_to_response(template, params,
+                              context_instance=RequestContext(request))
+
+
 def _send_to_kiln_and_process_response(request, kiln_url):
     # Construct the URL for the request to the Kiln server.
     query_string = request.META.get('QUERY_STRING')
@@ -29,13 +43,23 @@ def _send_to_kiln_and_process_response(request, kiln_url):
 
     # Send the request to Kiln.
     r = requests.get(url)
-    response = r.text.encode('utf-8')
+
+    response = r.text
 
     # Create a new XML tree from the response.
-    root = ET.fromstring(response)
+    root = ET.fromstring(response.encode('utf-8'))
 
     # Parameters to be passed to the template.
     params = {}
+
+    if 'texts/' not in kiln_url:
+        params['title'] = 'Bibliography'
+        # params['content'] = root.findall('.//div[@id="bibliography"]')[0]
+        if root.tag == 'data':
+            root.tag = 'div'
+        params['content'] = root
+        params['content'] = ET.tostring(params['content'])
+        return params
 
     text_els = root.findall('texts/text')
     number_of_texts = len(text_els)
@@ -64,7 +88,8 @@ def _send_to_kiln_and_process_response(request, kiln_url):
             params['texts'][idx]['title'] = text_el.find('title').text
             params['texts'][idx]['version'] = text_el.find('version').text
             params['texts'][idx]['content'] = ET.tostring(
-                text_el.find('content'))
+                get_processed_content(text_el.find('content'))
+            )
 
             params['texts'][idx]['toc'] = []
             toc_els = text_el.findall('toc/item')
@@ -86,19 +111,47 @@ def _send_to_kiln_and_process_response(request, kiln_url):
                     current_url[idx * 2 + url_offset] = manuscript_name
                     current_url[idx * 2 + url_offset + 1] = version_name
 
+                    url_change_to = get_url_change_to(
+                        kiln_url, idx, manuscript_name, version_name)
+
                     params['texts'][idx]['manuscripts'].append({
                         'name': manuscript_name + ': ' + version_name,
                         'active': version_el.get('active', False),
-                        'url': '/' + '/'.join(current_url) + '/'
+                        'url_change_to': url_change_to,
+                        'url_compare_with': '/' + '/'.join(current_url) + '/',
                     })
 
     return params
 
 
-@gzip_page
-def process(request, kiln_url, template):
-    """Processes a request that needs to be sent to Kiln."""
-    params = _send_to_kiln_and_process_response(request, kiln_url)
+def get_url_change_to(kiln_url, idx, manuscript_name, version_name):
+    '''Produce a 'change-to' URL to switch a view to another version
+        idx= 0 for first view, 1 for second view
+        E.g. texts/Fr20125/semi-diplomatic/Fr20125/interpretive/, 0, MS1, V1
+        => /k/texts/M1/V1/Fr20125/interpretive/
+    '''
+    parts = kiln_url.strip('/').split('/')
+    change_idx = (idx * 2) + 1
+    parts[change_idx: change_idx + 2] = [manuscript_name, version_name]
+    ret = '/' + \
+        settings.KILN_CONTEXT_PATH.strip('/') + '/' + '/'.join(parts) + '/'
+    return ret
 
-    return render_to_response(template, params,
-                              context_instance=RequestContext(request))
+
+def get_processed_content(xml):
+    '''translate the hyperlinks to the biblio entries
+    <a href="Montorsi_2016a">Montorsi (2016a)</a>
+    =>
+    <a href="/k/bibliography/#Montorsi_2016a">Montorsi (2016a)</a>
+    '''
+    ret = xml
+
+    # translate the hyperlinks to the biblio entries
+    for link in xml.findall('.//a[@href]'):
+        link.attrib['href'] = ur'/{}/bibliography/#{}'.format(
+            settings.KILN_CONTEXT_PATH.strip('/'),
+            link.attrib['href']
+        )
+        link.attrib['target'] = '_blank'
+
+    return ret

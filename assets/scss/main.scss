@@ -43,7 +43,7 @@ Typography
 // Colours and text styles
 
 .orange {
-    color: orange !important;
+    color: $dark-orange !important;
 }
 
 .red {
@@ -263,6 +263,12 @@ nav {
         }
     }
 
+    // Bibliography - TEI
+
+    .tei-bibl:target {
+        background-color: #ece4b7;
+    }
+
     // Text viewer - TEI
 
     #manuscripts-content,
@@ -293,12 +299,16 @@ nav {
         color: teal;
     }
 
-    .tei-corr {
+    .tei-corr-popup {
         background-color: scale-color(yellow, $lightness: 50%);
         &:after {
             content: "\f24a";
             font-family: "FontAwesome";
         }
+    }
+
+    .tei-corr-text {
+        color: $dark-orange;
     }
 
     .tei-critToLower {
@@ -308,6 +318,10 @@ nav {
     .tei-critToSup {
         font-size: rem-calc(12);
         vertical-align: super;
+    }
+
+    .tei-critToUpper {
+        text-transform: uppercase;
     }
 
     .tei-del {
@@ -336,11 +350,11 @@ nav {
         &.tei-gen,
         &.tei-source,
         &.tei-trad {
-            padding-left: 5px;
+            // padding-left: 5px;
             &:after {
                 content: "\f075";
                 font-family: "FontAwesome";
-                padding-left: 3px;
+                // padding-left: 3px;
             }
         }
 

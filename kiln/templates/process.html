@@ -31,17 +31,30 @@
             </li>
             <li>
                 <a>
-                    {% if number_of_texts > 1 %}Change manuscript to
-                    {% else %}Compare with{% endif %}
+                    Change to
                 </a>
                 <ul class="menu">
                     {% for m in t.manuscripts %}
                     <li {% if m.active %}class="active"{% endif %}>
-                        <a href="{{ m.url }}">{{ m.name }}</a>
+                        <a href="{{ m.url_change_to }}">{{ m.name }}</a>
                     </li>
                     {% endfor %}
                 </ul>
             </li>
+            {% if number_of_texts < 2 %}
+                <li>
+                    <a>
+                        Compare with
+                    </a>
+                    <ul class="menu">
+                        {% for m in t.manuscripts %}
+                            <li {% if m.active %}class="active"{% endif %}>
+                                <a href="{{ m.url_compare_with }}">{{ m.name }}</a>
+                            </li>
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endif %}
         </ul>
     </div>
     {% endfor %}
