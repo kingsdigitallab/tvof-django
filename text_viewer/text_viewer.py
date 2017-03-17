@@ -6,6 +6,7 @@ class TextViewerAPI(object):
 
     API: /document/view/location_type/location
     '''
+    part_levels = ['document', 'view', 'location_type', 'location']
 
     def __init__(self):
         pass
@@ -19,16 +20,39 @@ class TextViewerAPI(object):
         self.errors = []
 
         self.request = request
-        self.requested_path = path.strip('/').split('/')
+        self.requested_address = path.strip('/')
 
-        if not self.requested_path[0]:
+        parts = self.get_address_parts()
+        level = parts['level']
+
+        if level == 'root':
             self.request_documents()
-        elif len(self.requested_path) == 1:
-            self.request_document()
-        elif len(self.requested_path) == 4:
-            self.request_chunk()
+        elif level == 'document':
+            self.request_document(parts['document'])
+        elif level == 'location':
+            synced_with = request.GET.get('sw')
+            if synced_with:
+                self.request_synced_chunk(parts, synced_with=synced_with)
+            else:
+                self.request_chunk(parts)
         else:
             self.add_error('invalid_call', 'Invalid API call')
+
+    def get_requested_address(self):
+        return self.requested_address
+
+    def get_address_parts(self, address=None):
+        parts = (address or self.requested_address).split('/')[::-1]
+        ret = {'level': 'root'}
+        for level in self.part_levels:
+            ret[level] = parts.pop() if parts else ''
+            if ret[level]:
+                ret['level'] = level
+
+        return ret
+
+    def get_list_from_address_parts(self, parts):
+        return [parts[k] for k in self.part_levels]
 
     def request_documents(self):
         ''' Add the list of all documents to self.response['documents']
@@ -45,7 +69,7 @@ class TextViewerAPI(object):
 
         self.response = {'documents': documents}
 
-    def request_chunk(self):
+    def request_chunk(self, address_parts):
         '''
         document = self.requested_path[0]
         view = self.requested_path[1]
@@ -53,6 +77,22 @@ class TextViewerAPI(object):
         location_type = 'whole'
         location = ''
         '''
+
+    def request_synced_chunk(self, address_parts=None, synced_with=None):
+        # http://localhost:8000/textviewer/api/Fr20125/semi-diplomatic/synced/592?jx=1&sw=Fr20125/semi-diplomatic/interpretive/section/588
+        # =>
+        # Fr20125/semi-diplomatic/ + section/588
+
+        # TODO: resolution of the correspondance should be done in the subclass
+        # here we do a default one, mixing both addresses
+        parts_synced = self.get_address_parts(synced_with)
+        parts = {k: (v if k not in ['location_type', 'location']
+                     else parts_synced[k])
+                 for k, v in address_parts.iteritems()}
+
+        print parts
+
+        return self.request_chunk(parts)
 
     def get_response_json(self):
         from django.http import JsonResponse
