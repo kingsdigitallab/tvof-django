@@ -179,7 +179,6 @@
                     }]
                 }]
             };
-            self.renderAddresses();
             
             if (1) {
                 // let's make a new request about this document
@@ -191,6 +190,8 @@
                 }, null, null, false);
             }
         }
+
+        self.renderAddresses();
     }
 
     // Update the address of the loaded chunk in self.view
@@ -319,30 +320,57 @@
                 'location.slug': function(val) {
                     pane.changeAddressPart('location', val);
                 }
-            }
+            },
+            methods: {
+                onClickView: function(view) {
+                    pane.changeAddressPart('view', view);
+                }
+            },
         });
     }
     
+    // customisation
+    
+    function on_chunk_loaded(vue) {
+        
+    }
+
     // ===============================================================
     // Initialisation
     // TODO: move this out
 
     $(function() {
+        Vue.directive('f-dropdown', {
+            bind: function(el) {
+                console.log('bind');
+                Vue.nextTick(function () {
+                    console.log('h2');
+                    $(el).addClass('dropdown menu');
+                    //$(el).attr('data-dropdown-menu', '');
+                    console.log('h3');
+                    new Foundation.DropdownMenu($(el));
+                    console.log('h4');
+                })
+            },
+            unbind: function(el) {
+                console.log('unbind');
+                $(el).foundation.destroy();
+            },
+        });
+        
         var options = {
             'on_create_pane': on_create_pane,
+            'on_chunk_loaded': on_chunk_loaded,
         };
         var viewer = new Viewer(options);
         // viewer.load('Fr_20125/critical/section/588/');
         
         console.log(viewer);
+        
+        $('section.main').on('click', 'div[data-corresp]', function() {
+            $('section.main div[data-corresp]').removeClass('highlight');
+            $(this).addClass('highlight');
+        });
     });
     
 }( window.TextViewer = window.TextViewer || {}, jQuery ));
-
-/*
- *     Pane.prototype.requestView = function(view_slug) {
-        var address = this.view.document.slug + '/' + view_slug + '/' + this.view.location_type + '/' + this.view.location;
-        this.requestAddress(address);
-    }
-
-*/

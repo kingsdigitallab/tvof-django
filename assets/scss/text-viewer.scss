@@ -1,3 +1,37 @@
+/* NEW Text Viewer */
+
+#text-pane-template { 
+    display: none;
+}
+
+.text-pane {
+    h2.doc-label {
+        ul.dropdown.menu {
+            font-size: 80%;
+            display: inline-block;
+            a {
+                /* color: #8a8a8a; */
+            }
+            > li > a {
+                color: #8a8a8a;
+                line-height: 0;
+            }
+        }
+    }
+    
+    .controls {
+    }
+}
+
+.text-chunk {
+    div[data-corresp]:hover {
+        cursor: pointer;
+        text-decoration-color: scale-color($primary-color, $lightness: 50%);
+    }
+}
+
+/* Legacy Text Viewer */
+
 .highlight {
     background-color: #ece4b7;
 }
@@ -10,3 +44,4 @@
     // text-decoration: underline;
     text-decoration-color: scale-color($primary-color, $lightness: 50%);
 }
+

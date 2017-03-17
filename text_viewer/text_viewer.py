@@ -1,5 +1,3 @@
-
-
 class TextViewerAPI(object):
     '''
     Text Viewer Web API Skeleton

@@ -1,19 +1,7 @@
 {% extends "base.html" %}
 {% load staticfiles compress require cms_tags %}
 
-{% block extra_head %}
-    {{ block.super }}
-    
-    {# TODO: temporary, move this to a .scss file #}
-    <style>
-        #text-pane-template { 
-            display: none;
-        }
-        .text-pane {
-            border: 1px solid grey; 
-        }
-    </style>
-    
+{% block title %}
 {% endblock %}
 
 {% block main %}
@@ -23,19 +11,24 @@
     <div id="text-pane-east" class="text-pane large-6 columns">
         EAST
     </div>
+
     {% verbatim %}
         <div id="text-pane-template">
             <div class="controls">
-                {{ document.label }} 
-                > 
-                <select name="view" v-model="view.slug">
-                    <option v-for="view in views" v-bind:value="view.slug">
-                        {{ view.label }}
-                    </option>
-                </select> 
-                > 
-                {{ location_type.label }}
-                > 
+                <h2 class="doc-label">
+                    {{ document.label }}
+                    <ul v-f-dropdown>
+                        <li class="is-dropdown-submenu-parent">
+                            <a>{{ view.label }}</a>
+                            <ul class="menu">
+                                <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                    <a v-on:click.prevent="onClickView(aview.slug)" href="#">{{ aview.label }}</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </h2>
+                
                 <select name="location" v-model="location.slug">
                     <option v-for="location in locations" v-bind:value="location.slug" v-html="location.label_long">
                         
@@ -45,54 +38,20 @@
             <div class="text-chunk" v-html="chunk"></div>
         </div>
     {% endverbatim %}
+
+    {% comment %}
+        <select name="view" v-model="view.slug">
+            <option v-for="view in views" v-bind:value="view.slug">
+                {{ view.label }}
+            </option>
+        </select> 
+    {% endcomment %}
+    
 {% endblock %}
 
-{% block extra_js %}
+{% block footer_scripts %}
     {{ block.super }}
-    {# TODO: load this with require.js #}
+    {# TODO: load this with require.js ? #}
     <script src="{% static 'vendor/vue/vue.js' %}"></script>
     <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
-    
-    <script>
-        $('*[data-corresp]').hover(function() {
-            $(this).toggleClass('cursor-pointer underline');
-        });
-    
-        $('*[data-corresp]').click(function() {
-            var $this = $(this);
-            var $corresps = $this.data('corresp').split(' ');
-            var $target = null;
-    
-            $('.highlight').toggleClass('highlight');
-    
-            $this.toggleClass('highlight');
-    
-            $corresps.forEach(function(value) {
-                var $item = $('' + value);
-    
-                if ($item.length == 0) {
-                    $corresps.pop(value);
-                }
-            });
-    
-            if ($corresps.length > 1) {
-                $target = $('' + $corresps[0]);
-                $target.nextUntil('' + $corresps[1]).andSelf().next($corresps[1]).andSelf().toggleClass('highlight');
-            } else {
-                $target = $('' + $corresps[0]);
-                $target.toggleClass('highlight');
-            }
-    
-            if ($target.length) {
-                var thisTop = $this.offset().top;
-                var targetTop = $target.offset().top;
-                var top = thisTop - Math.abs(targetTop - thisTop);
-    
-                $('html, body').animate({
-                    scrollTop: top
-                }, 1000);
-            }
-        });
-    </script>
-    
 {% endblock %}
