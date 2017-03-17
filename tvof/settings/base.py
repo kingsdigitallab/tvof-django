@@ -88,6 +88,7 @@ INSTALLED_APPS = (
 
 INSTALLED_APPS += (
     # your project apps here
+    'text_viewer',
     'kiln',
     'tvof',
 )

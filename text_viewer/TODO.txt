@@ -1,0 +1,41 @@
+TODO
+
+SERVER
+    . error management
+    [DONE] partial path resolution & defaults
+
+CLIENT
+    [DONE] show only chunk
+    [DONE] add path: doc / view/ location
+    [DONE] add location selector
+    [DONE] change location
+    [DONE] side by side view
+    [DONE] add view selector
+    [DONE] change view
+    . one or two panes
+    . sync locations
+    . prev, next arrows
+    . reflect changes in URL
+    . boxing?
+    . range of locations (+x-y)
+    . narrower drop downs
+
+NON-FUNCTIONAL
+    [DONE] remove excessive number of loading at startup
+        [DONE] watch
+        [DONE] document call, only if doc is different
+    [DONE] remove blocking call to API
+    . error managements
+    . production version of vue.js
+    . use require.js
+    . externalise js and css
+
+Kiln exposing:
+
+    the list of documents:
+         http://192.168.33.1:9999/text/
+    the metadata about a document:
+        http://192.168.33.1:9999/internal/metadata/files.xml
+        see main.xmap and internal.xmap
+        not working, but should
+        
