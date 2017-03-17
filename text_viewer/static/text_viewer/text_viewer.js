@@ -20,13 +20,23 @@
         this.createPanesFromQueryString();
     }
     
+    Viewer.prototype.onPaneAddressChanged = function(pane) {
+        for (var k in this.panes) {
+            if (this.panes.hasOwnProperty(k)) {
+                if (this.panes[k] !== pane) {
+                    this.panes[k].syncWith(pane.address);
+                }
+            }
+        }
+    }
+    
     Viewer.prototype.updateQueryString = function() {
         if (history.pushState) {
             var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?';
             for (var k in this.panes) {
                 if (this.panes.hasOwnProperty(k)) {
                     newurl += k + '=' + this.panes[k].address;
-                    newurl += '&'
+                    newurl += '&';
                 }
             }
             window.history.pushState({path:newurl},'',newurl);
@@ -53,6 +63,23 @@
         });
     };
     
+    Viewer.prototype.getSyncedWithAddress = function(pane) {
+        ret = '';
+        
+        for (var k in this.panes) {
+            if (this.panes.hasOwnProperty(k)) {
+                if (this.panes[k] !== pane) {
+                    // TODO: synced with a specific pane rather than first other
+                    // one we find.
+                    ret = this.panes[k].address;
+                    break;
+                }
+            }
+        }
+        
+        return ret;
+    }
+    
     /*****************************************************
      * Pane
      */
@@ -65,7 +92,7 @@
             pane_slug: slug,
             
             view: 'critical',
-            views: 'critical',
+            views: ['critical'],
             
             location_type: 'location',
             location_types: ['1', '2'],
@@ -80,6 +107,7 @@
         this.panes = panes;
         this.options = options;
         this.address = null;
+        this.address_requested = '';
         this.addresses = {};
         
         this.init();
@@ -90,6 +118,17 @@
         // self.options.query_string = "Fr_20125/semi-diplomatic/"
         this.requestAddress(this.options.query_string);
     };
+    
+    Pane.prototype.isSynced = function() {
+        return (~this.address_requested.indexOf('synced'));
+    }
+    
+    Pane.prototype.syncWith = function(address) {
+        if (this.isSynced()) {
+            // todo: sync with that specific address
+            this.changeAddressPart('location_type', 'synced');
+        }
+    }
 
     Pane.prototype.getAddressParts = function(address) {
         address = address || this.address || '';
@@ -110,7 +149,7 @@
     }
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
-        var parts = this.getAddressParts();
+        var parts = this.getAddressParts(this.address_requested);
         parts[part_name] = value;
         return this.requestAddress(this.getAddressFromParts(parts));
     }
@@ -125,6 +164,7 @@
         // 2 get initial chunk
         var url = this.panes.api_url + this.getAddressFromParts(parts);
         var on_success = function(data, jqXHR, textStatus) {
+            self.address_requested = address;
             self.onRequestSuccessful(data, jqXHR, textStatus);
         };
         var on_complete = function(jqXHR, textStatus) {
@@ -132,7 +172,15 @@
         };
 
         this.view.errors = [];
-        call_api(url, on_success, on_complete);
+        var data = null;
+        
+        if (parts.location_type == 'synced') {
+            data = {
+               'sw': this.panes.getSyncedWithAddress(this)
+            }
+        }
+        
+        call_api(url, on_success, on_complete, data);
     }
 
     Pane.prototype.onRequestSuccessful = function(response, textStatus, jqXHR) {
@@ -223,9 +271,14 @@
                 // location_types
                 self.view.location_types = [];
                 self.view.locations = [];
+                
+                var user_location_type = self.isSynced() ? 'synced': parts.location_type;
+                
                 aview.location_types.map(function(location_type) {
                     self.view.location_types.push(self.getPartMeta(location_type));
-                    if (location_type.slug == parts.location_type) {
+                    
+                    if (location_type.slug == user_location_type) {
+                        
                         self.view.location_type = self.getPartMeta(location_type);
                         
                         location_type.locations.map(function(location) {
@@ -251,6 +304,9 @@
 
         // request and render the addresses
         this.requestAddresses();
+        
+        // broadcast our address to other panes so they can sync with us
+        this.panes.onPaneAddressChanged(this);
     }
 
     Pane.prototype.onRequestComplete = function(textStatus, jqXHR) {
@@ -324,7 +380,10 @@
             methods: {
                 onClickView: function(view) {
                     pane.changeAddressPart('view', view);
-                }
+                },
+                onClickLocationType: function(location_type) {
+                    pane.changeAddressPart('location_type', location_type);
+                }, 
             },
         });
     }
@@ -342,18 +401,12 @@
     $(function() {
         Vue.directive('f-dropdown', {
             bind: function(el) {
-                console.log('bind');
                 Vue.nextTick(function () {
-                    console.log('h2');
                     $(el).addClass('dropdown menu');
-                    //$(el).attr('data-dropdown-menu', '');
-                    console.log('h3');
                     new Foundation.DropdownMenu($(el));
-                    console.log('h4');
                 })
             },
             unbind: function(el) {
-                console.log('unbind');
                 $(el).foundation.destroy();
             },
         });
@@ -364,8 +417,6 @@
         };
         var viewer = new Viewer(options);
         // viewer.load('Fr_20125/critical/section/588/');
-        
-        console.log(viewer);
         
         $('section.main').on('click', 'div[data-corresp]', function() {
             $('section.main div[data-corresp]').removeClass('highlight');

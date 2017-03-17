@@ -19,6 +19,15 @@ class TextViewerAPITvof(TextViewerAPI):
             'slug': 'section',
             'label': 'Section',
             'xpath': './/div[@class="tei body"]/div[@id]',
+        },
+        {
+            'slug': 'whole',
+            'label': 'Whole Text',
+            'xpath': './/div[@class="tei body"]/content',
+        },
+        {
+            'slug': 'synced',
+            'label': 'Synced',
         }
     ]
 
@@ -37,7 +46,7 @@ class TextViewerAPITvof(TextViewerAPI):
 
         return ret
 
-    def request_document(self):
+    def request_document(self, document_slug):
         '''Returns all the views for a given document
             For each view, return the location_types.
             For each location_type, return the locations.
@@ -45,11 +54,6 @@ class TextViewerAPITvof(TextViewerAPI):
            any location in any view of the document.
         '''
         # TODO: improve kiln pipeline for this call
-        document_slug = self.requested_path[0]
-
-        if not document_slug:
-            document_slug = self.request_documents()[0]['slug']
-
         xml = self.fetch_xml_from_kiln(document_slug, 'critical')
 
         views = []
@@ -62,13 +66,26 @@ class TextViewerAPITvof(TextViewerAPI):
 
             # add location types and locations
             view['location_types'] = []
-            view_xml = self.fetch_xml_from_kiln(self.requested_path[0], slug)
+            view_xml = self.fetch_xml_from_kiln(document_slug, slug)
             for location_type in self.location_types:
                 locations = []
-                for location_xml in view_xml.findall(location_type['xpath']):
-                    location = self.get_location_info_from_xml(
-                        location_xml, location_type)
-                    locations.append(location)
+                xpath = location_type.get('xpath', None)
+                if xpath:
+                    for location_xml in\
+                            view_xml.findall(location_type['xpath']):
+                        location = self.get_location_info_from_xml(
+                            location_xml, location_type)
+                        locations.append(location)
+                if location_type['slug'] == 'synced':
+                    locations = [{
+                        'slug': 'synced',
+                        'label': 'synced',
+                        'label_long': 'synced'}]
+                if location_type['slug'] == 'whole':
+                    locations = [{
+                        'slug': 'whole',
+                        'label': 'Whole',
+                        'label_long': 'Whole'}]
                 location_type_info = {
                     'slug': location_type['slug'],
                     'label': location_type['label'],
@@ -110,12 +127,9 @@ class TextViewerAPITvof(TextViewerAPI):
     def compress_html(self, html_str):
         return re.sub(ur'(\s)+', ur'\1', html_str)
 
-    def request_chunk(self):
-        path = self.requested_path[::-1]
-        document = path.pop()
-        view = path.pop()
-        location_type = path.pop() if path else ''
-        location = path.pop() if path else ''
+    def request_chunk(self, address_parts=None):
+        document, view, location_type, location = \
+            self.get_list_from_address_parts(address_parts)
 
         if document in ['default', '']:
             document = self.fetch_documents()[0]['slug']
@@ -131,10 +145,11 @@ class TextViewerAPITvof(TextViewerAPI):
             # TODO: get it from the xml
             location_type = 'section'
 
+        if location_type == 'whole':
+            chunk = xml.find('content')
+
         # extract chunk
         if location_type == 'section':
-            if location == 'all':
-                chunk = xml.find('content')
             if location == 'default':
                 xpath = ur".//div[@class='tei body']/div[@id]"
                 chunk = xml.find(xpath)
@@ -144,7 +159,9 @@ class TextViewerAPITvof(TextViewerAPI):
                 chunk = xml.find(xpath)
 
         if chunk is None:
-            self.add_error('notfound', 'Chunk not found')
+            self.add_error(
+                'notfound', 'Chunk not found: {}'.format(
+                    self.get_requested_address()))
         else:
             chunk = ET.tostring(chunk)
 
