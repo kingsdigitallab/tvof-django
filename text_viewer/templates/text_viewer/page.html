@@ -38,6 +38,16 @@
                             </li>
                         </ul>
                     </li>
+                    <li v-bind:class="['is-dropdown-submenu-parent opens-right', display_settings.length ? '': 'hidden']">
+                        <a>Display</a>
+                        <ul class="menu">
+                            <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
+                                    {{ setting.label }}
+                                </a>
+                            </li>
+                        </ul>
+                    </li>
                 </ul>
                 
                 <select name="location" v-model="location.slug" v-bind:class="[locations.length < 2 ? 'invisible': '']">
@@ -46,17 +56,10 @@
                 </select>
                 
             </div>
-            <div class="text-chunk" v-html="chunk"></div>
+            <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
+            </div>
         </div>
     {% endverbatim %}
-
-    {% comment %}
-        <select name="view" v-model="view.slug">
-            <option v-for="view in views" v-bind:value="view.slug">
-                {{ view.label }}
-            </option>
-        </select> 
-    {% endcomment %}
     
 {% endblock %}
 

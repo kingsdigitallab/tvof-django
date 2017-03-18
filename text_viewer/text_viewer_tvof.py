@@ -64,6 +64,21 @@ class TextViewerAPITvof(TextViewerAPI):
                 'label': slug,
             }
 
+            # add display settings
+            if view['slug'] in ['interpretive']:
+                view['display_settings'] = [
+                    {
+                        'slug': 'hide-notes',
+                        'label': 'Hide notes',
+                        'classes': 'hide-notes',
+                    },
+                    {
+                        'slug': 'hide-sics',
+                        'label': 'Hide corrections',
+                        'classes': 'hide-sics',
+                    }
+                ]
+
             # add location types and locations
             view['location_types'] = []
             view_xml = self.fetch_xml_from_kiln(document_slug, slug)
