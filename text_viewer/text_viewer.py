@@ -90,8 +90,6 @@ class TextViewerAPI(object):
                      else parts_synced[k])
                  for k, v in address_parts.iteritems()}
 
-        print parts
-
         return self.request_chunk(parts)
 
     def get_response_json(self):

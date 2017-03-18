@@ -5,6 +5,11 @@
 }
 
 .text-pane {
+    
+    .hidden {
+        display:none;
+    }
+    
     h2.doc-label {
         ul.dropdown.menu {
             font-size: 80%;
@@ -30,6 +35,14 @@
     div[data-corresp]:hover {
         cursor: pointer;
         text-decoration-color: scale-color($primary-color, $lightness: 50%);
+    }
+
+    &.hide-notes .note {
+        display: none;
+    }
+
+    &.hide-sics .tei-corr-popup {
+        display: none;
     }
 }
 

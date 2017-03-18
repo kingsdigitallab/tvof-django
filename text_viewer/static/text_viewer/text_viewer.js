@@ -94,6 +94,8 @@
             view: 'critical',
             views: ['critical'],
             
+            display_settings: [],
+
             location_type: 'location',
             location_types: ['1', '2'],
 
@@ -271,6 +273,8 @@
                 // location_types
                 self.view.location_types = [];
                 self.view.locations = [];
+                // TODO: clone?
+                self.view.display_settings = aview.display_settings || [];
                 
                 var user_location_type = self.isSynced() ? 'synced': parts.location_type;
                 
@@ -366,6 +370,9 @@
         var containerid = '#text-pane-'+pane.view.pane_slug
         var $container = $(containerid);
         $container.html($template);
+        
+        pane.view.display_settings_active = {};
+        
         new Vue({
             el: containerid,
             data: pane.view,
@@ -383,7 +390,30 @@
                 },
                 onClickLocationType: function(location_type) {
                     pane.changeAddressPart('location_type', location_type);
-                }, 
+                },
+                // TODO: that logic should move to Panel
+                // TODO: the list of available display settings should be 
+                // determined by this class instead of the web api.
+                isDisplaySettingActive: function(setting) {
+                    return !!this.display_settings_active[setting.slug];
+                },
+                onClickDisplaySetting: function(setting) {
+                    this.$set(this.display_settings_active, setting.slug, !!!(this.display_settings_active[setting.slug]));
+                },
+                getClassesFromDisplaySettings: function() {
+                    var self = this;
+                    var ret = '';
+                    if (this.display_settings) {
+                        this.display_settings.map(function(setting) {
+                            if (self.isDisplaySettingActive(setting)) {
+                                if (ret) ret += ' ';
+                                ret += setting.classes;
+                            }
+                        });
+                    }
+                    
+                    return ret;
+                }
             },
         });
     }
