@@ -79,6 +79,10 @@ class TextViewerAPITvof(TextViewerAPI):
                     }
                 ]
 
+            # add notational conventions
+            view['conventions'] = self.get_notational_conventions(
+                xml, view['slug'])
+
             # add location types and locations
             view['location_types'] = []
             view_xml = self.fetch_xml_from_kiln(document_slug, slug)
@@ -186,6 +190,37 @@ class TextViewerAPITvof(TextViewerAPI):
                 'chunk': chunk,
                 'address': address,
             }
+
+    def get_notational_conventions(self, xml, view_slug):
+        conventions = ''
+        if view_slug in ['interpretive']:
+            conventions = '''
+            <div class="text-conventions">
+                <ul>
+                  <li>
+                    <span class="notation">
+                      <a data-toggle="xxx">
+                         <sup class="note tei-source"></sup>
+                      </a>
+                    </span>
+                    <span class="description">
+                       References to sources.
+                    </span>
+                  </li>
+                  <li>
+                    <span class="notation">
+                      <a data-toggle="d99280e3208">
+                        <sup class="tei-corr-popup"></sup>
+                      </a>
+                    </span>
+                    <span class="description">
+                        Sic erat scriptum
+                    </span>
+                  </li>
+                </ul>
+            </div>
+            '''
+        return conventions
 
     def fetch_xml_from_kiln(self, document, view):
         text_path = 'texts/{}/{}/'.format(document, view)

@@ -4,13 +4,17 @@
 {% block title %}
 {% endblock %}
 
-{% block main %}
-    <div id="text-pane-center" class="text-pane large-6 columns">
-        CENTER
-    </div>
-    <div id="text-pane-east" class="text-pane large-6 columns">
-        EAST
-    </div>
+{% block main_wrapper %}
+    <section id="text-viewer" class="main">
+        <div class="row">
+            <div id="text-pane-center" class="text-pane large-6 columns">
+                CENTER
+            </div>
+            <div id="text-pane-east" class="text-pane large-6 columns">
+                EAST
+            </div>
+        </div>
+    </section>
 
     {% verbatim %}
         <div id="text-pane-template">
@@ -45,6 +49,13 @@
                                 <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
                                     {{ setting.label }}
                                 </a>
+                            </li>
+                        </ul>
+                    </li>
+                    <li class="is-dropdown-submenu-parent">
+                        <a>Notations</a>
+                        <ul class="menu conventions-menu">
+                            <li class="is-submenu-item is-dropdown-submenu-item" v-html="conventions">
                             </li>
                         </ul>
                     </li>
