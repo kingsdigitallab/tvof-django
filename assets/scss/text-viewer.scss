@@ -28,6 +28,17 @@
         .invisible {
             visibility: hidden;
         }
+    
+        ul.conventions-menu {
+            background-color: #fefefe;
+            white-space: nowrap;
+        }
+        .text-conventions ul {
+            list-style-type: none;
+            li {
+                padding: 0.5em;
+            }
+        }
     }
 }
 

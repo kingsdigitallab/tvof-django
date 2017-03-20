@@ -102,6 +102,8 @@
             location: 'location',
             locations: ['1', '2'],
             
+            conventions: '',
+            
             chunk: 'chunk',
             errors: [],
         };
@@ -273,6 +275,9 @@
                 // location_types
                 self.view.location_types = [];
                 self.view.locations = [];
+                
+                self.view.conventions = aview.conventions || '';
+                
                 // TODO: clone?
                 self.view.display_settings = aview.display_settings || [];
                 

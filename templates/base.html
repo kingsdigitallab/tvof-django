@@ -26,15 +26,17 @@
     {% include 'includes/navigation.html' %}
   </nav>
 
-  <section class="main">
-    <div class="row">
-      <div class="large-12 columns">
-        {% block title %}<h1>{{ self.title }}</h1>{% endblock %}
-        {% block main %}
-        {% endblock %}
-      </div>
-    </div>
-  </section>
+  {% block main_wrapper %}
+      <section class="main">
+        <div class="row">
+          <div class="large-12 columns">
+            {% block title %}<h1>{{ self.title }}</h1>{% endblock %}
+            {% block main %}
+            {% endblock %}
+          </div>
+        </div>
+      </section>
+  {% endblock %}
 
   <footer>
     {% include 'includes/footer.html' %}
