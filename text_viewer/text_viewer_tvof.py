@@ -1,6 +1,6 @@
 import requests
 from django.conf import settings
-from text_viewer import TextViewerAPI
+from text_viewer import TextViewerAPI, get_unicode_from_xml
 import xml.etree.ElementTree as ET
 import re
 
@@ -18,18 +18,29 @@ class TextViewerAPITvof(TextViewerAPI):
         {
             'slug': 'section',
             'label': 'Section',
-            'xpath': './/div[@class="tei body"]/div[@id]',
+            'xpath': './/div[@class="tei body"]/div[h4]',
+            'xpath_from_location':
+                lambda l: ur".//div[@id='edfr20125_{}']".format(l.zfill(5)),
+            'location_from_chunk': lambda c: unicode(int(c.attrib['id'][-5:]))
         },
         {
             'slug': 'whole',
             'label': 'Whole Text',
-            'xpath': './/div[@class="tei body"]/content',
+            'xpath': './/div[@class="tei body"]',
         },
         {
             'slug': 'synced',
             'label': 'Synced',
-        }
+        },
     ]
+
+    def get_location_type(self, slug):
+        ret = None
+        for location_type in self.location_types:
+            if location_type['slug'] == slug:
+                ret = location_type
+                break
+        return ret
 
     def request_documents(self):
         # TODO: kiln pipeline for returning all texts under a path
@@ -54,6 +65,7 @@ class TextViewerAPITvof(TextViewerAPI):
            any location in any view of the document.
         '''
         # TODO: improve kiln pipeline for this call
+        # call this to get all the versions (e.g. semi-diplomatic, ...)
         xml = self.fetch_xml_from_kiln(document_slug, 'critical')
 
         views = []
@@ -79,13 +91,17 @@ class TextViewerAPITvof(TextViewerAPI):
                     }
                 ]
 
-            # add notational conventions
-            view['conventions'] = self.get_notational_conventions(
-                xml, view['slug'])
-
             # add location types and locations
             view['location_types'] = []
+
+            # fetch a particular version/view (e.g. semi-diplomatic, ...)
             view_xml = self.fetch_xml_from_kiln(document_slug, slug)
+
+            # add notational conventions
+            view['conventions'] = self.get_notational_conventions(
+                view_xml, view['slug'])
+
+            # get all the location
             for location_type in self.location_types:
                 locations = []
                 xpath = location_type.get('xpath', None)
@@ -94,7 +110,9 @@ class TextViewerAPITvof(TextViewerAPI):
                             view_xml.findall(location_type['xpath']):
                         location = self.get_location_info_from_xml(
                             location_xml, location_type)
-                        locations.append(location)
+                        if location['slug']:
+                            locations.append(location)
+
                 if location_type['slug'] == 'synced':
                     locations = [{
                         'slug': 'synced',
@@ -121,25 +139,30 @@ class TextViewerAPITvof(TextViewerAPI):
         }
 
     def get_location_info_from_xml(self, xml, location_type):
+        ret = {'slug': '', 'label': '?', 'label_long': '?'}
+
         if location_type['slug'] == 'section':
+            # TODO: move this to a class?
+
+            #             print '-' * 40
+            #             print get_unicode_from_xml(xml)
+
             # id="edfr20125_00588"
             number = xml.attrib.get('id', '')
             number = re.sub(ur'^.*_0*(\d+)$', ur'\1', number)
-            rubric = xml.find('.//h4')
 
-            label_long = rubric.text
-            label_long = rubric.text
-            for e in rubric:
-                if e.tag not in ['a', 'div']:
-                    label_long += ET.tostring(e)
-            label_long = self.compress_html(label_long)
-            ret = {
-                'slug': number,
-                'label': number,
-                'label_long': label_long,
-            }
-        else:
-            ret = {'slug': '?', 'label': '?', 'label_long': '?'}
+            rubric = xml.find('.//*[@class="tei-rubric"]')
+            if rubric is not None:
+                label_long = rubric.text
+                for e in rubric:
+                    if e.tag not in ['a', 'div']:
+                        label_long += ET.tostring(e)
+                label_long = self.compress_html(label_long)
+                ret = {
+                    'slug': number,
+                    'label': number,
+                    'label_long': label_long,
+                }
 
         return ret
 
@@ -147,7 +170,7 @@ class TextViewerAPITvof(TextViewerAPI):
         return re.sub(ur'(\s)+', ur'\1', html_str)
 
     def request_chunk(self, address_parts=None):
-        document, view, location_type, location = \
+        document, view, location_type_slug, location = \
             self.get_list_from_address_parts(address_parts)
 
         if document in ['default', '']:
@@ -160,31 +183,32 @@ class TextViewerAPITvof(TextViewerAPI):
 
         chunk = None
 
-        if location_type in ['default', '']:
-            # TODO: get it from the xml
-            location_type = 'section'
+        if location_type_slug in ['default', '']:
+            location_type_slug = self.location_types[0]['slug']
 
-        if location_type == 'whole':
-            chunk = xml.find('content')
+        location_type = self.get_location_type(location_type_slug)
 
         # extract chunk
-        if location_type == 'section':
-            if location == 'default':
-                xpath = ur".//div[@class='tei body']/div[@id]"
-                chunk = xml.find(xpath)
-                location = unicode(int(chunk.attrib['id'][-5:]))
-            else:
-                xpath = ur".//div[@id='edfr20125_%s']" % location.zfill(5)
-                chunk = xml.find(xpath)
+        xpath_from_location = location_type.get('xpath_from_location')
+        if location == 'default' or xpath_from_location is None:
+            xpath = location_type.get('xpath')
+        else:
+            xpath = location_type.get('xpath_from_location')(location)
+        print xpath
+        chunk = xml.find(xpath)
 
         if chunk is None:
             self.add_error(
                 'notfound', 'Chunk not found: {}'.format(
                     self.get_requested_address()))
         else:
+            location_from_chunk = location_type.get('location_from_chunk')
+            if location_from_chunk:
+                location = location_from_chunk(chunk)
+
             chunk = ET.tostring(chunk)
 
-            address = '/'.join([document, view, location_type, location])
+            address = '/'.join([document, view, location_type_slug, location])
 
             self.response = {
                 'chunk': chunk,
@@ -220,6 +244,12 @@ class TextViewerAPITvof(TextViewerAPI):
                 </ul>
             </div>
             '''
+
+        conventions_xml = xml.find('.//div[@id="text-conventions"]')
+        if conventions_xml is not None:
+            conventions = get_unicode_from_xml(conventions_xml)
+            conventions = re.sub(ur'id="([^"]+)"', ur'class="\1"', conventions)
+
         return conventions
 
     def fetch_xml_from_kiln(self, document, view):
