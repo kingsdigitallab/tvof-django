@@ -387,6 +387,17 @@
                 },
                 'location.slug': function(val) {
                     pane.changeAddressPart('location', val);
+                },
+                'chunk': function(val) {
+                    this.$nextTick(function() {
+                        // we remove all reveals initialised by foundation
+                        // to avoid endless accumulation and duplicates
+                        $("[data-reveal!=''][data-reveal]").remove();
+                        // we initi foundation on all the new reveals
+                        $(this.$el).find('.reveal').each(function() {
+                            new Foundation.Reveal($(this));
+                        })
+                    });
                 }
             },
             methods: {
