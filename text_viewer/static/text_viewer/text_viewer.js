@@ -390,6 +390,13 @@
                 },
                 'chunk': function(val) {
                     this.$nextTick(function() {
+                        // convert the hrefs to the bibliography page
+                        $("a[href]").each(function() {
+                            var link = $(this).attr('href');
+                            // TODO: we shouldn't hard-code this link
+                            link = '/k/bibliography/#' + link;
+                            $(this).attr('href', link);
+                        });
                         // we remove all reveals initialised by foundation
                         // to avoid endless accumulation and duplicates
                         $("[data-reveal!=''][data-reveal]").remove();
