@@ -141,3 +141,14 @@ def get_unicode_from_xml(xmltree, encoding='utf-8', text_only=False,
             ret = ret.replace('<root>', '').replace('</root>', '')
 
         return ret
+
+
+def remove_xml_elements(xml, xpath):
+    ret = 0
+    '''Remove all the elements matching xpath (and all their content)'''
+    items = xml.findall(xpath)
+    parents = xml.findall(xpath + '/..')
+    for i, item in enumerate(items):
+        ret += 1
+        parents[i].remove(item)
+    return ret

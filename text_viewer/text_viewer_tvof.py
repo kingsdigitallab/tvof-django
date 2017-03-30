@@ -1,6 +1,7 @@
 import requests
 from django.conf import settings
-from text_viewer import TextViewerAPI, get_unicode_from_xml
+from text_viewer import (TextViewerAPI, get_unicode_from_xml,
+                         remove_xml_elements)
 import xml.etree.ElementTree as ET
 import re
 
@@ -181,7 +182,7 @@ class TextViewerAPITvof(TextViewerAPI):
 
         xml = self.fetch_xml_from_kiln(document, view)
 
-        chunk = None
+        remove_xml_elements(xml, './/div[@id="text-conventions"]')
 
         if location_type_slug in ['default', '']:
             location_type_slug = self.location_types[0]['slug']
@@ -194,7 +195,6 @@ class TextViewerAPITvof(TextViewerAPI):
             xpath = location_type.get('xpath')
         else:
             xpath = location_type.get('xpath_from_location')(location)
-        print xpath
         chunk = xml.find(xpath)
 
         if chunk is None:
