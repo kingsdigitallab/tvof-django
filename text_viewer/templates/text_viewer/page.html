@@ -6,71 +6,78 @@
 
 {% block main_wrapper %}
     
+    {% comment %}
+        {% verbatim %}
+            <section id="text-viewer" class="main">
+                <div class="row">
+                    <div id="text-pane-center" class="text-pane large-6 columns">
+                    </div>
+                    <div id="text-pane-east" class="text-pane large-6 columns">
+                    </div>
+                </div>
+            </section>
+        {% endverbatim %}
+    {% endcomment %}
     {% verbatim %}
-        <section id="text-viewer" class="main">
-            <div class="row">
-                <div id="text-pane-center" class="text-pane large-6 columns">
-                    CENTER
-                </div>
-                <div id="text-pane-east" class="text-pane large-6 columns">
-                    EAST
-                </div>
-            </div>
+        <section id="text-viewer" class="main text-viewer">
+            <div v-for="pane in panes" is="text-pane" v-bind:pane="getPane(pane.slug)"></div>
         </section>
     {% endverbatim %}
 
     {% verbatim %}
-        <div id="text-pane-template">
-            <div class="controls">
-                <h2 class="doc-label">
-                    {{ document.label }}
+        <div class="vue-templates">
+            <div id="vue-template-text-pane" class="text-pane">
+                <div class="controls">
+                    <h2 class="doc-label">
+                        {{ document.label }}
+                        <ul v-f-dropdown>
+                            <li class="is-dropdown-submenu-parent">
+                                <a>{{ view.label }}</a>
+                                <ul class="menu">
+                                    <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                        <a v-on:click.prevent="onClickView(aview.slug)" href="#">{{ aview.label }}</a>
+                                    </li>
+                                </ul>
+                            </li>
+                        </ul>
+                    </h2>
+    
                     <ul v-f-dropdown>
                         <li class="is-dropdown-submenu-parent">
-                            <a>{{ view.label }}</a>
+                            <a>{{ location_type.label }}</a>
                             <ul class="menu">
-                                <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                    <a v-on:click.prevent="onClickView(aview.slug)" href="#">{{ aview.label }}</a>
+                                <li v-for="alocation_type in location_types" v-bind:class="[alocation_type.slug == location_type.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                    <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">{{ alocation_type.label }}</a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li v-bind:class="['is-dropdown-submenu-parent opens-right', display_settings.length ? '': 'hidden']">
+                            <a>Display</a>
+                            <ul class="menu">
+                                <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                    <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
+                                        {{ setting.label }}
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="is-dropdown-submenu-parent">
+                            <a>Notations</a>
+                            <ul class="menu conventions-menu">
+                                <li class="is-submenu-item is-dropdown-submenu-item" v-html="conventions">
                                 </li>
                             </ul>
                         </li>
                     </ul>
-                </h2>
-
-                <ul v-f-dropdown>
-                    <li class="is-dropdown-submenu-parent">
-                        <a>{{ location_type.label }}</a>
-                        <ul class="menu">
-                            <li v-for="alocation_type in location_types" v-bind:class="[alocation_type.slug == location_type.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">{{ alocation_type.label }}</a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li v-bind:class="['is-dropdown-submenu-parent opens-right', display_settings.length ? '': 'hidden']">
-                        <a>Display</a>
-                        <ul class="menu">
-                            <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
-                                    {{ setting.label }}
-                                </a>
-                            </li>
-                        </ul>
-                    </li>
-                    <li class="is-dropdown-submenu-parent">
-                        <a>Notations</a>
-                        <ul class="menu conventions-menu">
-                            <li class="is-submenu-item is-dropdown-submenu-item" v-html="conventions">
-                            </li>
-                        </ul>
-                    </li>
-                </ul>
-                
-                <select name="location" v-model="location.slug" v-bind:class="[locations.length < 2 ? 'invisible': '']">
-                    <option v-for="location in locations" v-bind:value="location.slug" v-html="location.label_long">
-                    </option>
-                </select>
-                
-            </div>
-            <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
+                    
+                    <select name="location" v-model="location.slug" v-bind:class="[locations.length < 2 ? 'invisible': '']">
+                        <option class="tei" v-for="location in locations" v-bind:value="location.slug" v-html="location.label_long">
+                        </option>
+                    </select>
+                    
+                </div>
+                <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
+                </div>
             </div>
         </div>
     {% endverbatim %}

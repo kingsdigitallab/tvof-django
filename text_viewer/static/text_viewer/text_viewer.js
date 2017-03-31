@@ -7,7 +7,15 @@
         this.options = options;
         this.api_url = this.options.api_url || (window.location.pathname + 'api/');
         this.panes = {'center': null};
+        this.view = {
+            'panes': [
+            ],
+        };
         
+        if (options.on_create_viewer) {
+            options.on_create_viewer({});
+        }
+
         this.createPanesFromQueryString();
         
         var self = this;
@@ -58,6 +66,7 @@
                     if (self.options.on_create_pane) {
                         self.options.on_create_pane(pane);
                     }
+                    self.view.panes.push({slug: pane_slug});
                 }
             }
         });
@@ -78,6 +87,10 @@
         }
         
         return ret;
+    }
+    
+    Viewer.prototype.getPane = function(slug) {
+        return this.panes[slug];
     }
     
     /*****************************************************
@@ -262,7 +275,6 @@
             self.view.views.push(self.getPartMeta(aview));
         });
         
-        
         // http://localhost:8000/textviewer/api/Fr20125/
         // Update the lists in self.view
         // by doing simple lookups in the self.views from the address parts.
@@ -366,27 +378,31 @@
     // User Interface
     // ===============================================================
     
-    function on_create_pane(pane) {
+    //function on_create_pane(pane) {
+    //layout.addPane(pane.view.pane_slug);
+
+    if (1) {
         // A new pane was created.
         // We generate the html with Vue.js
         // by cloning the existing template into the div for this pane.
-        var $template = $('#text-pane-template').clone();
+        var $template = $('#vue-template-text-pane').detach();
         $template.removeAttr('id');
-        var containerid = '#text-pane-'+pane.view.pane_slug
-        var $container = $(containerid);
-        $container.html($template);
+        var template = $template.prop('outerHTML');
         
-        pane.view.display_settings_active = {};
-        
-        new Vue({
-            el: containerid,
-            data: pane.view,
+        Vue.component('text-pane', {
+            template: template,
+            props: ['pane'],
+            data: function() {
+                var ret = this.pane.view;
+                ret.display_settings_active = {};
+                return ret;
+            },
             watch: {
                 'view.slug': function(val) {
-                    pane.changeAddressPart('view', val);
+                    this.pane.changeAddressPart('view', val);
                 },
                 'location.slug': function(val) {
-                    pane.changeAddressPart('location', val);
+                    this.pane.changeAddressPart('location', val);
                 },
                 'chunk': function(val) {
                     this.$nextTick(function() {
@@ -399,11 +415,11 @@
                         });
                         // we remove all reveals initialised by foundation
                         // to avoid endless accumulation and duplicates
-                        $('.reveal[data-panel="'+containerid+'"]').remove();
+                        $('.reveal[data-panel="'+this.pane_slug+'"]').remove();
                         // we init Foundation on all the new reveals
                         $(this.$el).find('.reveal').each(function() {
                             var $reveal = $(this);
-                            $reveal.attr('data-panel', containerid);
+                            $reveal.attr('data-panel', this.pane_slug);
                             new Foundation.Reveal($reveal);
                         })
                     });
@@ -411,10 +427,10 @@
             },
             methods: {
                 onClickView: function(view) {
-                    pane.changeAddressPart('view', view);
+                    this.pane.changeAddressPart('view', view);
                 },
                 onClickLocationType: function(location_type) {
-                    pane.changeAddressPart('location_type', location_type);
+                    this.pane.changeAddressPart('location_type', location_type);
                 },
                 // TODO: that logic should move to Panel
                 // TODO: the list of available display settings should be 
@@ -445,10 +461,6 @@
     
     // customisation
     
-    function on_chunk_loaded(vue) {
-        
-    }
-
     // ===============================================================
     // Initialisation
     // TODO: move this out
@@ -467,10 +479,21 @@
         });
         
         var options = {
-            'on_create_pane': on_create_pane,
-            'on_chunk_loaded': on_chunk_loaded,
+            //'on_create_pane': on_create_pane,
+            //'on_create_viewer': on_create_viewer,
         };
         var viewer = new Viewer(options);
+        
+        var layout = new Vue({
+            el: '#text-viewer',
+            data: viewer.view,
+            methods: {
+                getPane: function(slug) {
+                    return viewer.getPane(slug)
+                }
+            }
+        });
+        
         // viewer.load('Fr_20125/critical/section/588/');
         
         $('section.main').on('click', 'div[data-corresp]', function() {
