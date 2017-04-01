@@ -61,6 +61,10 @@
         // create panes from the query string
         var qs = get_query_string();
         
+        if ($.isEmptyObject(qs)) {
+            qs = {'p1': 'default/default/default/default'}
+        } 
+        
         $.each(qs, function(pane_slug, value) {
             if (pane_slug && typeof self.panes !== 'undefined') {
                 if (self.panes[pane_slug]) {
@@ -354,14 +358,16 @@
     
     function get_query_string() {
         var vars = {}, hash;
-        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-        for(var i = 0; i < hashes.length; i++)
-        {
-            hash = hashes[i].split('=');
-            vars[hash[0]] = hash[1];
+        var query_string_pos = window.location.href.indexOf('?');
+        if (query_string_pos >=0) {
+            var hashes = window.location.href.slice(query_string_pos + 1).split('&');
+            for(var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                vars[hash[0]] = hash[1];
+            }
         }
         return vars;
-    }            
+    }
 
     function call_api(url, onSuccess, onComplete, requestData, synced) {
         // See http://stackoverflow.com/questions/9956255.
