@@ -6,7 +6,7 @@
     function Viewer(options) {
         this.options = options;
         this.api_url = this.options.api_url || (window.location.pathname + 'api/');
-        this.panes = {'center': null};
+        this.panes = {};
         this.view = {
             'panes': [
             ],
@@ -39,18 +39,22 @@
     }
     
     Viewer.prototype.updateQueryString = function() {
-        if (history.pushState) {
-            var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?';
-            for (var k in this.panes) {
-                if (this.panes.hasOwnProperty(k)) {
-                    newurl += k + '=' + this.panes[k].address;
-                    newurl += '&';
-                }
+        // update the title and the browsing history
+        var title = '';
+        
+        var query_string = ''
+        for (var k in this.panes) {
+            if (this.panes.hasOwnProperty(k)) {
+                if (query_string) query_string += '&';
+                query_string += k + '=' + this.panes[k].address;
+                
+                if (title) title += ' | ';
+                title += this.panes[k].getTitleFromAddress();
             }
-            window.history.pushState({path:newurl},'',newurl);
         }
+        change_broswer_query_string(query_string, title);
     }
-    
+
     Viewer.prototype.createPanesFromQueryString = function() {
         var self = this;
         
@@ -145,6 +149,15 @@
             // todo: sync with that specific address
             this.changeAddressPart('location_type', 'synced');
         }
+    }
+    
+    Pane.prototype.getTitleFromAddress = function() {
+        var ret = '';
+        var parts = this.getAddressParts();
+        
+        ret = parts.document + ', ' + parts.location + ' (' + parts.view + ')';
+        
+        return ret;
     }
 
     Pane.prototype.getAddressParts = function(address) {
@@ -374,6 +387,23 @@
         return ret;
     };
     
+    /*
+     * Change the browser URL, push it to the history
+     * Also set the document title
+     * 
+    */
+    function change_broswer_query_string(query_string, title) {
+        var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname
+        query_string = query_string || '';
+        if (query_string) newurl += '?' + query_string;
+        if (history.pushState && window.location.href !== newurl) {
+            // ! this title is ignored; document.title HAS to be modified AFTER
+            // this, see below
+            window.history.pushState({path:newurl}, title, newurl);
+        }
+        document.title = title;
+    }
+
     // ===============================================================
     // User Interface
     // ===============================================================
