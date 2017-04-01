@@ -67,17 +67,27 @@
         
         $.each(qs, function(pane_slug, value) {
             if (pane_slug && typeof self.panes !== 'undefined') {
-                if (self.panes[pane_slug]) {
-                    self.panes[pane_slug].requestAddress(value);
-                } else {
-                    var pane = self.panes[pane_slug] = new Pane(self, pane_slug, {'query_string': value})
-                    if (self.options.on_create_pane) {
-                        self.options.on_create_pane(pane);
-                    }
-                    self.view.panes.push({slug: pane_slug});
-                }
+                self.createPaneFromAddress(value, pane_slug);
             }
         });
+    };
+    
+    Viewer.prototype.createPaneFromAddress = function(address, pane_slug) {
+        var self = this;
+
+        if (!pane_slug) {
+            for (var i = 1; this.panes['p'+i]; i++);
+            pane_slug = 'p'+i;
+        }
+        if (self.panes[pane_slug]) {
+            self.panes[pane_slug].requestAddress(address);
+        } else {
+            var pane = self.panes[pane_slug] = new Pane(self, pane_slug, {'query_string': address})
+            if (self.options.on_create_pane) {
+                self.options.on_create_pane(pane);
+            }
+            self.view.panes.push({slug: pane_slug});
+        }
     };
     
     Viewer.prototype.getSyncedWithAddress = function(pane) {
@@ -153,6 +163,13 @@
             // todo: sync with that specific address
             this.changeAddressPart('location_type', 'synced');
         }
+    }
+    
+    Pane.prototype.openViewInNewPane = function(view_slug) {
+        var parts = this.getAddressParts();
+        parts['view'] = view_slug;
+        var address = this.getAddressFromParts(parts);
+        this.panes.createPaneFromAddress(address);
     }
     
     Pane.prototype.getTitleFromAddress = function() {
@@ -464,6 +481,9 @@
             methods: {
                 onClickView: function(view) {
                     this.pane.changeAddressPart('view', view);
+                },
+                onClickViewExtrenal: function(view) {
+                    this.pane.openViewInNewPane(view);
                 },
                 onClickLocationType: function(location_type) {
                     this.pane.changeAddressPart('location_type', location_type);

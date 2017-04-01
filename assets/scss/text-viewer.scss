@@ -38,9 +38,33 @@
             a {
                 /* color: #8a8a8a; */
             }
-            > li > a {
-                color: #8a8a8a;
-                line-height: 0;
+            > li {
+                > a {
+                    color: #8a8a8a;
+                    line-height: 0;
+                }
+                > ul {
+                    min-width: 100%;
+                    > li a {
+                        position: relative;
+                        font-size: large;
+                    }
+                }
+            }
+        
+            .external-link {
+                position: absolute;
+                right: 0;
+                border-left: 1px solid white;
+                padding: 0 0.5em;
+                background-color: #1c2434;
+                height: 100%;
+                top: 0;
+                padding-top: 1em;
+                margin-right: 0;
+            }
+            .external-link:hover {
+                background-color: inherit;
             }
         }
     }

@@ -30,12 +30,16 @@
                 <div class="controls">
                     <h2 class="doc-label">
                         {{ document.label }}
+                        
                         <ul v-f-dropdown>
                             <li class="is-dropdown-submenu-parent">
                                 <a>{{ view.label }}</a>
                                 <ul class="menu">
                                     <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                        <a v-on:click.prevent="onClickView(aview.slug)" href="#">{{ aview.label }}</a>
+                                        <a v-on:click.prevent="onClickView(aview.slug)" href="#">
+                                            {{ aview.label }}
+                                            <i class="fa fa-external-link external-link" v-on:click.stop.prevent="onClickViewExtrenal(aview.slug)"></i>
+                                        </a>
                                     </li>
                                 </ul>
                             </li>
