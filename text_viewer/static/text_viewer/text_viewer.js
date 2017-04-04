@@ -6,8 +6,16 @@
     function Viewer(options) {
         this.options = options;
         this.api_url = this.options.api_url || (window.location.pathname + 'api/');
-        this.panes = {'center': null};
+        this.panes = {};
+        this.view = {
+            'panes': [
+            ],
+        };
         
+        if (options.on_create_viewer) {
+            options.on_create_viewer({});
+        }
+
         this.createPanesFromQueryString();
         
         var self = this;
@@ -31,36 +39,55 @@
     }
     
     Viewer.prototype.updateQueryString = function() {
-        if (history.pushState) {
-            var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?';
-            for (var k in this.panes) {
-                if (this.panes.hasOwnProperty(k)) {
-                    newurl += k + '=' + this.panes[k].address;
-                    newurl += '&';
-                }
+        // update the title and the browsing history
+        var title = '';
+        
+        var query_string = ''
+        for (var k in this.panes) {
+            if (this.panes.hasOwnProperty(k)) {
+                if (query_string) query_string += '&';
+                query_string += k + '=' + this.panes[k].address;
+                
+                if (title) title += ' | ';
+                title += this.panes[k].getTitleFromAddress();
             }
-            window.history.pushState({path:newurl},'',newurl);
         }
+        change_broswer_query_string(query_string, title);
     }
-    
+
     Viewer.prototype.createPanesFromQueryString = function() {
         var self = this;
         
         // create panes from the query string
         var qs = get_query_string();
         
+        if ($.isEmptyObject(qs)) {
+            qs = {'p1': 'default/default/default/default'}
+        } 
+        
         $.each(qs, function(pane_slug, value) {
             if (pane_slug && typeof self.panes !== 'undefined') {
-                if (self.panes[pane_slug]) {
-                    self.panes[pane_slug].requestAddress(value);
-                } else {
-                    var pane = self.panes[pane_slug] = new Pane(self, pane_slug, {'query_string': value})
-                    if (self.options.on_create_pane) {
-                        self.options.on_create_pane(pane);
-                    }
-                }
+                self.createPaneFromAddress(value, pane_slug);
             }
         });
+    };
+    
+    Viewer.prototype.createPaneFromAddress = function(address, pane_slug) {
+        var self = this;
+
+        if (!pane_slug) {
+            for (var i = 1; this.panes['p'+i]; i++);
+            pane_slug = 'p'+i;
+        }
+        if (self.panes[pane_slug]) {
+            self.panes[pane_slug].requestAddress(address);
+        } else {
+            var pane = self.panes[pane_slug] = new Pane(self, pane_slug, {'query_string': address})
+            if (self.options.on_create_pane) {
+                self.options.on_create_pane(pane);
+            }
+            self.view.panes.push({slug: pane_slug});
+        }
     };
     
     Viewer.prototype.getSyncedWithAddress = function(pane) {
@@ -79,6 +106,26 @@
         
         return ret;
     }
+    
+    Viewer.prototype.closePane = function(apane) {
+        for (var i = 0; i < this.view.panes.length; i++) {
+            if (this.view.panes[i].slug == apane.view.pane_slug) {
+                this.view.panes.splice(i, 1);
+                delete this.panes[apane.view.pane_slug];
+                this.updateQueryString();
+                break;
+            }
+        }
+    }
+
+    Viewer.prototype.getPane = function(slug) {
+        return this.panes[slug];
+    }
+    
+    Viewer.prototype.getPaneCount = function() {
+        return this.view.panes.length;
+    }
+
     
     /*****************************************************
      * Pane
@@ -123,6 +170,14 @@
         this.requestAddress(this.options.query_string);
     };
     
+    Pane.prototype.canClosePane = function() {
+        return this.panes.getPaneCount() > 1;
+    }
+    
+    Pane.prototype.closePane = function() {
+        this.panes.closePane(this);
+    }
+    
     Pane.prototype.isSynced = function() {
         return (~this.address_requested.indexOf('synced'));
     }
@@ -132,6 +187,22 @@
             // todo: sync with that specific address
             this.changeAddressPart('location_type', 'synced');
         }
+    }
+    
+    Pane.prototype.openViewInNewPane = function(view_slug) {
+        var parts = this.getAddressParts();
+        parts['view'] = view_slug;
+        var address = this.getAddressFromParts(parts);
+        this.panes.createPaneFromAddress(address);
+    }
+    
+    Pane.prototype.getTitleFromAddress = function() {
+        var ret = '';
+        var parts = this.getAddressParts();
+        
+        ret = parts.document + ', ' + parts.location + ' (' + parts.view + ')';
+        
+        return ret;
     }
 
     Pane.prototype.getAddressParts = function(address) {
@@ -262,7 +333,6 @@
             self.view.views.push(self.getPartMeta(aview));
         });
         
-        
         // http://localhost:8000/textviewer/api/Fr20125/
         // Update the lists in self.view
         // by doing simple lookups in the self.views from the address parts.
@@ -329,14 +399,16 @@
     
     function get_query_string() {
         var vars = {}, hash;
-        var hashes = window.location.href.slice(window.location.href.indexOf('?') + 1).split('&');
-        for(var i = 0; i < hashes.length; i++)
-        {
-            hash = hashes[i].split('=');
-            vars[hash[0]] = hash[1];
+        var query_string_pos = window.location.href.indexOf('?');
+        if (query_string_pos >=0) {
+            var hashes = window.location.href.slice(query_string_pos + 1).split('&');
+            for(var i = 0; i < hashes.length; i++) {
+                hash = hashes[i].split('=');
+                vars[hash[0]] = hash[1];
+            }
         }
         return vars;
-    }            
+    }
 
     function call_api(url, onSuccess, onComplete, requestData, synced) {
         // See http://stackoverflow.com/questions/9956255.
@@ -362,36 +434,72 @@
         return ret;
     };
     
+    /*
+     * Change the browser URL, push it to the history
+     * Also set the document title
+     * 
+    */
+    function change_broswer_query_string(query_string, title) {
+        var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname
+        query_string = query_string || '';
+        if (query_string) newurl += '?' + query_string;
+        if (history.pushState && window.location.href !== newurl) {
+            // ! this title is ignored; document.title HAS to be modified AFTER
+            // this, see below
+            window.history.pushState({path:newurl}, title, newurl);
+        }
+        document.title = title;
+    }
+
     // ===============================================================
     // User Interface
     // ===============================================================
     
-    function on_create_pane(pane) {
+    //function on_create_pane(pane) {
+    //layout.addPane(pane.view.pane_slug);
+
+    if (1) {
         // A new pane was created.
         // We generate the html with Vue.js
         // by cloning the existing template into the div for this pane.
-        var $template = $('#text-pane-template').clone();
+        var $template = $('#vue-template-text-pane').detach();
         $template.removeAttr('id');
-        var containerid = '#text-pane-'+pane.view.pane_slug
-        var $container = $(containerid);
-        $container.html($template);
+        var template = $template.prop('outerHTML');
         
-        pane.view.display_settings_active = {};
-        
-        new Vue({
-            el: containerid,
-            data: pane.view,
+        Vue.component('text-pane', {
+            template: template,
+            // this.apane: the attribute when creating/updating the html element
+            // this.pane: the initial pane when creating the html element
+            props: ['apane'],
+            data: function() {
+                this.pane = this.apane;
+                var ret = this.apane.view;
+                ret.display_settings_active = {};
+                return ret;
+            },
             watch: {
+                'apane': function(pane) {
+                    // This is a trick. Because vue.js has no way of knowing
+                    // which element correspond to which instance when it 
+                    // re-renders the viewer/layout. The only thing that is preserved
+                    // is the order of the pane. 
+                    // If p1, p2, p3. User closes p2. Then vue.js will
+                    // keep p1 & p2 components but pass 3rd Pane to p3 component.
+                    // We can't replace this.$data so instead we request the
+                    // incoming address and update the slug of the pane.
+                    this.pane_slug = pane.view.pane_slug;
+                    this.pane.requestAddress(pane.address);
+                },
                 'view.slug': function(val) {
-                    pane.changeAddressPart('view', val);
+                    this.pane.changeAddressPart('view', val);
                 },
                 'location.slug': function(val) {
-                    pane.changeAddressPart('location', val);
+                    this.pane.changeAddressPart('location', val);
                 },
                 'chunk': function(val) {
                     this.$nextTick(function() {
                         // convert the hrefs to the bibliography page
-                        $("a[href]").each(function() {
+                        $(this.$el).find(".text-chunk a[href]").each(function() {
                             var link = $(this).attr('href');
                             // TODO: we shouldn't hard-code this link
                             link = '/k/bibliography/#' + link;
@@ -399,20 +507,25 @@
                         });
                         // we remove all reveals initialised by foundation
                         // to avoid endless accumulation and duplicates
-                        $("[data-reveal!=''][data-reveal]").remove();
-                        // we initi foundation on all the new reveals
+                        $('.reveal[data-panel="'+this.pane_slug+'"]').remove();
+                        // we init Foundation on all the new reveals
                         $(this.$el).find('.reveal').each(function() {
-                            new Foundation.Reveal($(this));
+                            var $reveal = $(this);
+                            $reveal.attr('data-panel', this.pane_slug);
+                            new Foundation.Reveal($reveal);
                         })
                     });
                 }
             },
             methods: {
                 onClickView: function(view) {
-                    pane.changeAddressPart('view', view);
+                    this.pane.changeAddressPart('view', view);
+                },
+                onClickViewExtrenal: function(view) {
+                    this.pane.openViewInNewPane(view);
                 },
                 onClickLocationType: function(location_type) {
-                    pane.changeAddressPart('location_type', location_type);
+                    this.pane.changeAddressPart('location_type', location_type);
                 },
                 // TODO: that logic should move to Panel
                 // TODO: the list of available display settings should be 
@@ -436,6 +549,12 @@
                     }
                     
                     return ret;
+                },
+                canClosePane: function() {
+                    return this.pane.canClosePane();
+                },
+                closePane: function(apane) {
+                    return this.pane.closePane();
                 }
             },
         });
@@ -443,10 +562,6 @@
     
     // customisation
     
-    function on_chunk_loaded(vue) {
-        
-    }
-
     // ===============================================================
     // Initialisation
     // TODO: move this out
@@ -456,19 +571,33 @@
             bind: function(el) {
                 Vue.nextTick(function () {
                     $(el).addClass('dropdown menu');
-                    new Foundation.DropdownMenu($(el));
+                    var options = {
+                        closingTime: 50,
+                    };
+                    new Foundation.DropdownMenu($(el), options);
                 })
             },
             unbind: function(el) {
-                $(el).foundation.destroy();
+                $(el).foundation('destroy');
             },
         });
         
         var options = {
-            'on_create_pane': on_create_pane,
-            'on_chunk_loaded': on_chunk_loaded,
+            //'on_create_pane': on_create_pane,
+            //'on_create_viewer': on_create_viewer,
         };
         var viewer = new Viewer(options);
+        
+        var layout = new Vue({
+            el: '#text-viewer',
+            data: viewer.view,
+            methods: {
+                getPane: function(slug) {
+                    return viewer.getPane(slug)
+                }
+            }
+        });
+        
         // viewer.load('Fr_20125/critical/section/588/');
         
         $('section.main').on('click', 'div[data-corresp]', function() {
