@@ -20,7 +20,7 @@
 
 
 // TEXT PANE
-.text-pane {
+.main .text-pane {
     
     flex-grow: 1;
     flex-basis: 0;
@@ -32,6 +32,8 @@
     }
     
     h2.doc-label {
+        padding: 0;
+        
         ul.dropdown.menu {
             font-size: 80%;
             display: inline-block;

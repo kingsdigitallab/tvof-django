@@ -107,9 +107,25 @@
         return ret;
     }
     
+    Viewer.prototype.closePane = function(apane) {
+        for (var i = 0; i < this.view.panes.length; i++) {
+            if (this.view.panes[i].slug == apane.view.pane_slug) {
+                this.view.panes.splice(i, 1);
+                delete this.panes[apane.view.pane_slug];
+                this.updateQueryString();
+                break;
+            }
+        }
+    }
+
     Viewer.prototype.getPane = function(slug) {
         return this.panes[slug];
     }
+    
+    Viewer.prototype.getPaneCount = function() {
+        return this.view.panes.length;
+    }
+
     
     /*****************************************************
      * Pane
@@ -153,6 +169,14 @@
         // self.options.query_string = "Fr_20125/semi-diplomatic/"
         this.requestAddress(this.options.query_string);
     };
+    
+    Pane.prototype.canClosePane = function() {
+        return this.panes.getPaneCount() > 1;
+    }
+    
+    Pane.prototype.closePane = function() {
+        this.panes.closePane(this);
+    }
     
     Pane.prototype.isSynced = function() {
         return (~this.address_requested.indexOf('synced'));
@@ -444,13 +468,28 @@
         
         Vue.component('text-pane', {
             template: template,
-            props: ['pane'],
+            // this.apane: the attribute when creating/updating the html element
+            // this.pane: the initial pane when creating the html element
+            props: ['apane'],
             data: function() {
-                var ret = this.pane.view;
+                this.pane = this.apane;
+                var ret = this.apane.view;
                 ret.display_settings_active = {};
                 return ret;
             },
             watch: {
+                'apane': function(pane) {
+                    // This is a trick. Because vue.js has no way of knowing
+                    // which element correspond to which instance when it 
+                    // re-renders the viewer/layout. The only thing that is preserved
+                    // is the order of the pane. 
+                    // If p1, p2, p3. User closes p2. Then vue.js will
+                    // keep p1 & p2 components but pass 3rd Pane to p3 component.
+                    // We can't replace this.$data so instead we request the
+                    // incoming address and update the slug of the pane.
+                    this.pane_slug = pane.view.pane_slug;
+                    this.pane.requestAddress(pane.address);
+                },
                 'view.slug': function(val) {
                     this.pane.changeAddressPart('view', val);
                 },
@@ -460,7 +499,7 @@
                 'chunk': function(val) {
                     this.$nextTick(function() {
                         // convert the hrefs to the bibliography page
-                        $("a[href]").each(function() {
+                        $(this.$el).find(".text-chunk a[href]").each(function() {
                             var link = $(this).attr('href');
                             // TODO: we shouldn't hard-code this link
                             link = '/k/bibliography/#' + link;
@@ -510,6 +549,12 @@
                     }
                     
                     return ret;
+                },
+                canClosePane: function() {
+                    return this.pane.canClosePane();
+                },
+                closePane: function(apane) {
+                    return this.pane.closePane();
                 }
             },
         });
@@ -526,11 +571,14 @@
             bind: function(el) {
                 Vue.nextTick(function () {
                     $(el).addClass('dropdown menu');
-                    new Foundation.DropdownMenu($(el));
+                    var options = {
+                        closingTime: 50,
+                    };
+                    new Foundation.DropdownMenu($(el), options);
                 })
             },
             unbind: function(el) {
-                $(el).foundation.destroy();
+                $(el).foundation('destroy');
             },
         });
         

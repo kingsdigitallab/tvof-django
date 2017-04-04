@@ -20,13 +20,18 @@
     {% endcomment %}
     {% verbatim %}
         <section id="text-viewer" class="main text-viewer">
-            <div v-for="pane in panes" is="text-pane" v-bind:pane="getPane(pane.slug)"></div>
+            <div v-for="pane in panes" is="text-pane" v-bind:apane="getPane(pane.slug)"></div>
         </section>
     {% endverbatim %}
 
     {% verbatim %}
         <div class="vue-templates">
             <div id="vue-template-text-pane" class="text-pane">
+                <ul class="menu">
+                    <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </a>
+                </ul>
                 <div class="controls">
                     <h2 class="doc-label">
                         {{ document.label }}
