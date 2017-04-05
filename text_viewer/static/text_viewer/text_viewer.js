@@ -95,7 +95,7 @@
         
         for (var k in this.panes) {
             if (this.panes.hasOwnProperty(k)) {
-                if (this.panes[k] !== pane) {
+                if (this.panes[k] !== pane && !this.panes[k].isSynced()) {
                     // TODO: synced with a specific pane rather than first other
                     // one we find.
                     ret = this.panes[k].address;
@@ -124,6 +124,18 @@
     
     Viewer.prototype.getPaneCount = function() {
         return this.view.panes.length;
+    }
+    
+    Viewer.prototype.getNonSyncedCount = function() {
+        var ret = 0;
+
+        for (var k in this.panes) {
+            if (this.panes.hasOwnProperty(k) && !this.panes[k].isSynced()) {
+                ret += 1;
+            }
+        }
+        
+        return ret;
     }
 
     
@@ -225,13 +237,22 @@
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
         var parts = this.getAddressParts(this.address_requested);
-        parts[part_name] = value;
+        // make sure we don't end up with all panes synced
+        if (!(part_name == 'location_type' && value == 'synced' && this.panes.getNonSyncedCount() < 2)) {
+            parts[part_name] = value;
+        }
         return this.requestAddress(this.getAddressFromParts(parts));
     }
 
     Pane.prototype.requestAddress = function(address) {
         // api call
-        if (address === this.address) return;
+        if (address === this.address) {
+            // no need for a new request
+            // but we may need to update the requested address
+            // in case user switched from /section/1 to /synced/1 to /section/1
+            this.onReceivedAddress(address);
+            return;
+        }
         var self = this;
         
         parts = this.getAddressParts(address);
@@ -261,7 +282,6 @@
     Pane.prototype.onRequestSuccessful = function(response, textStatus, jqXHR) {
         if (!response.errors) {
             this.view.chunk = response.chunk;
-            
             this.onReceivedAddress(response.address);
         } else {
             this.view.errors = response.errors;
@@ -376,6 +396,7 @@
     Pane.prototype.onReceivedAddress = function(address) {
         // update the loaded address
         // this is the real address of our this.view.chunk
+        var has_address_changed = (this.address !== address);
         this.address = address;
         
         // update address in URL
@@ -385,7 +406,9 @@
         this.requestAddresses();
         
         // broadcast our address to other panes so they can sync with us
-        this.panes.onPaneAddressChanged(this);
+        if (has_address_changed && !this.isSynced()) {
+            this.panes.onPaneAddressChanged(this);
+        }
     }
 
     Pane.prototype.onRequestComplete = function(textStatus, jqXHR) {
@@ -440,7 +463,7 @@
      * 
     */
     function change_broswer_query_string(query_string, title) {
-        var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname
+        var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
         query_string = query_string || '';
         if (query_string) newurl += '?' + query_string;
         if (history.pushState && window.location.href !== newurl) {
@@ -477,6 +500,7 @@
                 ret.display_settings_active = {};
                 return ret;
             },
+            // var elem = new Foundation.Tooltip(element, options);
             watch: {
                 'apane': function(pane) {
                     // This is a trick. Because vue.js has no way of knowing
@@ -488,7 +512,7 @@
                     // We can't replace this.$data so instead we request the
                     // incoming address and update the slug of the pane.
                     this.pane_slug = pane.view.pane_slug;
-                    this.pane.requestAddress(pane.address);
+                    this.pane.requestAddress(pane.address_requested);
                 },
                 'view.slug': function(val) {
                     this.pane.changeAddressPart('view', val);

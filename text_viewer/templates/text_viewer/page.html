@@ -29,7 +29,10 @@
             <div id="vue-template-text-pane" class="text-pane">
                 <ul class="menu">
                     <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()">
-                        <i class="fa fa-times" aria-hidden="true"></i>
+                        <i class="fa fa-times" 
+                        aria-hidden="true"
+                        data-tooltip aria-haspopup="true" class="has-tip" data-hover-delay="0" title="Close this pane">
+                        </i>
                     </a>
                 </ul>
                 <div class="controls">
@@ -43,7 +46,10 @@
                                     <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
                                         <a v-on:click.prevent="onClickView(aview.slug)" href="#">
                                             {{ aview.label }}
-                                            <i class="fa fa-external-link external-link" v-on:click.stop.prevent="onClickViewExtrenal(aview.slug)"></i>
+                                            <i class="fa fa-external-link external-link" 
+                                            v-on:click.stop.prevent="onClickViewExtrenal(aview.slug)"
+                                            data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" data-hover-delay="0" title="Open in a new pane">
+                                            </i>
                                         </a>
                                     </li>
                                 </ul>

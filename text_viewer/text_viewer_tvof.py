@@ -4,6 +4,7 @@ from text_viewer import (TextViewerAPI, get_unicode_from_xml,
                          remove_xml_elements)
 import xml.etree.ElementTree as ET
 import re
+from collections import OrderedDict
 
 # TODO: move this to another package, outside of generic text_viewer
 '''
@@ -14,6 +15,8 @@ import re
 
 
 class TextViewerAPITvof(TextViewerAPI):
+
+    cache = OrderedDict()
 
     location_types = [
         {
@@ -259,12 +262,26 @@ class TextViewerAPITvof(TextViewerAPI):
 
         # Send the request to Kiln.
         print url
-        r = requests.get(url, timeout=5)
-        response = r.text.encode('utf-8')
+        response = TextViewerAPITvof.get_cached_request(url)
 
         # Create a new XML tree from the response.
         root = ET.fromstring(response)
 
         ret = root.find('.//text[@name="{}"]'.format(document))
+
+        return ret
+
+    @classmethod
+    def get_cached_request(cls, url):
+        cache = cls.cache
+
+        ret = cls.cache.get(url, None)
+        if ret is None:
+            print 'REQUEST %s' % url
+            r = requests.get(url, timeout=5)
+            ret = r.text.encode('utf-8')
+            cache[url] = ret
+            if len(cache.keys()) > 3:
+                cache.popitem()
 
         return ret
