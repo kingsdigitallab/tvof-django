@@ -6,18 +6,6 @@
 
 {% block main_wrapper %}
     
-    {% comment %}
-        {% verbatim %}
-            <section id="text-viewer" class="main">
-                <div class="row">
-                    <div id="text-pane-center" class="text-pane large-6 columns">
-                    </div>
-                    <div id="text-pane-east" class="text-pane large-6 columns">
-                    </div>
-                </div>
-            </section>
-        {% endverbatim %}
-    {% endcomment %}
     {% verbatim %}
         <section id="text-viewer" class="main text-viewer">
             <div v-for="pane in panes" is="text-pane" v-bind:apane="getPane(pane.slug)"></div>
@@ -37,10 +25,17 @@
                 </ul>
                 <div class="controls">
                     <h2 class="doc-label">
-                        {{ document.label }}
-                        
                         <ul v-f-dropdown>
                             <li class="is-dropdown-submenu-parent">
+                                <a>{{ document.label }}</a>
+                                <ul class="menu">
+                                    <li v-for="adocument in documents" v-bind:class="[adocument.slug == document.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                        <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="is-dropdown-submenu-parent dropdown-views">
                                 <a>{{ view.label }}</a>
                                 <ul class="menu">
                                     <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">

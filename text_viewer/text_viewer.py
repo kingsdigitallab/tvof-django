@@ -1,3 +1,7 @@
+import requests
+from collections import OrderedDict
+
+
 class TextViewerAPI(object):
     '''
     Text Viewer Web API Skeleton
@@ -6,13 +10,17 @@ class TextViewerAPI(object):
 
     API: /document/view/location_type/location
     '''
+    cache = OrderedDict()
+
     part_levels = ['document', 'view', 'location_type', 'location']
 
     def __init__(self):
         pass
 
-    def add_error(self, code, message):
+    def add_error(self, code, message, info):
         error = {'code': code, 'message': message}
+        if info:
+            error['info'] = info
         self.errors.append(error)
 
     def process_request(self, request, path):
@@ -102,6 +110,21 @@ class TextViewerAPI(object):
             ret = {
                 'errors': self.errors
             }
+        return ret
+
+    @classmethod
+    def get_cached_request(cls, url):
+        cache = cls.cache
+
+        ret = cls.cache.get(url, None)
+        if ret is None:
+            print 'REQUEST %s' % url
+            r = requests.get(url, timeout=5)
+            ret = r.text.encode('utf-8')
+            cache[url] = ret
+            if len(cache.keys()) > 3:
+                cache.popitem()
+
         return ret
 
 
