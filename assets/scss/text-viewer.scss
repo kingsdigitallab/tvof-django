@@ -37,12 +37,9 @@
         padding: 0;
         
         ul.dropdown.menu {
-            font-size: 80%;
             display: inline-block;
-            a {
-                /* color: #8a8a8a; */
-            }
-            > li {
+            > li.dropdown-views {
+                font-size: 80%;
                 > a {
                     color: #8a8a8a;
                     line-height: 0;

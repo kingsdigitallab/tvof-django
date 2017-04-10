@@ -6,18 +6,6 @@
 
 {% block main_wrapper %}
     
-    {% comment %}
-        {% verbatim %}
-            <section id="text-viewer" class="main">
-                <div class="row">
-                    <div id="text-pane-center" class="text-pane large-6 columns">
-                    </div>
-                    <div id="text-pane-east" class="text-pane large-6 columns">
-                    </div>
-                </div>
-            </section>
-        {% endverbatim %}
-    {% endcomment %}
     {% verbatim %}
         <section id="text-viewer" class="main text-viewer">
             <div v-for="pane in panes" is="text-pane" v-bind:apane="getPane(pane.slug)"></div>
@@ -37,17 +25,24 @@
                 </ul>
                 <div class="controls">
                     <h2 class="doc-label">
-                        {{ document.label }}
-                        
                         <ul v-f-dropdown>
                             <li class="is-dropdown-submenu-parent">
+                                <a>{{ document.label }}</a>
+                                <ul class="menu">
+                                    <li v-for="adocument in documents" v-bind:class="[adocument.slug == document.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                        <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li class="is-dropdown-submenu-parent dropdown-views">
                                 <a>{{ view.label }}</a>
                                 <ul class="menu">
                                     <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
                                         <a v-on:click.prevent="onClickView(aview.slug)" href="#">
                                             {{ aview.label }}
                                             <i class="fa fa-external-link external-link" 
-                                            v-on:click.stop.prevent="onClickViewExtrenal(aview.slug)"
+                                            v-on:click.stop.prevent="onClickViewExternal(aview.slug)"
                                             data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" data-hover-delay="0" title="Open in a new pane">
                                             </i>
                                         </a>
@@ -84,11 +79,19 @@
                             </ul>
                         </li>
                     </ul>
-                    
-                    <select name="location" v-model="location.slug" v-bind:class="[locations.length < 2 ? 'invisible': '']">
-                        <option class="tei" v-for="location in locations" v-bind:value="location.slug" v-html="location.label_long">
-                        </option>
-                    </select>
+
+                    <div>
+                        <a href="#" v-on:click.stop.prevent="toggleSynced()" v-bind:class="{hidden: !canBeSynced()}">
+                            <i v-bind:class="['fa', is_synced ? 'fa-chain' : 'fa-chain-broken']" 
+                            aria-hidden="true"
+                            data-tooltip aria-haspopup="true" class="has-tip" data-hover-delay="0" title="Sync/Unsync">
+                            </i>
+                        </a>
+                        <select name="location" v-model="location.slug" v-bind:class="{'invisible': areLocationsHidden()}">
+                            <option class="tei" v-for="alocation in locations" v-bind:value="alocation.slug" v-html="alocation.label_long">
+                            </option>
+                        </select>
+                    </div>
                     
                 </div>
                 <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">

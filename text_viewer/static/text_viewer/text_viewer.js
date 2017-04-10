@@ -7,6 +7,7 @@
         this.options = options;
         this.api_url = this.options.api_url || (window.location.pathname + 'api/');
         this.panes = {};
+        this.cache = {};
         this.view = {
             'panes': [
             ],
@@ -125,17 +126,39 @@
     Viewer.prototype.getPaneCount = function() {
         return this.view.panes.length;
     }
-    
-    Viewer.prototype.getNonSyncedCount = function() {
-        var ret = 0;
+
+    // Returns true if <pane> can be synced.
+    // That is, if there is at least one other non-synced pane in the text viewer 
+    Viewer.prototype.canPaneBeSynced = function(pane) {
+        var cnt = 0;
 
         for (var k in this.panes) {
-            if (this.panes.hasOwnProperty(k) && !this.panes[k].isSynced()) {
-                ret += 1;
+            if (this.panes.hasOwnProperty(k) && !this.panes[k].isSynced() && (this.panes[k] !== pane)) {
+                cnt += 1;
             }
         }
         
-        return ret;
+        return (cnt > 0);
+    }
+
+    // Request the list of documents from the API and pass it to the callback
+    Viewer.prototype.copyDocumentList = function(callback) {
+        var self = this;
+        if (this.cache.documents && !$.isEmptyObject(this.cache.documents)) {
+            callback(this.cache.documents);
+        } else {
+            $(document).on('tv.documents.received', function(event, documents) {
+                callback(documents);
+            });
+            
+            if (!this.cache.hasOwnProperty('documents')) {
+                this.cache.documents = [];
+                call_api(this.api_url, function(data) {
+                    self.cache.documents = data.documents;
+                    $(document).trigger('tv.documents.received', [data.documents]);
+                });
+            }
+        }
     }
 
     
@@ -144,17 +167,17 @@
      */
     function Pane(panes, slug, options) {
         this.view = {
+            pane_slug: slug,
+
             document: {
                 slug: '',
                 label: '',
             },
-            pane_slug: slug,
+            documents: [],
             
             view: 'critical',
             views: ['critical'],
             
-            display_settings: [],
-
             location_type: 'location',
             location_types: ['1', '2'],
 
@@ -164,14 +187,19 @@
             conventions: '',
             
             chunk: 'chunk',
+            
+            is_synced: 0,
+
+            display_settings: [],
+            
             errors: [],
         };
         
         this.panes = panes;
         this.options = options;
         this.address = null;
-        this.address_requested = '';
         this.addresses = {};
+        this.requested_chunk_hash = '';
         
         this.init();
     }
@@ -191,13 +219,16 @@
     }
     
     Pane.prototype.isSynced = function() {
-        return (~this.address_requested.indexOf('synced'));
+        //return (~this.address_requested.indexOf('synced'));
+        //return (this.view.location_type.slug == 'synced');
+        return this.view.is_synced;
     }
     
     Pane.prototype.syncWith = function(address) {
         if (this.isSynced()) {
             // todo: sync with that specific address
-            this.changeAddressPart('location_type', 'synced');
+            //this.changeAddressPart('location_type', 'synced');
+            this.requestAddress(this.address);
         }
     }
     
@@ -234,19 +265,26 @@
         var ret = parts.document + '/' + parts.view + '/' + parts.location_type + '/' + parts.location;
         return ret;
     }
+    
+    Pane.prototype.getUIAddress = function() {
+        return [this.view.document.slug, this.view.view.slug, this.view.location_type.slug, this.view.location.slug].join('/');
+    }
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
-        var parts = this.getAddressParts(this.address_requested);
-        // make sure we don't end up with all panes synced
-        if (!(part_name == 'location_type' && value == 'synced' && this.panes.getNonSyncedCount() < 2)) {
-            parts[part_name] = value;
-        }
+        //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
+        var parts = this.getAddressParts(this.address);
+        parts[part_name] = value;
         return this.requestAddress(this.getAddressFromParts(parts));
+    }
+
+    Pane.prototype.canBeSynced = function(part_name, value) {
+        // make sure we don't end up with all panes synced
+        return this.panes.canPaneBeSynced(this);
     }
 
     Pane.prototype.requestAddress = function(address) {
         // api call
-        if (address === this.address) {
+        if (!this.isSynced() && address === this.address) {
             // no need for a new request
             // but we may need to update the requested address
             // in case user switched from /section/1 to /synced/1 to /section/1
@@ -255,12 +293,11 @@
         }
         var self = this;
         
-        parts = this.getAddressParts(address);
+        var parts = this.getAddressParts(address);
         
         // 2 get initial chunk
         var url = this.panes.api_url + this.getAddressFromParts(parts);
         var on_success = function(data, jqXHR, textStatus) {
-            self.address_requested = address;
             self.onRequestSuccessful(data, jqXHR, textStatus);
         };
         var on_complete = function(jqXHR, textStatus) {
@@ -270,13 +307,17 @@
         this.view.errors = [];
         var data = null;
         
-        if (parts.location_type == 'synced') {
+        if (this.isSynced()) {
             data = {
                'sw': this.panes.getSyncedWithAddress(this)
             }
         }
         
-        call_api(url, on_success, on_complete, data);
+        req = call_api(url, on_success, on_complete, data, false, [this.requested_chunk_hash]);
+        if (this.requested_chunk_hash === req.request_hash) {
+            this.onReceivedAddress(address);
+        }
+        this.requested_chunk_hash = req.request_hash;
     }
 
     Pane.prototype.onRequestSuccessful = function(response, textStatus, jqXHR) {
@@ -297,10 +338,36 @@
         return ret;
     };
     
+    // Copy document_list into this.view.documents
+    // document_list is an array of {label:, slug:}
+    // If document_list is undefined, retrieve it from this.panels
+    // Which may incur an API request
+    Pane.prototype.setDocumentList = function(document_list) {
+        var self = this;
+        if (document_list) {
+            this.view.documents.splice(0, this.view.documents.length);
+            for (var i = 0; i < document_list.length; i++) {
+                this.view.documents.push({
+                    'label': document_list[i].label,
+                    'slug': document_list[i].slug,
+                });
+            }
+        } else {
+            if (this.view.documents.length < 1) {
+                this.panes.copyDocumentList(function(document_list) {
+                    self.setDocumentList(document_list);
+                });
+            }
+        }
+    }
+    
     // set all the views, location types and locations for this document
     // make a request if necessary and set up temporary values
     Pane.prototype.requestAddresses = function() {
         var self = this;
+        
+        this.setDocumentList();
+        
         var parts = this.getAddressParts();
         
         if (!self.addresses || (parts.document != self.addresses.slug)) {
@@ -342,47 +409,51 @@
     Pane.prototype.renderAddresses = function() {
         var self = this;
         
-        // update self.view
+        // document
         self.view.document = self.getPartMeta(self.addresses);
         
         var parts = this.getAddressParts();
-
-        // update the view list
+        
+        // views
         self.view.views = [];
         self.addresses.views.map(function(aview) {
             self.view.views.push(self.getPartMeta(aview));
         });
         
-        // http://localhost:8000/textviewer/api/Fr20125/
         // Update the lists in self.view
         // by doing simple lookups in the self.views from the address parts.
         this.addresses.views.map(function(aview) {
-            // update the view list
             if (aview.slug == parts.view) {
+                // view
                 self.view.view = self.getPartMeta(aview);
                 
-                // currently selected view 
-                // location_types
-                self.view.location_types = [];
-                self.view.locations = [];
-                
+                // conventions
                 self.view.conventions = aview.conventions || '';
                 
-                // TODO: clone?
+                // display_settings
                 self.view.display_settings = aview.display_settings || [];
                 
-                var user_location_type = self.isSynced() ? 'synced': parts.location_type;
+                //var user_location_type = self.isSynced() ? 'synced': parts.location_type;
                 
+                // location_types
+                self.view.location_types = [];
+                // locations
+                self.view.locations = [];
+
                 aview.location_types.map(function(location_type) {
+                    // location_types
                     self.view.location_types.push(self.getPartMeta(location_type));
                     
-                    if (location_type.slug == user_location_type) {
+                    if (location_type.slug == parts.location_type) {
                         
+                        // location_type
                         self.view.location_type = self.getPartMeta(location_type);
                         
                         location_type.locations.map(function(location) {
+                            // locations
                             self.view.locations.push(self.getPartMeta(location));
                             if (location.slug == parts.location) {
+                                // location
                                 self.view.location = self.getPartMeta(location);
                             }
                         });
@@ -396,6 +467,7 @@
     Pane.prototype.onReceivedAddress = function(address) {
         // update the loaded address
         // this is the real address of our this.view.chunk
+        console.log('received '+address+' had '+this.address)
         var has_address_changed = (this.address !== address);
         this.address = address;
         
@@ -433,7 +505,7 @@
         return vars;
     }
 
-    function call_api(url, onSuccess, onComplete, requestData, synced) {
+    function call_api(url, onSuccess, onComplete, requestData, synced, inhibiters) {
         // See http://stackoverflow.com/questions/9956255.
         // This tricks prevents caching of the fragment by the browser.
         // Without this if you move away from the page and then click back
@@ -448,11 +520,19 @@
             complete: onComplete,
             success: onSuccess
         };
+        
         if (requestData && requestData.method) {
             getData.type = requestData.method;
             delete requestData.method;
         }
-        var ret = $.ajax(getData);
+        
+        var request_hash = JSON.stringify({url: getData.url, data: getData.data})
+        
+        var ret = {};
+        if (!inhibiters || inhibiters.indexOf(request_hash) == -1) {
+            var ret = $.ajax(getData);
+        }
+        ret.request_hash = request_hash;
 
         return ret;
     };
@@ -512,9 +592,10 @@
                     // We can't replace this.$data so instead we request the
                     // incoming address and update the slug of the pane.
                     this.pane_slug = pane.view.pane_slug;
-                    this.pane.requestAddress(pane.address_requested);
+                    this.pane.requestAddress(pane.getUIAddress());
                 },
                 'view.slug': function(val) {
+                    // TODO: still need this?
                     this.pane.changeAddressPart('view', val);
                 },
                 'location.slug': function(val) {
@@ -542,15 +623,21 @@
                 }
             },
             methods: {
+                onClickDocument: function(document) {
+                    this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
+                },
                 onClickView: function(view) {
                     this.pane.changeAddressPart('view', view);
                 },
-                onClickViewExtrenal: function(view) {
+                onClickViewExternal: function(view) {
                     this.pane.openViewInNewPane(view);
                 },
                 onClickLocationType: function(location_type) {
                     this.pane.changeAddressPart('location_type', location_type);
                 },
+//                onClickLocation: function(location) {
+//                    this.pane.changeAddressPart('location', location);
+//                },
                 // TODO: that logic should move to Panel
                 // TODO: the list of available display settings should be 
                 // determined by this class instead of the web api.
@@ -559,6 +646,10 @@
                 },
                 onClickDisplaySetting: function(setting) {
                     this.$set(this.display_settings_active, setting.slug, !!!(this.display_settings_active[setting.slug]));
+                },
+                toggleSynced: function() {
+                    this.is_synced = !this.is_synced;
+                    this.pane.requestAddress(this.pane.address);
                 },
                 getClassesFromDisplaySettings: function() {
                     var self = this;
@@ -579,6 +670,12 @@
                 },
                 closePane: function(apane) {
                     return this.pane.closePane();
+                },
+                areLocationsHidden: function() {
+                    return (this.locations.length < 2 || this.is_synced) 
+                },
+                canBeSynced: function() {
+                    return this.pane.canBeSynced(); 
                 }
             },
         });
