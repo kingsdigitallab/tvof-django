@@ -93,16 +93,12 @@ class TextViewerAPIXML(TextViewerAPI):
                         if location['slug']:
                             locations.append(location)
 
-#                 if location_type['slug'] == 'synced':
-#                     locations = [{
-#                         'slug': 'synced',
-#                         'label': 'synced',
-#                         'label_long': 'synced'}]
                 if location_type['slug'] == 'whole':
                     locations = [{
                         'slug': 'whole',
                         'label': 'Whole',
                         'label_long': 'Whole'}]
+
                 location_type_info = {
                     'slug': location_type['slug'],
                     'label': location_type['label'],
@@ -138,6 +134,18 @@ class TextViewerAPIXML(TextViewerAPI):
                     if e.tag not in ['a', 'div']:
                         label_long += ET.tostring(e)
                 label_long = self.compress_html(label_long)
+
+                # TODO: move this to TVOF
+                # capitalise letters in the location label, HTML <option>
+                # doesn't support css styling on nested elements.
+                def rep(match):
+                    ret = match.group(1).title()
+                    return ret
+                label_long = re.sub(
+                    ur'<span class="tei-critToUpper">([^<]+)</span>',
+                    rep,
+                    label_long)
+
                 ret = {
                     'slug': number,
                     'label': number,

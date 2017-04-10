@@ -87,16 +87,23 @@ class TextViewerAPI(object):
         '''
 
     def request_synced_chunk(self, address_parts=None, synced_with=None):
-        # http://localhost:8000/textviewer/api/Fr20125/semi-diplomatic/synced/592?jx=1&sw=Fr20125/semi-diplomatic/interpretive/section/588
+        # http://localhost:8000/textviewer/api/Fr20125/semi-diplomatic/section/592?jx=1&sw=Fr20125/semi-diplomatic/interpretive/section/588
         # =>
         # Fr20125/semi-diplomatic/ + section/588
 
         # TODO: resolution of the correspondance should be done in the subclass
         # here we do a default one, mixing both addresses
         parts_synced = self.get_address_parts(synced_with)
-        parts = {k: (v if k not in ['location_type', 'location']
-                     else parts_synced[k])
-                 for k, v in address_parts.iteritems()}
+
+        parts = {k: v for k, v in address_parts.iteritems()}
+        if address_parts['document'] == parts_synced['document']:
+            # same doc, we simply copy the location type and location
+            for k in ['location_type', 'location']:
+                parts[k] = parts_synced[k]
+        else:
+            # different documents, we need to translate the address
+            if parts['location_type'] == 'section':
+                parts['location'] = 'default'
 
         return self.request_chunk(parts)
 
