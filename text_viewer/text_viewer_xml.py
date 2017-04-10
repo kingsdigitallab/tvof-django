@@ -93,11 +93,11 @@ class TextViewerAPIXML(TextViewerAPI):
                         if location['slug']:
                             locations.append(location)
 
-                if location_type['slug'] == 'synced':
-                    locations = [{
-                        'slug': 'synced',
-                        'label': 'synced',
-                        'label_long': 'synced'}]
+#                 if location_type['slug'] == 'synced':
+#                     locations = [{
+#                         'slug': 'synced',
+#                         'label': 'synced',
+#                         'label_long': 'synced'}]
                 if location_type['slug'] == 'whole':
                     locations = [{
                         'slug': 'whole',

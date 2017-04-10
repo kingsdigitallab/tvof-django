@@ -126,19 +126,21 @@
     Viewer.prototype.getPaneCount = function() {
         return this.view.panes.length;
     }
-    
-    Viewer.prototype.getNonSyncedCount = function() {
-        var ret = 0;
+
+    // Returns true if <pane> can be synced.
+    // That is, if there is at least one other non-synced pane in the text viewer 
+    Viewer.prototype.canPaneBeSynced = function(pane) {
+        var cnt = 0;
 
         for (var k in this.panes) {
-            if (this.panes.hasOwnProperty(k) && !this.panes[k].isSynced()) {
-                ret += 1;
+            if (this.panes.hasOwnProperty(k) && !this.panes[k].isSynced() && (this.panes[k] !== pane)) {
+                cnt += 1;
             }
         }
         
-        return ret;
+        return (cnt > 0);
     }
-    
+
     // Request the list of documents from the API and pass it to the callback
     Viewer.prototype.copyDocumentList = function(callback) {
         var self = this;
@@ -185,6 +187,8 @@
             conventions: '',
             
             chunk: 'chunk',
+            
+            is_synced: 0,
 
             display_settings: [],
             
@@ -216,13 +220,15 @@
     
     Pane.prototype.isSynced = function() {
         //return (~this.address_requested.indexOf('synced'));
-        return (this.view.location_type.slug == 'synced');
+        //return (this.view.location_type.slug == 'synced');
+        return this.view.is_synced;
     }
     
     Pane.prototype.syncWith = function(address) {
         if (this.isSynced()) {
             // todo: sync with that specific address
-            this.changeAddressPart('location_type', 'synced');
+            //this.changeAddressPart('location_type', 'synced');
+            this.requestAddress(this.address);
         }
     }
     
@@ -265,17 +271,20 @@
     }
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
-        var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
-        // make sure we don't end up with all panes synced
-        if (!(part_name == 'location_type' && value == 'synced' && this.panes.getNonSyncedCount() < 2)) {
-            parts[part_name] = value;
-        }
+        //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
+        var parts = this.getAddressParts(this.address);
+        parts[part_name] = value;
         return this.requestAddress(this.getAddressFromParts(parts));
+    }
+
+    Pane.prototype.canBeSynced = function(part_name, value) {
+        // make sure we don't end up with all panes synced
+        return this.panes.canPaneBeSynced(this);
     }
 
     Pane.prototype.requestAddress = function(address) {
         // api call
-        if (address === this.address) {
+        if (!this.isSynced() && address === this.address) {
             // no need for a new request
             // but we may need to update the requested address
             // in case user switched from /section/1 to /synced/1 to /section/1
@@ -298,7 +307,7 @@
         this.view.errors = [];
         var data = null;
         
-        if (parts.location_type == 'synced') {
+        if (this.isSynced()) {
             data = {
                'sw': this.panes.getSyncedWithAddress(this)
             }
@@ -400,47 +409,51 @@
     Pane.prototype.renderAddresses = function() {
         var self = this;
         
-        // update self.view
+        // document
         self.view.document = self.getPartMeta(self.addresses);
         
         var parts = this.getAddressParts();
-
-        // update the view list
+        
+        // views
         self.view.views = [];
         self.addresses.views.map(function(aview) {
             self.view.views.push(self.getPartMeta(aview));
         });
         
-        // http://localhost:8000/textviewer/api/Fr20125/
         // Update the lists in self.view
         // by doing simple lookups in the self.views from the address parts.
         this.addresses.views.map(function(aview) {
-            // update the view list
             if (aview.slug == parts.view) {
+                // view
                 self.view.view = self.getPartMeta(aview);
                 
-                // currently selected view 
-                // location_types
-                self.view.location_types = [];
-                self.view.locations = [];
-                
+                // conventions
                 self.view.conventions = aview.conventions || '';
                 
-                // TODO: clone?
+                // display_settings
                 self.view.display_settings = aview.display_settings || [];
                 
-                var user_location_type = self.isSynced() ? 'synced': parts.location_type;
+                //var user_location_type = self.isSynced() ? 'synced': parts.location_type;
                 
+                // location_types
+                self.view.location_types = [];
+                // locations
+                self.view.locations = [];
+
                 aview.location_types.map(function(location_type) {
+                    // location_types
                     self.view.location_types.push(self.getPartMeta(location_type));
                     
-                    if (location_type.slug == user_location_type) {
+                    if (location_type.slug == parts.location_type) {
                         
+                        // location_type
                         self.view.location_type = self.getPartMeta(location_type);
                         
                         location_type.locations.map(function(location) {
+                            // locations
                             self.view.locations.push(self.getPartMeta(location));
                             if (location.slug == parts.location) {
+                                // location
                                 self.view.location = self.getPartMeta(location);
                             }
                         });
@@ -582,6 +595,7 @@
                     this.pane.requestAddress(pane.getUIAddress());
                 },
                 'view.slug': function(val) {
+                    // TODO: still need this?
                     this.pane.changeAddressPart('view', val);
                 },
                 'location.slug': function(val) {
@@ -609,18 +623,21 @@
                 }
             },
             methods: {
+                onClickDocument: function(document) {
+                    this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
+                },
                 onClickView: function(view) {
                     this.pane.changeAddressPart('view', view);
                 },
-                onClickViewExtrenal: function(view) {
+                onClickViewExternal: function(view) {
                     this.pane.openViewInNewPane(view);
                 },
                 onClickLocationType: function(location_type) {
                     this.pane.changeAddressPart('location_type', location_type);
                 },
-                onClickDocument: function(document) {
-                    this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
-                },
+//                onClickLocation: function(location) {
+//                    this.pane.changeAddressPart('location', location);
+//                },
                 // TODO: that logic should move to Panel
                 // TODO: the list of available display settings should be 
                 // determined by this class instead of the web api.
@@ -629,6 +646,10 @@
                 },
                 onClickDisplaySetting: function(setting) {
                     this.$set(this.display_settings_active, setting.slug, !!!(this.display_settings_active[setting.slug]));
+                },
+                toggleSynced: function() {
+                    this.is_synced = !this.is_synced;
+                    this.pane.requestAddress(this.pane.address);
                 },
                 getClassesFromDisplaySettings: function() {
                     var self = this;
@@ -649,6 +670,12 @@
                 },
                 closePane: function(apane) {
                     return this.pane.closePane();
+                },
+                areLocationsHidden: function() {
+                    return (this.locations.length < 2 || this.is_synced) 
+                },
+                canBeSynced: function() {
+                    return this.pane.canBeSynced(); 
                 }
             },
         });

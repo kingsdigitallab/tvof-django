@@ -39,10 +39,10 @@ class TextViewerAPITvof(TextViewerAPIXML):
             'label': 'Whole Text',
             'xpath': './/div[@class="tei body"]',
         },
-        {
-            'slug': 'synced',
-            'label': 'Synced',
-        },
+        #         {
+        #             'slug': 'synced',
+        #             'label': 'Synced',
+        #         },
     ]
 
     def request_documents(self):

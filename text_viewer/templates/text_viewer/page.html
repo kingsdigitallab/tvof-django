@@ -42,7 +42,7 @@
                                         <a v-on:click.prevent="onClickView(aview.slug)" href="#">
                                             {{ aview.label }}
                                             <i class="fa fa-external-link external-link" 
-                                            v-on:click.stop.prevent="onClickViewExtrenal(aview.slug)"
+                                            v-on:click.stop.prevent="onClickViewExternal(aview.slug)"
                                             data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" data-hover-delay="0" title="Open in a new pane">
                                             </i>
                                         </a>
@@ -79,11 +79,19 @@
                             </ul>
                         </li>
                     </ul>
-                    
-                    <select name="location" v-model="location.slug" v-bind:class="[locations.length < 2 ? 'invisible': '']">
-                        <option class="tei" v-for="location in locations" v-bind:value="location.slug" v-html="location.label_long">
-                        </option>
-                    </select>
+
+                    <div>
+                        <a href="#" v-on:click.stop.prevent="toggleSynced()" v-bind:class="{hidden: !canBeSynced()}">
+                            <i v-bind:class="['fa', is_synced ? 'fa-chain' : 'fa-chain-broken']" 
+                            aria-hidden="true"
+                            data-tooltip aria-haspopup="true" class="has-tip" data-hover-delay="0" title="Sync/Unsync">
+                            </i>
+                        </a>
+                        <select name="location" v-model="location.slug" v-bind:class="{'invisible': areLocationsHidden()}">
+                            <option class="tei" v-for="alocation in locations" v-bind:value="alocation.slug" v-html="alocation.label_long">
+                            </option>
+                        </select>
+                    </div>
                     
                 </div>
                 <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
