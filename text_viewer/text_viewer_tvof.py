@@ -21,7 +21,7 @@ docs_sections = None
 
 def _get_xpath_from_location(document, view, location_type, location,
                              synced_with):
-    ret = None
+    ret = []
 
     if synced_with:
         if synced_with['document'] == document:
@@ -36,10 +36,13 @@ def _get_xpath_from_location(document, view, location_type, location,
 
     docid = docid_from_document_slug.get(document, None)
     if docid:
-        ret = './/div[@id="ed{}_{}"]'.format(
-            docid, unicode(location).rjust(5, '0'))
+        if not isinstance(location, list):
+            location = [location]
+        for loc in location:
+            ret.append('.//div[@id="ed{}_{}"]'.format(
+                docid, unicode(loc).rjust(5, '0')))
 
-    return ret or 'INVALID'
+    return ret
 
 
 def get_location_translated(doc_from, location_from, doc_to):
@@ -54,7 +57,9 @@ def get_location_translated(doc_from, location_from, doc_to):
     if doc_sections:
         location_to = doc_sections.get(location_from, None)
         if location_to:
-            ret = location_to[0]
+            ret = location_to
+
+    print ret
 
     return ret
 
@@ -106,7 +111,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                         l = ret[doc].get(id_src, None)
                         if l is None:
                             l = []
-                        if id_src not in l:
+                        if id_dst not in l:
                             l.append(id_dst)
                             ret[doc][id_src] = l
                         id_src, id_dst = id_dst, id_src

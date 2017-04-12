@@ -150,28 +150,39 @@ class TextViewerAPIXML(TextViewerAPI):
         # extract chunk from document and address
         xpath_from_location = location_type.get('xpath_from_location')
         if location == 'default' or xpath_from_location is None:
-            xpath = location_type.get('xpath')
+            xpaths = location_type.get('xpath')
         else:
-            xpath = xpath_from_location(
+            xpaths = xpath_from_location(
                 document, view, location_type_slug, location, synced_with)
-        chunk = xml.find(xpath)
+        if not isinstance(xpaths, list):
+            xpaths = [xpaths]
 
-        # build response from chunk and address
-        if chunk is None:
-            self.add_error(
-                'notfound', 'Chunk not found: {}'.format(
-                    self.get_requested_address()), 'XPATH = {}'.format(xpath))
-        else:
-            location_from_chunk = location_type.get('location_from_chunk')
-            if location_from_chunk:
-                location = location_from_chunk(chunk)
+        chunks = []
+        address = ''
+        for xpath in xpaths:
+            print xpath
+            chunk = xml.find(xpath)
 
-            chunk = ET.tostring(chunk)
+            # build response from chunk and address
+            if not chunk:
+                self.add_error(
+                    'notfound', 'Chunk not found: {}'.format(
+                        self.get_requested_address()),
+                    'XPATH = {}'.format(xpath)
+                )
+            else:
+                location_from_chunk = location_type.get('location_from_chunk')
+                if location_from_chunk:
+                    location = location_from_chunk(chunk)
 
-            address = '/'.join([document, view, location_type_slug, location])
+                chunks.append(ET.tostring(chunk))
 
+                address = '/'.join([document, view,
+                                    location_type_slug, location])
+
+        if chunks:
             self.response = {
-                'chunk': chunk,
+                'chunk': ur'<div>{}</div>'.format(u'\n'.join(chunks)),
                 'address': address,
             }
 
