@@ -1,6 +1,12 @@
 import requests
 from collections import OrderedDict
 
+'''
+TODO: instead of inheritence we should use a strategy pattern for:
+* the document and its format: XML, HTML, JSON, TEXT,
+* the repository and its API (DB, RestAPI, ...)
+'''
+
 
 class TextViewerAPI(object):
     '''
@@ -38,11 +44,10 @@ class TextViewerAPI(object):
         elif level == 'document':
             self.request_document(parts['document'])
         elif level == 'location':
-            synced_with = request.GET.get('sw')
+            synced_with = request.GET.get('sw', None)
             if synced_with:
-                self.request_synced_chunk(parts, synced_with=synced_with)
-            else:
-                self.request_chunk(parts)
+                synced_with = self.get_address_parts(synced_with)
+            self.request_chunk(parts, synced_with=synced_with)
         else:
             self.add_error('invalid_call', 'Invalid API call')
 
@@ -77,7 +82,7 @@ class TextViewerAPI(object):
 
         self.response = {'documents': documents}
 
-    def request_chunk(self, address_parts):
+    def request_chunk(self, address_parts, synced_with=None):
         '''
         document = self.requested_path[0]
         view = self.requested_path[1]
@@ -85,6 +90,7 @@ class TextViewerAPI(object):
         location_type = 'whole'
         location = ''
         '''
+        return ''
 
     def request_synced_chunk(self, address_parts=None, synced_with=None):
         # http://localhost:8000/textviewer/api/Fr20125/semi-diplomatic/section/592?jx=1&sw=Fr20125/semi-diplomatic/interpretive/section/588
