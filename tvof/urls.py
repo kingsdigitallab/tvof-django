@@ -9,6 +9,7 @@ from wagtail.wagtailsearch.signal_handlers import \
     register_signal_handlers as wagtailsearch_register_signal_handlers
 from wagtail.wagtailsearch.urls import frontend as wagtailsearch_frontend_urls
 from django.views.generic import RedirectView
+from text_viewer import urls as text_viewer_urls
 
 admin.autodiscover()
 wagtailsearch_register_signal_handlers()
@@ -46,6 +47,10 @@ urlpatterns += [
     )
     )
     for wagtail_path, kiln_path in settings.TVOF_WEBPATH_TO_KILN.iteritems()
+]
+
+urlpatterns += [
+    url(r'^textviewer/', include(text_viewer_urls)),
 ]
 
 urlpatterns += [

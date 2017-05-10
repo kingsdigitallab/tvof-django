@@ -263,10 +263,17 @@ nav {
         }
     }
 
+    // Bibliography - TEI
+
+    .tei-bibl:target {
+        background-color: #ece4b7;
+    }
+
     // Text viewer - TEI
 
     #manuscripts-content,
-    #manuscripts-title {
+    #manuscripts-title, 
+    .text-pane {
         h1, h2 {
             padding-top: rem-calc(24);
             padding-left: rem-calc(16);
