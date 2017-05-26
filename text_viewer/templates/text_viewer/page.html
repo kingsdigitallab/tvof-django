@@ -17,12 +17,21 @@
             <div id="vue-template-text-pane" class="text-pane">
                 <div class="row">
                     <div class="small-12 columns">
-                        <div class="off-canvas-wrapper">
+                        <!-- <div class="off-canvas-wrapper"> -->
+
+                            <ul class="vertical menu" data-accordion-menu>
+                                <li>
+                                    <div v-html="conventions">
+                                    </div>
+                                </li>
+                            </ul>
 
                             <!-- TODO: Need a dynamic ID for data-toggle -->
-                            <button type="button" class="fixed-bottom-right button float-right" data-toggle="conventions">
-                                <i class="fa fa-key"></i>
-                            </button>
+                            <div class="float-right">
+                                <button type="button" class="fixed-bottom-right button float-right" data-toggle="conventions">
+                                    <i class="fa fa-key"></i>
+                                </button>
+                            </div>
 
                             <div id="conventions" class="key off-canvas-absolute position-right" data-off-canvas>
                                 <button class="close-button" aria-label="Close menu" type="button" data-close>
@@ -32,7 +41,7 @@
                                 <div v-html="conventions">
                                 </div>
                             </div>
-                            
+
                             <div class="off-canvas-content" data-off-canvas-content>
                                 <ul class="menu">
                                     <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()">
@@ -115,7 +124,7 @@
                                 <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
                                 </div>
                             </div>
-                        </div>
+                        <!-- </div> -->
                     </div>
                 </div>
             </div>
