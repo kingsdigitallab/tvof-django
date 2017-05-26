@@ -19,6 +19,34 @@
     flex-wrap: wrap;
 }
 
+.main {
+    .close-button {
+        font-size: 1rem;
+        right: 0;
+        top: 0;
+    }
+
+    .fixed-bottom-right {
+        position: fixed;
+        bottom: 0;
+        right: 0;
+    }
+
+    .key {
+        padding: rem-calc(24 16 16);
+
+        ul {
+            list-style: none;
+            margin: 0;
+            li {
+                border-bottom: 1px solid scale-color($primary-color, $lightness: 70%);
+                margin: 0;
+                padding: rem-calc(8 0);
+            }
+        }
+    }
+}
+
 
 // TEXT PANE
 .main .text-pane {
@@ -33,8 +61,8 @@
         display:none;
     }
     
-    h2.doc-label {
-        padding: 0;
+    // h2.doc-label {
+    //     padding: 0;
         
         // ul.dropdown.menu {
         //     display: inline-block;
@@ -68,25 +96,25 @@
         //         background-color: inherit;
         //     }
         // }
-    }
+    // }
     
-    .controls {
-        .invisible {
-            visibility: hidden;
-        }
+    // .controls {
+    //     .invisible {
+    //         visibility: hidden;
+    //     }
     
-        ul.conventions-menu {
-            background-color: #fefefe;
-            white-space: nowrap;
-            border: 1px lightgrey solid;
-        }
-        .text-conventions ul {
-            list-style-type: none;
-            li {
-                padding: 0.5em;
-            }
-        }
-    }
+        // ul.conventions-menu {
+        //     background-color: #fefefe;
+        //     white-space: nowrap;
+        //     border: 1px lightgrey solid;
+        // }
+        // .text-conventions ul {
+        //     list-style-type: none;
+        //     li {
+        //         padding: 0.5em;
+        //     }
+        // }
+    // }
 }
 
 .text-chunk {

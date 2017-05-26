@@ -21,10 +21,17 @@
 
                         <div class="off-canvas-wrapper">
                             <!-- TODO: Need a dynamic ID for data-toggle -->
-                            <button type="button" class="button float-right" data-toggle="conventions">
+                            <button type="button" class="fixed-bottom-right button float-right" data-toggle="conventions">
                                 <i class="fa fa-key"></i>
                             </button>
-                            <div class="off-canvas-absolute position-right" id="conventions" data-off-canvas v-html="conventions">
+
+                            <div id="conventions" class="key off-canvas-absolute position-right" data-off-canvas>
+                                <button class="close-button" aria-label="Close menu" type="button" data-close>
+                                    <span aria-hidden="true"><i class="button fa fa-key"></i></span>
+                                </button>
+                                <h3>Notations</h3>
+                                <div v-html="conventions">
+                                </div>
                             </div>
 
                             <div class="off-canvas-content" data-off-canvas-content>
