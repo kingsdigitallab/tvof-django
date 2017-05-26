@@ -26,12 +26,6 @@
         top: 0;
     }
 
-    .fixed-bottom-right {
-        position: fixed;
-        bottom: 0;
-        right: 0;
-    }
-
     .key {
         padding: rem-calc(24 16 16);
 
@@ -44,6 +38,11 @@
                 padding: rem-calc(8 0);
             }
         }
+    }
+
+    .off-canvas-content {
+        float: left;
+        width: 90%;
     }
 }
 

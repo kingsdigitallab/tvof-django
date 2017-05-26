@@ -16,10 +16,9 @@
         <div class="vue-templates">
             <div id="vue-template-text-pane" class="text-pane">
                 <div class="row">
-
                     <div class="small-12 columns">
-
                         <div class="off-canvas-wrapper">
+
                             <!-- TODO: Need a dynamic ID for data-toggle -->
                             <button type="button" class="fixed-bottom-right button float-right" data-toggle="conventions">
                                 <i class="fa fa-key"></i>
@@ -33,9 +32,8 @@
                                 <div v-html="conventions">
                                 </div>
                             </div>
-
+                            
                             <div class="off-canvas-content" data-off-canvas-content>
-
                                 <ul class="menu">
                                     <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()">
                                         <i class="fa fa-times" 
@@ -116,7 +114,6 @@
                             
                                 <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
                                 </div>
-
                             </div>
                         </div>
                     </div>
