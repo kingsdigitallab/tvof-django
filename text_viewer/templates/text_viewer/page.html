@@ -105,6 +105,8 @@
 {% block footer_scripts %}
     {{ block.super }}
     {# TODO: load this with require.js ? #}
+    {% comment %}
     <script src="{% static 'vendor/vue/vue.js' %}"></script>
     <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
+    {% endcomment %}
 {% endblock %}

@@ -8,6 +8,8 @@ requirejs.config({
     urlArgs: 'bust=' + (new Date()).getTime(),
     paths: {
         'jquery': '../vendor/jquery/dist/jquery',
+        'vuejs': '../vendor/vue/vue',
+        'text_viewer': '../text_viewer/text_viewer',
 
         'es6': '../vendor/requirejs-babel/es6',
         'babel': '../vendor/requirejs-babel/babel-5.8.34.min',
@@ -135,6 +137,12 @@ requirejs.config({
         },
         'ga': {
             exports: '__ga__'
+        },
+        'vuejs': {
+            deps: [
+                'jquery',
+                'text_viewer'
+            ]
         },
     }
 });
