@@ -20,36 +20,29 @@
 }
 
 .main {
-    .close-button {
-        font-size: 1rem;
-        right: 0;
-        top: 0;
-    }
 
     .key {
-        padding: rem-calc(24 16 16);
 
         ul {
             list-style: none;
             margin: 0;
+
+            &.menu {
+                background: $light-gray;
+                padding: rem-calc(24 16 16);
+            }
+
             li {
+                border-bottom: none;
+            }
+
+            li li {
                 border-bottom: 1px solid scale-color($primary-color, $lightness: 70%);
+                list-style: none;
                 margin: 0;
                 padding: rem-calc(8 0);
             }
         }
-    }
-
-    .off-canvas-content {
-        float: left;
-        width: 90%;
-    }
-
-    .test-menu {
-        // max-width: rem-calc(300);
-        position: absolute;
-        right: 0;
-        top: 0;
     }
 }
 
