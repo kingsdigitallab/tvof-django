@@ -63,16 +63,6 @@ Textviewer
                                         </li>
                                     </ul>
                                 </li>
-                                <li v-bind:class="['is-dropdown-submenu-parent opens-right', display_settings.length ? '': 'hidden']">
-                                    <a>Display</a>
-                                    <ul class="menu">
-                                        <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                            <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
-                                                {{ setting.label }}
-                                            </a>
-                                        </li>
-                                    </ul>
-                                </li>
                             </ul>
 
                             <div>
@@ -91,17 +81,21 @@ Textviewer
                     </div>
                 </div>
                 <div class="row">
-                    <div class="small-10 columns">
+                    <div class="small-10 medium-11 columns">
                         <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
                         </div>
                     </div>
-                    <div class="small-2 columns">
-                        <ul class="vertical dropdown menu float-right" 
-                            data-dropdown-menu data-alignment="right" 
-                            data-right-class data-disable-hover="true" 
-                            data-click-open="true">
-                            <li>
-                                <a href="#"><i class="fa fa-columns"></i></a>
+                    <div class="small-2 medium-1 columns">
+                        <ul class="vertical dropdown menu" data-dropdown-menu 
+                            data-disable-hover="true" data-click-open="true" 
+                            data-alignment="right">
+                            <!-- TODO: need to fix the view button. By default it should duplicate only -->
+                            <li v-for="aview in views">
+                                <a href="#" v-on:click.stop.prevent="onClickViewExternal(aview.slug)"
+                                    data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" 
+                                    data-hover-delay="0" title="Open in a new pane">
+                                    <i class="fa fa-columns"></i>
+                                </a>
                             </li>
                             <li v-bind:class="['key is-dropdown-submenu-parent', display_settings.length ? '': 'hidden']">
                                 <a href="#"><i class="fa fa-pencil"></i></a>
