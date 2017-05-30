@@ -34,6 +34,34 @@
 
             li {
                 border-bottom: none;
+
+                a {
+                    border-bottom: 1px solid scale-color($primary-color, $lightness: 70%);
+                    color: $primary-color;
+                    padding: rem-calc(8 0);
+
+                    &:before {
+                        content: "\f070";
+                        font-family: "FontAwesome";
+                        padding-right: rem-calc(4);
+                    }
+
+                    &:visited {
+                        background: transparent;
+                    }
+                }
+
+                &.active {
+                    a {
+                        background: transparent;
+                    }
+                    
+                    a:before {
+                        content: "\f06e";
+                        font-family: "FontAwesome";
+                        padding-right: rem-calc(4);
+                    }
+                }
             }
 
             li li {

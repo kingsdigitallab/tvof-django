@@ -18,16 +18,100 @@ Textviewer
             <div id="vue-template-text-pane" class="text-pane">
                 <div class="row">
                     <div class="small-12 columns">
+                        <ul class="menu">
+                            <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()">
+                                <i class="fa fa-times" 
+                                aria-hidden="true"
+                                data-tooltip aria-haspopup="true" class="has-tip" data-hover-delay="0" title="Close this pane">
+                                </i>
+                            </a>
+                        </ul>
+                        <div class="controls">
+                            <h2 class="doc-label">
+                                <ul v-f-dropdown>
+                                    <li class="is-dropdown-submenu-parent">
+                                        <a>{{ document.label }}</a>
+                                        <ul class="menu">
+                                            <li v-for="adocument in documents" v-bind:class="[adocument.slug == document.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                                <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                    <li class="is-dropdown-submenu-parent dropdown-views">
+                                        <a>{{ view.label }}</a>
+                                        <ul class="menu">
+                                            <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                                <a v-on:click.prevent="onClickView(aview.slug)" href="#">
+                                                    {{ aview.label }}
+                                                    <i class="fa fa-external-link external-link" 
+                                                    v-on:click.stop.prevent="onClickViewExternal(aview.slug)"
+                                                    data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" data-hover-delay="0" title="Open in a new pane">
+                                                    </i>
+                                                </a>
+                                            </li>
+                                        </ul>
+                                    </li>
+                                </ul>
+                            </h2>
+            
+                            <ul v-f-dropdown>
+                                <li class="is-dropdown-submenu-parent">
+                                    <a>{{ location_type.label }}</a>
+                                    <ul class="menu">
+                                        <li v-for="alocation_type in location_types" v-bind:class="[alocation_type.slug == location_type.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                            <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">{{ alocation_type.label }}</a>
+                                        </li>
+                                    </ul>
+                                </li>
+                                <li v-bind:class="['is-dropdown-submenu-parent opens-right', display_settings.length ? '': 'hidden']">
+                                    <a>Display</a>
+                                    <ul class="menu">
+                                        <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                            <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
+                                                {{ setting.label }}
+                                            </a>
+                                        </li>
+                                    </ul>
+                                </li>
+                            </ul>
 
+                            <div>
+                                <a href="#" v-on:click.stop.prevent="toggleSynced()" v-bind:class="{hidden: !canBeSynced()}">
+                                    <i v-bind:class="['fa fa-random', is_synced ? 'sync' : 'unsync']" 
+                                    aria-hidden="true"
+                                    data-tooltip aria-haspopup="true" class="has-tip" data-hover-delay="0" title="Sync/Unsync">
+                                    </i>
+                                </a>
+                                <select name="location" v-model="location.slug" v-bind:class="{'invisible': areLocationsHidden()}">
+                                    <option class="tei" v-for="alocation in locations" v-bind:value="alocation.slug" v-html="alocation.label_long">
+                                    </option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="small-10 columns">
+                        <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
+                        </div>
+                    </div>
+                    <div class="small-2 columns">
                         <ul class="vertical dropdown menu float-right" 
                             data-dropdown-menu data-alignment="right" 
                             data-right-class data-disable-hover="true" 
                             data-click-open="true">
-                            <li class="is-dropdown-submenu-parent">
-                                <a href="#">Item 1</a>
+                            <li>
+                                <a href="#"><i class="fa fa-columns"></i></a>
+                            </li>
+                            <li v-bind:class="['key is-dropdown-submenu-parent', display_settings.length ? '': 'hidden']">
+                                <a href="#"><i class="fa fa-pencil"></i></a>
                                 <ul class="menu">
-                                    <li><a href="#">Item 1A</a></li>
-                                    <!-- ... -->
+                                    <h3>Display</h3>
+                                    <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                        <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
+                                            {{ setting.label }}
+                                        </a>
+                                    </li>
                                 </ul>
                             </li>
                             <li class="key is-dropdown-submenu-parent">
@@ -41,110 +125,6 @@ Textviewer
                                 </ul>
                             </li>
                         </ul>
-
-                        <!-- <div class="off-canvas-wrapper"> -->
-
-                            <!-- TODO: Need a dynamic ID for data-toggle -->
-                            <!--
-                            <div class="float-right">
-                                <button type="button" class="fixed-bottom-right button float-right" data-toggle="conventions">
-                                    <i class="fa fa-key"></i>
-                                </button>
-                            </div>
-
-                            <div id="conventions" class="key off-canvas-absolute position-right" data-off-canvas>
-                                <button class="close-button" aria-label="Close menu" type="button" data-close>
-                                    <span aria-hidden="true"><i class="button fa fa-key"></i></span>
-                                </button>
-                                <h3>Notations</h3>
-                                <div v-html="conventions">
-                                </div>
-                            </div>
-                            -->
-
-                            <!-- <div class="off-canvas-content" data-off-canvas-content> -->
-                                <ul class="menu">
-                                    <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()">
-                                        <i class="fa fa-times" 
-                                        aria-hidden="true"
-                                        data-tooltip aria-haspopup="true" class="has-tip" data-hover-delay="0" title="Close this pane">
-                                        </i>
-                                    </a>
-                                </ul>
-                                <div class="controls">
-                                    <h2 class="doc-label">
-                                        <ul v-f-dropdown>
-                                            <li class="is-dropdown-submenu-parent">
-                                                <a>{{ document.label }}</a>
-                                                <ul class="menu">
-                                                    <li v-for="adocument in documents" v-bind:class="[adocument.slug == document.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                                        <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                            <li class="is-dropdown-submenu-parent dropdown-views">
-                                                <a>{{ view.label }}</a>
-                                                <ul class="menu">
-                                                    <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                                        <a v-on:click.prevent="onClickView(aview.slug)" href="#">
-                                                            {{ aview.label }}
-                                                            <i class="fa fa-external-link external-link" 
-                                                            v-on:click.stop.prevent="onClickViewExternal(aview.slug)"
-                                                            data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" data-hover-delay="0" title="Open in a new pane">
-                                                            </i>
-                                                        </a>
-                                                    </li>
-                                                </ul>
-                                            </li>
-                                        </ul>
-                                    </h2>
-                    
-                                    <ul v-f-dropdown>
-                                        <li class="is-dropdown-submenu-parent">
-                                            <a>{{ location_type.label }}</a>
-                                            <ul class="menu">
-                                                <li v-for="alocation_type in location_types" v-bind:class="[alocation_type.slug == location_type.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                                    <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">{{ alocation_type.label }}</a>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li v-bind:class="['is-dropdown-submenu-parent opens-right', display_settings.length ? '': 'hidden']">
-                                            <a>Display</a>
-                                            <ul class="menu">
-                                                <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                                    <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
-                                                        {{ setting.label }}
-                                                    </a>
-                                                </li>
-                                            </ul>
-                                        </li>
-                                        <li class="is-dropdown-submenu-parent">
-                                            <a>Notations</a>
-                                            <ul class="menu conventions-menu">
-                                                <li class="is-submenu-item is-dropdown-submenu-item" v-html="conventions">
-                                                </li>
-                                            </ul>
-                                        </li>
-                                    </ul>
-
-                                    <div>
-                                        <a href="#" v-on:click.stop.prevent="toggleSynced()" v-bind:class="{hidden: !canBeSynced()}">
-                                            <i v-bind:class="['fa fa-random', is_synced ? 'sync' : 'unsync']" 
-                                            aria-hidden="true"
-                                            data-tooltip aria-haspopup="true" class="has-tip" data-hover-delay="0" title="Sync/Unsync">
-                                            </i>
-                                        </a>
-                                        <select name="location" v-model="location.slug" v-bind:class="{'invisible': areLocationsHidden()}">
-                                            <option class="tei" v-for="alocation in locations" v-bind:value="alocation.slug" v-html="alocation.label_long">
-                                            </option>
-                                        </select>
-                                    </div>
-                                </div>
-                            
-                                <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
-                                </div>
-                            <!-- </div> -->
-                        </div>
                     </div>
                 </div>
             </div>
