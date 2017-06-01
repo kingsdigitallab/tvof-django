@@ -80,6 +80,42 @@ Textviewer
                         </div>
                     </div>
                 </div>
+                <div class="row collapse">
+                    <div class="small-12 columns">
+                        <ul class="dropdown menu" data-dropdown-menu>
+                            <!-- TODO: implement this menu -->
+                            <!--
+                            <li v-for="alocation_type in location_types" v-bind:class="[alocation_type.slug == location_type.slug ? 'active' : '']">
+                                <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">{{ alocation_type.label }}</a>
+                            </li>
+                            -->
+                            <li><a href="#"><i class="fa fa-book"></i><span class="show-for-medium"> Whole text</span></a></li>
+                            <li>
+                                <a href="#"><i class="fa fa-file-text-o"></i><span class="show-for-medium"> Folios</span></a>
+                                <ul class="menu">
+                                    <li><a href="#">[148ra]</a></li>
+                                    <li><a href="#">[148rb]</a></li>
+                                    <li><a href="#">[149va]</a></li>
+                                    <li><a href="#">[149rb]</a></li>
+                                    <li><a href="#">[150va]</a></li>
+                                    <li><a href="#">...</a></li>
+                                </ul>
+                            </li>
+                            <li>
+                                <a href="#"><i class="fa fa-folder"></i><span class="show-for-medium"> Sections</span></a>
+                                <ul class="menu">
+                                    <li>
+                                        <!-- TODO: Fix URL link -->
+                                        <a v-bind:href="alocation.slug" class="tei" v-for="alocation in locations" v-html="alocation.label_long"></a>
+                                    </li>
+                                </ul>
+                            </li>
+
+                            <li><a href="#"><i class="fa fa-paragraph"></i><span class="show-for-medium"> Paragraphs</span></a></li>
+                            <li><a href="#"><i class="fa fa-picture-o"></i><span class="show-for-medium"> Images</span></a></li>
+                        </ul>
+                    </div>
+                </div>
                 <div class="row">
                     <div class="small-10 medium-11 columns">
                         <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
@@ -90,10 +126,11 @@ Textviewer
                             data-disable-hover="true" data-click-open="true" 
                             data-alignment="right">
                             <!-- TODO: need to fix the view button. By default it should duplicate only -->
-                            <li v-for="aview in views">
-                                <a href="#" v-on:click.stop.prevent="onClickViewExternal(aview.slug)"
+                            <!-- <li v-for="aview in views"> -->
+                            <li>
+                                <a href="#" v-on:click.stop.prevent="onClickViewExternal(views.slug)"
                                     data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" 
-                                    data-hover-delay="0" title="Open in a new pane">
+                                    data-hover-delay="0" title="Open a new panel">
                                     <i class="fa fa-columns"></i>
                                 </a>
                             </li>
