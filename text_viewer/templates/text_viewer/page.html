@@ -89,9 +89,12 @@ Textviewer
                                 <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">{{ alocation_type.label }}</a>
                             </li>
                             -->
-                            <li><a href="#"><i class="fa fa-book"></i><span class="show-for-medium"> Whole text</span></a></li>
                             <li>
-                                <a href="#"><i class="fa fa-file-text-o"></i><span class="show-for-medium"> Folios</span></a>
+                                <a href="#"><i class="fa fa-book"></i><span class="show-for-large"> Whole text</span></a>
+                            </li>
+
+                            <li>
+                                <a href="#"><i class="fa fa-file-text-o"></i><span class="show-for-large"> Folios</span></a>
                                 <ul class="menu">
                                     <li><a href="#">[148ra]</a></li>
                                     <li><a href="#">[148rb]</a></li>
@@ -101,8 +104,9 @@ Textviewer
                                     <li><a href="#">...</a></li>
                                 </ul>
                             </li>
+
                             <li>
-                                <a href="#"><i class="fa fa-folder"></i><span class="show-for-medium"> Sections</span></a>
+                                <a href="#"><i class="fa fa-folder"></i><span class="show-for-large"> Sections</span></a>
                                 <ul class="menu">
                                     <li>
                                         <!-- TODO: Fix URL link -->
@@ -111,18 +115,35 @@ Textviewer
                                 </ul>
                             </li>
 
-                            <li><a href="#"><i class="fa fa-paragraph"></i><span class="show-for-medium"> Paragraphs</span></a></li>
-                            <li><a href="#"><i class="fa fa-picture-o"></i><span class="show-for-medium"> Images</span></a></li>
+                            <li>
+                                <a href="#"><i class="fa fa-paragraph"></i><span class="show-for-large"> Paragraphs</span></a>
+                                <ul class="menu">
+                                    <li><a href="#">Para 1</a></li>
+                                    <li><a href="#">Para 2</a></li>
+                                    <li><a href="#">Para 3</a></li>
+                                    <li><a href="#">...</a></li>
+                                </ul>
+                            </li>
+
+                            <li>
+                                <a href="#"><i class="fa fa-picture-o"></i><span class="show-for-large"> Images</span></a>
+                                <ul class="menu">
+                                    <li><a href="#">Image 1</a></li>
+                                    <li><a href="#">Image 2</a></li>
+                                    <li><a href="#">Image 3</a></li>
+                                    <li><a href="#">...</a></li>
+                                </ul>
+                            </li>
                         </ul>
                     </div>
                 </div>
                 <div class="row">
-                    <div class="small-10 medium-11 columns">
+                    <div class="small-11 columns">
                         <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
                         </div>
                     </div>
-                    <div class="small-2 medium-1 columns">
-                        <ul class="vertical dropdown menu" data-dropdown-menu 
+                    <div class="small-1 columns">
+                        <ul class="pane-sidebar vertical dropdown menu" data-dropdown-menu 
                             data-disable-hover="true" data-click-open="true" 
                             data-alignment="right">
                             <!-- TODO: need to fix the view button. By default it should duplicate only -->
@@ -134,7 +155,7 @@ Textviewer
                                     <i class="fa fa-columns"></i>
                                 </a>
                             </li>
-                            <li v-bind:class="['key is-dropdown-submenu-parent', display_settings.length ? '': 'hidden']">
+                            <li v-bind:class="['toolbar is-dropdown-submenu-parent', display_settings.length ? '': 'hidden']">
                                 <a href="#"><i class="fa fa-pencil"></i></a>
                                 <ul class="menu">
                                     <h3>Display</h3>

@@ -21,7 +21,12 @@
 
 .main {
 
-    .key {
+    .pane-sidebar.dropdown.menu.vertical > li.is-dropdown-submenu-parent > a::after {
+        border: none;
+    }
+
+    .key,
+    .toolbar {
 
         ul {
             list-style: none;
