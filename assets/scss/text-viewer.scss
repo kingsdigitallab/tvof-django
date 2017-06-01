@@ -21,8 +21,16 @@
 
 .main {
 
-    .pane-sidebar.dropdown.menu.vertical > li.is-dropdown-submenu-parent > a::after {
-        border: none;
+    .controls {
+        a {
+            padding: rem-calc(8);
+        }
+
+        h2.ms-title {
+            font-size: rem-calc(18);
+            margin: 0;
+            padding: 0;
+        }
     }
 
     .key,
@@ -76,6 +84,10 @@
                 padding: rem-calc(8 0);
             }
         }
+    }
+
+    .pane-sidebar.dropdown.menu.vertical > li.is-dropdown-submenu-parent > a::after {
+        border: none;
     }
 }
 
