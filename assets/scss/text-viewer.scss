@@ -67,6 +67,10 @@
                 &.active {
                     a {
                         background: transparent;
+
+                        &:hover {
+                            background: $primary-color;
+                        }
                     }
 
                     a:before {
@@ -94,6 +98,14 @@
 
         a {
             border: 0;
+            padding: rem-calc(16 8);
+            padding-right: rem-calc(8) !important;
+
+            &:active,
+            &:focus,
+            &:visited {
+                color: $primary-color;
+            }
 
             &:hover {
                 color: $white;
@@ -114,7 +126,7 @@
                 color: $white;                
             }
 
-            &.is-dropdown-submenu-parent {
+            &.is-dropdown-submenu-parent {                
                 .menu {
                     position: absolute;
                     bottom: 0;
@@ -129,74 +141,18 @@
     }
 }
 
-
 // TEXT PANE
 .main .text-pane {
-    
-    flex-grow: 1;
     flex-basis: 0;
-    min-width: 20em;
+    flex-grow: 1;
+    margin: 0 auto;
+    max-width: rem-calc(1440);
     
-    padding: 1em;
+    padding: rem-calc(16);
     
     .hidden {
-        display:none;
+        display: none;
     }
-    
-    // h2.doc-label {
-    //     padding: 0;
-        
-        // ul.dropdown.menu {
-        //     display: inline-block;
-        //     > li.dropdown-views {
-        //         font-size: 80%;
-        //         > a {
-        //             color: #8a8a8a;
-        //             line-height: 0;
-        //         }
-        //         > ul {
-        //             min-width: 100%;
-        //             > li a {
-        //                 position: relative;
-        //                 font-size: large;
-        //             }
-        //         }
-        //     }
-        
-        //     .external-link {
-        //         position: absolute;
-        //         right: 0;
-        //         border-left: 1px solid white;
-        //         padding: 0 0.5em;
-        //         background-color: #1c2434;
-        //         height: 100%;
-        //         top: 0;
-        //         padding-top: 1em;
-        //         margin-right: 0;
-        //     }
-        //     .external-link:hover {
-        //         background-color: inherit;
-        //     }
-        // }
-    // }
-    
-    // .controls {
-    //     .invisible {
-    //         visibility: hidden;
-    //     }
-    
-        // ul.conventions-menu {
-        //     background-color: #fefefe;
-        //     white-space: nowrap;
-        //     border: 1px lightgrey solid;
-        // }
-        // .text-conventions ul {
-        //     list-style-type: none;
-        //     li {
-        //         padding: 0.5em;
-        //     }
-        // }
-    // }
 }
 
 .text-chunk {
@@ -216,16 +172,15 @@
 
 /* Legacy Text Viewer */
 
-.highlight {
-    background-color: #ece4b7;
-}
-
 .cursor-pointer {
     cursor: pointer;
+}
+
+.highlight {
+    background-color: #ece4b7;
 }
 
 .underline {
     // text-decoration: underline;
     text-decoration-color: scale-color($primary-color, $lightness: 50%);
 }
-
