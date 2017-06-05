@@ -136,12 +136,12 @@ Textviewer
                         </ul>
                     </div>
                 </div>
-                <div class="row">
-                    <div class="small-11 columns">
+                <div class="row" data-sticky-container>
+                    <div class="small-10 medium-11 columns">
                         <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
                         </div>
                     </div>
-                    <div class="small-1 columns">
+                    <div class="small-2 medium-1 columns">
                         <ul class="text-center pane-sidebar vertical dropdown menu" data-dropdown-menu 
                             data-disable-hover="true" data-click-open="true" 
                             data-alignment="right">
@@ -167,7 +167,7 @@ Textviewer
                             </li>
                             <li class="key is-dropdown-submenu-parent">
                                 <a href="#"><i class="fa fa-key"></i></a>
-                                <ul class="menu">
+                                <ul class="menu text-left">
                                     <li>
                                         <h3>Notations</h3>
                                         <div v-html="conventions">
