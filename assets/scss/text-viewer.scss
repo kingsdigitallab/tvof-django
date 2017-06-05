@@ -21,9 +21,43 @@
 
 .main {
 
+    .boxed {
+        background: $light-gray;
+        border-radius: rem-calc(4);
+        &:first-child {
+            margin-bottom: rem-calc(8);
+        }
+    }
+
+    .close-panel-button {
+        background: $light-gray;
+        border: 3px solid scale-color($dark-gray, $lightness: 50%);
+        border-radius: 50%;
+        color: $dark-gray;
+        height: rem-calc(28);
+        margin-right: rem-calc(16);
+        //margin-top: rem-calc(-16);
+        text-align: center;
+        text-decoration: none;
+        width: rem-calc(28);
+
+        .has-tip {
+            border: 0;
+        }
+    }
+
     .controls {
+        background: scale-color($dark-gray, $lightness: 50%);
+        border-radius: rem-calc(4);
+        margin-top: rem-calc(12);
+        padding: rem-calc(8);
+
         a {
             padding: rem-calc(8);
+
+            &:hover {
+                border-radius: rem-calc(4);
+            }
         }
 
         h2.ms-title {
@@ -92,7 +126,7 @@
 
     .pane-sidebar {
         background: $light-gray;
-        height: calc(100vh - 340px);
+        height: calc(100vh - 380px);
         max-height: rem-calc(800);
         position: relative;
 
@@ -145,10 +179,8 @@
 .main .text-pane {
     flex-basis: 0;
     flex-grow: 1;
-    margin: 0 auto;
+    margin: rem-calc(16) auto;
     max-width: rem-calc(1440);
-    
-    padding: rem-calc(16);
     
     .hidden {
         display: none;
