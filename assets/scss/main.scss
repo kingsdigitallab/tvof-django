@@ -272,7 +272,8 @@ nav {
     // Text viewer - TEI
 
     #manuscripts-content,
-    #manuscripts-title {
+    #manuscripts-title, 
+    .text-pane {
         h1, h2 {
             padding-top: rem-calc(24);
             padding-left: rem-calc(16);
@@ -404,7 +405,7 @@ footer {
 
     .logo {
         img {
-            max-width: 120px;
+            max-height: rem-calc(200);
         }
     }
 }

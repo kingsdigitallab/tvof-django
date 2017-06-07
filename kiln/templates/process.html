@@ -79,10 +79,12 @@
         var $corresps = $this.data('corresp').split(' ');
         var $target = null;
 
+        // highlight clicked div
         $('.highlight').toggleClass('highlight');
 
         $this.toggleClass('highlight');
 
+        // find corresponding divs
         $corresps.forEach(function(value) {
             var $item = $('' + value);
 
@@ -91,6 +93,7 @@
             }
         });
 
+        // highlight corresponding divs
         if ($corresps.length > 1) {
             $target = $('' + $corresps[0]);
             $target.nextUntil('' + $corresps[1]).andSelf().next($corresps[1]).andSelf().toggleClass('highlight');
@@ -99,6 +102,7 @@
             $target.toggleClass('highlight');
         }
 
+        // scroll to corresponding div
         if ($target.length) {
             var thisTop = $this.offset().top;
             var targetTop = $target.offset().top;

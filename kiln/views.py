@@ -104,6 +104,9 @@ def _send_to_kiln_and_process_response(request, kiln_url):
             for manuscript_el in manuscript_els:
                 manuscript_name = manuscript_el.get('name')
 
+                if not is_manuscript_visible(manuscript_name):
+                    continue
+
                 version_els = manuscript_el.findall('versions/version')
                 for version_el in version_els:
                     version_name = version_el.get('name')
@@ -122,6 +125,10 @@ def _send_to_kiln_and_process_response(request, kiln_url):
                     })
 
     return params
+
+
+def is_manuscript_visible(manuscript_name):
+    return manuscript_name in ['Fr20125']
 
 
 def get_url_change_to(kiln_url, idx, manuscript_name, version_name):
@@ -153,5 +160,15 @@ def get_processed_content(xml):
             link.attrib['href']
         )
         link.attrib['target'] = '_blank'
+
+    # remove the notations
+    for el in xml.findall('.//div[@class="tei body"]'):
+        sub = el.find('div[@id="text-conventions"]')
+        el.remove(sub)
+
+    # remove the notations
+    if xml.tag == 'content':
+        xml.tag = 'div'
+        xml.attrib['data-tei'] = 'content'
 
     return ret
