@@ -164,7 +164,7 @@ class TextViewerAPIXML(TextViewerAPI):
             chunk = xml.find(xpath)
 
             # build response from chunk and address
-            if not chunk:
+            if chunk is None:
                 self.add_error(
                     'notfound', 'Chunk not found: {}'.format(
                         self.get_requested_address()),

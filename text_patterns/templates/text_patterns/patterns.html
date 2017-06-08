@@ -380,6 +380,7 @@
             
             // Load user settings from the locaStorage
             var namespace = 'default';
+            var api_webpath = '{{ api_webpath }}';
             var storage_key = 'textseg.'+namespace;
             var session = window.localStorage.getItem(storage_key);
             if (session) {
@@ -590,7 +591,7 @@
                         var req = $.ajax({
                             //url: '/digipal_text/api/'+path+'?ret='+(toreturn.join(','))+qsa,
                             // TODO: default should be a variable
-                            url: '/lab/patterns/api/default/'+path+'?ret='+(toreturn.join(','))+qsa,
+                            url: api_webpath+path+'?ret='+(toreturn.join(','))+qsa,
                             type: method,
                             data: data ? JSON.stringify(data) : null,
                             /*dataType: 'json',*/

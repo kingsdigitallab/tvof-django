@@ -44,6 +44,13 @@ CACHES = {
             'CLIENT_CLASS': 'django_redis.client.DefaultClient',
             'IGNORE_EXCEPTIONS': True
         }
+    },
+    'text_patterns': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'django_cache/text_patterns/'),
+        'TIMEOUT': 60 * 60 * 24,
+        # 'TIMEOUT': 1,
+        'MAX_ENTRIES': 600,
     }
 }
 

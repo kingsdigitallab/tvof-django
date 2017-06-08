@@ -322,3 +322,30 @@ def inc_counter(dic, item, count=1):
     dic[item] = dic.get(item, 0)
     dic[item] += count
     return dic[item]
+
+
+def remove_accents(input_str):
+    '''Returns the input string without accented character.
+        This is useful for accent-insensitive matching (e.g. autocomplete).
+        >> remove_accents(u'c\u0327   \u00c7')
+        u'c   c'
+    '''
+    import unicodedata
+    # use 'NFD' instead of 'NFKD'
+    # Otherwise the ellipsis \u2026 is tranformed into '...' and the output
+    # string will have a different length
+    # return remove_combining_marks(unicodedata.normalize('NFKD',
+    # unicode(input_str)))
+    return remove_combining_marks(unicodedata.normalize('NFD',
+                                                        unicode(input_str)))
+
+
+def remove_combining_marks(input_str):
+    '''Returns the input unicode string without the combining marks found
+    as 'individual character'
+        >> remove_combining_marks(u'c\u0327   \u00c7')
+        u'c   \u00c7'
+    '''
+    import unicodedata
+    return u"".join([c for c in unicode(input_str)
+                     if not unicodedata.combining(c)])

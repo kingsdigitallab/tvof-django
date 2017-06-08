@@ -6,6 +6,7 @@ from django.utils.text import slugify
 from django.core.cache.backends.base import InvalidCacheBackendError
 from .models import TextPatternSet
 from datetime import datetime
+from django.core.urlresolvers import reverse
 
 from django.views.decorators.csrf import csrf_exempt
 
@@ -37,6 +38,7 @@ def patterns_api_view(request, slug, root, path):
 
 class PatternAnalyser(object):
     def __init__(self, slug='default'):
+        self.nocache = True
         self.patterns = None
         self.segunits = None
         self.regexs = {}
@@ -50,11 +52,6 @@ class PatternAnalyser(object):
     def add_message(self, message, atype='info'):
         self.messages.append({'message': message, 'type': atype})
 
-#     def get_unit_model(self):
-#         from exon.customisations.digipal_text.models import Entry
-#         ret = Entry
-#         return ret
-
     def get_units(self):
         from models import TextUnits
         units = TextUnits()
@@ -64,6 +61,10 @@ class PatternAnalyser(object):
         ret = {'context_js': dputils.json_dumps(
             self.process_request_api(request, 'patterns'))}
         ret['advanced_search_form'] = 1
+        ret['api_webpath'] = reverse('patterns_api_root', kwargs={
+                                     'slug': self.namespace})
+        if ret['api_webpath'][-1] != '/':
+            ret['api_webpath'] += '/'
         ret['wide_page'] = True
 
         return ret
@@ -541,10 +542,12 @@ class PatternAnalyser(object):
 
             if not plain_contents:
                 # get the plain contents from the cache
+                cache = None
                 try:
-                    cache = caches['text_patterns']
-                    plain_contents = cache.get('plain_contents')
-                    # plain_contents = None
+                    if not self.nocache:
+                        cache = caches['text_patterns']
+                        plain_contents = cache.get('plain_contents')
+                        # plain_contents = None
                 except InvalidCacheBackendError:
                     pass
                 if not plain_contents:
@@ -556,10 +559,8 @@ class PatternAnalyser(object):
                         plain_contents[unit.unitid] = \
                             self.preprocess_plain_text_custom(
                                 unit.get_plain_content())
-                        if unit.unitid in ['25a2', '25a2']:
-                            print unit.unitid,\
-                                repr(plain_contents[unit.unitid][0: 20])
-                    cache.set('plain_contents', plain_contents, None)
+                    if cache:
+                        cache.set('plain_contents', plain_contents, None)
                 setattr(self, 'plain_contents', plain_contents)
 
             ret = plain_contents.get(aunit.unitid, None)
@@ -576,16 +577,19 @@ class PatternAnalyser(object):
         return ret
 
     def preprocess_plain_text_custom(self, content):
+        # TODO: that's EXON specific, move to EXON
         # remove . because in some entries they are all over the place
-        content = content.replace('[---]', '')
-        content = content.replace('v', 'u')
-        content = content.replace('7', 'et')
-        content = content.replace('.', ' ').replace(',', ' ').replace(
-            ':', ' ').replace('[', ' ').replace(']', ' ')
-        content = content.replace(u'\u00C6', 'AE')
-        content = content.replace(u'\u00E6', 'ae')
+        if 0:
+            content = content.replace('[---]', '')
+            content = content.replace('v', 'u')
+            content = content.replace('7', 'et')
+            content = content.replace('.', ' ').replace(',', ' ').replace(
+                ':', ' ').replace('[', ' ').replace(']', ' ')
+            content = content.replace(u'\u00C6', 'AE')
+            content = content.replace(u'\u00E6', 'ae')
+
         content = content.replace(u'\u00A7', '')
-        content = re.sub('\s+', ' ', content)
+        content = re.sub(ur'(?musi)\s+', ' ', content)
         content = content.strip()
         return content
 
