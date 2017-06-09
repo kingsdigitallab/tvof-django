@@ -509,10 +509,8 @@ class PatternAnalyser(object):
 
             # apply regex to unit
             if rgx:
-                len_before = len(unit.plain_content)
                 unit.plain_content, found = rgx.subn(
-                    markup_segment, unit.plain_content, 1)
-                found = len(unit.plain_content) != len_before
+                    markup_segment, unit.plain_content, 0)
 
                 if (condition == 'include' and not found) or\
                         (condition == 'exclude' and found):
@@ -520,7 +518,7 @@ class PatternAnalyser(object):
                 if found:
                     found_groups[re.sub(ur'-\d+$', '', pattern['key'])] = 1
                     dputils.inc_counter(
-                        self.stats['patterns'], pattern['id'], 1)
+                        self.stats['patterns'], pattern['id'], found)
                 else:
                     unit.patterns.append([patternid, ''])
 
