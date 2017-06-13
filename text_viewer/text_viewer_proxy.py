@@ -5,7 +5,12 @@ import xml.etree.ElementTree as ET
 import re
 
 
-class TextViewerAPIXML(TextViewerAPI):
+'''
+    TODO: TO BE IMPLEMENTED
+'''
+
+
+class TextViewerAPIProxy(TextViewerAPI):
 
     location_types = [
     ]
@@ -164,7 +169,7 @@ class TextViewerAPIXML(TextViewerAPI):
             chunk = xml.find(xpath)
 
             # build response from chunk and address
-            if chunk is None:
+            if not chunk:
                 self.add_error(
                     'notfound', 'Chunk not found: {}'.format(
                         self.get_requested_address()),

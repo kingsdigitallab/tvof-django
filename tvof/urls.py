@@ -10,6 +10,7 @@ from wagtail.wagtailsearch.signal_handlers import \
 from wagtail.wagtailsearch.urls import frontend as wagtailsearch_frontend_urls
 from django.views.generic import RedirectView
 from text_viewer import urls as text_viewer_urls
+from text_patterns import urls as text_patterns_urls
 
 admin.autodiscover()
 wagtailsearch_register_signal_handlers()
@@ -51,6 +52,10 @@ urlpatterns += [
 
 urlpatterns += [
     url(r'^textviewer/', include(text_viewer_urls)),
+]
+
+urlpatterns += [
+    url(r'^lab/patterns/', include(text_patterns_urls)),
 ]
 
 urlpatterns += [

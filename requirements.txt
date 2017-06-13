@@ -14,3 +14,4 @@ psycopg2
 requests
 wagtail<1.9
 html5lib==0.9999999
+regex
