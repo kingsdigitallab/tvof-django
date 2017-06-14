@@ -44,7 +44,9 @@ class TextViewerAPI(object):
         elif level == 'document':
             self.request_document(parts['document'])
         elif level == 'location':
-            synced_with = request.GET.get('sw', None)
+            synced_with = None
+            if request:
+                synced_with = request.GET.get('sw', None)
             if synced_with:
                 synced_with = self.get_address_parts(synced_with)
             self.request_chunk(parts, synced_with=synced_with)
