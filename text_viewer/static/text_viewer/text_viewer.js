@@ -689,16 +689,45 @@
 
     $(function() {
         Vue.directive('f-dropdown', {
+            componentUpdated: function(el) {
+                // Foundation won't behave well with controls modified by Vue.js
+                // E.g. vue adds <li> item, dropdown won't close when clicking them
+                // So we re-initialise foundation on the modified control.
+                // We only do it when we detect a non-initialised dropdown item.
+                var $el = $(el);
+                if ($el.find('li:not([role])').length) {
+                    //  
+                    console.log('componentUpdated');
+                    $(el).find('.js-dropdown-active').removeClass('js-dropdown-active');
+                    $(el).foundation('destroy');
+                    $(el).foundation();
+                }
+            },
             bind: function(el) {
                 Vue.nextTick(function () {
-                    $(el).addClass('dropdown menu');
+                    // http://foundation.zurb.com/sites/docs/dropdown-menu.html
+                    var $el = $(el);
+                    $el.attr('data-dropdown-menu', '');
+                    $el.addClass('dropdown menu');
+                    // <!-- is-dropdown-submenu-parent: prevent FOUC -->
+                    $el.find('> li').addClass('is-dropdown-submenu-parent');
+                    $el.find('> li > ul').addClass('menu');
+                    $el.on('mouseleave', function() {
+                        $(el).find('.js-dropdown-active li a').click();
+                        //console.log('LEAVE');
+                    });
                     var options = {
                         closingTime: 50,
+                        closeOnClick: true,
+                        closeOnClickInside: true,
+                        autoClose: true,
                     };
-                    new Foundation.DropdownMenu($(el), options);
+                    new Foundation.DropdownMenu($el, options);
+                    //$el.foundation();
                 })
             },
             unbind: function(el) {
+                console.log('DESTROY');
                 $(el).foundation('destroy');
             },
         });

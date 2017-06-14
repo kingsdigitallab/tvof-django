@@ -12,6 +12,16 @@ Textviewer
 </section>
 {% endverbatim %}
 
+<ul class="dropdown menu" data-dropdown-menu data-disable-hover="true">
+  <li class="is-dropdown-submenu-parent">
+    <a><h2 class="ms-title">Fr20125</h2></a> 
+    <ul class="menu">
+      <li class="active"><a href="#">Fr20125</a></li>
+      <li class=""><a href="#">Royal 20 D I</a></li>
+    </ul>
+  </li>
+</ul>
+
 {% verbatim %}
 <div class="vue-templates">
     <div id="vue-template-text-pane" class="text-pane">
@@ -26,22 +36,22 @@ Textviewer
                 </a>
 
                 <div class="controls">
-                    <ul v-f-dropdown v-bind:class="['boxed']">
-                        <li class="is-dropdown-submenu-parent">
+                    <ul v-f-dropdown class="boxed" data-disable-hover="true">
+                        <li>
                             <a><h2 class="ms-title">{{ document.label }}</h2></a>
-                            <ul class="menu">
-                                <li v-for="adocument in documents" v-bind:class="[adocument.slug == document.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                    <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
+                            <ul>
+                                <li v-for="adocument in documents" v-bind:class="{active: adocument.slug == document.slug}">
+                                    <a v-on:click2="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
                                 </li>
                             </ul>
                         </li>
                     </ul>
-                    <ul v-f-dropdown v-bind:class="['boxed']">
+                    <ul v-f-dropdown class="boxed" data-disable-hover="true">
                         <li class="is-dropdown-submenu-parent dropdown-views">
                             <a>{{ view.label }}</a>
                             <ul class="menu">
                                 <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
-                                    <a v-on:click.prevent="onClickView(aview.slug)" href="#">
+                                    <a v-on:click="onClickView(aview.slug)" href="#">
                                         {{ aview.label }}
                                     </a>
                                 </li>
@@ -53,7 +63,7 @@ Textviewer
         </div>
         <div class="row collapse" id="section-menu">
             <div class="small-12 columns">
-                <ul class="dropdown menu" data-dropdown-menu>
+                <ul v-f-dropdown>
                     <!-- TODO: implement this menu -->
                     <!--
                     <li v-for="alocation_type in location_types" v-bind:class="[alocation_type.slug == location_type.slug ? 'active' : '']">
