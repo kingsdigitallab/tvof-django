@@ -181,8 +181,10 @@
             location_type: 'location',
             location_types: ['1', '2'],
 
-            location: 'location',
+            location: '1',
             locations: ['1', '2'],
+            
+            types_locations: {},
             
             conventions: '',
             
