@@ -13,6 +13,18 @@ Textviewer
 </section>
 {% endverbatim %}
 
+{% comment %}
+
+GN: the code below serves as a template for any number of text panes.
+Please DO NOT USE ID ATTRIBUTE (they would be duplicated which is not allowed in HTML).
+
+Some of the Foundation controls or special behaviour/plugins are managed with
+a vue directive:
+* v-f-dropdown: for a Foundation dropdown-menu
+* v-f-sticky: for a sticky element
+
+Those attributes will take care of most of the other attributes and classes.
+{% endcomment %}
 {% verbatim %}
 <div class="vue-templates">
     <div id="vue-template-text-pane" class="text-pane">
