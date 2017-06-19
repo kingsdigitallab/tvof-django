@@ -99,6 +99,7 @@ INSTALLED_APPS += (
     'text_viewer',
     'text_patterns',
     'tvof',
+    'activecollab_digger',
 )
 
 INTERNAL_IPS = ('127.0.0.1', )

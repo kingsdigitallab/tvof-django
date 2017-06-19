@@ -58,6 +58,11 @@ urlpatterns += [
     url(r'^lab/patterns/', include(text_patterns_urls)),
 ]
 
+# ACTIVE COLLAB
+urlpatterns += [
+    url(r'^digger/', include('activecollab_digger.urls'))
+]
+
 urlpatterns += [
     url(r'^documents/', include(wagtaildocs_urls)),
     url(r'^search/', include(wagtailsearch_frontend_urls)),
