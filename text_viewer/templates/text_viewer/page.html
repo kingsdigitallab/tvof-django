@@ -6,6 +6,7 @@ Textviewer
 {% endblock %}
 
 {% block main_wrapper %}
+
 {% verbatim %}
 <section id="text-viewer" class="main text-viewer">
     <div v-for="pane in panes" is="text-pane" v-bind:apane="getPane(pane.slug)"></div>
@@ -39,7 +40,7 @@ Textviewer
                     <ul v-f-dropdown class="boxed" data-disable-hover="true">
                         <li class="dropdown-views">
                             <a>{{ view.label }}</a>
-                            <ul class="menu">
+                            <ul>
                                 <li v-for="aview in views" v-bind:class="{active: aview.slug == view.slug}">
                                     <a v-on:click.prevent="onClickView(aview.slug)" href="#">
                                         {{ aview.label }}
@@ -55,66 +56,21 @@ Textviewer
             <div class="small-12 columns">
                 <ul v-f-dropdown>
                     <!-- TODO: implement this menu -->
-                    <li v-for="alocation_type in location_types" v-bind:class="{active: (alocation_type.slug == location_type.slug)}">
+                    <li v-for="alocation_type in location_types" 
+                        v-bind:class="{active: (alocation_type.slug == location_type.slug)}">
                         <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">
                             <i class="fa fa-file-text-o"></i>
                             <span class="show-for-large">{{ alocation_type.label }}</span>
                         </a>
-                        <ul class="menu">
-                            <li><a href="#">[148ra]</a></li>
-                            <li><a href="#">[148rb]</a></li>
-                            <li><a href="#">[149va]</a></li>
-                            <li><a href="#">[149rb]</a></li>
-                            <li><a href="#">[150va]</a></li>
-                            <li><a href="#">...</a></li>
-                        </ul>
-                    </li>
-                    <!--
-                    <li>
-                        <a href="#"><i class="fa fa-book"></i><span class="show-for-large"> Whole text</span></a>
-                    </li>
-
-                    <li>
-                        <a href="#"><i class="fa fa-file-text-o"></i><span class="show-for-large"> Folios</span></a>
-                        <ul class="menu">
-                            <li><a href="#">[148ra]</a></li>
-                            <li><a href="#">[148rb]</a></li>
-                            <li><a href="#">[149va]</a></li>
-                            <li><a href="#">[149rb]</a></li>
-                            <li><a href="#">[150va]</a></li>
-                            <li><a href="#">...</a></li>
-                        </ul>
-                    </li>
-
-                    <li>
-                        <a href="#"><i class="fa fa-folder"></i><span class="show-for-large"> Sections</span></a>
-                        <ul class="menu">
-                            <li>
-                                <a v-bind:href="alocation.slug" class="tei" v-for="alocation in locations" v-html="alocation.label_long"></a>
+                        <ul>
+                            <li v-for="alocation in alocation_type.locations" 
+                                v-bind:class="{active: (alocation.slug == location.slug)}">
+                                <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)" href="#">
+                                    {{ alocation.label }}
+                                </a>
                             </li>
                         </ul>
                     </li>
-
-                    <li>
-                        <a href="#"><i class="fa fa-paragraph"></i><span class="show-for-large"> Paragraphs</span></a>
-                        <ul class="menu">
-                            <li><a href="#">Para 1</a></li>
-                            <li><a href="#">Para 2</a></li>
-                            <li><a href="#">Para 3</a></li>
-                            <li><a href="#">...</a></li>
-                        </ul>
-                    </li>
-
-                    <li>
-                        <a href="#"><i class="fa fa-picture-o"></i><span class="show-for-large"> Images</span></a>
-                        <ul class="menu">
-                            <li><a href="#">Image 1</a></li>
-                            <li><a href="#">Image 2</a></li>
-                            <li><a href="#">Image 3</a></li>
-                            <li><a href="#">...</a></li>
-                        </ul>
-                    </li>
-                    -->
                 </ul>
             </div>
         </div>
@@ -123,11 +79,18 @@ Textviewer
                 <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
                 </div>
             </div>
-            <div class="small-2 medium-1 columns" data-sticky-container>
-                <div class="sticky" data-sticky data-stick-to="bottom" 
+            <!--
+            Sticky elements don't work well when the content is dynamic.
+            This is because Foundation doesn't recalculate the top/bottom positions.
+            
+            https://github.com/zurb/foundation-sites/issues/7899
+             -->
+            <div class="small-2 medium-1 columns">
+                <div v-f-sticky
+                    data-stick-to="bottom" 
                     data-top-anchor="section-menu:bottom" 
                     data-btm-anchor="footer:top">
-                    <ul class="text-center pane-sidebar vertical dropdown menu" data-dropdown-menu 
+                    <ul v-f-dropdown class="text-center pane-sidebar vertical" 
                         data-disable-hover="true" data-click-open="true" 
                         data-alignment="right">
                         <!-- TODO: need to fix the view button. By default it should duplicate only -->
@@ -139,9 +102,9 @@ Textviewer
                                 <i class="fa fa-columns"></i>
                             </a>
                         </li>
-                        <li v-bind:class="['toolbar is-dropdown-submenu-parent', display_settings.length ? '': 'hidden']">
-                            <a href="#"><i class="fa fa-pencil"></i></a>
-                            <ul class="menu text-left">
+                        <li v-bind:class="{toolbar: 1, hidden: display_settings.length == 0}">
+                            <a><i class="fa fa-pencil"></i></a>
+                            <ul class="text-left">
                                 <h3>Display</h3>
                                 <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
                                     <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
@@ -150,9 +113,9 @@ Textviewer
                                 </li>
                             </ul>
                         </li>
-                        <li class="key is-dropdown-submenu-parent">
-                            <a href="#"><i class="fa fa-key"></i></a>
-                            <ul class="menu text-left">
+                        <li class="key">
+                            <a><i class="fa fa-key"></i></a>
+                            <ul class="text-left">
                                 <li>
                                     <h3>Notations</h3>
                                     <div v-html="conventions">

@@ -124,6 +124,17 @@
         }
     }
 
+    /* GN: quick workaround for the narrow sticky bar.
+        Foundation 'Sticky' changes position from 'relative' to 'fixed'
+        and messes up with the inherited box model properties.
+    */
+    .column.sticky-container, .columns.sticky-container {
+        padding: 0;
+        .sticky {
+            width: 100%;
+        }
+    }
+
     .pane-sidebar {
         background: $light-gray;
         height: calc(100vh - 380px);

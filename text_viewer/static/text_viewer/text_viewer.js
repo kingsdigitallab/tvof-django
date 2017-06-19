@@ -8,7 +8,7 @@
         this.api_url = this.options.api_url || (window.location.pathname + 'api/');
         this.panes = {};
         this.cache = {};
-        this.view = {
+        this.uimodel = {
             'panes': [
             ],
         };
@@ -87,7 +87,7 @@
             if (self.options.on_create_pane) {
                 self.options.on_create_pane(pane);
             }
-            self.view.panes.push({slug: pane_slug});
+            self.uimodel.panes.push({slug: pane_slug});
         }
     };
     
@@ -109,10 +109,10 @@
     }
     
     Viewer.prototype.closePane = function(apane) {
-        for (var i = 0; i < this.view.panes.length; i++) {
-            if (this.view.panes[i].slug == apane.view.pane_slug) {
-                this.view.panes.splice(i, 1);
-                delete this.panes[apane.view.pane_slug];
+        for (var i = 0; i < this.uimodel.panes.length; i++) {
+            if (this.uimodel.panes[i].slug == apane.uimodel.pane_slug) {
+                this.uimodel.panes.splice(i, 1);
+                delete this.panes[apane.uimodel.pane_slug];
                 this.updateQueryString();
                 break;
             }
@@ -124,7 +124,7 @@
     }
     
     Viewer.prototype.getPaneCount = function() {
-        return this.view.panes.length;
+        return this.uimodel.panes.length;
     }
 
     // Returns true if <pane> can be synced.
@@ -166,7 +166,7 @@
      * Pane
      */
     function Pane(panes, slug, options) {
-        this.view = {
+        this.uimodel = {
             pane_slug: slug,
 
             document: {
@@ -176,15 +176,15 @@
             documents: [],
             
             view: 'critical',
-            views: ['critical'],
+            //views: ['critical'],
             
             location_type: 'location',
-            location_types: ['1', '2'],
+            //location_types: ['1', '2'],
 
             location: '1',
-            locations: ['1', '2'],
+            //locations: ['1', '2'],
             
-            types_locations: {},
+            addresses: {},
             
             conventions: '',
             
@@ -223,7 +223,7 @@
     Pane.prototype.isSynced = function() {
         //return (~this.address_requested.indexOf('synced'));
         //return (this.view.location_type.slug == 'synced');
-        return this.view.is_synced;
+        return this.uimodel.is_synced;
     }
     
     Pane.prototype.syncWith = function(address) {
@@ -269,7 +269,7 @@
     }
     
     Pane.prototype.getUIAddress = function() {
-        return [this.view.document.slug, this.view.view.slug, this.view.location_type.slug, this.view.location.slug].join('/');
+        return [this.uimodel.document.slug, this.uimodel.view.slug, this.uimodel.location_type.slug, this.uimodel.location.slug].join('/');
     }
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
@@ -306,7 +306,7 @@
             self.onRequestComplete(textStatus, jqXHR);
         };
 
-        this.view.errors = [];
+        this.uimodel.errors = [];
         var data = null;
         
         if (this.isSynced()) {
@@ -324,10 +324,10 @@
 
     Pane.prototype.onRequestSuccessful = function(response, textStatus, jqXHR) {
         if (!response.errors) {
-            this.view.chunk = response.chunk;
+            this.uimodel.chunk = response.chunk;
             this.onReceivedAddress(response.address);
         } else {
-            this.view.errors = response.errors;
+            this.uimodel.errors = response.errors;
         }
     }
 
@@ -347,15 +347,15 @@
     Pane.prototype.setDocumentList = function(document_list) {
         var self = this;
         if (document_list) {
-            this.view.documents.splice(0, this.view.documents.length);
+            this.uimodel.documents.splice(0, this.uimodel.documents.length);
             for (var i = 0; i < document_list.length; i++) {
-                this.view.documents.push({
+                this.uimodel.documents.push({
                     'label': document_list[i].label,
                     'slug': document_list[i].slug,
                 });
             }
         } else {
-            if (this.view.documents.length < 1) {
+            if (this.uimodel.documents.length < 1) {
                 this.panes.copyDocumentList(function(document_list) {
                     self.setDocumentList(document_list);
                 });
@@ -374,7 +374,7 @@
         
         if (!self.addresses || (parts.document != self.addresses.slug)) {
             // temp values
-            self.addresses = {
+            self.setAddresses({
                 'slug': parts.document,
                 'label': parts.document,
                 'views': [{
@@ -390,20 +390,25 @@
                         }]
                     }]
                 }]
-            };
+            });
             
             if (1) {
                 // let's make a new request about this document
                 var url_document = this.panes.api_url + parts.document;
                 call_api(url_document, function(response, jqXHR, textStatus) {
                     // save doc metadata
-                    self.addresses = response;
+                    self.setAddresses(response);
                     self.renderAddresses();
                 }, null, null, false);
             }
         }
 
         self.renderAddresses();
+    }
+    
+    Pane.prototype.setAddresses = function(addresses) {
+        this.addresses = addresses;
+        $(document).trigger(this.uimodel.pane_slug+'.'+'addresses.updated', addresses);
     }
 
     // Update the address of the loaded chunk in self.view
@@ -412,14 +417,14 @@
         var self = this;
         
         // document
-        self.view.document = self.getPartMeta(self.addresses);
+        self.uimodel.document = self.getPartMeta(self.addresses);
         
         var parts = this.getAddressParts();
         
         // views
-        self.view.views = [];
+        self.uimodel.views = [];
         self.addresses.views.map(function(aview) {
-            self.view.views.push(self.getPartMeta(aview));
+            self.uimodel.views.push(self.getPartMeta(aview));
         });
         
         // Update the lists in self.view
@@ -427,36 +432,36 @@
         this.addresses.views.map(function(aview) {
             if (aview.slug == parts.view) {
                 // view
-                self.view.view = self.getPartMeta(aview);
+                self.uimodel.view = self.getPartMeta(aview);
                 
                 // conventions
-                self.view.conventions = aview.conventions || '';
+                self.uimodel.conventions = aview.conventions || '';
                 
                 // display_settings
-                self.view.display_settings = aview.display_settings || [];
+                self.uimodel.display_settings = aview.display_settings || [];
                 
                 //var user_location_type = self.isSynced() ? 'synced': parts.location_type;
                 
                 // location_types
-                self.view.location_types = [];
+                //self.view.location_types = [];
                 // locations
-                self.view.locations = [];
+                //self.view.locations = [];
 
                 aview.location_types.map(function(location_type) {
                     // location_types
-                    self.view.location_types.push(self.getPartMeta(location_type));
+                    //self.view.location_types.push(self.getPartMeta(location_type));
                     
                     if (location_type.slug == parts.location_type) {
                         
                         // location_type
-                        self.view.location_type = self.getPartMeta(location_type);
+                        self.uimodel.location_type = self.getPartMeta(location_type);
                         
                         location_type.locations.map(function(location) {
                             // locations
-                            self.view.locations.push(self.getPartMeta(location));
+                            //self.view.locations.push(self.getPartMeta(location));
                             if (location.slug == parts.location) {
                                 // location
-                                self.view.location = self.getPartMeta(location);
+                                self.uimodel.location = self.getPartMeta(location);
                             }
                         });
                     }
@@ -576,9 +581,17 @@
             // this.apane: the attribute when creating/updating the html element
             // this.pane: the initial pane when creating the html element
             props: ['apane'],
+            mounted: function() {
+                var self = this;
+                $(document).on(this.apane.uimodel.pane_slug+'.addresses.updated', function(event, addresses) {
+                    //self.$set(self, {yo: 2};
+                    // TODO: make sure this reactive
+                    self.addresses = addresses;
+                });
+            },
             data: function() {
                 this.pane = this.apane;
-                var ret = this.apane.view;
+                var ret = this.apane.uimodel;
                 ret.display_settings_active = {};
                 return ret;
             },
@@ -593,14 +606,11 @@
                     // keep p1 & p2 components but pass 3rd Pane to p3 component.
                     // We can't replace this.$data so instead we request the
                     // incoming address and update the slug of the pane.
-                    this.pane_slug = pane.view.pane_slug;
+                    this.pane_slug = pane.uimodel.pane_slug;
                     this.pane.requestAddress(pane.getUIAddress());
                 },
-                'view.slug': function(val) {
-                    // TODO: still need this?
-                    this.pane.changeAddressPart('view', val);
-                },
                 'location.slug': function(val) {
+                    // TODO: no longer used?
                     this.pane.changeAddressPart('location', val);
                 },
                 'chunk': function(val) {
@@ -620,8 +630,28 @@
                             var $reveal = $(this);
                             $reveal.attr('data-panel', this.pane_slug);
                             new Foundation.Reveal($reveal);
-                        })
+                        });
+                        // recalc stickies...
+                        console.log('recalc');
+                        $('.sticky:visible').foundation('_calc', true);
                     });
+                }
+            },
+            computed: {
+                views: function() {
+                    return this.addresses.views;
+                },
+                location_types: function() {
+                    var self = this;
+                    var ret = null;
+                    if (this.views) {
+                        this.views.map(function(aview) {
+                            if (aview.slug == self.view.slug) {
+                                ret = aview.location_types;
+                            }
+                        });
+                    }
+                    return ret;
                 }
             },
             methods: {
@@ -637,9 +667,10 @@
                 onClickLocationType: function(location_type) {
                     this.pane.changeAddressPart('location_type', location_type);
                 },
-//                onClickLocation: function(location) {
-//                    this.pane.changeAddressPart('location', location);
-//                },
+                onClickLocation: function(location, location_type) {
+                    this.pane.changeAddressPart('location', location);
+                    this.pane.changeAddressPart('location_type', location_type);
+                },
                 // TODO: that logic should move to Panel
                 // TODO: the list of available display settings should be 
                 // determined by this class instead of the web api.
@@ -690,6 +721,28 @@
     // TODO: move this out
 
     $(function() {
+        Vue.directive('f-sticky', {
+            bind: function(el) {
+                Vue.nextTick(function () {
+                    // http://foundation.zurb.com/sites/docs/sticky.html
+                    var $el = $(el);
+                    $el.attr('data-sticky', '');
+                    $el.addClass('sticky');
+                    
+                    var $container = $el.parent().first();
+                    $container.attr('data-sticky-container', '');
+                    
+                    console.log('MADE STICKY');
+                    new Foundation.Sticky($el);
+                })
+            },
+            unbind: function(el) {
+                console.log('DESTROY sticky');
+                // TODO: chekc that it actually works...
+                // it seems to leave attributes with internal ids behind.
+                $(el).foundation('destroy');
+            },
+        });
         Vue.directive('f-dropdown', {
             componentUpdated: function(el) {
                 // Foundation won't behave well with controls modified by Vue.js
@@ -698,10 +751,11 @@
                 // We only do it when we detect a non-initialised dropdown item.
                 var $el = $(el);
                 if ($el.find('li:not([role])').length) {
-                    //  
                     console.log('componentUpdated');
+                    console.log($el.find('a:first').text());
                     $(el).find('.js-dropdown-active').removeClass('js-dropdown-active');
                     $(el).foundation('destroy');
+                    // TODO: unbind
                     $(el).foundation();
                 }
             },
@@ -714,6 +768,7 @@
                     // <!-- is-dropdown-submenu-parent: prevent FOUC -->
                     $el.find('> li').addClass('is-dropdown-submenu-parent');
                     $el.find('> li > ul').addClass('menu');
+                    // TODO: unbind
                     $el.on('mouseleave', function() {
                         $(el).find('.js-dropdown-active li a').click();
                         //console.log('LEAVE');
@@ -742,7 +797,7 @@
         
         var layout = new Vue({
             el: '#text-viewer',
-            data: viewer.view,
+            data: viewer.uimodel,
             methods: {
                 getPane: function(slug) {
                     return viewer.getPane(slug)
