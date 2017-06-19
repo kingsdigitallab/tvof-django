@@ -278,6 +278,13 @@
         parts[part_name] = value;
         return this.requestAddress(this.getAddressFromParts(parts));
     }
+    
+    Pane.prototype.changeAddressParts = function(aparts) {
+        //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
+        var parts = this.getAddressParts(this.address);
+        $.extend(parts, aparts);
+        return this.requestAddress(this.getAddressFromParts(parts));
+    }
 
     Pane.prototype.canBeSynced = function(part_name, value) {
         // make sure we don't end up with all panes synced
@@ -632,7 +639,6 @@
                             new Foundation.Reveal($reveal);
                         });
                         // recalc stickies...
-                        console.log('recalc');
                         $('.sticky:visible').foundation('_calc', true);
                     });
                 }
@@ -668,8 +674,7 @@
                     this.pane.changeAddressPart('location_type', location_type);
                 },
                 onClickLocation: function(location, location_type) {
-                    this.pane.changeAddressPart('location', location);
-                    this.pane.changeAddressPart('location_type', location_type);
+                    this.pane.changeAddressParts({location: location, location_type: location_type});
                 },
                 // TODO: that logic should move to Panel
                 // TODO: the list of available display settings should be 
@@ -732,17 +737,47 @@
                     var $container = $el.parent().first();
                     $container.attr('data-sticky-container', '');
                     
-                    console.log('MADE STICKY');
                     new Foundation.Sticky($el);
                 })
             },
             unbind: function(el) {
-                console.log('DESTROY sticky');
-                // TODO: chekc that it actually works...
+                // TODO: check that it actually works...
                 // it seems to leave attributes with internal ids behind.
                 $(el).foundation('destroy');
             },
         });
+        
+        function bindZFDropdownMenu($el) {
+            Vue.nextTick(function () {
+                // http://foundation.zurb.com/sites/docs/dropdown-menu.html
+                $el.attr('data-dropdown-menu', '');
+                $el.addClass('dropdown menu');
+                // <!-- is-dropdown-submenu-parent: prevent FOUC -->
+                $el.find('> li').addClass('is-dropdown-submenu-parent');
+                $el.find('> li > ul').addClass('menu');
+
+                $el.on('mouseleave.text_viewer', function() {
+                    $el.find('.js-dropdown-active li a').click();
+                    console.log('LEAVE');
+                });
+                var options = {
+                    closingTime: 50,
+                    closeOnClick: true,
+                    closeOnClickInside: true,
+                    autoClose: true,
+                };
+                
+                console.log('bind DropDown');
+                
+                new Foundation.DropdownMenu($el, options);
+            })
+        };
+        function unbindZFDropdownMenu($el) {
+            console.log('unbind');
+            $el.off('mouseleave.text_viewer');
+            $el.foundation('destroy');
+        };
+        
         Vue.directive('f-dropdown', {
             componentUpdated: function(el) {
                 // Foundation won't behave well with controls modified by Vue.js
@@ -754,38 +789,15 @@
                     console.log('componentUpdated');
                     console.log($el.find('a:first').text());
                     $(el).find('.js-dropdown-active').removeClass('js-dropdown-active');
-                    $(el).foundation('destroy');
-                    // TODO: unbind
-                    $(el).foundation();
+                    unbindZFDropdownMenu($(el));
+                    bindZFDropdownMenu($(el));
                 }
             },
             bind: function(el) {
-                Vue.nextTick(function () {
-                    // http://foundation.zurb.com/sites/docs/dropdown-menu.html
-                    var $el = $(el);
-                    $el.attr('data-dropdown-menu', '');
-                    $el.addClass('dropdown menu');
-                    // <!-- is-dropdown-submenu-parent: prevent FOUC -->
-                    $el.find('> li').addClass('is-dropdown-submenu-parent');
-                    $el.find('> li > ul').addClass('menu');
-                    // TODO: unbind
-                    $el.on('mouseleave', function() {
-                        $(el).find('.js-dropdown-active li a').click();
-                        //console.log('LEAVE');
-                    });
-                    var options = {
-                        closingTime: 50,
-                        closeOnClick: true,
-                        closeOnClickInside: true,
-                        autoClose: true,
-                    };
-                    new Foundation.DropdownMenu($el, options);
-                    //$el.foundation();
-                })
+                bindZFDropdownMenu($(el));
             },
             unbind: function(el) {
-                console.log('DESTROY');
-                $(el).foundation('destroy');
+                unbindZFDropdownMenu($(el));
             },
         });
         

@@ -134,6 +134,12 @@
             width: 100%;
         }
     }
+    /* GN: temporary, any active item in any dropdown should have a primary 
+    color background. TODO: change to correct sass variable. 
+    */
+    ul.menu li.active > a {
+        background-color: #5871a4;
+    }
 
     .pane-sidebar {
         background: $light-gray;

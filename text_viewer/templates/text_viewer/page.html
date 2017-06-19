@@ -16,7 +16,9 @@ Textviewer
 {% comment %}
 
 GN: the code below serves as a template for any number of text panes.
-Please DO NOT USE ID ATTRIBUTE (they would be duplicated which is not allowed in HTML).
+Apart from id="vue-template-text-pane", please do not use id attribute
+(they would be duplicated which is not allowed in HTML).
+
 
 Some of the Foundation controls or special behaviour/plugins are managed with
 a vue directive:
@@ -64,17 +66,17 @@ Those attributes will take care of most of the other attributes and classes.
                 </div>
             </div>
         </div>
-        <div class="row collapse" id="section-menu">
+        <div class="row collapse" v-bind:id="'section-menu-'+pane_slug">
             <div class="small-12 columns">
                 <ul v-f-dropdown>
-                    <!-- TODO: implement this menu -->
+                    <!-- TODO: implement this menu (slider) -->
                     <li v-for="alocation_type in location_types" 
                         v-bind:class="{active: (alocation_type.slug == location_type.slug)}">
                         <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">
                             <i class="fa fa-file-text-o"></i>
                             <span class="show-for-large">{{ alocation_type.label }}</span>
                         </a>
-                        <ul>
+                        <ul v-if="alocation_type.locations.length > 1">
                             <li v-for="alocation in alocation_type.locations" 
                                 v-bind:class="{active: (alocation.slug == location.slug)}">
                                 <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)" href="#">
@@ -100,7 +102,7 @@ Those attributes will take care of most of the other attributes and classes.
             <div class="small-2 medium-1 columns">
                 <div v-f-sticky
                     data-stick-to="bottom" 
-                    data-top-anchor="section-menu:bottom" 
+                    v-bind:data-top-anchor="'section-menu-'+pane_slug+':bottom'" 
                     data-btm-anchor="footer:top">
                     <ul v-f-dropdown class="text-center pane-sidebar vertical" 
                         data-disable-hover="true" data-click-open="true" 
@@ -108,7 +110,7 @@ Those attributes will take care of most of the other attributes and classes.
                         <!-- TODO: need to fix the view button. By default it should duplicate only -->
                         <!-- <li v-for="aview in views"> -->
                         <li>
-                            <a href="#" v-on:click.stop.prevent="onClickViewExternal(views.slug)"
+                            <a href="#" v-on:click.stop.prevent="onClickViewExternal(view.slug)"
                                 data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" 
                                 data-hover-delay="0" title="Open a new panel">
                                 <i class="fa fa-columns"></i>
@@ -118,7 +120,7 @@ Those attributes will take care of most of the other attributes and classes.
                             <a><i class="fa fa-pencil"></i></a>
                             <ul class="text-left">
                                 <h3>Display</h3>
-                                <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                <li v-for="setting in display_settings" v-bind:class="{active: isDisplaySettingActive(setting), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
                                     <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
                                         {{ setting.label }}
                                     </a>
