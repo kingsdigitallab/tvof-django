@@ -1,3 +1,18 @@
+/*
+ * Text Viewer code. 
+ * 
+ * Content:
+ * 
+ * - Viewer: manages the layout, lifecycle and synchronisation of multiple panes 
+ * - Pane: handles the navigation logic and server requests for a text pane
+ * - Helper functions
+ * - text-pane: a vue.js module for rendering a pane
+ * - f-sticky: vue.js directive for a sticky div
+ * - f-dropdown: vue.js directive for a Foundation dropdown menu
+ * - initialisation of the interface
+ * 
+ * TODO: split the different modules/layers into separate source files.
+ */
 (function(TextViewer, $, undefined) {
 
     /*****************************************************
@@ -481,7 +496,7 @@
     Pane.prototype.onReceivedAddress = function(address) {
         // update the loaded address
         // this is the real address of our this.view.chunk
-        console.log('received '+address+' had '+this.address)
+        //console.log('received '+address+' had '+this.address)
         var has_address_changed = (this.address !== address);
         this.address = address;
         
@@ -600,6 +615,7 @@
                 this.pane = this.apane;
                 var ret = this.apane.uimodel;
                 ret.display_settings_active = {};
+                ret.location_type_filters = {};
                 return ret;
             },
             // var elem = new Foundation.Tooltip(element, options);
@@ -644,7 +660,7 @@
                 },
                 'is_synced': function(val) {
                     this.pane.requestAddress(this.pane.address);
-                }
+                },
             },
             computed: {
                 views: function() {
@@ -664,9 +680,21 @@
                 },
                 canBeSynced: function() {
                     return this.pane.canBeSynced(); 
+                },
+                getSyncTitle: function() {
+                    return this.canBeSynced ? (this.is_synced ? 'Click to unsync this pane' : 'Click to synchronise this pane with another') : 'This pane cannot be synced';
                 }
             },
             methods: {
+                filterLocations: function(location_type) {
+                    console.log('filter');
+                    var filter = this.location_type_filters[location_type.slug] || '';
+                    location_type.locations.map(function(location) {
+                        location.hidden = !(location.label_long.startsWith(filter));
+                        //location.slug = location.slug+'#';
+                        console.log('hidden '+location.label_long);
+                    });
+                },
                 getFAIcon: function(location_type) {
                     var ltypes_icon = {
                         'whole': 'book',
@@ -773,6 +801,7 @@
                 $el.on('mouseleave.text_viewer', function() {
                     $el.find('.js-dropdown-active li a').click();
                 });
+                
                 var options = {
                     closingTime: 50,
                     closeOnClick: true,
@@ -780,16 +809,24 @@
                     autoClose: true,
                 };
                 
-                console.log('bind DropDown');
-                
                 new Foundation.DropdownMenu($el, options);
             })
         };
         function unbindZFDropdownMenu($el) {
-            console.log('unbind');
             $el.off('mouseleave.text_viewer');
             $el.foundation('destroy');
         };
+
+        // When a scrollable dropdown opens, we scroll to the first active item
+        $(document).on('show.zf.dropdownmenu', function(ev, $el) {
+            var $parent = $el;
+            if ($parent.parent().hasClass('scrollable')) {
+                var $i0 = $parent.find('.active').first();
+                if ($i0.length > 0) {
+                    $parent.scrollTop($parent.scrollTop() + $i0.position().top);
+                }
+            }
+        });
         
         Vue.directive('f-dropdown', {
             componentUpdated: function(el) {
@@ -804,9 +841,10 @@
                 // Without this Vue.js loses track of the DOM because of 
                 // Foundation's excessive manipulations.
                 // TODO: implement the dropdown with Vue.js
-                if (1 || $el.find('li:not([role])').length) {
-                    console.log('componentUpdated');
-                    console.log($el.find('a:first').text());
+                //if ($el.find('li:not([role])').length) {
+                if (1) {
+                    //console.log('componentUpdated');
+                    //console.log($el.find('a:first').text());
                     $(el).find('.js-dropdown-active').removeClass('js-dropdown-active');
                     unbindZFDropdownMenu($(el));
                     bindZFDropdownMenu($(el));

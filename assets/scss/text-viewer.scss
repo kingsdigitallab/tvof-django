@@ -145,6 +145,11 @@
         color: grey;
         cursor: not-allowed;
     }
+    .scrollable ul {
+        max-height: 15em;
+        overflow-y: auto;
+    }
+    /* */
 
     .pane-sidebar {
         background: $light-gray;

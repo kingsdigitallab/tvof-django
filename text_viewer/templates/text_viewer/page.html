@@ -65,7 +65,7 @@ a vue directive:
                 </div>
             </div>
         </div>
-        <div class="row collapse" v-bind:id="'section-menu-'+pane_slug">
+        <div class="row" v-bind:id="'section-menu-'+pane_slug">
             <div class="small-12 columns">
                 <!-- No toggle button in Foundation???
                     Tried switch but too wide for side bar 
@@ -74,25 +74,28 @@ a vue directive:
                     <li v-bind:class="{active: is_synced, disabled: !canBeSynced}">
                         <a href="#" v-on:click.prevent="toggleSynced()" class="">
                             <i v-bind:class="'fa fa-chain'+(!is_synced ? '-broken' : '')" 
-                                v-bind:title="canBeSynced ? (is_synced ? 'Click to unsync this pane' : 'Click to synchronise this pane with another') : 'This pane cannot be synced'"></i>
+                                v-bind:title="getSyncTitle"></i>
                         </a>
                     </li>
                     <!-- TODO: implement this menu (slider) -->
                     <template v-if="!is_synced">
                         <li v-for="alocation_type in location_types" 
-                            v-bind:class="{active: (alocation_type.slug == location_type.slug)}">
+                            v-bind:class="{active: (alocation_type.slug == location_type.slug), scrollable: 1}">
                             <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">
                                 <i v-bind:class="getFAIcon(alocation_type.slug)"></i>
                                 <span class="show-for-large">{{ alocation_type.label }}</span>
                             </a>
-                            <ul v-if="alocation_type.locations.length > 1">
-                                <li v-for="alocation in alocation_type.locations" 
-                                    v-bind:class="{active: (alocation.slug == location.slug), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
-                                    <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)" 
-                                        href="#" v-html="alocation.label_long">
-                                    </a>
-                                </li>
-                            </ul>
+                            <template v-if="alocation_type.locations.length > 1">
+                                <span><input v-on:keyup.stop.prevent="filterLocations(alocation_type)" type="text" name="filter" value="keyword" v-model="location_type_filters[alocation_type.slug]"/></span>
+                                <ul>
+                                    <li v-for="alocation in alocation_type.locations" 
+                                        v-bind:class="{active: (alocation.slug == location.slug), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1, 'hidden': alocation.hidden}">
+                                        <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)" 
+                                            href="#" v-html="alocation.label_long">
+                                        </a>
+                                    </li>
+                                </ul>
+                            </template>
                         </li>
                     </template>
                 </ul>
