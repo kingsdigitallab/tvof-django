@@ -225,6 +225,11 @@
         //return (this.view.location_type.slug == 'synced');
         return this.uimodel.is_synced;
     }
+
+    Pane.prototype.canBeSynced = function(part_name, value) {
+        // make sure we don't end up with all panes synced
+        return this.panes.canPaneBeSynced(this);
+    }
     
     Pane.prototype.syncWith = function(address) {
         if (this.isSynced()) {
@@ -284,11 +289,6 @@
         var parts = this.getAddressParts(this.address);
         $.extend(parts, aparts);
         return this.requestAddress(this.getAddressFromParts(parts));
-    }
-
-    Pane.prototype.canBeSynced = function(part_name, value) {
-        // make sure we don't end up with all panes synced
-        return this.panes.canPaneBeSynced(this);
     }
 
     Pane.prototype.requestAddress = function(address) {
@@ -616,7 +616,7 @@
                     this.pane_slug = pane.uimodel.pane_slug;
                     this.pane.requestAddress(pane.getUIAddress());
                 },
-                'location.slug': function(val) {
+                'location.slug.bk': function(val) {
                     // TODO: no longer used?
                     this.pane.changeAddressPart('location', val);
                 },
@@ -641,6 +641,9 @@
                         // recalc stickies...
                         $('.sticky:visible').foundation('_calc', true);
                     });
+                },
+                'is_synced': function(val) {
+                    this.pane.requestAddress(this.pane.address);
                 }
             },
             computed: {
@@ -658,9 +661,22 @@
                         });
                     }
                     return ret;
+                },
+                canBeSynced: function() {
+                    return this.pane.canBeSynced(); 
                 }
             },
             methods: {
+                getFAIcon: function(location_type) {
+                    var ltypes_icon = {
+                        'whole': 'book',
+                        'section': 'files-o',
+                        'folio': 'file-text-o',
+                        'paragraph': 'paragraph',
+                        'seg': 'outdent',
+                    };
+                    return 'fa fa-'+ (ltypes_icon[location_type] || '');
+                },
                 onClickDocument: function(document) {
                     this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
                 },
@@ -686,8 +702,9 @@
                     this.$set(this.display_settings_active, setting.slug, !!!(this.display_settings_active[setting.slug]));
                 },
                 toggleSynced: function() {
-                    this.is_synced = !this.is_synced;
-                    this.pane.requestAddress(this.pane.address);
+                    if (this.is_synced || this.canBeSynced) {
+                        this.is_synced = !this.is_synced;
+                    }
                 },
                 getClassesFromDisplaySettings: function() {
                     var self = this;
@@ -712,9 +729,6 @@
                 areLocationsHidden: function() {
                     return (this.locations.length < 2 || this.is_synced) 
                 },
-                canBeSynced: function() {
-                    return this.pane.canBeSynced(); 
-                }
             },
         });
     }
@@ -753,12 +767,11 @@
                 $el.attr('data-dropdown-menu', '');
                 $el.addClass('dropdown menu');
                 // <!-- is-dropdown-submenu-parent: prevent FOUC -->
-                $el.find('> li').addClass('is-dropdown-submenu-parent');
+                $el.find('> li:has(ul)').addClass('is-dropdown-submenu-parent');
                 $el.find('> li > ul').addClass('menu');
 
                 $el.on('mouseleave.text_viewer', function() {
                     $el.find('.js-dropdown-active li a').click();
-                    console.log('LEAVE');
                 });
                 var options = {
                     closingTime: 50,
@@ -785,7 +798,13 @@
                 // So we re-initialise foundation on the modified control.
                 // We only do it when we detect a non-initialised dropdown item.
                 var $el = $(el);
-                if ($el.find('li:not([role])').length) {
+                // VERY Expensive: Foundation changes all other drop downs each time
+                // one selection is made in any other.
+                // So we destroy and reinitialise all the drop downs each time.
+                // Without this Vue.js loses track of the DOM because of 
+                // Foundation's excessive manipulations.
+                // TODO: implement the dropdown with Vue.js
+                if (1 || $el.find('li:not([role])').length) {
                     console.log('componentUpdated');
                     console.log($el.find('a:first').text());
                     $(el).find('.js-dropdown-active').removeClass('js-dropdown-active');

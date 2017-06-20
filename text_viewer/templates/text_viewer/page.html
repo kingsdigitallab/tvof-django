@@ -16,7 +16,7 @@ Textviewer
 {% comment %}
 
 GN: the code below serves as a template for any number of text panes.
-Apart from id="vue-template-text-pane", please do not use id attribute
+Apart from id="vue-template-text-pane", please do not use hardcoded id attribute
 (they would be duplicated which is not allowed in HTML).
 
 
@@ -25,7 +25,6 @@ a vue directive:
 * v-f-dropdown: for a Foundation dropdown-menu
 * v-f-sticky: for a sticky element
 
-Those attributes will take care of most of the other attributes and classes.
 {% endcomment %}
 {% verbatim %}
 <div class="vue-templates">
@@ -45,7 +44,7 @@ Those attributes will take care of most of the other attributes and classes.
                         <li>
                             <a><h2 class="ms-title">{{ document.label }}</h2></a>
                             <ul>
-                                <li v-for="adocument in documents" v-bind:class="{active: adocument.slug == document.slug}">
+                                <li v-for="adocument in documents" v-bind:class="{active: adocument.slug == document.slug, 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
                                     <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
                                 </li>
                             </ul>
@@ -55,7 +54,7 @@ Those attributes will take care of most of the other attributes and classes.
                         <li class="dropdown-views">
                             <a>{{ view.label }}</a>
                             <ul>
-                                <li v-for="aview in views" v-bind:class="{active: aview.slug == view.slug}">
+                                <li v-for="aview in views" v-bind:class="{active: aview.slug == view.slug, 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
                                     <a v-on:click.prevent="onClickView(aview.slug)" href="#">
                                         {{ aview.label }}
                                     </a>
@@ -68,23 +67,33 @@ Those attributes will take care of most of the other attributes and classes.
         </div>
         <div class="row collapse" v-bind:id="'section-menu-'+pane_slug">
             <div class="small-12 columns">
+                <!-- No toggle button in Foundation???
+                    Tried switch but too wide for side bar 
+                -->
                 <ul v-f-dropdown>
-                    <!-- TODO: implement this menu (slider) -->
-                    <li v-for="alocation_type in location_types" 
-                        v-bind:class="{active: (alocation_type.slug == location_type.slug)}">
-                        <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">
-                            <i class="fa fa-file-text-o"></i>
-                            <span class="show-for-large">{{ alocation_type.label }}</span>
+                    <li v-bind:class="{active: is_synced, disabled: !canBeSynced}">
+                        <a href="#" v-on:click.prevent="toggleSynced()" class="">
+                            <i v-bind:class="'fa fa-chain'+(!is_synced ? '-broken' : '')"></i>
                         </a>
-                        <ul v-if="alocation_type.locations.length > 1">
-                            <li v-for="alocation in alocation_type.locations" 
-                                v-bind:class="{active: (alocation.slug == location.slug)}">
-                                <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)" href="#">
-                                    {{ alocation.label }}
-                                </a>
-                            </li>
-                        </ul>
                     </li>
+                    <!-- TODO: implement this menu (slider) -->
+                    <template v-if="!is_synced">
+                        <li v-for="alocation_type in location_types" 
+                            v-bind:class="{active: (alocation_type.slug == location_type.slug)}">
+                            <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">
+                                <i v-bind:class="getFAIcon(alocation_type.slug)"></i>
+                                <span class="show-for-large">{{ alocation_type.label }}</span>
+                            </a>
+                            <ul v-if="alocation_type.locations.length > 1">
+                                <li v-for="alocation in alocation_type.locations" 
+                                    v-bind:class="{active: (alocation.slug == location.slug), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
+                                    <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)" 
+                                        href="#" v-html="alocation.label_long">
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </template>
                 </ul>
             </div>
         </div>

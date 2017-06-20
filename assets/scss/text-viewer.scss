@@ -140,6 +140,11 @@
     ul.menu li.active > a {
         background-color: #5871a4;
     }
+    ul.menu li.disabled > a {
+        background-color: lightgrey;
+        color: grey;
+        cursor: not-allowed;
+    }
 
     .pane-sidebar {
         background: $light-gray;

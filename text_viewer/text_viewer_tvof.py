@@ -68,6 +68,11 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
     location_types = [
         {
+            'slug': 'whole',
+            'label': 'Whole Text',
+            'xpath': './/div[@class="tei body"]',
+        },
+        {
             'slug': 'section',
             'label': 'Section',
             # used to find default/first chunk
@@ -77,11 +82,6 @@ class TextViewerAPITvof(TextViewerAPIXML):
             'xpath_from_location': _get_xpath_from_location,
             # used to get location of a default chunk
             'location_from_chunk': lambda c: unicode(int(c.attrib['id'][-5:]))
-        },
-        {
-            'slug': 'whole',
-            'label': 'Whole Text',
-            'xpath': './/div[@class="tei body"]',
         },
     ]
 
