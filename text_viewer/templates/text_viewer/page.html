@@ -73,7 +73,8 @@ a vue directive:
                 <ul v-f-dropdown>
                     <li v-bind:class="{active: is_synced, disabled: !canBeSynced}">
                         <a href="#" v-on:click.prevent="toggleSynced()" class="">
-                            <i v-bind:class="'fa fa-chain'+(!is_synced ? '-broken' : '')"></i>
+                            <i v-bind:class="'fa fa-chain'+(!is_synced ? '-broken' : '')" 
+                                v-bind:title="canBeSynced ? (is_synced ? 'Click to unsync this pane' : 'Click to synchronise this pane with another') : 'This pane cannot be synced'"></i>
                         </a>
                     </li>
                     <!-- TODO: implement this menu (slider) -->
