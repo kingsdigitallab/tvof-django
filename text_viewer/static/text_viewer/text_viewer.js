@@ -424,7 +424,8 @@
                 }, null, null, false);
             }
         }
-
+        
+        // TODO: why is it needed here? even if branch not executed?
         self.renderAddresses();
     }
     
@@ -687,12 +688,10 @@
             },
             methods: {
                 filterLocations: function(location_type) {
-                    console.log('filter');
                     var filter = this.location_type_filters[location_type.slug] || '';
+                    filter = filter.trim().toLowerCase();
                     location_type.locations.map(function(location) {
-                        location.hidden = !(location.label_long.startsWith(filter));
-                        //location.slug = location.slug+'#';
-                        console.log('hidden '+location.label_long);
+                        Vue.set(location, 'hidden', location.label_long.toLowerCase().indexOf(filter) === -1);
                     });
                 },
                 getFAIcon: function(location_type) {
@@ -791,6 +790,8 @@
         
         function bindZFDropdownMenu($el) {
             Vue.nextTick(function () {
+                var $opened_element = $el.find('.js-dropdown-active');
+
                 // http://foundation.zurb.com/sites/docs/dropdown-menu.html
                 $el.attr('data-dropdown-menu', '');
                 $el.addClass('dropdown menu');
@@ -809,7 +810,12 @@
                     autoClose: true,
                 };
                 
+                // let Foundation manage the bahaviour and appearance of the DD
                 new Foundation.DropdownMenu($el, options);
+
+                // Leave DD open if it was already open (e.g. reinitialised)
+                //$opened_element.addClass('js-dropdown-active');
+                $opened_element.trigger('mouseover');
             })
         };
         function unbindZFDropdownMenu($el) {
@@ -817,14 +823,17 @@
             $el.foundation('destroy');
         };
 
-        // When a scrollable dropdown opens, we scroll to the first active item
+        // When a scrollable dropdown opens, we scroll to the first active item.
+        // If no active element, we scroll to top (e.g. autocomplete).
         $(document).on('show.zf.dropdownmenu', function(ev, $el) {
             var $parent = $el;
             if ($parent.parent().hasClass('scrollable')) {
-                var $i0 = $parent.find('.active').first();
+                var $i0 = $parent.find('.active:visible').first();
+                var pos = 0;
                 if ($i0.length > 0) {
-                    $parent.scrollTop($parent.scrollTop() + $i0.position().top);
+                    pos = $parent.scrollTop() + $i0.position().top;
                 }
+                $parent.scrollTop(pos);
             }
         });
         
@@ -845,9 +854,8 @@
                 if (1) {
                     //console.log('componentUpdated');
                     //console.log($el.find('a:first').text());
-                    $(el).find('.js-dropdown-active').removeClass('js-dropdown-active');
-                    unbindZFDropdownMenu($(el));
-                    bindZFDropdownMenu($(el));
+                    unbindZFDropdownMenu($el);
+                    bindZFDropdownMenu($el);
                 }
             },
             bind: function(el) {
