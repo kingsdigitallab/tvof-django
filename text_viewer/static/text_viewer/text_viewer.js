@@ -822,8 +822,8 @@
             })
         };
         function unbindZFDropdownMenu($el) {
-            console.log('UNBIND');
-            console.log($el);
+            //console.log('UNBIND');
+            //console.log($el);
             $el.off('mouseleave.text_viewer');
             $el.foundation('destroy');
         };
