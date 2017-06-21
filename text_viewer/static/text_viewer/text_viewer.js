@@ -791,6 +791,7 @@
         function bindZFDropdownMenu($el) {
             Vue.nextTick(function () {
                 var $opened_element = $el.find('.js-dropdown-active');
+                //var $focused_filter = $el.find('.list-filter input:focus');
 
                 // http://foundation.zurb.com/sites/docs/dropdown-menu.html
                 $el.attr('data-dropdown-menu', '');
@@ -816,9 +817,13 @@
                 // Leave DD open if it was already open (e.g. reinitialised)
                 //$opened_element.addClass('js-dropdown-active');
                 $opened_element.trigger('mouseover');
+                // restore focus on filter input
+                //$focused_filter.focus();
             })
         };
         function unbindZFDropdownMenu($el) {
+            console.log('UNBIND');
+            console.log($el);
             $el.off('mouseleave.text_viewer');
             $el.foundation('destroy');
         };
@@ -834,6 +839,7 @@
                     pos = $parent.scrollTop() + $i0.position().top;
                 }
                 $parent.scrollTop(pos);
+                $parent.parent().find('.list-filter input').focus();
             }
         });
         
@@ -850,8 +856,8 @@
                 // Without this Vue.js loses track of the DOM because of 
                 // Foundation's excessive manipulations.
                 // TODO: implement the dropdown with Vue.js
-                //if ($el.find('li:not([role])').length) {
-                if (1) {
+                if ($el.find('li:not([role])').length || ($el.find('.is-dropdown-submenu-parent').length == 0)) {
+                //if (1) {
                     //console.log('componentUpdated');
                     //console.log($el.find('a:first').text());
                     unbindZFDropdownMenu($el);

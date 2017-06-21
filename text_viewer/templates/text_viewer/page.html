@@ -86,7 +86,9 @@ a vue directive:
                                 <span class="show-for-large">{{ alocation_type.label }}</span>
                             </a>
                             <template v-if="alocation_type.locations.length > 1">
-                                <span><input v-on:keyup.stop.prevent="filterLocations(alocation_type)" type="text" name="filter" value="keyword" v-model="location_type_filters[alocation_type.slug]"/></span>
+                                <div class="list-filter">
+                                    <input v-on:keyup.stop.prevent="filterLocations(alocation_type)" type="text" name="filter" value="keyword" v-model="location_type_filters[alocation_type.slug]"/>
+                                </div>
                                 <ul>
                                     <li v-for="alocation in alocation_type.locations" 
                                         v-bind:class="{active: (alocation.slug == location.slug), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1, 'hidden': alocation.hidden}">

@@ -137,7 +137,7 @@
     /* GN: temporary, any active item in any dropdown should have a primary 
     color background. TODO: change to correct sass variable. 
     */
-    ul.menu li.active > a {
+    ul.menu li.active > a, ul.menu li > a:focus {
         background-color: #5871a4;
     }
     ul.menu li.disabled > a {
@@ -148,6 +148,30 @@
     .scrollable ul {
         max-height: 15em;
         overflow-y: auto;
+        margin-top: 2.5rem;
+    }
+    .is-active .list-filter {
+        display: block;
+    }
+    .list-filter input {
+        display: none;
+    }
+    .is-active .list-filter input {
+        display: inline;
+    }
+    .list-filter {
+        display: none;
+        position: absolute;
+        min-width: 200px;
+        min-height: 2.5rem;
+    }
+    .list-filter::after {
+        content: "\f002";
+        font-family: "FontAwesome";
+        position: absolute;
+        right: 0.8em;
+        color: grey;
+        line-height: 2.3rem;
     }
     /* */
 
