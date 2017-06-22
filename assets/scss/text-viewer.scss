@@ -128,56 +128,86 @@
         Foundation 'Sticky' changes position from 'relative' to 'fixed'
         and messes up with the inherited box model properties.
     */
+
     .column.sticky-container, .columns.sticky-container {
         padding: 0;
         .sticky {
             width: 100%;
         }
     }
+
     /* GN: temporary, any active item in any dropdown should have a primary 
     color background. TODO: change to correct sass variable. 
     */
+
     ul.menu li.active > a, ul.menu li > a:focus {
         background-color: #5871a4;
     }
+
     ul.menu li.disabled > a {
         background-color: lightgrey;
         color: grey;
         cursor: not-allowed;
     }
+
     .scrollable ul {
         max-height: 15em;
         overflow-y: auto;
         margin-top: 2.5rem;
     }
-    .is-active .list-filter {
-        display: block;
+
+    .is-active {
+
+        .list-filter {
+            display: block;
+
+            input {
+                display: inline;
+            }
+
+            input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+                color: $black;
+            }
+
+            input::-moz-placeholder { /* Firefox 19+ */
+                color: $black;
+            }
+
+            input::-ms-input-placeholder { /* IE 10+ */
+                color: $black;
+            }
+
+            input:-moz-placeholder { /* Firefox 18- */
+                color: $black;
+            }
+        }
     }
-    .list-filter input {
-        display: none;
-    }
-    .is-active .list-filter input {
-        display: inline;
-    }
+
     .list-filter {
         display: none;
+        min-height: rem-calc(40);
+        min-width: rem-calc(200);
         position: absolute;
-        min-width: 200px;
-        min-height: 2.5rem;
+
+        &:after {
+            color: grey;
+            content: "\f057";
+            font-family: "FontAwesome";
+            line-height: rem-calc(36);
+            position: absolute;
+            right: rem-calc(10)
+        }
+
+        input {
+            display: none; // GF to GN: what is this supposed to do?
+        }
     }
-    .list-filter::after {
-        content: "\f002";
-        font-family: "FontAwesome";
-        position: absolute;
-        right: 0.8em;
-        color: grey;
-        line-height: 2.3rem;
-    }
+
     /* */
 
     .pane-sidebar {
         background: $light-gray;
-        height: calc(100vh - 380px);
+        height: calc(100vh - 400px);
         max-height: rem-calc(800);
         position: relative;
 
