@@ -11,11 +11,12 @@ class TextViewerAPIXML(TextViewerAPI):
     ]
 
     def get_location_type(self, slug):
-        ret = None
+        ret = self.location_types[0]
         for location_type in self.location_types:
             if location_type['slug'] == slug:
                 ret = location_type
                 break
+
         return ret
 
     def request_document(self, document_slug):
@@ -142,10 +143,8 @@ class TextViewerAPIXML(TextViewerAPI):
         remove_xml_elements(xml, './/div[@id="text-conventions"]')
 
         # resolve the rest of the address
-        if location_type_slug in ['default', '']:
-            location_type_slug = self.location_types[0]['slug']
-
         location_type = self.get_location_type(location_type_slug)
+        location_type_slug = location_type['slug']
 
         # extract chunk from document and address
         xpath_from_location = location_type.get('xpath_from_location')

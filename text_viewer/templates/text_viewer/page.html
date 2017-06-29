@@ -88,6 +88,7 @@ a vue directive:
                             <template v-if="alocation_type.locations.length > 1">
                                 <div class="list-filter">
                                     <input v-on:keyup.stop.prevent="filterLocations(alocation_type)" type="text" name="filter" value="keyword" v-model="location_type_filters[alocation_type.slug]" placeholder="Search...">
+                                    <a class="clear-filter fa fa-times-circle" href="#" v-on:click.prevent="clearLocationFilter(alocation_type)"></a>
                                 </div>
                                 <ul>
                                     <li v-for="alocation in alocation_type.locations" 

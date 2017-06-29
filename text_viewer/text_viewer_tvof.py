@@ -29,7 +29,7 @@ def _get_xpath_from_location(document, view, location_type, location,
             location = synced_with['location']
         else:
             # synced with different document
-            if location_type == 'section' and\
+            if location_type == 'paragraph' and\
                     synced_with['location_type'] == location_type:
                 location = get_location_translated(
                     synced_with['document'], synced_with['location'], document)
@@ -73,8 +73,8 @@ class TextViewerAPITvof(TextViewerAPIXML):
             'xpath': './/div[@class="tei body"]',
         },
         {
-            'slug': 'section',
-            'label': 'Section',
+            'slug': 'paragraph',
+            'label': 'Paragraph',
             # used to find default/first chunk
             # used to extract all locations
             'xpath': './/div[@class="tei body"]/div[h4]',
@@ -150,7 +150,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
     def get_location_info_from_xml(self, xml, location_type):
         ret = {'slug': '', 'label': '?', 'label_long': '?'}
 
-        if location_type['slug'] == 'section':
+        if location_type['slug'] == 'paragraph':
             # TODO: move this to a class?
 
             #             print '-' * 40

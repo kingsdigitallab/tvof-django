@@ -132,11 +132,13 @@ class TextViewerAPI(object):
         ret = cls.cache.get(url, None)
         if ret is None:
             print 'REQUEST %s' % url
-            r = requests.get(url, timeout=5)
+            r = requests.get(url, timeout=60)
             ret = r.text.encode('utf-8')
             cache[url] = ret
-            if len(cache.keys()) > 3:
-                cache.popitem()
+            print len(ret)
+            if len(cache.keys()) > 10:
+                print 'CACHE ITEM REMOVED'
+                cache.popitem(True)
 
         return ret
 

@@ -153,7 +153,7 @@
     .scrollable ul {
         max-height: 15em;
         overflow-y: auto;
-        margin-top: 2.5rem;
+        margin-top: 2.4rem;
     }
 
     .is-active {
@@ -188,18 +188,17 @@
         min-height: rem-calc(40);
         min-width: rem-calc(200);
         position: absolute;
-
-        &:after {
+        
+        .clear-filter {
             color: grey;
-            content: "\f057";
-            font-family: "FontAwesome";
-            line-height: rem-calc(36);
+            line-height: 2.25rem;
             position: absolute;
-            right: rem-calc(10)
-        }
-
-        input {
-            display: none; // GF to GN: what is this supposed to do?
+            right: 0;
+            top: 0;
+            margin: 0 0.4rem;
+            &:hover {
+                color: grey;
+            }
         }
     }
 

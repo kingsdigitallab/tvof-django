@@ -687,12 +687,17 @@
                 }
             },
             methods: {
+                clearLocationFilter: function(location_type) {
+                    this.location_type_filters[location_type.slug] = '';
+                    this.filterLocations(location_type);
+                },
                 filterLocations: function(location_type) {
                     var filter = this.location_type_filters[location_type.slug] || '';
                     filter = filter.trim().toLowerCase();
                     location_type.locations.map(function(location) {
                         Vue.set(location, 'hidden', location.label_long.toLowerCase().indexOf(filter) === -1);
                     });
+                    
                 },
                 getFAIcon: function(location_type) {
                     var ltypes_icon = {
