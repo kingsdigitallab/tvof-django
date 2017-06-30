@@ -29,7 +29,7 @@ def _get_xpath_from_location(document, view, location_type, location,
             location = synced_with['location']
         else:
             # synced with different document
-            if location_type == 'section' and\
+            if location_type == 'paragraph' and\
                     synced_with['location_type'] == location_type:
                 location = get_location_translated(
                     synced_with['document'], synced_with['location'], document)
@@ -68,8 +68,13 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
     location_types = [
         {
-            'slug': 'section',
-            'label': 'Section',
+            'slug': 'whole',
+            'label': 'Whole Text',
+            'xpath': './/div[@class="tei body"]',
+        },
+        {
+            'slug': 'paragraph',
+            'label': 'Paragraph',
             # used to find default/first chunk
             # used to extract all locations
             'xpath': './/div[@class="tei body"]/div[h4]',
@@ -77,11 +82,6 @@ class TextViewerAPITvof(TextViewerAPIXML):
             'xpath_from_location': _get_xpath_from_location,
             # used to get location of a default chunk
             'location_from_chunk': lambda c: unicode(int(c.attrib['id'][-5:]))
-        },
-        {
-            'slug': 'whole',
-            'label': 'Whole Text',
-            'xpath': './/div[@class="tei body"]',
         },
     ]
 
@@ -150,7 +150,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
     def get_location_info_from_xml(self, xml, location_type):
         ret = {'slug': '', 'label': '?', 'label_long': '?'}
 
-        if location_type['slug'] == 'section':
+        if location_type['slug'] == 'paragraph':
             # TODO: move this to a class?
 
             #             print '-' * 40

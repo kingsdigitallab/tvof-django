@@ -224,6 +224,14 @@ nav {
         }
     }
 
+    .menu {
+        a {
+            &:hover {
+                color: $white;
+            }
+        }
+    }
+
     .menu > li > a {
         // color: $primary-color;
         &:hover {
