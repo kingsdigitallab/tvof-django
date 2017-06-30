@@ -373,7 +373,7 @@ WAGTAIL_APPEND_SLASH = False
 TVOF_URL_TEXT = 'histoire-ancienne'
 # The relative web path to some dynamic pages (i.e. not served by wagtail)
 TVOF_WEBPATH_TO_KILN = {
-    '{}/edition'.format(TVOF_URL_TEXT):
+    '{}/edition2'.format(TVOF_URL_TEXT):
         'texts/Fr20125/semi-diplomatic/',
     '{}/bibliography'.format(TVOF_URL_TEXT):
         'bibliography/',
