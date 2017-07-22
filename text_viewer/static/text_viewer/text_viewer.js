@@ -814,6 +814,7 @@
                     closeOnClick: true,
                     closeOnClickInside: true,
                     autoClose: true,
+                    clickOpen: true,
                 };
                 
                 // let Foundation manage the bahaviour and appearance of the DD
