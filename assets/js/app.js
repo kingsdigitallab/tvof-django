@@ -31,4 +31,15 @@ $(document).ready(function() {
 		$this.text(text).toggleClass('secondary darker'); 
 		$(this).prev('.long-list').children('li.more-items').slideToggle();
 	});
+	
+	// TVOF 131: click on PDF open the document in new tab instead of 
+	// downloading it
+    $('a[href]').on('click', function() {
+        var href = this.href;
+        if (/.*\.pdf$/.test(href)) {
+            window.open(href);
+            return false; 
+        }
+    });
+	
 });

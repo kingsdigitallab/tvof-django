@@ -4,28 +4,28 @@
 
 {% block main %}
 
-{% block posts_by %}
-{% if filter_type == 'author' %}
-<h2>Showing posts by {{ filter|safe }} <a href="{% pageurl self %}">Show all</a></h2>
-{% endif %}
-{% endblock %}
-
-{% block posts_tagged_as %}
-{% if filter_type == 'tag' %}
-<h2>Showing posts tagged as {{ filter|safe }} <a href="{% pageurl self %}">Show all</a></h2>
-{% endif %}
-{% endblock %}
-
-{% block posts_by_date %}
-{% if filter_type == 'date' %}
-<h2>Showing posts on {{ filter|date:filter_format }} <a href="{% pageurl self %}">Show all</a></h2>
-{% endif %}
-{% endblock %}
-
-{% block index_page_children %}
-{% include "cms/includes/blog_index_posts.html" with posts=self.get_descendant %}
-{% endblock %}
-
-{% block latest_blog_post %}{% endblock %}
+    {% block posts_by %}
+        {% if filter_type == 'author' %}
+            <h2>Showing posts by {{ filter|safe }} <a href="{% pageurl self %}">Show all</a></h2>
+        {% endif %}
+    {% endblock %}
+    
+    {% block posts_tagged_as %}
+        {% if filter_type == 'tag' %}
+            <h2>Showing posts tagged as {{ filter|safe }} <a href="{% pageurl self %}">Show all</a></h2>
+        {% endif %}
+    {% endblock %}
+    
+    {% block posts_by_date %}
+        {% if filter_type == 'date' %}
+            <h2>Showing posts on {{ filter|date:filter_format }} <a href="{% pageurl self %}">Show all</a></h2>
+        {% endif %}
+    {% endblock %}
+    
+    {% block index_page_children %}
+        {% include "cms/includes/blog_index_posts.html" with posts=self.get_descendant %}
+    {% endblock %}
+    
+    {% block latest_blog_post %}{% endblock %}
 
 {% endblock %}

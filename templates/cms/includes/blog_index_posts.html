@@ -1,6 +1,6 @@
 {% load wagtailcore_tags %}
 
-<ul class="{{ class }}">
+<ul class="{{ class }} no-bullet">
     {% for post in self.get_descendants.live|dictsortreversed:"first_published_at" %}
 
         <li>
@@ -8,15 +8,15 @@
                 <h2 class="posttitle">
                     <a href="{{ post.url }}">{{ post.title }}</a>
                 </h2>
-                <p>by {{ post.owner }}, {{ post.first_published_at }}</p>
+                <p>by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at|date:"j M Y" }}</p>
                 <section class="postcontent">
                     {% for child in post.blogpost.content %} 
                         <p>
-                        {% if child.block_type = 'paragraph' %}
-                            {% if forloop.first %}
-                            {{ child.value|richtext|truncatewords:15 }}
+                            {% if child.block_type = 'paragraph' %}
+                                {% if forloop.first %}
+                                {{ child.value|richtext|truncatewords:15 }}
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
                         </p>
                     {% endfor %}
                 </section>
