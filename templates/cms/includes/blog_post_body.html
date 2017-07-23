@@ -7,7 +7,7 @@
     <header>
 
         <h1 class="posttitle">{{ post.title }}</h1>
-        <p class="byline">by {{ post.owner }}, {{ post.go_live_at }}</p>
+        <p class="byline">by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at|date:"j M Y" }}</p>
 
     </header>
 
