@@ -62,15 +62,7 @@ class TextViewerAPIXML(TextViewerAPI):
             # fetch a particular version/view (e.g. semi-diplomatic, ...)
             view_xml = self.fetch_xml_from_kiln(document_slug, slug)
 
-            document_title = view_xml.find('title')
-            if document_title is None:
-                document_title = document_slug
-            else:
-                document_title = get_unicode_from_xml(
-                    document_title, text_only=True)
-            # TODO: remove this from here and TEI doc
-            document_title = document_title.replace(
-                'TVOF transcription template', '')
+            document_title = self.get_doc_title(view_xml) or document_slug
 
             # add notational conventions
             view['conventions'] = self.get_notational_conventions(
@@ -108,6 +100,13 @@ class TextViewerAPIXML(TextViewerAPI):
             'label': document_title or document_slug,
             'views': views,
         }
+
+    def get_doc_title(self, xml):
+        ret = xml.find('title')
+        if ret is not None:
+            ret = get_unicode_from_xml(ret, text_only=True)
+
+        return ret
 
     def get_location_info_from_xml(self, xml, location_type):
         ret = {'slug': '', 'label': '?', 'label_long': '?'}
@@ -189,8 +188,8 @@ class TextViewerAPIXML(TextViewerAPI):
         conventions = ''
         return conventions
 
-    def fetch_xml_from_kiln(self, document, view):
-        text_path = 'texts/{}/{}/'.format(document, view)
+    def fetch_xml_from_kiln(self, kilnid, view):
+        text_path = 'texts/{}/{}/'.format(kilnid, view)
         kiln_base_url = settings.KILN_BASE_URL.strip('/')
         url = kiln_base_url + '/backend/' + text_path
 
@@ -201,6 +200,6 @@ class TextViewerAPIXML(TextViewerAPI):
         # Create a new XML tree from the response.
         root = ET.fromstring(response)
 
-        ret = root.find('.//text[@name="{}"]'.format(document))
+        ret = root.find('.//text[@name="{}"]'.format(kilnid))
 
         return ret

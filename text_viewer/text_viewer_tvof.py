@@ -10,21 +10,47 @@ import re
     http://localhost:8000/textviewer/api/Fr20125/interpretive/section/588/?jx=1
 '''
 
+# TODO: ALL this info should come for the TEI documents
+# but too many files managed by editors already so
+# not possible at the moment to make that change.
+DOCUMENT_IDS_ARRAY = [
+    {
+        # this document slug in the Web API
+        # TODO: at the moment it MUST be = to kiln_file
+        'slug': 'Fr20125',
+        # name of the file in kiln (used to request kiln)
+        'kiln_file': 'Fr20125',
+        # document part of the internal reference system in the TEI
+        # e.g. name of segment, paragragh, ...
+        'kiln_ref': 'fr20125',
+        # the public label in the text viewer
+        # TODO: not consistent, /api/ uses this
+        # but /api/<slug>/ uses the label found in the TEI
+        'label': 'Fr20125',
+    },
+    {
+        'slug': 'Royal',
+        'kiln_file': 'Royal',
+        'kiln_ref': 'Royal20D1',
+        'label': 'Royal 20 D I',
+    },
+]
 
-docid_from_document_slug = {
-    'Fr20125': 'fr20125',
-    'Royal': 'Royal20D1',
-}
+DOCUMENT_IDS = {}
+for docids in DOCUMENT_IDS_ARRAY:
+    DOCUMENT_IDS[docids['slug'].lower()] = docids
+    DOCUMENT_IDS[docids['kiln_file']] = docids
+    DOCUMENT_IDS[docids['kiln_ref'].lower()] = docids
 
 docs_sections = None
 
 
-def _get_xpath_from_location(document, view, location_type, location,
+def _get_xpath_from_location(slug, view, location_type, location,
                              synced_with):
     ret = []
 
     if synced_with:
-        if synced_with['document'] == document:
+        if synced_with['document'] == slug:
             # synced with same doc
             location = synced_with['location']
         else:
@@ -32,15 +58,15 @@ def _get_xpath_from_location(document, view, location_type, location,
             if location_type == 'paragraph' and\
                     synced_with['location_type'] == location_type:
                 location = get_location_translated(
-                    synced_with['document'], synced_with['location'], document)
+                    synced_with['document'], synced_with['location'], slug)
 
-    docid = docid_from_document_slug.get(document, None)
-    if docid:
+    docids = DOCUMENT_IDS.get(slug.lower(), None)
+    if docids:
         if not isinstance(location, list):
             location = [location]
         for loc in location:
             ret.append('.//div[@id="ed{}_{}"]'.format(
-                docid, unicode(loc).rjust(5, '0')))
+                docids['kiln_ref'], unicode(loc).rjust(5, '0')))
 
     return ret
 
@@ -58,8 +84,6 @@ def get_location_translated(doc_from, location_from, doc_to):
         location_to = doc_sections.get(location_from, None)
         if location_to:
             ret = location_to
-
-    print ret
 
     return ret
 
@@ -86,35 +110,50 @@ class TextViewerAPITvof(TextViewerAPIXML):
     ]
 
     def compute_section_mappings(self):
+        '''
+        Build a mapping among the units from all documents
+        e.g.
         ret = {
             'Royal_Fr20125': {
-                # '543': ['607', '608', '609'],
+                '544': ['621', '623'],
+                ...
             },
             'Fr20125_Royal': {
-                # '543': ['607', '608', '609'],
+                '621': ['544'],
+                ...
             }
         }
+        '''
+        ret = {}
+
+        # <span data-corresp="#edfr20125_00621" id="edRoyal20D1_00544_01">
         xml = self.fetch_xml_from_kiln('Royal', 'semi-diplomatic')
-
-        # <span id="edRoyal20D1_00543_24" data-corresp="#edfr20125_00608">
         for correpondance in xml.findall('.//*[@data-corresp]'):
-            id_src = correpondance.attrib.get('id', None)
-            id_dst = correpondance.attrib.get('data-corresp', None)
-            if id_src and id_dst:
-                id_src = re.sub(ur'^.*_(\d{5,5}).*', ur'\1', id_src)
-                id_dst = re.sub(ur'^.*_(\d{5,5}).*', ur'\1', id_dst)
-                if len(id_src) == 5 and len(id_dst) == 5:
-                    id_src = str(int(id_src))
-                    id_dst = str(int(id_dst))
+            # pair = [edRoyal20D1_00544_01, #edfr20125_00621]
+            pair = []
+            for attrib in ['id', 'data-corresp']:
+                m = re.search(ur'ed([^_]+)_(\d+)',
+                              correpondance.attrib.get(attrib, ''))
+                if m:
+                    pair.append([m.group(1), str(int(m.group(2)))])
 
-                    for doc in ['Royal_Fr20125', 'Fr20125_Royal']:
-                        l = ret[doc].get(id_src, None)
-                        if l is None:
-                            l = []
-                        if id_dst not in l:
-                            l.append(id_dst)
-                            ret[doc][id_src] = l
-                        id_src, id_dst = id_dst, id_src
+            if len(pair) == 2:
+                # pair = [['Royal20D1', 00544_01], ['fr20125', 00621]]
+
+                for i in [0, 1]:
+                    k = '_'.join([DOCUMENT_IDS[p[0].lower()]['slug']
+                                  for p in pair])
+                    if k not in ret:
+                        ret[k] = {}
+                    if pair[0][1] not in ret[k]:
+                        ret[k][pair[0][1]] = []
+                    if pair[1][1] not in ret[k][pair[0][1]]:
+                        ret[k][pair[0][1]].append(pair[1][1])
+
+                    # now map the other way round
+                    pair[0], pair[1] = pair[1], pair[0]
+
+        print ret
 
         return ret
 
@@ -124,16 +163,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
     def fetch_documents(self):
         # TODO: kiln pipeline for returning all texts under a path
-        ret = [
-            {
-                'slug': 'Fr20125',
-                'label': 'Fr20125',
-            },
-            {
-                'slug': 'Royal',
-                'label': 'Royal 20 D I',
-            }
-        ]
+        ret = DOCUMENT_IDS_ARRAY
 
         return ret
 
@@ -146,6 +176,18 @@ class TextViewerAPITvof(TextViewerAPIXML):
             conventions = re.sub(ur'id="([^"]+)"', ur'class="\1"', conventions)
 
         return conventions
+
+    def get_doc_title(self, xml):
+        ret = super(TextViewerAPITvof, self).get_doc_title(xml)
+
+        patterns = [
+            'TVOF transcription template',
+            'TVOF edition',
+        ]
+        for pattern in patterns:
+            ret = ret.replace(pattern, '').strip()
+
+        return ret
 
     def get_location_info_from_xml(self, xml, location_type):
         ret = {'slug': '', 'label': '?', 'label_long': '?'}
