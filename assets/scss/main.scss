@@ -307,6 +307,11 @@ nav {
     .tei-pb {
         color: teal;
     }
+    .tei-cb.split-word {
+        &:before, &:after {
+            content: '-';
+        }
+    }
 
     .tei-corr-popup {
         background-color: scale-color(yellow, $lightness: 50%);
