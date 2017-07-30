@@ -79,11 +79,15 @@ def get_location_translated(doc_from, location_from, doc_to):
         tvof = TextViewerAPITvof()
         docs_sections = tvof.compute_section_mappings()
 
-    doc_sections = docs_sections.get(doc_from + '_' + doc_to, None)
-    if doc_sections:
-        location_to = doc_sections.get(location_from, None)
+    units = docs_sections.get(doc_from + '_' + doc_to, None)
+    if units:
+        location_to = units.get(location_from, None)
         if location_to:
-            ret = location_to
+            # TVOF 108
+            # fill in the gaps, e.g. [621, 623] => [621, 622, 623]
+            # assumes all para have are numbers only, i.e. no 123a, 123b
+            ret = [str(n) for n in range(
+                int(location_to[0]), int(location_to[-1]) + 1)]
 
     return ret
 
@@ -153,7 +157,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     # now map the other way round
                     pair[0], pair[1] = pair[1], pair[0]
 
-        print ret
+        # print ret
 
         return ret
 
