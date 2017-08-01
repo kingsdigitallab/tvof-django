@@ -318,7 +318,19 @@
         var self = this;
         
         var parts = this.getAddressParts(address);
-        
+
+        var data = null;
+        if (this.isSynced()) {
+            data = {
+               'sw': this.panes.getSyncedWithAddress(this)
+            }
+            
+            // TVOF 133: force location_type = master.location_type
+            // because at the moment the UI hides the location_type dropdown.
+            // So if we starts with Whole we are stuck with it.
+            parts['location_type'] = this.getAddressParts(data['sw'])['location_type'];
+        }
+
         // 2 get initial chunk
         var url = this.panes.api_url + this.getAddressFromParts(parts);
         var on_success = function(data, jqXHR, textStatus) {
@@ -329,13 +341,6 @@
         };
 
         this.uimodel.errors = [];
-        var data = null;
-        
-        if (this.isSynced()) {
-            data = {
-               'sw': this.panes.getSyncedWithAddress(this)
-            }
-        }
         
         req = call_api(url, on_success, on_complete, data, false, [this.requested_chunk_hash]);
         if (this.requested_chunk_hash === req.request_hash) {
@@ -710,7 +715,11 @@
                     return 'fa fa-'+ (ltypes_icon[location_type] || '');
                 },
                 onClickDocument: function(document) {
-                    this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
+                    //this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
+                    // We assume here that all docs support the same location_types, 
+                    // so we preserve it across doc change.
+                    // But we can't make the same assumption about the view
+                    this.pane.changeAddressParts({'document': document, 'view': 'default', 'location': 'default'});
                 },
                 onClickView: function(view) {
                     this.pane.changeAddressPart('view', view);
