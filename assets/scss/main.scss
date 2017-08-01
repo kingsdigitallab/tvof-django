@@ -346,11 +346,10 @@ nav {
         color: green;
     }
 
-    .tei-initial {
+    .tei-c.red, .tei-rubric, .tei-hi.red {
         color: scale-color($secondary-color, $lightness: 25%);
     }
-
-    .tei-rubric {
+    .first-letter-red::first-letter {
         color: scale-color($secondary-color, $lightness: 25%);
     }
 
