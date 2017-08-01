@@ -417,6 +417,10 @@ nav {
     }
     //-----
 
+    span.add[data-teia-type=annotation] {
+        display: none;
+    }
+
     .tei-unclear {
         &:before {
             color: $tertiary-color;
