@@ -1,5 +1,6 @@
 import requests
 from collections import OrderedDict
+from django.conf import settings
 
 '''
 TODO: instead of inheritence we should use a strategy pattern for:
@@ -128,6 +129,10 @@ class TextViewerAPI(object):
         return ret
 
     @classmethod
+    def get_cache_size(cls):
+        return getattr(settings, 'TEXT_VIEWER_CACHE_SIZE', 10)
+
+    @classmethod
     def get_cached_request(cls, url):
         cache = cls.cache
 
@@ -138,7 +143,7 @@ class TextViewerAPI(object):
             ret = r.text.encode('utf-8')
             cache[url] = ret
             print len(ret)
-            if len(cache.keys()) > 10:
+            if len(cache.keys()) > cls.get_cache_size():
                 print 'CACHE ITEM REMOVED'
                 cache.popitem(True)
 

@@ -396,6 +396,27 @@ nav {
         }
     }
 
+    // GN: two types of verses: 
+    // .cont (flows continuously within a p/div) 
+    // .lineated (line break after each verse line)
+    // TODO: works but html & css need improvement
+    
+    .lineated span {
+        display: inline-block;
+    }
+    .cont span {
+        display: inline;
+    }
+
+    p.tei.lg.lineated {
+        display: inline-block;
+    }
+
+    div.tei.lg, p.tei.lg {
+        display: inline;
+    }
+    //-----
+
     .tei-unclear {
         &:before {
             color: $tertiary-color;
