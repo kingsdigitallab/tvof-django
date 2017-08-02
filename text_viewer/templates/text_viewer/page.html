@@ -71,7 +71,7 @@ a vue directive:
                     Tried switch but too wide for side bar 
                 -->
                 <ul v-f-dropdown>
-                    <li v-bind:class="{active: is_synced, disabled: !canBeSynced}">
+                    <li v-if="canBeSynced" v-bind:class="{active: is_synced, disabled: !canBeSynced}">
                         <a href="#" v-on:click.prevent="toggleSynced()" class="">
                             <i v-bind:class="'fa fa-chain'+(!is_synced ? '-broken' : '')" 
                                 v-bind:title="getSyncTitle"></i>
