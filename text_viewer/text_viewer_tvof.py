@@ -71,9 +71,28 @@ def _get_xpath_from_location(slug, view, location_type, location,
     return ret
 
 
+def _get_xpath_from_location_section(slug, view, location_type, location,
+                                     synced_with):
+    ret = []
+
+    if synced_with:
+        # TODO: error if we don't sync with location_type = section
+        location = synced_with['location']
+
+    docids = DOCUMENT_IDS.get(slug.lower(), None)
+    if docids:
+        if not isinstance(location, list):
+            location = [location]
+        for loc in location:
+            ret.append('.//div[@id="section-{}"]'.format(unicode(loc)))
+
+    return ret
+
+
 def get_location_translated(doc_from, location_from, doc_to):
     global docs_sections
-    ret = location_from
+    # ret = location_from
+    ret = []
 
     if docs_sections is None:
         tvof = TextViewerAPITvof()
@@ -94,18 +113,34 @@ def get_location_translated(doc_from, location_from, doc_to):
 
 class TextViewerAPITvof(TextViewerAPIXML):
 
+    '''
+    <div class="section" id="section-6" data-n="6" data-type="Eneas">
+        <div id="edfr20125_00588"
+        data-corresp="#edRoyal20D1_00525_01 #edRoyal20D1_00525_04">
+    '''
     location_types = [
+        #         {
+        #             'slug': 'whole',
+        #             'label': 'Whole Text',
+        #             'xpath': './/div[@class="tei body"]',
+        #         },
         {
-            'slug': 'whole',
-            'label': 'Whole Text',
-            'xpath': './/div[@class="tei body"]',
+            'slug': 'section',
+            'label': 'Section',
+            # used to find default/first chunk
+            # used to extract all locations
+            'xpath': './/div[@class="section"]',
+            # used to locate a chunk from a location
+            'xpath_from_location': _get_xpath_from_location_section,
+            # used to get location of a default chunk
+            'location_from_chunk': lambda c: unicode(c.attrib['data-n'])
         },
         {
             'slug': 'paragraph',
             'label': 'Paragraph',
             # used to find default/first chunk
             # used to extract all locations
-            'xpath': './/div[@class="tei body"]/div[h4]',
+            'xpath': './/div[@class="section"]/div[h4]',
             # used to locate a chunk from a location
             'xpath_from_location': _get_xpath_from_location,
             # used to get location of a default chunk
@@ -195,6 +230,14 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
     def get_location_info_from_xml(self, xml, location_type):
         ret = {'slug': '', 'label': '?', 'label_long': '?'}
+
+        if location_type['slug'] == 'section':
+            ret = {
+                'slug': xml.attrib.get('data-n', '0'),
+                'label_long': xml.attrib.get('data-n', '') + '. ' +
+                xml.attrib.get('data-type', 'untitled').replace('_', ' '),
+            }
+            ret['label'] = ret['label_long']
 
         if location_type['slug'] == 'paragraph':
             # TODO: move this to a class?

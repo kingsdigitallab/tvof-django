@@ -355,6 +355,7 @@
             this.onReceivedAddress(response.address);
         } else {
             this.uimodel.errors = response.errors;
+            this.uimodel.chunk = response.errors[0].message; 
         }
     }
 

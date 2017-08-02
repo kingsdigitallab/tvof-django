@@ -158,7 +158,6 @@ class TextViewerAPIXML(TextViewerAPI):
         chunks = []
         address = ''
         for xpath in xpaths:
-            print xpath
             chunk = xml.find(xpath)
 
             # build response from chunk and address
@@ -177,6 +176,13 @@ class TextViewerAPIXML(TextViewerAPI):
 
                 address = '/'.join([document, view,
                                     location_type_slug, location])
+
+        if not xpaths:
+            self.add_error(
+                'notfound', 'Text not found ({})'.format(
+                    self.get_requested_address()),
+                ''
+            )
 
         if chunks:
             self.response = {
