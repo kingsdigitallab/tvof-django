@@ -401,15 +401,15 @@ nav {
     // .lineated (line break after each verse line)
     // TODO: works but html & css need improvement
     
-    .lineated span {
-        display: inline-block;
+    .lineated > span {
+        display: block;
     }
     .cont span {
         display: inline;
     }
 
     p.tei.lg.lineated {
-        display: inline-block;
+        display: block;
     }
 
     div.tei.lg, p.tei.lg {
