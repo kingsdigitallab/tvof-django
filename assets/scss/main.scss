@@ -2,6 +2,11 @@
 @import '../vendor/foundation-sites/scss/foundation';
 @import 'text-viewer';
 @import '../vendor/motion-ui/motion-ui';
+// GN: this line was at the bottom of this file
+// which means all style definitions were taking precedence over ours
+// when the selectors were identical.
+// TODO: check if ok; check if we can remove the !important now
+@include foundation-everything;
 
 /****
 
@@ -431,6 +436,18 @@ nav {
     }
 }
 
+// GN: nothing preventing default Foundation modal to have a close icon
+// overlapping the modal text => difficult to read, don't know how to close
+// Were increase padding and move the icon closer to the boder 
+.reveal {
+    padding-right: 1.7rem;
+    padding-left: 1.7rem;
+}
+.close-button {
+    right: 0.5rem;
+    color: $primary-color;
+}
+
 /* Footer */
 
 footer {
@@ -450,4 +467,3 @@ footer {
 
 /* Typography */
 
-@include foundation-everything;
