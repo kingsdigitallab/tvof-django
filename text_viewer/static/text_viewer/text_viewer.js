@@ -644,6 +644,7 @@
                     this.pane.changeAddressPart('location', val);
                 },
                 'chunk': function(val) {
+                    var self = this;
                     this.$nextTick(function() {
                         // convert the hrefs to the bibliography page
                         $(this.$el).find(".text-chunk a[href]").each(function() {
@@ -658,7 +659,7 @@
                         // we init Foundation on all the new reveals
                         $(this.$el).find('.reveal').each(function() {
                             var $reveal = $(this);
-                            $reveal.attr('data-panel', this.pane_slug);
+                            $reveal.attr('data-panel', self.pane_slug);
                             new Foundation.Reveal($reveal);
                         });
                         // recalc stickies...

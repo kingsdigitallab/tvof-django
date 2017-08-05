@@ -185,8 +185,17 @@ class TextViewerAPIXML(TextViewerAPI):
             )
 
         if chunks:
+            # TVOF 146: move all the reveals to the end otherwise they disrupt
+            # the html rendering, e.g. <div> within <span>
+            reveals = []
+
+            def extract_reveal(match):
+                reveals.append(match.group(0))
+            chunk = re.sub(ur'(?musi)<div[^<>]+reveal.*?</button>\s*</div>',
+                           extract_reveal, u'\n'.join(chunks))
             self.response = {
-                'chunk': ur'<div>{}</div>'.format(u'\n'.join(chunks)),
+                'chunk': ur'<div>{}<div class="reveals">{}</div></div>'.
+                format(chunk, u'\n'.join(reveals)),
                 'address': address,
             }
 
