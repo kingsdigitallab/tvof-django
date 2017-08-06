@@ -1,6 +1,7 @@
 from text_viewer_xml import (TextViewerAPIXML)
 from text_viewer import (get_unicode_from_xml,)
 import xml.etree.ElementTree as ET
+from django.conf import settings
 import re
 
 # TODO: move this to another package, outside of generic text_viewer
@@ -194,6 +195,23 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
         # print ret
 
+        return ret
+
+    def is_location_visible(self, location_xml, doc_slug, view_slug,
+                            location_type_slug):
+        ret = True
+        filters = getattr(settings, 'TEXT_VIEWER_DOC_FILTERS', None)
+        if filters:
+            filter = filters.get(doc_slug, None)
+            if filter is not None:
+                filter = filter.get(view_slug, None)
+            if filter is not None:
+                # filter is a white list of section slugs
+                # filter = ['6', '6bis']
+                if location_type_slug == 'section':
+                    ret = location_xml.attrib.get('data-n') in filter
+                if location_type_slug == 'paragraph':
+                    ret = location_xml.attrib.get('data-section') in filter
         return ret
 
     def request_documents(self):

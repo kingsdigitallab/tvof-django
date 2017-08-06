@@ -75,6 +75,11 @@ class TextViewerAPIXML(TextViewerAPI):
                 if xpath:
                     for location_xml in\
                             view_xml.findall(location_type['xpath']):
+                        if not self.is_location_visible(
+                                location_xml, document_slug, view['slug'],
+                                location_type['slug']):
+                            continue
+
                         location = self.get_location_info_from_xml(
                             location_xml, location_type)
                         if location['slug']:
@@ -84,16 +89,19 @@ class TextViewerAPIXML(TextViewerAPI):
                     locations = [{
                         'slug': 'whole',
                         'label': 'Whole',
-                        'label_long': 'Whole'}]
+                        'label_long': 'Whole'
+                    }]
 
-                location_type_info = {
-                    'slug': location_type['slug'],
-                    'label': location_type['label'],
-                    'locations': locations,
-                }
-                view['location_types'].append(location_type_info)
+                if locations:
+                    location_type_info = {
+                        'slug': location_type['slug'],
+                        'label': location_type['label'],
+                        'locations': locations,
+                    }
+                    view['location_types'].append(location_type_info)
 
-            views.append(view)
+            if view['location_types']:
+                views.append(view)
 
         self.response = {
             'slug': document_slug,
@@ -161,7 +169,8 @@ class TextViewerAPIXML(TextViewerAPI):
             chunk = xml.find(xpath)
 
             # build response from chunk and address
-            if chunk is None:
+            if chunk is None or not self.is_location_visible(
+                    chunk, document, view, location_type_slug):
                 self.add_error(
                     'notfound', 'Chunk not found: {}'.format(
                         self.get_requested_address()),
