@@ -1,5 +1,6 @@
 import requests
 from collections import OrderedDict
+from django.conf import settings
 
 '''
 TODO: instead of inheritence we should use a strategy pattern for:
@@ -29,6 +30,9 @@ class TextViewerAPI(object):
             error['info'] = info
         self.errors.append(error)
 
+    def clear_errors(self):
+        self.errors = []
+
     def process_request(self, request, path):
         self.response = {}
         self.errors = []
@@ -45,13 +49,42 @@ class TextViewerAPI(object):
             self.request_document(parts['document'])
         elif level == 'location':
             synced_with = None
+            best_match = False
             if request:
                 synced_with = request.GET.get('sw', None)
+                best_match = request.GET.get('bm', False)
             if synced_with:
                 synced_with = self.get_address_parts(synced_with)
-            self.request_chunk(parts, synced_with=synced_with)
+            self.request_chunk_best_match(
+                parts, synced_with=synced_with, best_match=best_match)
         else:
             self.add_error('invalid_call', 'Invalid API call')
+
+    def request_chunk_best_match(self, parts, synced_with=None,
+                                 best_match=False):
+        # If best_match = False and requested address doesn't exist we return
+        # error
+        # Otherwise we try our best to return something close to the requested
+        # address.
+        parts = parts.copy()
+        ret = False
+        while True:
+            self.clear_errors()
+            # print self.get_list_from_address_parts(parts)
+            ret = self.request_chunk(parts, synced_with=synced_with)
+            if ret or not best_match:
+                break
+            # we haven't found a perfect match, let's try higher
+            changed = False
+            for level in self.part_levels[::-1]:
+                if parts[level] not in ['', 'default']:
+                    changed = True
+                    parts[level] = 'default'
+                    break
+            if not changed:
+                break
+
+        return ret
 
     def get_requested_address(self):
         return self.requested_address
@@ -128,17 +161,23 @@ class TextViewerAPI(object):
         return ret
 
     @classmethod
+    def get_cache_size(cls):
+        return getattr(settings, 'TEXT_VIEWER_CACHE_SIZE', 10)
+
+    @classmethod
     def get_cached_request(cls, url):
         cache = cls.cache
 
         ret = cls.cache.get(url, None)
         if ret is None:
             print 'REQUEST %s' % url
-            r = requests.get(url, timeout=5)
+            r = requests.get(url, timeout=60)
             ret = r.text.encode('utf-8')
             cache[url] = ret
-            if len(cache.keys()) > 3:
-                cache.popitem()
+            print len(ret)
+            if len(cache.keys()) > cls.get_cache_size():
+                print 'CACHE ITEM REMOVED'
+                cache.popitem(True)
 
         return ret
 

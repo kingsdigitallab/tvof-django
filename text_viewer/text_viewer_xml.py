@@ -11,11 +11,12 @@ class TextViewerAPIXML(TextViewerAPI):
     ]
 
     def get_location_type(self, slug):
-        ret = None
+        ret = self.location_types[0]
         for location_type in self.location_types:
             if location_type['slug'] == slug:
                 ret = location_type
                 break
+
         return ret
 
     def request_document(self, document_slug):
@@ -61,15 +62,7 @@ class TextViewerAPIXML(TextViewerAPI):
             # fetch a particular version/view (e.g. semi-diplomatic, ...)
             view_xml = self.fetch_xml_from_kiln(document_slug, slug)
 
-            document_title = view_xml.find('title')
-            if document_title is None:
-                document_title = document_slug
-            else:
-                document_title = get_unicode_from_xml(
-                    document_title, text_only=True)
-            # TODO: remove this from here and TEI doc
-            document_title = document_title.replace(
-                'TVOF transcription template', '')
+            document_title = self.get_doc_title(view_xml) or document_slug
 
             # add notational conventions
             view['conventions'] = self.get_notational_conventions(
@@ -82,6 +75,11 @@ class TextViewerAPIXML(TextViewerAPI):
                 if xpath:
                     for location_xml in\
                             view_xml.findall(location_type['xpath']):
+                        if not self.is_location_visible(
+                                location_xml, document_slug, view['slug'],
+                                location_type['slug']):
+                            continue
+
                         location = self.get_location_info_from_xml(
                             location_xml, location_type)
                         if location['slug']:
@@ -91,22 +89,32 @@ class TextViewerAPIXML(TextViewerAPI):
                     locations = [{
                         'slug': 'whole',
                         'label': 'Whole',
-                        'label_long': 'Whole'}]
+                        'label_long': 'Whole'
+                    }]
 
-                location_type_info = {
-                    'slug': location_type['slug'],
-                    'label': location_type['label'],
-                    'locations': locations,
-                }
-                view['location_types'].append(location_type_info)
+                if locations:
+                    location_type_info = {
+                        'slug': location_type['slug'],
+                        'label': location_type['label'],
+                        'locations': locations,
+                    }
+                    view['location_types'].append(location_type_info)
 
-            views.append(view)
+            if view['location_types']:
+                views.append(view)
 
         self.response = {
             'slug': document_slug,
             'label': document_title or document_slug,
             'views': views,
         }
+
+    def get_doc_title(self, xml):
+        ret = xml.find('title')
+        if ret is not None:
+            ret = get_unicode_from_xml(ret, text_only=True)
+
+        return ret
 
     def get_location_info_from_xml(self, xml, location_type):
         ret = {'slug': '', 'label': '?', 'label_long': '?'}
@@ -121,11 +129,15 @@ class TextViewerAPIXML(TextViewerAPI):
         Fetch the text chunk closest to the requested address.
         Set the response with the HTML chunk and its actual address.
 
+        Return True if found a chunk.
+
         TODO: generalise this. But very difficult as the information for
         address resolution can require the document and vice versa depending on
         the document backend and the document format. Both of wich can vary
         from one project to another.
         '''
+
+        ret = False
 
         # resolve address (e.g. 'default')
         document, view, location_type_slug, location = \
@@ -142,10 +154,8 @@ class TextViewerAPIXML(TextViewerAPI):
         remove_xml_elements(xml, './/div[@id="text-conventions"]')
 
         # resolve the rest of the address
-        if location_type_slug in ['default', '']:
-            location_type_slug = self.location_types[0]['slug']
-
         location_type = self.get_location_type(location_type_slug)
+        location_type_slug = location_type['slug']
 
         # extract chunk from document and address
         xpath_from_location = location_type.get('xpath_from_location')
@@ -160,8 +170,17 @@ class TextViewerAPIXML(TextViewerAPI):
         chunks = []
         address = ''
         for xpath in xpaths:
-            print xpath
-            chunk = xml.find(xpath)
+            chunk_list = xml.findall(xpath)
+
+            chunk = None
+            # try until we get a visible one
+            # TODO: optimise, this is really inefficient to scan all elements
+            for achunk in chunk_list:
+                print achunk
+                if self.is_location_visible(
+                        achunk, document, view, location_type_slug):
+                    chunk = achunk
+                    break
 
             # build response from chunk and address
             if chunk is None:
@@ -171,7 +190,8 @@ class TextViewerAPIXML(TextViewerAPI):
                     'XPATH = {}'.format(xpath)
                 )
             else:
-                location_from_chunk = location_type.get('location_from_chunk')
+                location_from_chunk = location_type.get(
+                    'location_from_chunk')
                 if location_from_chunk:
                     location = location_from_chunk(chunk)
 
@@ -180,18 +200,37 @@ class TextViewerAPIXML(TextViewerAPI):
                 address = '/'.join([document, view,
                                     location_type_slug, location])
 
+        if not xpaths:
+            self.add_error(
+                'notfound', 'Text not found ({})'.format(
+                    self.get_requested_address()),
+                ''
+            )
+
         if chunks:
+            # TVOF 146: move all the reveals to the end otherwise they disrupt
+            # the html rendering, e.g. <div> within <span>
+            reveals = []
+
+            def extract_reveal(match):
+                reveals.append(match.group(0))
+            chunk = re.sub(ur'(?musi)<div[^<>]+reveal.*?</button>\s*</div>',
+                           extract_reveal, u'\n'.join(chunks))
             self.response = {
-                'chunk': ur'<div>{}</div>'.format(u'\n'.join(chunks)),
+                'chunk': ur'<div>{}<div class="reveals">{}</div></div>'.
+                format(chunk, u'\n'.join(reveals)),
                 'address': address,
             }
+            ret = True
+
+        return ret
 
     def get_notational_conventions(self, xml, view_slug):
         conventions = ''
         return conventions
 
-    def fetch_xml_from_kiln(self, document, view):
-        text_path = 'texts/{}/{}/'.format(document, view)
+    def fetch_xml_from_kiln(self, kilnid, view):
+        text_path = 'texts/{}/{}/'.format(kilnid, view)
         kiln_base_url = settings.KILN_BASE_URL.strip('/')
         url = kiln_base_url + '/backend/' + text_path
 
@@ -202,6 +241,6 @@ class TextViewerAPIXML(TextViewerAPI):
         # Create a new XML tree from the response.
         root = ET.fromstring(response)
 
-        ret = root.find('.//text[@name="{}"]'.format(document))
+        ret = root.find('.//text[@name="{}"]'.format(kilnid))
 
         return ret

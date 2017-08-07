@@ -5,7 +5,7 @@
 }
 
 .vue-templates {
-    display: none;
+    display: none; // Is this doing anything?
 }
 
 // TEXT VIEWER
@@ -19,73 +19,251 @@
     flex-wrap: wrap;
 }
 
+.main {
 
-// TEXT PANE
-.main .text-pane {
-    
-    flex-grow: 1;
-    flex-basis: 0;
-    min-width: 20em;
-    
-    padding: 1em;
-    
-    .hidden {
-        display:none;
+    .boxed {
+        background: $light-gray;
+        border-radius: rem-calc(4);
+        &:first-child {
+            margin-bottom: rem-calc(8);
+        }
     }
-    
-    h2.doc-label {
-        padding: 0;
-        
-        ul.dropdown.menu {
-            display: inline-block;
-            > li.dropdown-views {
-                font-size: 80%;
-                > a {
-                    color: #8a8a8a;
-                    line-height: 0;
+
+    .close-panel-button {
+        background: $light-gray;
+        border: 3px solid scale-color($dark-gray, $lightness: 50%);
+        border-radius: 50%;
+        color: $dark-gray;
+        height: rem-calc(28);
+        margin-right: rem-calc(16);
+        //margin-top: rem-calc(-16);
+        text-align: center;
+        text-decoration: none;
+        width: rem-calc(28);
+
+        .has-tip {
+            border: 0;
+        }
+    }
+
+    .controls {
+        background: scale-color($dark-gray, $lightness: 50%);
+        border-radius: rem-calc(4);
+        margin-top: rem-calc(12);
+        padding: rem-calc(8);
+
+        a {
+            padding: rem-calc(8);
+
+            &:hover {
+                border-radius: rem-calc(4);
+            }
+        }
+
+        h2.ms-title {
+            font-size: rem-calc(18);
+            margin: 0;
+            padding: 0;
+        }
+    }
+
+    .key,
+    .toolbar {
+
+        ul {
+            list-style: none;
+            margin: 0;
+
+            &.menu {
+                background: $light-gray;
+                padding: rem-calc(24 16 16);
+            }
+
+            li {
+                border-bottom: none;
+
+                a {
+                    border-bottom: 1px solid scale-color($primary-color, $lightness: 70%);
+                    color: $primary-color;
+                    padding: rem-calc(8 0);
+
+                    &:before {
+                        content: "\f070";
+                        font-family: "FontAwesome";
+                        padding-right: rem-calc(4);
+                    }
+
+                    &:visited {
+                        background: transparent;
+                    }
                 }
-                > ul {
-                    min-width: 100%;
-                    > li a {
-                        position: relative;
-                        font-size: large;
+
+                &.active {
+                    a {
+                        background: transparent;
+
+                        &:hover {
+                            background: $primary-color;
+                        }
+                    }
+
+                    a:before {
+                        content: "\f06e";
+                        font-family: "FontAwesome";
+                        padding-right: rem-calc(4);
                     }
                 }
             }
-        
-            .external-link {
-                position: absolute;
-                right: 0;
-                border-left: 1px solid white;
-                padding: 0 0.5em;
-                background-color: #1c2434;
-                height: 100%;
-                top: 0;
-                padding-top: 1em;
-                margin-right: 0;
-            }
-            .external-link:hover {
-                background-color: inherit;
+
+            li li {
+                border-bottom: 1px solid scale-color($primary-color, $lightness: 70%);
+                list-style: none;
+                margin: 0;
+                padding: rem-calc(8 0);
             }
         }
     }
-    
-    .controls {
-        .invisible {
-            visibility: hidden;
+
+    /* GN: quick workaround for the narrow sticky bar.
+        Foundation 'Sticky' changes position from 'relative' to 'fixed'
+        and messes up with the inherited box model properties.
+    */
+
+    .column.sticky-container, .columns.sticky-container {
+        padding: 0;
+        .sticky {
+            width: 100%;
         }
-    
-        ul.conventions-menu {
-            background-color: #fefefe;
-            white-space: nowrap;
-            border: 1px lightgrey solid;
-        }
-        .text-conventions ul {
-            list-style-type: none;
-            li {
-                padding: 0.5em;
+    }
+
+    /* GN: temporary, any active item in any dropdown should have a primary 
+    color background. TODO: change to correct sass variable. 
+    */
+
+    ul.menu li.active > a, ul.menu li > a:focus {
+        background-color: #5871a4;
+    }
+
+    ul.menu li.disabled > a {
+        background-color: lightgrey;
+        color: grey;
+        cursor: not-allowed;
+    }
+
+    .scrollable ul {
+        max-height: 15em;
+        overflow-y: auto;
+        margin-top: 2.4rem;
+    }
+
+    .is-active {
+
+        .list-filter {
+            display: block;
+
+            input {
+                display: inline;
+            }
+
+            input::-webkit-input-placeholder { /* Chrome/Opera/Safari */
+                color: $black;
+            }
+
+            input::-moz-placeholder { /* Firefox 19+ */
+                color: $black;
+            }
+
+            input::-ms-input-placeholder { /* IE 10+ */
+                color: $black;
+            }
+
+            input:-moz-placeholder { /* Firefox 18- */
+                color: $black;
             }
         }
+    }
+
+    .list-filter {
+        display: none;
+        min-height: rem-calc(40);
+        min-width: rem-calc(200);
+        position: absolute;
+        
+        .clear-filter {
+            color: grey;
+            line-height: 2.25rem;
+            position: absolute;
+            right: 0;
+            top: 0;
+            margin: 0 0.4rem;
+            &:hover {
+                color: grey;
+            }
+        }
+    }
+
+    /* */
+
+    .pane-sidebar {
+        background: $light-gray;
+        height: calc(100vh - 400px);
+        max-height: rem-calc(800);
+        position: relative;
+
+        a {
+            border: 0;
+            padding: rem-calc(16 8);
+            padding-right: rem-calc(8) !important;
+
+            &:active,
+            &:focus,
+            &:visited {
+                color: $primary-color;
+            }
+
+            &:hover {
+                color: $white;
+            }
+        }
+
+        &.menu > li > a i {
+            margin-right: 0;
+        }
+
+        .key {
+            background: $dark-gray;
+            bottom: 0;
+            position: absolute;
+            width: 100%;
+
+            a {
+                color: $white;                
+            }
+
+            &.is-dropdown-submenu-parent {                
+                .menu {
+                    position: absolute;
+                    bottom: 0;
+                    top: auto !important;
+                }
+            }
+        }
+    }
+
+    .pane-sidebar.dropdown.menu.vertical > li.is-dropdown-submenu-parent > a::after {
+        border: none;
+    }
+}
+
+// TEXT PANE
+.main .text-pane {
+    flex-basis: 0;
+    flex-grow: 1;
+    margin: rem-calc(16) auto;
+    max-width: rem-calc(1440);
+    
+    .hidden {
+        display: none;
     }
 }
 
@@ -106,12 +284,12 @@
 
 /* Legacy Text Viewer */
 
-.highlight {
-    background-color: #ece4b7;
-}
-
 .cursor-pointer {
     cursor: pointer;
+}
+
+.highlight {
+    background-color: #ece4b7;
 }
 
 .underline {
@@ -119,3 +297,13 @@
     text-decoration-color: scale-color($primary-color, $lightness: 50%);
 }
 
+#text-viewer-glass {
+    display: none;
+    position: absolute;
+    background: white;
+    opacity: 0.5;
+    cursor: wait;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}

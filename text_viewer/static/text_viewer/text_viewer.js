@@ -1,3 +1,18 @@
+/*
+ * Text Viewer code. 
+ * 
+ * Content:
+ * 
+ * - Viewer: manages the layout, lifecycle and synchronisation of multiple panes 
+ * - Pane: handles the navigation logic and server requests for a text pane
+ * - Helper functions
+ * - text-pane: a vue.js module for rendering a pane
+ * - f-sticky: vue.js directive for a sticky div
+ * - f-dropdown: vue.js directive for a Foundation dropdown menu
+ * - initialisation of the interface
+ * 
+ * TODO: split the different modules/layers into separate source files.
+ */
 (function(TextViewer, $, undefined) {
 
     /*****************************************************
@@ -8,7 +23,7 @@
         this.api_url = this.options.api_url || (window.location.pathname + 'api/');
         this.panes = {};
         this.cache = {};
-        this.view = {
+        this.uimodel = {
             'panes': [
             ],
         };
@@ -87,7 +102,7 @@
             if (self.options.on_create_pane) {
                 self.options.on_create_pane(pane);
             }
-            self.view.panes.push({slug: pane_slug});
+            self.uimodel.panes.push({slug: pane_slug});
         }
     };
     
@@ -109,10 +124,10 @@
     }
     
     Viewer.prototype.closePane = function(apane) {
-        for (var i = 0; i < this.view.panes.length; i++) {
-            if (this.view.panes[i].slug == apane.view.pane_slug) {
-                this.view.panes.splice(i, 1);
-                delete this.panes[apane.view.pane_slug];
+        for (var i = 0; i < this.uimodel.panes.length; i++) {
+            if (this.uimodel.panes[i].slug == apane.uimodel.pane_slug) {
+                this.uimodel.panes.splice(i, 1);
+                delete this.panes[apane.uimodel.pane_slug];
                 this.updateQueryString();
                 break;
             }
@@ -124,7 +139,7 @@
     }
     
     Viewer.prototype.getPaneCount = function() {
-        return this.view.panes.length;
+        return this.uimodel.panes.length;
     }
 
     // Returns true if <pane> can be synced.
@@ -166,7 +181,7 @@
      * Pane
      */
     function Pane(panes, slug, options) {
-        this.view = {
+        this.uimodel = {
             pane_slug: slug,
 
             document: {
@@ -176,13 +191,15 @@
             documents: [],
             
             view: 'critical',
-            views: ['critical'],
+            //views: ['critical'],
             
             location_type: 'location',
-            location_types: ['1', '2'],
+            //location_types: ['1', '2'],
 
-            location: 'location',
-            locations: ['1', '2'],
+            location: '1',
+            //locations: ['1', '2'],
+            
+            addresses: {},
             
             conventions: '',
             
@@ -221,7 +238,12 @@
     Pane.prototype.isSynced = function() {
         //return (~this.address_requested.indexOf('synced'));
         //return (this.view.location_type.slug == 'synced');
-        return this.view.is_synced;
+        return this.uimodel.is_synced;
+    }
+
+    Pane.prototype.canBeSynced = function(part_name, value) {
+        // make sure we don't end up with all panes synced
+        return this.panes.canPaneBeSynced(this);
     }
     
     Pane.prototype.syncWith = function(address) {
@@ -267,7 +289,7 @@
     }
     
     Pane.prototype.getUIAddress = function() {
-        return [this.view.document.slug, this.view.view.slug, this.view.location_type.slug, this.view.location.slug].join('/');
+        return [this.uimodel.document.slug, this.uimodel.view.slug, this.uimodel.location_type.slug, this.uimodel.location.slug].join('/');
     }
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
@@ -276,10 +298,12 @@
         parts[part_name] = value;
         return this.requestAddress(this.getAddressFromParts(parts));
     }
-
-    Pane.prototype.canBeSynced = function(part_name, value) {
-        // make sure we don't end up with all panes synced
-        return this.panes.canPaneBeSynced(this);
+    
+    Pane.prototype.changeAddressParts = function(aparts) {
+        //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
+        var parts = this.getAddressParts(this.address);
+        $.extend(parts, aparts);
+        return this.requestAddress(this.getAddressFromParts(parts));
     }
 
     Pane.prototype.requestAddress = function(address) {
@@ -294,7 +318,19 @@
         var self = this;
         
         var parts = this.getAddressParts(address);
-        
+
+        // bm: best match, if exact match doesn't work the API will return the
+        // best match
+        var data = {'bm': 1};
+        if (this.isSynced()) {
+            // we don't want best match, just exact sync
+            data = {'sw': this.panes.getSyncedWithAddress(this)};
+            // TVOF 133: force location_type = master.location_type
+            // because at the moment the UI hides the location_type dropdown.
+            // So if we starts with Whole we are stuck with it.
+            parts['location_type'] = this.getAddressParts(data['sw'])['location_type'];
+        }
+
         // 2 get initial chunk
         var url = this.panes.api_url + this.getAddressFromParts(parts);
         var on_success = function(data, jqXHR, textStatus) {
@@ -304,14 +340,9 @@
             self.onRequestComplete(textStatus, jqXHR);
         };
 
-        this.view.errors = [];
-        var data = null;
+        this.uimodel.errors = [];
         
-        if (this.isSynced()) {
-            data = {
-               'sw': this.panes.getSyncedWithAddress(this)
-            }
-        }
+        $('#text-viewer-glass').stop().css({'opacity': 0}).show().animate({'opacity': 0.5}, 1000);
         
         req = call_api(url, on_success, on_complete, data, false, [this.requested_chunk_hash]);
         if (this.requested_chunk_hash === req.request_hash) {
@@ -322,10 +353,11 @@
 
     Pane.prototype.onRequestSuccessful = function(response, textStatus, jqXHR) {
         if (!response.errors) {
-            this.view.chunk = response.chunk;
+            this.uimodel.chunk = response.chunk;
             this.onReceivedAddress(response.address);
         } else {
-            this.view.errors = response.errors;
+            this.uimodel.errors = response.errors;
+            this.uimodel.chunk = response.errors[0].message; 
         }
     }
 
@@ -345,15 +377,15 @@
     Pane.prototype.setDocumentList = function(document_list) {
         var self = this;
         if (document_list) {
-            this.view.documents.splice(0, this.view.documents.length);
+            this.uimodel.documents.splice(0, this.uimodel.documents.length);
             for (var i = 0; i < document_list.length; i++) {
-                this.view.documents.push({
+                this.uimodel.documents.push({
                     'label': document_list[i].label,
                     'slug': document_list[i].slug,
                 });
             }
         } else {
-            if (this.view.documents.length < 1) {
+            if (this.uimodel.documents.length < 1) {
                 this.panes.copyDocumentList(function(document_list) {
                     self.setDocumentList(document_list);
                 });
@@ -372,7 +404,7 @@
         
         if (!self.addresses || (parts.document != self.addresses.slug)) {
             // temp values
-            self.addresses = {
+            self.setAddresses({
                 'slug': parts.document,
                 'label': parts.document,
                 'views': [{
@@ -388,20 +420,26 @@
                         }]
                     }]
                 }]
-            };
+            });
             
             if (1) {
                 // let's make a new request about this document
                 var url_document = this.panes.api_url + parts.document;
                 call_api(url_document, function(response, jqXHR, textStatus) {
                     // save doc metadata
-                    self.addresses = response;
+                    self.setAddresses(response);
                     self.renderAddresses();
                 }, null, null, false);
             }
         }
-
+        
+        // TODO: why is it needed here? even if branch not executed?
         self.renderAddresses();
+    }
+    
+    Pane.prototype.setAddresses = function(addresses) {
+        this.addresses = addresses;
+        $(document).trigger(this.uimodel.pane_slug+'.'+'addresses.updated', addresses);
     }
 
     // Update the address of the loaded chunk in self.view
@@ -410,14 +448,14 @@
         var self = this;
         
         // document
-        self.view.document = self.getPartMeta(self.addresses);
+        self.uimodel.document = self.getPartMeta(self.addresses);
         
         var parts = this.getAddressParts();
         
         // views
-        self.view.views = [];
+        self.uimodel.views = [];
         self.addresses.views.map(function(aview) {
-            self.view.views.push(self.getPartMeta(aview));
+            self.uimodel.views.push(self.getPartMeta(aview));
         });
         
         // Update the lists in self.view
@@ -425,36 +463,36 @@
         this.addresses.views.map(function(aview) {
             if (aview.slug == parts.view) {
                 // view
-                self.view.view = self.getPartMeta(aview);
+                self.uimodel.view = self.getPartMeta(aview);
                 
                 // conventions
-                self.view.conventions = aview.conventions || '';
+                self.uimodel.conventions = aview.conventions || '';
                 
                 // display_settings
-                self.view.display_settings = aview.display_settings || [];
+                self.uimodel.display_settings = aview.display_settings || [];
                 
                 //var user_location_type = self.isSynced() ? 'synced': parts.location_type;
                 
                 // location_types
-                self.view.location_types = [];
+                //self.view.location_types = [];
                 // locations
-                self.view.locations = [];
+                //self.view.locations = [];
 
                 aview.location_types.map(function(location_type) {
                     // location_types
-                    self.view.location_types.push(self.getPartMeta(location_type));
+                    //self.view.location_types.push(self.getPartMeta(location_type));
                     
                     if (location_type.slug == parts.location_type) {
                         
                         // location_type
-                        self.view.location_type = self.getPartMeta(location_type);
+                        self.uimodel.location_type = self.getPartMeta(location_type);
                         
                         location_type.locations.map(function(location) {
                             // locations
-                            self.view.locations.push(self.getPartMeta(location));
+                            //self.view.locations.push(self.getPartMeta(location));
                             if (location.slug == parts.location) {
                                 // location
-                                self.view.location = self.getPartMeta(location);
+                                self.uimodel.location = self.getPartMeta(location);
                             }
                         });
                     }
@@ -467,7 +505,7 @@
     Pane.prototype.onReceivedAddress = function(address) {
         // update the loaded address
         // this is the real address of our this.view.chunk
-        console.log('received '+address+' had '+this.address)
+        //console.log('received '+address+' had '+this.address)
         var has_address_changed = (this.address !== address);
         this.address = address;
         
@@ -484,6 +522,8 @@
     }
 
     Pane.prototype.onRequestComplete = function(textStatus, jqXHR) {
+        //$('#text-viewer-glass').hide();
+        $('#text-viewer-glass').stop().animate({'opacity': 0.0}, 100).hide();
         // TODO
     }
 
@@ -574,10 +614,19 @@
             // this.apane: the attribute when creating/updating the html element
             // this.pane: the initial pane when creating the html element
             props: ['apane'],
+            mounted: function() {
+                var self = this;
+                $(document).on(this.apane.uimodel.pane_slug+'.addresses.updated', function(event, addresses) {
+                    //self.$set(self, {yo: 2};
+                    // TODO: make sure this reactive
+                    self.addresses = addresses;
+                });
+            },
             data: function() {
                 this.pane = this.apane;
-                var ret = this.apane.view;
+                var ret = this.apane.uimodel;
                 ret.display_settings_active = {};
+                ret.location_type_filters = {};
                 return ret;
             },
             // var elem = new Foundation.Tooltip(element, options);
@@ -591,17 +640,15 @@
                     // keep p1 & p2 components but pass 3rd Pane to p3 component.
                     // We can't replace this.$data so instead we request the
                     // incoming address and update the slug of the pane.
-                    this.pane_slug = pane.view.pane_slug;
+                    this.pane_slug = pane.uimodel.pane_slug;
                     this.pane.requestAddress(pane.getUIAddress());
                 },
-                'view.slug': function(val) {
-                    // TODO: still need this?
-                    this.pane.changeAddressPart('view', val);
-                },
-                'location.slug': function(val) {
+                'location.slug.bk': function(val) {
+                    // TODO: no longer used?
                     this.pane.changeAddressPart('location', val);
                 },
                 'chunk': function(val) {
+                    var self = this;
                     this.$nextTick(function() {
                         // convert the hrefs to the bibliography page
                         $(this.$el).find(".text-chunk a[href]").each(function() {
@@ -616,15 +663,70 @@
                         // we init Foundation on all the new reveals
                         $(this.$el).find('.reveal').each(function() {
                             var $reveal = $(this);
-                            $reveal.attr('data-panel', this.pane_slug);
+                            $reveal.attr('data-panel', self.pane_slug);
                             new Foundation.Reveal($reveal);
-                        })
+                        });
+                        // recalc stickies...
+                        $('.sticky:visible').foundation('_calc', true);
                     });
+                },
+                'is_synced': function(val) {
+                    this.pane.requestAddress(this.pane.address);
+                },
+            },
+            computed: {
+                views: function() {
+                    return this.addresses.views;
+                },
+                location_types: function() {
+                    var self = this;
+                    var ret = null;
+                    if (this.views) {
+                        this.views.map(function(aview) {
+                            if (aview.slug == self.view.slug) {
+                                ret = aview.location_types;
+                            }
+                        });
+                    }
+                    return ret;
+                },
+                canBeSynced: function() {
+                    return this.pane.canBeSynced(); 
+                },
+                getSyncTitle: function() {
+                    return this.canBeSynced ? (this.is_synced ? 'Click to unsync this pane' : 'Click to synchronise this pane with another') : 'This pane cannot be synced';
                 }
             },
             methods: {
+                clearLocationFilter: function(location_type) {
+                    this.location_type_filters[location_type.slug] = '';
+                    this.filterLocations(location_type);
+                },
+                filterLocations: function(location_type) {
+                    var filter = this.location_type_filters[location_type.slug] || '';
+                    filter = filter.trim().toLowerCase();
+                    location_type.locations.map(function(location) {
+                        Vue.set(location, 'hidden', location.label_long.toLowerCase().indexOf(filter) === -1);
+                    });
+                    
+                },
+                getFAIcon: function(location_type) {
+                    var ltypes_icon = {
+                        'whole': 'book',
+                        'section': 'files-o',
+                        'folio': 'file-text-o',
+                        'paragraph': 'paragraph',
+                        'seg': 'outdent',
+                    };
+                    return 'fa fa-'+ (ltypes_icon[location_type] || '');
+                },
                 onClickDocument: function(document) {
-                    this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
+                    //this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
+                    // We assume here that all docs support the same location_types, 
+                    // so we preserve it across doc change.
+                    // But we can't make the same assumption about the view
+                    //this.pane.changeAddressParts({'document': document, 'view': 'default', 'location': 'default'});
+                    this.pane.changeAddressParts({'document': document});
                 },
                 onClickView: function(view) {
                     this.pane.changeAddressPart('view', view);
@@ -635,9 +737,9 @@
                 onClickLocationType: function(location_type) {
                     this.pane.changeAddressPart('location_type', location_type);
                 },
-//                onClickLocation: function(location) {
-//                    this.pane.changeAddressPart('location', location);
-//                },
+                onClickLocation: function(location, location_type) {
+                    this.pane.changeAddressParts({location: location, location_type: location_type});
+                },
                 // TODO: that logic should move to Panel
                 // TODO: the list of available display settings should be 
                 // determined by this class instead of the web api.
@@ -648,8 +750,9 @@
                     this.$set(this.display_settings_active, setting.slug, !!!(this.display_settings_active[setting.slug]));
                 },
                 toggleSynced: function() {
-                    this.is_synced = !this.is_synced;
-                    this.pane.requestAddress(this.pane.address);
+                    if (this.is_synced || this.canBeSynced) {
+                        this.is_synced = !this.is_synced;
+                    }
                 },
                 getClassesFromDisplaySettings: function() {
                     var self = this;
@@ -674,9 +777,6 @@
                 areLocationsHidden: function() {
                     return (this.locations.length < 2 || this.is_synced) 
                 },
-                canBeSynced: function() {
-                    return this.pane.canBeSynced(); 
-                }
             },
         });
     }
@@ -688,18 +788,109 @@
     // TODO: move this out
 
     $(function() {
-        Vue.directive('f-dropdown', {
+        Vue.directive('f-sticky', {
             bind: function(el) {
                 Vue.nextTick(function () {
-                    $(el).addClass('dropdown menu');
-                    var options = {
-                        closingTime: 50,
-                    };
-                    new Foundation.DropdownMenu($(el), options);
+                    // http://foundation.zurb.com/sites/docs/sticky.html
+                    var $el = $(el);
+                    $el.attr('data-sticky', '');
+                    $el.addClass('sticky');
+                    
+                    var $container = $el.parent().first();
+                    $container.attr('data-sticky-container', '');
+                    
+                    new Foundation.Sticky($el);
                 })
             },
             unbind: function(el) {
+                // TODO: check that it actually works...
+                // it seems to leave attributes with internal ids behind.
                 $(el).foundation('destroy');
+            },
+        });
+        
+        function bindZFDropdownMenu($el) {
+            Vue.nextTick(function () {
+                var $opened_element = $el.find('.js-dropdown-active');
+                //var $focused_filter = $el.find('.list-filter input:focus');
+
+                // http://foundation.zurb.com/sites/docs/dropdown-menu.html
+                $el.attr('data-dropdown-menu', '');
+                $el.addClass('dropdown menu');
+                // <!-- is-dropdown-submenu-parent: prevent FOUC -->
+                $el.find('> li:has(ul)').addClass('is-dropdown-submenu-parent');
+                $el.find('> li > ul').addClass('menu');
+
+                $el.on('mouseleave.text_viewer', function() {
+                    $el.find('.js-dropdown-active li a').click();
+                });
+                
+                var options = {
+                    closingTime: 50,
+                    closeOnClick: true,
+                    closeOnClickInside: true,
+                    autoClose: true,
+                    clickOpen: true,
+                };
+                
+                // let Foundation manage the bahaviour and appearance of the DD
+                new Foundation.DropdownMenu($el, options);
+
+                // Leave DD open if it was already open (e.g. reinitialised)
+                //$opened_element.addClass('js-dropdown-active');
+                $opened_element.trigger('mouseover');
+                // restore focus on filter input
+                //$focused_filter.focus();
+            })
+        };
+        function unbindZFDropdownMenu($el) {
+            //console.log('UNBIND');
+            //console.log($el);
+            $el.off('mouseleave.text_viewer');
+            $el.foundation('destroy');
+        };
+
+        // When a scrollable dropdown opens, we scroll to the first active item.
+        // If no active element, we scroll to top (e.g. autocomplete).
+        $(document).on('show.zf.dropdownmenu', function(ev, $el) {
+            var $parent = $el;
+            if ($parent.parent().hasClass('scrollable')) {
+                var $i0 = $parent.find('.active:visible').first();
+                var pos = 0;
+                if ($i0.length > 0) {
+                    pos = $parent.scrollTop() + $i0.position().top;
+                }
+                $parent.scrollTop(pos);
+                $parent.parent().find('.list-filter input').focus();
+            }
+        });
+        
+        Vue.directive('f-dropdown', {
+            componentUpdated: function(el) {
+                // Foundation won't behave well with controls modified by Vue.js
+                // E.g. vue adds <li> item, dropdown won't close when clicking them
+                // So we re-initialise foundation on the modified control.
+                // We only do it when we detect a non-initialised dropdown item.
+                var $el = $(el);
+                // VERY Expensive: Foundation changes all other drop downs each time
+                // one selection is made in any other.
+                // So we destroy and reinitialise all the drop downs each time.
+                // Without this Vue.js loses track of the DOM because of 
+                // Foundation's excessive manipulations.
+                // TODO: implement the dropdown with Vue.js
+                if ($el.find('li:not([role])').length || ($el.find('.is-dropdown-submenu-parent').length == 0)) {
+                //if (1) {
+                    //console.log('componentUpdated');
+                    //console.log($el.find('a:first').text());
+                    unbindZFDropdownMenu($el);
+                    bindZFDropdownMenu($el);
+                }
+            },
+            bind: function(el) {
+                bindZFDropdownMenu($(el));
+            },
+            unbind: function(el) {
+                unbindZFDropdownMenu($(el));
             },
         });
         
@@ -711,7 +902,7 @@
         
         var layout = new Vue({
             el: '#text-viewer',
-            data: viewer.view,
+            data: viewer.uimodel,
             methods: {
                 getPane: function(slug) {
                     return viewer.getPane(slug)

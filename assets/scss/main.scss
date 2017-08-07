@@ -2,6 +2,11 @@
 @import '../vendor/foundation-sites/scss/foundation';
 @import 'text-viewer';
 @import '../vendor/motion-ui/motion-ui';
+// GN: this line was at the bottom of this file
+// which means all style definitions were taking precedence over ours
+// when the selectors were identical.
+// TODO: check if ok; check if we can remove the !important now
+@include foundation-everything;
 
 /****
 
@@ -224,6 +229,14 @@ nav {
         }
     }
 
+    .menu {
+        a {
+            &:hover {
+                color: $white;
+            }
+        }
+    }
+
     .menu > li > a {
         // color: $primary-color;
         &:hover {
@@ -299,6 +312,12 @@ nav {
     .tei-pb {
         color: teal;
     }
+    .tei-cb.split-word,
+    .tei-pb.split-word {
+        &:before, &:after {
+            content: '-';
+        }
+    }
 
     .tei-corr-popup {
         background-color: scale-color(yellow, $lightness: 50%);
@@ -333,11 +352,10 @@ nav {
         color: green;
     }
 
-    .tei-initial {
+    .tei-c.red, .tei-rubric, .tei-hi.red {
         color: scale-color($secondary-color, $lightness: 25%);
     }
-
-    .tei-rubric {
+    .first-letter-red::first-letter {
         color: scale-color($secondary-color, $lightness: 25%);
     }
 
@@ -384,6 +402,31 @@ nav {
         }
     }
 
+    // GN: two types of verses: 
+    // .cont (flows continuously within a p/div) 
+    // .lineated (line break after each verse line)
+    // TODO: works but html & css need improvement
+    
+    .lineated > span {
+        display: block;
+    }
+    .cont span {
+        display: inline;
+    }
+
+    p.tei.lg.lineated {
+        display: block;
+    }
+
+    div.tei.lg, p.tei.lg {
+        display: inline;
+    }
+    //-----
+
+    span.add[data-teia-type=annotation] {
+        display: none;
+    }
+
     .tei-unclear {
         &:before {
             color: $tertiary-color;
@@ -391,6 +434,24 @@ nav {
             font-family: "FontAwesome";
         }
     }
+
+    // See TVOF-146
+    .paragraph {
+        margin-bottom: 1rem;
+    }
+}
+
+// GN: nothing preventing default Foundation modal to have a close icon
+// overlapping the modal text => difficult to read, don't know how to close
+// Were increase padding and move the icon closer to the boder 
+// See TVOF-146
+.reveal {
+    padding-right: 1.7rem;
+    padding-left: 1.7rem;
+}
+.close-button {
+    right: 0.5rem;
+    color: $primary-color;
 }
 
 /* Footer */
@@ -412,4 +473,3 @@ footer {
 
 /* Typography */
 
-@include foundation-everything;

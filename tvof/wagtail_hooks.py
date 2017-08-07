@@ -62,4 +62,5 @@ def editor_js():
         """)
 
 
+# GN: removed, this plugin no longer exist in Wagtail 1.8.1
 hooks.register('insert_editor_js', editor_js)
