@@ -296,3 +296,14 @@
     // text-decoration: underline;
     text-decoration-color: scale-color($primary-color, $lightness: 50%);
 }
+
+#text-viewer-glass {
+    display: none;
+    position: absolute;
+    background: white;
+    opacity: 0.5;
+    cursor: wait;
+    width: 100%;
+    height: 100%;
+    z-index: 10;
+}

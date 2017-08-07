@@ -342,6 +342,8 @@
 
         this.uimodel.errors = [];
         
+        $('#text-viewer-glass').stop().css({'opacity': 0}).show().animate({'opacity': 0.5}, 1000);
+        
         req = call_api(url, on_success, on_complete, data, false, [this.requested_chunk_hash]);
         if (this.requested_chunk_hash === req.request_hash) {
             this.onReceivedAddress(address);
@@ -520,6 +522,8 @@
     }
 
     Pane.prototype.onRequestComplete = function(textStatus, jqXHR) {
+        //$('#text-viewer-glass').hide();
+        $('#text-viewer-glass').stop().animate({'opacity': 0.0}, 100).hide();
         // TODO
     }
 

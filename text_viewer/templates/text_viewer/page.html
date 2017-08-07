@@ -9,6 +9,7 @@ Textviewer
 
 {% verbatim %}
 <section id="text-viewer" class="main text-viewer">
+    <div id="text-viewer-glass"></div>
     <div v-for="pane in panes" is="text-pane" v-bind:apane="getPane(pane.slug)"></div>
 </section>
 {% endverbatim %}
