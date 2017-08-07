@@ -319,12 +319,12 @@
         
         var parts = this.getAddressParts(address);
 
-        var data = null;
+        // bm: best match, if exact match doesn't work the API will return the
+        // best match
+        var data = {'bm': 1};
         if (this.isSynced()) {
-            data = {
-               'sw': this.panes.getSyncedWithAddress(this)
-            }
-            
+            // we don't want best match, just exact sync
+            data = {'sw': this.panes.getSyncedWithAddress(this)};
             // TVOF 133: force location_type = master.location_type
             // because at the moment the UI hides the location_type dropdown.
             // So if we starts with Whole we are stuck with it.
@@ -725,7 +725,8 @@
                     // We assume here that all docs support the same location_types, 
                     // so we preserve it across doc change.
                     // But we can't make the same assumption about the view
-                    this.pane.changeAddressParts({'document': document, 'view': 'default', 'location': 'default'});
+                    //this.pane.changeAddressParts({'document': document, 'view': 'default', 'location': 'default'});
+                    this.pane.changeAddressParts({'document': document});
                 },
                 onClickView: function(view) {
                     this.pane.changeAddressPart('view', view);

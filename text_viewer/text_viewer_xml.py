@@ -129,11 +129,15 @@ class TextViewerAPIXML(TextViewerAPI):
         Fetch the text chunk closest to the requested address.
         Set the response with the HTML chunk and its actual address.
 
+        Return True if found a chunk.
+
         TODO: generalise this. But very difficult as the information for
         address resolution can require the document and vice versa depending on
         the document backend and the document format. Both of wich can vary
         from one project to another.
         '''
+
+        ret = False
 
         # resolve address (e.g. 'default')
         document, view, location_type_slug, location = \
@@ -166,18 +170,28 @@ class TextViewerAPIXML(TextViewerAPI):
         chunks = []
         address = ''
         for xpath in xpaths:
-            chunk = xml.find(xpath)
+            chunk_list = xml.findall(xpath)
+
+            chunk = None
+            # try until we get a visible one
+            # TODO: optimise, this is really inefficient to scan all elements
+            for achunk in chunk_list:
+                print achunk
+                if self.is_location_visible(
+                        achunk, document, view, location_type_slug):
+                    chunk = achunk
+                    break
 
             # build response from chunk and address
-            if chunk is None or not self.is_location_visible(
-                    chunk, document, view, location_type_slug):
+            if chunk is None:
                 self.add_error(
                     'notfound', 'Chunk not found: {}'.format(
                         self.get_requested_address()),
                     'XPATH = {}'.format(xpath)
                 )
             else:
-                location_from_chunk = location_type.get('location_from_chunk')
+                location_from_chunk = location_type.get(
+                    'location_from_chunk')
                 if location_from_chunk:
                     location = location_from_chunk(chunk)
 
@@ -207,6 +221,9 @@ class TextViewerAPIXML(TextViewerAPI):
                 format(chunk, u'\n'.join(reveals)),
                 'address': address,
             }
+            ret = True
+
+        return ret
 
     def get_notational_conventions(self, xml, view_slug):
         conventions = ''
