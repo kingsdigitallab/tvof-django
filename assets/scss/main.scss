@@ -2,10 +2,7 @@
 @import '../vendor/foundation-sites/scss/foundation';
 @import 'text-viewer';
 @import '../vendor/motion-ui/motion-ui';
-// GN: this line was at the bottom of this file
-// which means all style definitions were taking precedence over ours
-// when the selectors were identical.
-// TODO: check if ok; check if we can remove the !important now
+
 @include foundation-everything;
 
 /****
@@ -23,7 +20,6 @@ Main content area
     Quick tips or Disclaimer
     Text viewer - TEI
 Footer
-Typography
 
 ****/
 
@@ -33,7 +29,7 @@ Typography
     vertical-align: text-top;
 }
 
-// Colours and text styles
+// Colours
 
 .red {
     color: scale-color($secondary-color, $lightness: 25%);
@@ -351,11 +347,9 @@ nav {
         &.tei-gen,
         &.tei-source,
         &.tei-trad {
-            // padding-left: 5px;
             &:after {
                 content: "\f075";
                 font-family: "FontAwesome";
-                // padding-left: 3px;
             }
         }
 
@@ -452,6 +446,3 @@ footer {
         }
     }
 }
-
-/* Typography */
-
