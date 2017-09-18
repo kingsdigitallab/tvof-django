@@ -33,30 +33,10 @@ Typography
     vertical-align: text-top;
 }
 
-.off-canvas-wrapper button {
-    margin: 0;
-}
-
-.off-canvas-content {
-    background: none !important;
-}
-
-.off-canvas.position-left {
-    padding-right: 1rem;
-}
-
 // Colours and text styles
-
-.orange {
-    color: $dark-orange !important;
-}
 
 .red {
     color: scale-color($secondary-color, $lightness: 25%);
-}
-
-.uppercase {
-    text-transform: uppercase !important;
 }
 
 // External links
@@ -114,15 +94,17 @@ a.ext-links {
 
 /* Navigation */
 
-
 nav {
     background-color: #1c2434;
     a {
         color: $white;
+
         &:hover {
             color: scale-color($primary-color, $lightness: 80%);
             background: scale-color($primary-color, $lightness: 20%);
         }
+
+        // Display the dropdown menu caret
         &:after {
             border-color: $white transparent transparent transparent !important;
         }
@@ -152,7 +134,7 @@ nav {
                 background: scale-color($primary-color, $lightness: 20%);
             }
             &:after {
-                border-color: transparent transparent transparent $white!important;
+                border-color: transparent transparent transparent $white !important;
             }
         }
     }
