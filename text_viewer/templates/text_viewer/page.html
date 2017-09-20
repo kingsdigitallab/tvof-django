@@ -31,7 +31,12 @@ Textviewer
                 <a href=""><i class="fa fa-random"></i></a>
             </li>
             <li>
-                <a href=""><i class="fa fa-columns"></i></a>
+                {# <a href=""><i class="fa fa-columns"></i></a> #}
+
+                <a href="#" v-on:click.stop.prevent="onClickViewExternal(view.slug)"
+                    title="Open a new panel">
+                    <i class="fa fa-columns"></i>
+                </a>
             </li>
             <li>
                 <a href=""><i class="fa fa-expand"></i></a>
@@ -73,9 +78,7 @@ a vue directive:
             <div class="small-12 columns">
 
                 <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()" class="close-panel-button float-right">
-                    <i class="fa fa-trash has-tip" aria-hidden="true" 
-                        data-tooltip aria-haspopup="true" data-hover-delay="0" 
-                        title="Close this panel">
+                    <i class="fa fa-trash" aria-label="Close this panel" title="Close this panel">
                     </i>
                 </a>
 
@@ -166,8 +169,7 @@ a vue directive:
                         <!-- <li v-for="aview in views"> -->
                         <li>
                             <a href="#" v-on:click.stop.prevent="onClickViewExternal(view.slug)"
-                                data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" 
-                                data-hover-delay="0" title="Open a new panel">
+                                aria-label="Open a new panel" title="Open a new panel">
                                 <i class="fa fa-columns"></i>
                             </a>
                         </li>
