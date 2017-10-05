@@ -667,7 +667,10 @@
                             new Foundation.Reveal($reveal);
                         });
                         // recalc stickies...
-                        $('.sticky:visible').foundation('_calc', true);
+                        var $stickies = $('.sticky:visible');
+                        if ($stickies.length > 0) {
+                            $stickies.foundation('_calc', true);
+                        }
                     });
                 },
                 'is_synced': function(val) {
