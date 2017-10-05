@@ -276,6 +276,9 @@
 }
 
 .text-chunk {
+    margin-top: rem-calc(12);
+    max-height: calc(100vh - 250px);
+    overflow-y: scroll;
     div[data-corresp]:hover {
         cursor: pointer;
         text-decoration-color: scale-color($primary-color, $lightness: 50%);
