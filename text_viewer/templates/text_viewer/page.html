@@ -1,8 +1,52 @@
 {% extends "base.html" %}
-{% load staticfiles compress require cms_tags %}
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
 
 {% block title %}
 Textviewer
+{% endblock %}
+
+{% block header %}
+<nav>
+<div class="row textviewer-header">
+  <div class="large-12 columns">
+    <div class="title-bar" data-responsive-toggle="top-menu" data-hide-for="medium">
+      <button class="menu-icon" type="button" data-toggle></button>
+      <div class="title-bar-title">Menu</div>
+    </div>
+
+    <div class="top-bar" id="top-menu">
+      <div class="top-bar-left">
+        <ul class="vertical medium-horizontal menu dropdown" data-dropdown-menu>
+            <li>
+                <h1><a href="/">The Value of French</a> <small>/ Textviewer</small></h1>
+            </li>
+        </ul>
+      </div>
+      <div class="top-bar-right">
+        <ul class="vertical medium-horizontal menu dropdown" data-dropdown-menu>
+            <li>
+                <a href=""><i class="fa fa-key"></i></a>
+            </li>
+            <li>
+                <a href=""><i class="fa fa-random"></i></a>
+            </li>
+            <li>
+                {# <a href=""><i class="fa fa-columns"></i></a> #}
+
+                <a href="#" v-on:click.stop.prevent="onClickViewExternal(view.slug)"
+                    title="Open a new panel">
+                    <i class="fa fa-columns"></i>
+                </a>
+            </li>
+            <li>
+                <a href=""><i class="fa fa-expand"></i></a>
+            </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+</nav>
 {% endblock %}
 
 {% block main_wrapper %}
@@ -34,9 +78,7 @@ a vue directive:
             <div class="small-12 columns">
 
                 <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()" class="close-panel-button float-right">
-                    <i class="fa fa-trash has-tip" aria-hidden="true" 
-                        data-tooltip aria-haspopup="true" data-hover-delay="0" 
-                        title="Close this panel">
+                    <i class="fa fa-trash" aria-label="Close this panel" title="Close this panel">
                     </i>
                 </a>
 
@@ -127,8 +169,7 @@ a vue directive:
                         <!-- <li v-for="aview in views"> -->
                         <li>
                             <a href="#" v-on:click.stop.prevent="onClickViewExternal(view.slug)"
-                                data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" 
-                                data-hover-delay="0" title="Open a new panel">
+                                aria-label="Open a new panel" title="Open a new panel">
                                 <i class="fa fa-columns"></i>
                             </a>
                         </li>

@@ -2,10 +2,7 @@
 @import '../vendor/foundation-sites/scss/foundation';
 @import 'text-viewer';
 @import '../vendor/motion-ui/motion-ui';
-// GN: this line was at the bottom of this file
-// which means all style definitions were taking precedence over ours
-// when the selectors were identical.
-// TODO: check if ok; check if we can remove the !important now
+
 @include foundation-everything;
 
 /****
@@ -23,7 +20,8 @@ Main content area
     Quick tips or Disclaimer
     Text viewer - TEI
 Footer
-Typography
+Media queries
+    Navigation
 
 ****/
 
@@ -33,30 +31,10 @@ Typography
     vertical-align: text-top;
 }
 
-.off-canvas-wrapper button {
-    margin: 0;
-}
-
-.off-canvas-content {
-    background: none !important;
-}
-
-.off-canvas.position-left {
-    padding-right: 1rem;
-}
-
-// Colours and text styles
-
-.orange {
-    color: $dark-orange !important;
-}
+// Colours
 
 .red {
     color: scale-color($secondary-color, $lightness: 25%);
-}
-
-.uppercase {
-    text-transform: uppercase !important;
 }
 
 // External links
@@ -114,15 +92,17 @@ a.ext-links {
 
 /* Navigation */
 
-
 nav {
     background-color: #1c2434;
     a {
         color: $white;
+
         &:hover {
             color: scale-color($primary-color, $lightness: 80%);
             background: scale-color($primary-color, $lightness: 20%);
         }
+
+        // Display the dropdown menu caret
         &:after {
             border-color: $white transparent transparent transparent !important;
         }
@@ -139,22 +119,6 @@ nav {
     .menu,
     .menu > * {
         z-index: 9;
-    }
-}
-
-@media screen and (max-width: 575px) {
-    nav {
-        background-color: #1c2434;
-        a {
-            color: $white;
-            &:hover {
-                color: scale-color($primary-color, $lightness: 80%);
-                background: scale-color($primary-color, $lightness: 20%);
-            }
-            &:after {
-                border-color: transparent transparent transparent $white!important;
-            }
-        }
     }
 }
 
@@ -369,11 +333,9 @@ nav {
         &.tei-gen,
         &.tei-source,
         &.tei-trad {
-            // padding-left: 5px;
             &:after {
                 content: "\f075";
                 font-family: "FontAwesome";
-                // padding-left: 3px;
             }
         }
 
@@ -471,5 +433,21 @@ footer {
     }
 }
 
-/* Typography */
+/* Media queries */
 
+// Navigation
+@media screen and (max-width: 575px) {
+    nav {
+        background-color: #1c2434;
+        a {
+            color: $white;
+            &:hover {
+                color: scale-color($primary-color, $lightness: 80%);
+                background: scale-color($primary-color, $lightness: 20%);
+            }
+            &:after {
+                border-color: transparent transparent transparent $white !important;
+            }
+        }
+    }
+}
