@@ -88,6 +88,16 @@
         });
     };
     
+    Viewer.prototype.cloneAPane = function() {
+        var address = null;
+        for (var k in this.panes) {
+            if (this.panes.hasOwnProperty(k)) {
+                this.createPaneFromAddress(this.panes[k].address);
+                break;
+            }
+        }
+    }
+    
     Viewer.prototype.createPaneFromAddress = function(address, pane_slug) {
         var self = this;
 
@@ -901,7 +911,7 @@
             //'on_create_pane': on_create_pane,
             //'on_create_viewer': on_create_viewer,
         };
-        var viewer = new Viewer(options);
+        var viewer = window.text_viewer = new Viewer(options);
         
         var layout = new Vue({
             el: '#text-viewer',
@@ -918,6 +928,11 @@
         $('section.main').on('click', 'div[data-corresp]', function() {
             $('section.main div[data-corresp]').removeClass('highlight');
             $(this).addClass('highlight');
+        });
+        
+        $('#btn-open-panel').on('click', function() {
+            window.text_viewer.cloneAPane();
+            return false;
         });
     });
     
