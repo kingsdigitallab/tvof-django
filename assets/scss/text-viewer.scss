@@ -14,6 +14,14 @@
 // TODO: we should use Foundation flexbox instead. But without enabling the flex
 // grid. Only the foundation flex helper classes.
 
+.textviewer-header {
+    h1 {
+        font-size: rem-calc(20);
+        line-height: 1.25;
+        margin: rem-calc(12 0 0 0);
+    }
+}
+
 .text-viewer {
     display: flex;
     flex-wrap: wrap;
@@ -129,18 +137,23 @@
         and messes up with the inherited box model properties.
     */
 
-    .column.sticky-container, .columns.sticky-container {
-        padding: 0;
+    .column.sticky-container,
+    .columns.sticky-container {
         .sticky {
             width: 100%;
         }
+    }
+
+    .toolbar {
+        height: 100vh;
     }
 
     /* GN: temporary, any active item in any dropdown should have a primary 
     color background. TODO: change to correct sass variable. 
     */
 
-    ul.menu li.active > a, ul.menu li > a:focus {
+    ul.menu li.active > a,
+    ul.menu li > a:focus {
         background-color: #5871a4;
     }
 
@@ -268,6 +281,10 @@
 }
 
 .text-chunk {
+    margin-top: rem-calc(12);
+    max-height: calc(100vh - 250px);
+    overflow-y: scroll;
+
     div[data-corresp]:hover {
         cursor: pointer;
         text-decoration-color: scale-color($primary-color, $lightness: 50%);

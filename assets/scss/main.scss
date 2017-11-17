@@ -20,6 +20,8 @@ Main content area
     Quick tips or Disclaimer
     Text viewer - TEI
 Footer
+Media queries
+    Navigation
 
 ****/
 
@@ -117,22 +119,6 @@ nav {
     .menu,
     .menu > * {
         z-index: 9;
-    }
-}
-
-@media screen and (max-width: 575px) {
-    nav {
-        background-color: #1c2434;
-        a {
-            color: $white;
-            &:hover {
-                color: scale-color($primary-color, $lightness: 80%);
-                background: scale-color($primary-color, $lightness: 20%);
-            }
-            &:after {
-                border-color: transparent transparent transparent $white !important;
-            }
-        }
     }
 }
 
@@ -443,6 +429,25 @@ footer {
     .logo {
         img {
             max-height: rem-calc(200);
+        }
+    }
+}
+
+/* Media queries */
+
+// Navigation
+@media screen and (max-width: 575px) {
+    nav {
+        background-color: #1c2434;
+        a {
+            color: $white;
+            &:hover {
+                color: scale-color($primary-color, $lightness: 80%);
+                background: scale-color($primary-color, $lightness: 20%);
+            }
+            &:after {
+                border-color: transparent transparent transparent $white !important;
+            }
         }
     }
 }
