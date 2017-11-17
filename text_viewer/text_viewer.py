@@ -1,6 +1,4 @@
-import requests
-from collections import OrderedDict
-from django.conf import settings
+from kiln_requester import CachedRequesterKiln
 
 '''
 TODO: instead of inheritence we should use a strategy pattern for:
@@ -17,12 +15,11 @@ class TextViewerAPI(object):
 
     API: /document/view/location_type/location
     '''
-    cache = OrderedDict()
 
     part_levels = ['document', 'view', 'location_type', 'location']
 
     def __init__(self):
-        pass
+        self.requester = CachedRequesterKiln()
 
     def add_error(self, code, message, info):
         error = {'code': code, 'message': message}
@@ -160,25 +157,12 @@ class TextViewerAPI(object):
             }
         return ret
 
-    @classmethod
-    def get_cache_size(cls):
-        return getattr(settings, 'TEXT_VIEWER_CACHE_SIZE', 10)
-
-    @classmethod
-    def get_cached_request(cls, url):
-        cache = cls.cache
-
-        ret = cls.cache.get(url, None)
-        if ret is None:
-            print 'REQUEST %s' % url
-            r = requests.get(url, timeout=60)
-            ret = r.text.encode('utf-8')
-            cache[url] = ret
-            print len(ret)
-            if len(cache.keys()) > cls.get_cache_size():
-                print 'CACHE ITEM REMOVED'
-                cache.popitem(True)
-
+    def request_backend(self, url):
+        import time
+        t0 = time.time()
+        ret = self.requester.request(url)
+        t1 = time.time()
+        print t1 - t0
         return ret
 
 

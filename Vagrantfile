@@ -19,7 +19,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.network "forwarded_port", guest: 5432, host: 5434
   config.vm.network "forwarded_port", guest: 9200, host: 9200
 
-  config.vm.network "private_network", ip: "192.168.33.99"
+  #config.vm.network "private_network", ip: "192.168.33.99"
 
   config.vm.provider "virtualbox" do |provider|
  #   provider.gui = true
@@ -34,7 +34,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.vm.define "tvof" do |machine|
     machine.vm.box = "debian/contrib-jessie64"
     machine.vm.hostname = "tvof.vagrant"
-    machine.vm.network "private_network", ip: "192.168.33.99"
+    machine.vm.network "private_network", ip: "192.168.101.20"
   end
 
   config.vm.provider "virtualbox" do |vb|

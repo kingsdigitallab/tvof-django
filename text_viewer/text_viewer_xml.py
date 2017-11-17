@@ -28,7 +28,7 @@ class TextViewerAPIXML(TextViewerAPI):
         '''
         # TODO: improve kiln pipeline for this call
         # call this to get all the versions (e.g. semi-diplomatic, ...)
-        xml = self.fetch_xml_from_kiln(document_slug, 'critical')
+        xml = self.fetch_xml_from_kiln(document_slug, 'interpretive')
 
         views = []
         document_title = None
@@ -236,7 +236,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
         # Send the request to Kiln.
         print url
-        response = TextViewerAPI.get_cached_request(url)
+        response = self.request_backend(url)
 
         # Create a new XML tree from the response.
         root = ET.fromstring(response)

@@ -51,6 +51,13 @@ CACHES = {
         'TIMEOUT': 60 * 60 * 24,
         # 'TIMEOUT': 1,
         'MAX_ENTRIES': 600,
+    },
+    'kiln': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'django_cache/kiln/'),
+        'TIMEOUT': 30 * 60 * 60 * 24,
+        # 'TIMEOUT': 1,
+        # 'MAX_ENTRIES': 600,
     }
 }
 
