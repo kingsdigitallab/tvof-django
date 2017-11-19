@@ -631,6 +631,7 @@
                     // TODO: make sure this reactive
                     self.addresses = addresses;
                 });
+                $(window).trigger('text_viewer.pane_count_change');
             },
             data: function() {
                 this.pane = this.apane;
@@ -923,7 +924,28 @@
             }
         });
         
+        // auto resize panes
+        function autosize_text_viewer_contents($text_viewer) {
+            var margin = 20;
+            var height = $text_viewer.height() - ($('.text-chunk:first').offset().top - $text_viewer.offset().top);
+            $('.text-chunk').css('height', height - margin);
+            $('.pane-sidebar').css('height', height - margin);
+        }
+        
+        $(window).on('text_viewer.pane_count_change', function() {
+            autosize_text_viewer_contents($('#text-viewer'));
+        });
+        
+        window.elastic_element(
+            $('#text-viewer'), 
+            autosize_text_viewer_contents,
+            300, 
+            $('footer').outerHeight()
+        );
+        
         // viewer.load('Fr_20125/critical/section/588/');
+        
+        // events
         
         $('section.main').on('click', 'div[data-corresp]', function() {
             $('section.main div[data-corresp]').removeClass('highlight');

@@ -5,9 +5,11 @@
 Textviewer
 {% endblock %}
 
+{% block body_classes %}body-text-viewer{% endblock %}
+
 {% block header %}
 <nav>
-<div class="row textviewer-header">
+<div class="row text-viewer-header">
   <div class="large-12 columns">
     <div class="title-bar" data-responsive-toggle="top-menu" data-hide-for="medium">
       <button class="menu-icon" type="button" data-toggle></button>
@@ -55,6 +57,7 @@ Textviewer
 {% block main_wrapper %}
 
 {% verbatim %}
+<!-- #text-viewer height is adjusted automatically with JS  -->
 <section id="text-viewer" class="main text-viewer">
     <div id="text-viewer-glass"></div>
     <div v-for="pane in panes" is="text-pane" v-bind:apane="getPane(pane.slug)"></div>
@@ -150,20 +153,10 @@ a vue directive:
                 </ul>
             </div>
         </div>
-        <div class="row">
-            <div class="small-10 medium-11 columns">
-                <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
-                </div>
-            </div>
-            <!--
-            Sticky elements don't work well when the content is dynamic.
-            This is because Foundation doesn't recalculate the top/bottom positions.
-            
-            https://github.com/zurb/foundation-sites/issues/7899
-             -->
-            <div class="small-2 medium-1 columns">
-                <div 
-                    v-bind:data-top-anchor="'section-menu-'+pane_slug+':bottom'">
+        <div class="row pane-content-wrapper">
+            <div class="small-12 columns">
+                <div class="pane-content">
+                    <!-- .pane-sidebar height is adjusted automatically with JS  -->
                     <ul v-f-dropdown class="text-center pane-sidebar vertical" 
                         data-disable-hover="true" data-click-open="true" 
                         data-alignment="right">
@@ -197,6 +190,11 @@ a vue directive:
                             </ul>
                         </li>
                     </ul>
+
+                    <!-- .text-chunk height is adjusted automatically with JS  -->
+                    <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
+                    </div>
+                    
                 </div>
             </div>
         </div>

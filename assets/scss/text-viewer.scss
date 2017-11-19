@@ -14,7 +14,13 @@
 // TODO: we should use Foundation flexbox instead. But without enabling the flex
 // grid. Only the foundation flex helper classes.
 
-.textviewer-header {
+.body-text-viewer {
+    // Content should fit the viewport, always.
+    // So hide the scrollbars. Without this the JS height calculations may fail.
+    overflow: hidden;
+}
+
+.text-viewer-header {
     h1 {
         font-size: rem-calc(20);
         line-height: 1.25;
@@ -145,7 +151,7 @@
     }
 
     .toolbar {
-        height: 100vh;
+        /* height: 100vh; */
     }
 
     /* GN: temporary, any active item in any dropdown should have a primary 
@@ -219,9 +225,17 @@
 
     .pane-sidebar {
         background: $light-gray;
-        height: calc(100vh - 400px);
-        max-height: rem-calc(800);
-        position: relative;
+
+        // GN: fixed-width is more consistent than
+        // relying on foundation columns width
+        // for the sidebar.
+        width: 3rem;
+        position: absolute;
+        right: 0;
+        
+        // height: calc(100vh - 400px);
+        // max-height: rem-calc(800);
+        // position: relative;
 
         a {
             border: 0;
@@ -280,10 +294,22 @@
     }
 }
 
-.text-chunk {
+.pane-content-wrapper {
     margin-top: rem-calc(12);
-    max-height: calc(100vh - 250px);
+    
+    .pane-content {
+        position: relative;
+    }
+}
+
+.text-chunk {
+    // GN: move to .pane-content-wrapper so text block and side bar are aligned
+    // margin-top: rem-calc(12);
+    // max-height: calc(100vh - 250px);
     overflow-y: scroll;
+    
+    // GN: fixed space allowance for the sidebar
+    margin-right: 4rem;
 
     div[data-corresp]:hover {
         cursor: pointer;
