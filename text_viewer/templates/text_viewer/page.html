@@ -156,6 +156,10 @@ a vue directive:
         <div class="row pane-content-wrapper">
             <div class="small-12 columns">
                 <div class="pane-content">
+                    <!-- .text-chunk height is adjusted automatically with JS  -->
+                    <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
+                    </div>
+
                     <!-- .pane-sidebar height is adjusted automatically with JS  -->
                     <ul v-f-dropdown class="text-center pane-sidebar vertical" 
                         data-disable-hover="true" data-click-open="true" 
@@ -190,10 +194,6 @@ a vue directive:
                             </ul>
                         </li>
                     </ul>
-
-                    <!-- .text-chunk height is adjusted automatically with JS  -->
-                    <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
-                    </div>
                     
                 </div>
             </div>
