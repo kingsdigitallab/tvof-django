@@ -21,7 +21,7 @@ class TextViewerAPI(object):
     def __init__(self):
         self.requester = CachedRequesterKiln()
 
-    def add_error(self, code, message, info):
+    def add_error(self, code, message, info=None):
         error = {'code': code, 'message': message}
         if info:
             error['info'] = info

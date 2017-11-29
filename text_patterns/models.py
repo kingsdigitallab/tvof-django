@@ -32,8 +32,11 @@ class TextUnits(object):
         doc_slug = 'Fr20125'
         view = 'interpretive'
 
-        api.process_request(None, '/'.join([doc_slug, view, 'whole', '0']))
+        url = '/'.join([doc_slug, view, 'whole', 'default'])
+        print url
+        api.process_request(None, url)
         res = api.get_response()
+        print res
 
         root = ET.fromstring(res['chunk'])
         for section in root.findall('.//div[@id]'):
