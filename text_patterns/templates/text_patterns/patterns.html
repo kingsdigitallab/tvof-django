@@ -13,6 +13,9 @@
         body.dragging, body.dragging * {
             cursor: move !important;
         }
+        .greyed {
+            color: grey;
+        }
         .dragged {
             position: absolute;
             opacity: 0.7;
@@ -64,7 +67,10 @@
             margin-bottom: 0.2em;
         }
         input.pattern-title {
-            min-width: 30em;
+            min-width: 20em;
+        }
+        #units_limit {
+            width: 6em;
         }
         .pattern-error {
             color: red;
@@ -245,7 +251,9 @@
                     <span class="small legend" title="number of units NOT matching this pattern" data-toggle="tooltip" v-if="session.options.conditions[pattern.id] != 'ignore'">
                         {{ pattern.unhits }}
                     </span>
-                    <a class="pull-right btn btn-xs btn-danger delete-pattern" v-on:click="delete_pattern(pattern.id)" href="#" data-target="managed" title="Remove this pattern" data-toggle="tooltip">X</a>
+                    <a class="pull-right btn btn-xs btn-danger delete-pattern" v-on:click="delete_pattern(pattern.id)" href="#" data-target="managed" title="Remove this pattern" data-toggle="tooltip">
+                        <span class="fa fa-trash"></span>
+                    </a>
                     <br/>
                     <div class="form-group form-group-full-width" style="display:table">
                         <label for="p_pattern">Pattern</label>
@@ -263,7 +271,7 @@
             
                 <div class="form-group ">
                     <label for="units_limit">Show first</label>
-                    <input class="form-control input-sm" type="text" name="units_limit" id="units_limit" v-on:change="save_session" v-model="session.options.ulimit"  autocomplete="off" autocorrect="off" autocapitalize="off" />
+                    <input class="form-control input-sm" type="number" name="units_limit" id="units_limit" v-on:change="save_session" v-model="session.options.ulimit"  autocomplete="off" autocorrect="off" autocapitalize="off" />
                 </div>
                 <div class="form-group">
                     <label for="units_limit">Show</label>
@@ -284,13 +292,13 @@
                         <option v-bind:value="ckey" v-for="(label, ckey) in exclude">{{ label }}</option>
                     </select>
                 </div>
-                <button class="form-control btn btn-primary" type="submit" v-on:click="on_click_update_button" name="update">Update</button>
+                <button class="form-control btn btn-primary" type="submit" v-on:click="on_click_update_button" name="update">Parse</button>
                 <button class="form-control btn btn-primary" type="submit" v-on:click="download_patterns" name="download">Download</button>
             </div>
             
             <div class="stats panel" v-if="response.stats.result_size">
                 {{response.stats.result_size}} units found among {{response.stats.range_size}} in the selected range ({{ response.stats.result_size_pc }}%).
-                <span class="pull-right small legend">{{ response.stats.duration_response }} s.</span>
+                <span class="pull-right small greyed">{{ response.stats.duration_response }} s.</span>
             </div>
         </div>
     
@@ -379,7 +387,7 @@
             }
             
             // Load user settings from the locaStorage
-            var namespace = 'default';
+            var namespace = '{{ namespace }}';
             var api_webpath = '{{ api_webpath }}';
             var storage_key = 'textseg.'+namespace;
             var session = window.localStorage.getItem(storage_key);

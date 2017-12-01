@@ -33,15 +33,14 @@ class TextUnits(object):
         view = 'interpretive'
 
         url = '/'.join([doc_slug, view, 'whole', 'default'])
-        print url
         api.process_request(None, url)
         res = api.get_response()
-        print res
 
         root = ET.fromstring(res['chunk'])
         for section in root.findall('.//div[@id]'):
             rubric = section.find('*[@class="tei-rubric"]')
             if rubric is not None:
+                # print section.attrib.get('id')
                 unit = TextUnit(section.attrib.get('id') + '_rubric', rubric)
                 yield unit
             for seg in section.findall('.//span[@id]'):

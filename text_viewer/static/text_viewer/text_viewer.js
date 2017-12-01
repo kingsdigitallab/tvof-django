@@ -561,7 +561,7 @@
         // Without this if you move away from the page and then click back
         // it will show only the last Ajax response instead of the full HTML page.
         url = url ? url : '';
-        var url_ajax = url + ((url.indexOf('?') === -1) ? '?' : '&') + 'jx=1';
+        var url_ajax = url + ((url.indexOf('?') === -1) ? '?' : '&') + 'jx=1&client=textviewer';
 
         var getData = {
             url: url_ajax,

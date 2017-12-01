@@ -32,9 +32,24 @@ class CachedRequesterKiln(object):
         self.cache = caches[cache_name]
         self.chunk_size = chunk_size
         self.encoding = encoding
+        import requests
+        self.session = requests.Session()
+        self.last_request_origin = 'NO LAST REQUEST'
 
     def request(self, url, force=False):
+        import time
+        t0 = time.time()
+        ret = self._request(url)
+        d = time.time() - t0
+        size_mb = len(ret) / 1024.0 / 1024
+        print 'Request: %s from %s (%0.4f MB, %0.2f s.)' %\
+            (url, self.last_request_origin, size_mb, d)
+        return ret
+
+    def _request(self, url, force=False):
         import re
+        self.last_request_origin = 'MEMORY'
+
         # create a unique key for this url
         urlid = re.sub('[^a-z0-9-]', '',
                        url.lower().replace('?', '-').replace('/', '-'))
@@ -44,25 +59,27 @@ class CachedRequesterKiln(object):
         if ret:
             return ret
 
+        self.last_request_origin = 'DJANGO CACHE'
+
         # read response from disk if it's there
-        ret = self._load_response(urlid)
+        ret = self._load_response_from_cache(urlid)
         ret_len = len(ret) if ret else 0
 
         # request headers (to response length)
         stream = None
         stream_len = 0
-        import requests
         try:
-            stream = requests.get(url, stream=True)
+            stream = self.session.get(url, stream=True)
             stream_len = stream.headers.get('content-length')
-        except ConnectionError:
-            print 'ERROR'
+        except ConnectionError as e:
+            print 'ERROR (%s): %s' % (self.__class__.__name__, e)
             pass
 
         # if length response from disk is != from response headers
         # we request from remote server and save directly to disk
         if stream:
             if force or str(stream_len) != str(ret_len):
+                self.last_request_origin = 'KILN'
                 self.dmsg(str(stream_len) + ' <> ' + str(ret_len))
                 # request
                 self.dmsg('DOWNLOAD response')
@@ -82,17 +99,19 @@ class CachedRequesterKiln(object):
 
         # convert from utf-8 to Unicode string
         if ret and self.encoding:
-            self.dmsg('DECODE')
+            # self.dmsg('DECODE')
             # ret = ret.decode(self.encoding)
             self.cache_mem[urlid] = ret
 
         return ret
 
     def dmsg(self, message):
-        print '%s %s' % (thread.get_ident(), message)
+        print '%s' % message
+        if 0:
+            print '%s %s' % (thread.get_ident(), message)
 
     def clear_disk_cache(self):
         self.cache.clear()
 
-    def _load_response(self, urlid):
+    def _load_response_from_cache(self, urlid):
         return self.cache.get(urlid, None)
