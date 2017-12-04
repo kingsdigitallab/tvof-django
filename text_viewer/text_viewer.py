@@ -19,9 +19,10 @@ class TextViewerAPI(object):
     part_levels = ['document', 'view', 'location_type', 'location']
 
     def __init__(self):
+        # TODO: don't hard-code Kiln here
         self.requester = CachedRequesterKiln()
 
-    def add_error(self, code, message, info):
+    def add_error(self, code, message, info=None):
         error = {'code': code, 'message': message}
         if info:
             error['info'] = info
@@ -31,11 +32,16 @@ class TextViewerAPI(object):
         self.errors = []
 
     def process_request(self, request, path):
+
+        print path
         self.response = {}
         self.errors = []
 
         self.request = request
         self.requested_address = path.strip('/')
+        self.client = None
+        if request:
+            self.client = request.GET.get('client')
 
         parts = self.get_address_parts()
         level = parts['level']
@@ -158,12 +164,7 @@ class TextViewerAPI(object):
         return ret
 
     def request_backend(self, url):
-        import time
-        t0 = time.time()
-        ret = self.requester.request(url)
-        t1 = time.time()
-        print t1 - t0
-        return ret
+        return self.requester.request(url)
 
 
 def get_xml_element_text(element):
