@@ -55,8 +55,11 @@
     <script>
         $(function() {
            $('.frm-create-set').on('submit', function() {
-               var url = $('#tbx-set-name').val();
-               window.location.href = url;
+               var slug = $('#tbx-set-name').val();
+               slug = slug.trim().replace(' ', '-').toLowerCase();
+               if (slug) {
+                   window.location.href = slug;
+               }
                return false;
            });
            $('.btn-remove-set').on('click', function() {
