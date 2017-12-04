@@ -41,7 +41,7 @@ class PatternAnalyser(object):
 
         return ret
 
-    def process_request_api(self, request, root, path=''):
+    def process_request_api(self, request, root='', path=''):
         t0 = datetime.now()
 
         self.options = request.GET.copy()
@@ -77,6 +77,10 @@ class PatternAnalyser(object):
             if request_pattern:
                 del patterns[request_patterni]
                 modified = True
+            else:
+                slug = slugify(unicode(self.namespace))
+                print 'DELETE SET %s' % slug
+                TextPatternSet.objects.filter(slug=slug).delete()
 
         if request.method == 'PUT':
             if request_pattern:

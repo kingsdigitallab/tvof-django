@@ -32,7 +32,7 @@
   <section class="main">
     <div class="row">
       <div class="large-12 columns">
-        {% block title %}<h1>{{ self.title }}</h1>{% endblock %}
+        {% block title %}{% if self.title %}<h1>{{ self.title }}</h1>{% endif %}{% endblock %}
         {% block main %}
         {% endblock %}
       </div>

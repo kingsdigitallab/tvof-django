@@ -202,6 +202,9 @@
     <!-- a href="https://confluence.dighum.kcl.ac.uk/display/EXON/Text+Segmentation+Tool">Help about this tool</a -->
 
     <div id="patterns-ui-screen">
+        <p>
+            <a href="{% url 'pattern_sets' %}">Pattern sets</a> &gt; {{ namespace }}
+        </p>
         {% verbatim %}
         <div id="patterns-ui" class="form-inline">
             <div class="messages" v-if="response.messages && response.messages.length">

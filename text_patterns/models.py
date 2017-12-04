@@ -1,8 +1,10 @@
 from text_viewer.text_viewer_tvof import TextViewerAPITvof
 from text_viewer.text_viewer import (get_unicode_from_xml)
+from django.contrib.auth.models import User
 from django.db import models
 import utils
 import xml.etree.ElementTree as ET
+import utils as dputils
 
 
 class TextPatternSet(models.Model):
@@ -14,11 +16,29 @@ class TextPatternSet(models.Model):
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
 
+    owner = models.ForeignKey(User, models.SET_NULL, blank=False, null=True)
+    owner_sessionid = models.CharField(max_length=64, blank=False, null=True)
+
     def __unicode__(self):
         return ur'{}'.format(self.slug)
 
+    def get_size(self):
+        return len(self.get_dicts_from_patterns())
+
+    def get_dicts_from_patterns(self):
+        ret = dputils.json_loads(self.patterns or [])
+        return ret
+
+    def set_patterns_from_dicts(self, dicts):
+        self.patterns = dputils.json_dumps(dicts)
+
+    def get_absolute_url(self):
+        from django.core.urlresolvers import reverse
+        return reverse('pattern_set', kwargs={'slug': self.slug})
 
 # TODO: move this TVOF custom code to subclass
+
+
 class TextUnits(object):
 
     def get_units(self):
