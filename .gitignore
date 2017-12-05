@@ -62,4 +62,4 @@ target/
 local.py
 logs/
 playbook.retry
-static/
+/static/

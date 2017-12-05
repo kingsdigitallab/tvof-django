@@ -7,7 +7,7 @@ def view_text_viewer(request, path):
     context = {
         'viewer_webpath': request.path_info[:-len(path)]
     }
-    return render(request, 'text_viewer/page.html', context)
+    return render(request, 'text_viewer/text_viewer.html', context)
 
 
 # TODO: convert to django rest framework?
