@@ -4,11 +4,13 @@ from django.core.urlresolvers import reverse
 from django.template.defaultfilters import slugify
 import regex as re
 from text_patterns.models import TextPatternSet
-from django.core.cache.backends.base import InvalidCacheBackendError
+# from django.core.cache.backends.base import InvalidCacheBackendError
+from models import TextUnitsCached as TextUnits
 
 
 class PatternAnalyser(object):
     def __init__(self, slug='default'):
+        # If True, plain text unit caching is disabled (for debugging purpose)
         self.nocache = True
         self.patterns = None
         self.segunits = None
@@ -23,10 +25,9 @@ class PatternAnalyser(object):
     def add_message(self, message, atype='info'):
         self.messages.append({'message': message, 'type': atype})
 
-    def get_units(self):
-        from models import TextUnits
+    def get_units(self, address=None):
         units = TextUnits()
-        return units.get_units()
+        return units.get_units(address)
 
     def process_request_html(self, request):
         ret = {'context_js': dputils.json_dumps(
@@ -41,7 +42,7 @@ class PatternAnalyser(object):
 
         return ret
 
-    def process_request_api(self, request, root, path=''):
+    def process_request_api(self, request, root='', path=''):
         t0 = datetime.now()
 
         self.options = request.GET.copy()
@@ -77,6 +78,10 @@ class PatternAnalyser(object):
             if request_pattern:
                 del patterns[request_patterni]
                 modified = True
+            else:
+                slug = slugify(unicode(self.namespace))
+                print 'DELETE SET %s' % slug
+                TextPatternSet.objects.filter(slug=slug).delete()
 
         if request.method == 'PUT':
             if request_pattern:
@@ -162,6 +167,23 @@ class PatternAnalyser(object):
                         'variant': self.get_variant_from_segment(pattern[1]),
                     }
                     ret.append(row)
+        return ret
+
+    def get_json_from_segunits(self, toreturn):
+        ret = []
+        for unit in self.get_segunits():
+            item = {
+                'unit': '',
+                'unitid': unit.unitid,
+                'patterns': [],
+                'label': unit.label_short
+            }
+            if 'segunits.patterns' in toreturn:
+                item['patterns'] = [{'id': pattern[0], 'instance': pattern[1]}
+                                    for pattern in unit.patterns if pattern[1]]
+            if 'segunits.unit' in toreturn:
+                item['unit'] = unit.plain_content
+            ret.append(item)
         return ret
 
     def get_variant_from_segment(self, segment):
@@ -283,22 +305,6 @@ class PatternAnalyser(object):
         for pattern in patterns:
             self.get_regex_from_pattern(patterns, pattern['id'])
 
-    def get_json_from_segunits(self, toreturn):
-        ret = []
-        for unit in self.get_segunits():
-            item = {
-                'unit': '',
-                'unitid': unit.unitid,
-                'patterns': [],
-            }
-            if 'segunits.patterns' in toreturn:
-                item['patterns'] = [{'id': pattern[0], 'instance': pattern[1]}
-                                    for pattern in unit.patterns if pattern[1]]
-            if 'segunits.unit' in toreturn:
-                item['unit'] = unit.plain_content
-            ret.append(item)
-        return ret
-
     def get_segunits(self):
         if self.segunits is None:
             self.segment_units()
@@ -373,6 +379,7 @@ class PatternAnalyser(object):
 
         args['ulimit'] = dputils.get_int(args.get('ulimit', 10), 10)
         args['urange'] = args.get('urange', '')
+        args['address'] = args.get('address', '')
 
         # Get the text units
         # hand_filters.chrono('units:')
@@ -384,16 +391,7 @@ class PatternAnalyser(object):
 
         # for unit in
         # self.get_unit_model().objects.filter(content_xml__id=4).iterator():
-        for unit in self.get_units():
-            # only fief
-            #             types = unit.get_entry_type()
-            #             if not types or 'F' not in types:
-            #                 continue
-
-            # only selected range
-            if not dputils.is_unit_in_range(unit.unitid, args['urange']):
-                continue
-
+        for unit in self.get_units(args['address']):
             stats['range_size'] += 1
 
             # segment the unit
@@ -448,8 +446,6 @@ class PatternAnalyser(object):
 
         unit.match_conditions = True
 
-        self.get_plain_content_from_unit(unit)
-
         for pattern in patterns:
             patternid = pattern['id']
             if not patternid:
@@ -499,69 +495,6 @@ class PatternAnalyser(object):
 
         if found_groups:
             unit.plain_content = unit.plain_content.replace('_', ' ')
-
-    def get_plain_content_from_unit(self, aunit):
-        from django.core.cache import caches
-
-        # get the plain contents from this object
-        # print 'h1'
-
-        ret = getattr(aunit, 'plain_content', None)
-        if ret is None:
-            plain_contents = getattr(self, 'plain_contents', None)
-
-            if not plain_contents:
-                # get the plain contents from the cache
-                cache = None
-                try:
-                    if not self.nocache:
-                        cache = caches['text_patterns']
-                        plain_contents = cache.get('plain_contents')
-                        # plain_contents = None
-                except InvalidCacheBackendError:
-                    pass
-                if not plain_contents:
-                    print 'REBUILD PLAIN CONTENT CACHE'
-                    plain_contents = {}
-                    for unit in self.get_units():
-                        # TODO: find a way to call this dynamically as it is
-                        # project-specific
-                        plain_contents[unit.unitid] = \
-                            self.preprocess_plain_text_custom(
-                                unit.get_plain_content())
-                    if cache:
-                        cache.set('plain_contents', plain_contents, None)
-                setattr(self, 'plain_contents', plain_contents)
-
-            ret = plain_contents.get(aunit.unitid, None)
-            if ret is None:
-                plain_content = aunit.get_plain_content()
-                if 0 and plain_content != ret:
-                    print aunit.unitid
-                    print repr(ret)
-                    print repr(plain_content)
-                ret = plain_content
-
-            aunit.plain_content = ret
-
-        return ret
-
-    def preprocess_plain_text_custom(self, content):
-        # TODO: that's EXON specific, move to EXON
-        # remove . because in some entries they are all over the place
-        if 0:
-            content = content.replace('[---]', '')
-            content = content.replace('v', 'u')
-            content = content.replace('7', 'et')
-            content = content.replace('.', ' ').replace(',', ' ').replace(
-                ':', ' ').replace('[', ' ').replace(']', ' ')
-            content = content.replace(u'\u00C6', 'AE')
-            content = content.replace(u'\u00E6', 'ae')
-
-        content = content.replace(u'\u00A7', '')
-        content = re.sub(ur'(?musi)\s+', ' ', content)
-        content = content.strip()
-        return content
 
     def get_pattern_from_key(self, key, try_helper=False):
         ret = None

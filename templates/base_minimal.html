@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block header %}
+<nav>
+    <div class="row text-viewer-header">
+      <div class="large-12 columns">
+        <div class="title-bar" data-responsive-toggle="top-menu" data-hide-for="medium">
+          <button class="menu-icon" type="button" data-toggle></button>
+          <div class="title-bar-title">Menu</div>
+        </div>
+    
+        <div class="top-bar" id="top-menu">
+          <div class="top-bar-left">
+            <ul class="vertical medium-horizontal menu dropdown" data-dropdown-menu>
+                <li>
+                    <h1>
+                        <a href="/">The Value of French</a> 
+                        {% block minimal_breadcrumb %}
+                            <small>/ Text Viewer</small>
+                        {% endblock %}
+                    </h1>
+                </li>
+            </ul>
+          </div>
+          <div class="top-bar-right">
+            {% block header_top_bar %}
+            {% endblock %}
+          </div>
+        </div>
+      </div>
+    </div>
+</nav>
+{% endblock %}

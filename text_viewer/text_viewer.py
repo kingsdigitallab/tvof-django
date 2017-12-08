@@ -33,7 +33,6 @@ class TextViewerAPI(object):
 
     def process_request(self, request, path):
 
-        print path
         self.response = {}
         self.errors = []
 

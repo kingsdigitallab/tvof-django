@@ -48,9 +48,8 @@ CACHES = {
     'text_patterns': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         'LOCATION': os.path.join(BASE_DIR, 'django_cache/text_patterns/'),
-        'TIMEOUT': 60 * 60 * 24,
-        # 'TIMEOUT': 1,
-        'MAX_ENTRIES': 600,
+        'TIMEOUT': 30 * 60 * 60 * 24,
+        # 'MAX_ENTRIES': 600,
     },
     'kiln': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
