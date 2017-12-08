@@ -115,6 +115,11 @@ span.m.ms {
 #pattern_tester input {
     width: 90%;
 }
+
+#patterns-ui-screen {
+    margin-top: 0.5em;
+}
+
 ul.patterns-list {
     list-style-type: none;
     margin: 0;
