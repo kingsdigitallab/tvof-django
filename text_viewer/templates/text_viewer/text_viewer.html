@@ -3,27 +3,18 @@
 
 {% block extra_head %}
     <style>
-        /* TODO: move that to external css */
-        /* Apparently needed for Leaflet viewer */
-        /*
-        html, body {
-            height: 100%;
-            width: 100%;
-        }
-        #image-viewer-modal {
-            height: 80%;
-            width: 80%
-        }
-        */
         #image-viewer-modal {
             padding: 0;
         }
         #image-viewer-modal .close-button {
             background-color: white;
+            position: absolute;
+            z-index: 1000;
         }
         #image-viewer-modal {
             height: 90%;
-            width: 90%
+            width: 90%;
+            overflow: hidden;
         }
         #image-viewer {
             width: 100%;
@@ -247,17 +238,21 @@ a vue directive:
             }
             $('body').on('click', '.tei-graphic', function() {
                 window.image_modal.open();
-                if (0) {
+                if (!window.image_viewer_map) {
                     window.image_viewer_map = L.map('image-viewer', {
                         center: [0, 0],
                         crs: L.CRS.Simple,
                         zoom: 1,
                     });
-    
-                    L.tileLayer.iiif('http://loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/royal20di_154r.jp2/info.json', {
-                        tileSize: 1024,
-                    }).addTo(window.image_viewer_map);
+                } else {
+                    window.image_viewer_map.removeLayer(window.image_viewer_map_layer);
                 }
+                    
+                var image_url = $(this).data('tei-url');
+
+                window.image_viewer_map_layer = L.tileLayer.iiif('http://loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
+                    tileSize: 1024,
+                }).addTo(window.image_viewer_map);
             });
         })
     </script>
