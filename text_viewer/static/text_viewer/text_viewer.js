@@ -662,7 +662,7 @@
                     var self = this;
                     this.$nextTick(function() {
                         // convert the hrefs to the bibliography page
-                        $(this.$el).find(".text-chunk a[href]").each(function() {
+                        $(this.$el).find(".text-chunk a.bibliography[href]").each(function() {
                             var link = $(this).attr('href');
                             // TODO: we shouldn't hard-code this link
                             link = '/k/bibliography/#' + link;
@@ -948,8 +948,13 @@
         // events
         
         $('section.main').on('click', 'div[data-corresp]', function() {
-            $('section.main div[data-corresp]').removeClass('highlight');
-            $(this).addClass('highlight');
+            if (0) {
+                // GN: disabled the yellow highlight to help user find 
+                // corresponding text units in // view.
+                // we don't support this for the moment.
+                $('section.main div[data-corresp]').removeClass('highlight');
+                $(this).addClass('highlight');
+            }
         });
         
         $('#btn-open-panel').on('click', function() {

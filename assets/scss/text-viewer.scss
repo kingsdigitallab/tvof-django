@@ -313,8 +313,10 @@
     margin-right: 4rem;
 
     div[data-corresp]:hover {
-        cursor: pointer;
+        /* 
+        cursor: pointer; 
         text-decoration-color: scale-color($primary-color, $lightness: 50%);
+        */
     }
 
     &.hide-notes .note {
