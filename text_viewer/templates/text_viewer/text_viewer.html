@@ -250,7 +250,7 @@ a vue directive:
                     
                 var image_url = $(this).data('tei-url');
 
-                window.image_viewer_map_layer = L.tileLayer.iiif('http://loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
+                window.image_viewer_map_layer = L.tileLayer.iiif('//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
                     tileSize: 1024,
                 }).addTo(window.image_viewer_map);
             });
