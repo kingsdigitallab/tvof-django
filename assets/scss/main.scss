@@ -453,6 +453,17 @@ footer {
 
 @media screen and (max-width: 768px) {
 
+    .menu {
+        &.mini-header {
+            li {
+                a {
+                    margin-top: rem-calc(12);
+                    padding: rem-calc(5 5 10 0);
+                }
+            }
+        }
+    }
+
     #text-viewer {
         height: calc(100vh - 230px);
     }
