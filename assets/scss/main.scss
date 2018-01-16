@@ -435,7 +435,6 @@ footer {
 
 /* Media queries */
 
-// Navigation
 @media screen and (max-width: 575px) {
     nav {
         background-color: #1c2434;
@@ -449,5 +448,24 @@ footer {
                 border-color: transparent transparent transparent $white !important;
             }
         }
+    }
+}
+
+@media screen and (max-width: 768px) {
+
+    #text-viewer {
+        height: calc(100vh - 230px);
+    }
+
+    footer {
+        display: none;
+        height: 1px;
+
+        // padding: .5rem 0;
+
+        // .logo img,
+        // img {
+        //     max-height: rem-calc(50);
+        // }
     }
 }
