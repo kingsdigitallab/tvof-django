@@ -14,6 +14,8 @@
 // TODO: we should use Foundation flexbox instead. But without enabling the flex
 // grid. Only the foundation flex helper classes.
 
+/**/
+
 .body-text-viewer {
     // Content should fit the viewport, always.
     // So hide the scrollbars. Without this the JS height calculations may fail.
@@ -310,6 +312,13 @@
     
     // GN: fixed space allowance for the sidebar
     margin-right: 4rem;
+
+    [class*='fa-'] {
+        // color: scale-color($primary-color, $lightness: 50%);
+        color: $light-blue;
+        font-family: "FontAwesome";
+        font-size: rem-calc(20);
+    }
 
     div[data-corresp]:hover {
         /* 
