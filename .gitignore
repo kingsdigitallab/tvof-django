@@ -59,6 +59,7 @@ target/
 .DS_Store
 .babelrc
 .vagrant/
+django_cache/
 local.py
 logs/
 playbook.retry
