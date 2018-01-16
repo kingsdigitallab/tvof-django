@@ -435,7 +435,6 @@ footer {
 
 /* Media queries */
 
-// Navigation
 @media screen and (max-width: 575px) {
     nav {
         background-color: #1c2434;
@@ -449,5 +448,42 @@ footer {
                 border-color: transparent transparent transparent $white !important;
             }
         }
+    }
+}
+
+@media screen and (max-width: 768px) {
+
+    .menu {
+        &.mini-header {
+            li {
+                a {
+                    margin-top: rem-calc(12);
+                    padding: rem-calc(5 5 10 0);
+                }
+            }
+        }
+    }
+
+    #text-viewer {
+
+        // GF - Added this arbitrary height
+        // At the moment is calculated from the top of the page to the bottom
+        // of the toolbar.
+        // We should really control the heights of the toolbar elements rather
+        // than leave it dynamic
+        
+        height: calc(100vh - 230px);
+    }
+
+    footer {
+        display: none;
+        height: 1px;
+
+        // padding: .5rem 0;
+
+        // .logo img,
+        // img {
+        //     max-height: rem-calc(50);
+        // }
     }
 }

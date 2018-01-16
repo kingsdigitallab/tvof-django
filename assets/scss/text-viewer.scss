@@ -50,7 +50,6 @@
         color: $dark-gray;
         height: rem-calc(28);
         margin-right: rem-calc(16);
-        //margin-top: rem-calc(-16);
         text-align: center;
         text-decoration: none;
         width: rem-calc(28);
@@ -287,7 +286,7 @@
 .main .text-pane {
     flex-basis: 0;
     flex-grow: 1;
-    margin: rem-calc(16) auto;
+    margin: rem-calc(5) auto;
     max-width: rem-calc(1440);
     
     .hidden {
