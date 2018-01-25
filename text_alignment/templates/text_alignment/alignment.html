@@ -1,0 +1,65 @@
+{% extends "base_minimal.html" %}
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+{% block extra_head %}
+{% endblock %}
+
+{% block title %}
+Alignment
+{% endblock %}
+
+{% block body_classes %}body-text-viewer{% endblock %}
+
+{% block header_top_bar %}
+    <ul class="horizontal menu float-right mini-header">
+        {% comment %}
+        <li>
+            <a href=""><i class="fa fa-key"></i></a>
+        </li>
+        {% endcomment %}
+        {% comment %}
+        <li>
+            <a href=""><i class="fa fa-random"></i></a>
+        </li>
+        <li>
+            {# <a href=""><i class="fa fa-columns"></i></a> #}
+    
+            <a id="btn-open-panel" href="#" title="Open a new panel">
+                <i class="fa fa-columns"></i>
+            </a>
+        </li>
+        <li>
+            <a href=""><i class="fa fa-expand"></i></a>
+        </li>
+        {% endcomment %}
+    </ul>
+{% endblock %}
+
+{% block minimal_breadcrumb %}
+    <small>/ Alignment</small>
+{% endblock %}
+
+{% block main_wrapper %}
+
+<!-- #text-viewer height is adjusted automatically with JS  -->
+<section id="alignment" class="main">
+    {{test}}
+</section>
+
+{% endblock %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+    {# TODO: load this with require.js or webpack ? #}
+    <script src="{% static 'vendor/vue/vue.js' %}"></script>
+    <script src="{% static 'text_alignment/alignment.js' %}"></script>
+{% endblock %}
+
+{% block extra_js %}
+    {# TODO: bower those leaflet scripts, externalise the custom code and move script tags to footer_scripts #}
+    
+    <script type="text/javascript">
+        $(function() {
+        })
+    </script>
+{% endblock %}

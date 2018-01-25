@@ -11,6 +11,7 @@ from wagtail.wagtailsearch.urls import frontend as wagtailsearch_frontend_urls
 from django.views.generic import RedirectView
 from text_viewer import urls as text_viewer_urls
 from text_patterns import urls as text_patterns_urls
+from text_alignment import urls as text_alignment_urls
 import views as tvof_views
 
 admin.autodiscover()
@@ -53,6 +54,10 @@ urlpatterns += [
 
 urlpatterns += [
     url(r'^textviewer/', include(text_viewer_urls)),
+]
+
+urlpatterns += [
+    url(r'^lab/alignment/', include(text_alignment_urls)),
 ]
 
 urlpatterns += [
