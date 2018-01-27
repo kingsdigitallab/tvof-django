@@ -65,45 +65,7 @@ Alignment
 {% block main_wrapper %}
 
 <!-- #text-viewer height is adjusted automatically with JS  -->
-<section id="alignment" class="main">
-    {{test}}
-    
-    <table class="alignment-paras">
-        <thead>
-            <tr>
-                <th>Section</th>
-                {% for ms in alignment_data.mss %}
-                    <th>{{ ms.name }}
-                        <br/>
-                        ({{ ms.para_count}})
-                    </th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for para_mss in alignment_data.paras %}
-                <tr>
-                    <td>
-                        {{ para_mss.section }}
-                        <br/>
-                        {{ para_mss.id }}
-                    </td>
-                    {% for ms in alignment_data.mss %}
-                        {% with para_ms=para_mss.mss|get_item:ms.name %}
-                            <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
-                                {{ para_ms.location }}
-                                {{ para_ms.rubric }}
-                                {% if para_ms.verse %}
-                                    <br/>
-                                    Verse: {{ para_ms.verse }}
-                                {% endif %}
-                            </td>
-                        {% endwith %}
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        <tbody>
-    </table>
+<section id="alignment-fragment" class="main">
     
 </section>
 
@@ -122,6 +84,25 @@ Alignment
     <script type="text/javascript">
         $(function() {
             var $win = $(window);
+            
+            function request_fragment() {
+                var url = document.location.href;
+                url += (url.indexOf('?') > -1) ? '&' : '?;';
+                url += 'js=1'
+                var req = $.getJSON({
+                    url: url
+                })
+                req.done(function(data, textStatus, jqXHR) {
+                    replace_fragment(data);
+                });
+            }
+            request_fragment();
+            
+            function replace_fragment(data) {
+                $('#alignment-fragment').html(data.html);
+                fix_thead();
+            }
+            
             var row_top = 0;
             function fix_width_row($row) {
                 $row.children().each(function(index, th) {
@@ -133,6 +114,9 @@ Alignment
                 $('.fixed-tr').remove();
                 
                 $row = $('.alignment-paras thead tr:first');
+                
+                if ($row.length == 0) return;
+                
                 fix_width_row($row);
                 
                 $row_fixed = $row.clone();
@@ -150,8 +134,6 @@ Alignment
                     $row.toggle(top > $(row).data('threshold')).css('top', top);
                 });
             });
-
-            fix_thead();
         });
     </script>
 {% endblock %}

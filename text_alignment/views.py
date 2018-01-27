@@ -46,11 +46,8 @@ def fetch_alignment_data(nocache=False):
 
     ret = cache.get('alignment_data')
 
-    if ret:
-        return ret
-
     res = None
-    if not nocache:
+    if nocache:
         kiln = CachedRequesterKiln()
         url = '{}/backend/preprocess/alists/TVOF_para_alignment.xml'.format(
             settings.KILN_BASE_URL
@@ -101,6 +98,9 @@ def fetch_alignment_data(nocache=False):
 
         for alignments in alignments_set:
             for element in alignments:
+                if len(paras) > 50000:
+                    break
+
                 if element.tag == 'milestone' and element.attrib.get(
                         'unit') == 'section':
                     section = element.attrib.get('type', 'UNSPECIFIED')
@@ -117,15 +117,20 @@ def fetch_alignment_data(nocache=False):
                             para_ms[seg.attrib.get('type')] = seg.text
                             if seg.text is not None:
                                 fields[seg.attrib.get('type')] = seg.text
+
                         ms_name = para_ms['ms_name']
+
                         para['mss'][ms_name] = para_ms
+
                         if (para_ms.get('location') or '').lower(
                         ).strip() in ['', 'absent']:
                             para_ms['absent'] = 1
 
                         if ms_name not in mss:
                             mss[ms_name] = {'name': ms_name, 'para_count': 0}
-                        mss[ms_name]['para_count'] += 1
+
+                        if not para_ms.get('absent', False):
+                            mss[ms_name]['para_count'] += 1
 
                     paras.append(para)
 
@@ -133,6 +138,8 @@ def fetch_alignment_data(nocache=False):
             'paras': paras,
             'mss': sorted(mss.values(), key=lambda ms: -ms['para_count']),
         }
+
+        print mss
 
         cache.set('alignment_data', ret)
 
@@ -142,17 +149,69 @@ def fetch_alignment_data(nocache=False):
 def view_alignment(request, path):
     # e.g. /textviewer/
 
-    alignment_data = fetch_alignment_data()
-
-    alignment_data['paras'] = alignment_data['paras'][:5]
+    is_fragment = request.GET.get('js', 0)
+    if is_fragment:
+        return view_alignment_fragment(request, path)
 
     context = {
-        'alignment_data': alignment_data,
+        # 'alignment_data': alignment_data,
     }
     return render(request, 'text_alignment/alignment.html', context)
 
 
+def view_alignment_fragment(request, path):
+    # e.g. /textviewer/
+
+    config = {
+        'view': 'table',
+        'sections': None,
+        'unit': 'para',
+        'paras': None,
+        'mss': None,
+        'info': None
+    }
+
+    for name in config:
+        config[name] = request.GET.get(name, config[name])
+
+    context = {
+        'config': config,
+        'alignment_data': get_requested_alignment_data(config)
+    }
+
+    globals()['set_context_%s' % config['view']](context)
+
+    from django.template.loader import get_template
+    template_path = 'text_alignment/views/%s.html' % config['view']
+    template = get_template(template_path)
+    json_res = {
+        'config': config,
+        'html': template.render(context)
+    }
+
+    from django.http import JsonResponse
+    return JsonResponse(json_res)
+
 # TODO: convert to django rest framework?
+
+
+def get_requested_alignment_data(config):
+    ret = fetch_alignment_data()
+
+    sections = config['sections'].lower().split(',')
+
+    # filter by section
+    for i in range(len(ret['paras']) - 1, -1, -1):
+        if sections and ret['paras'][i]['section'].lower() not in sections:
+            del ret['paras'][i]
+
+    return ret
+
+
+def set_context_table(context):
+    pass
+
+
 def view_text_viewer_api(request, path):
     viewer = TextViewerAPITvof()
     viewer.process_request(request, path)
