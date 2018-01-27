@@ -2,13 +2,36 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
 {% block extra_head %}
+<style>
+    .alignment-paras {
+        border-spacing: 0px;
+    }
+    .alignment-paras td, .alignment-paras th {
+        border: 0px;
+        border-left: 1px solid grey;
+        border-bottom: 1px solid grey;
+    }
+    .alignment-paras thead tr {
+        background-color: white;
+    }
+    .fixed-tr {
+        position: absolute;
+        display: none;
+    }
+    .para-ms-absent {
+        background-color: darkgrey;
+    }
+    .para-ms-verse {
+        background-color: lightblue;
+    }
+</style>
 {% endblock %}
 
 {% block title %}
 Alignment
 {% endblock %}
 
-{% block body_classes %}body-text-viewer{% endblock %}
+{% block body_classes %}body-alignment{% endblock %}
 
 {% block header_top_bar %}
     <ul class="horizontal menu float-right mini-header">
@@ -44,6 +67,44 @@ Alignment
 <!-- #text-viewer height is adjusted automatically with JS  -->
 <section id="alignment" class="main">
     {{test}}
+    
+    <table class="alignment-paras">
+        <thead>
+            <tr>
+                <th>Section</th>
+                {% for ms in alignment_data.mss %}
+                    <th>{{ ms.name }}
+                        <br/>
+                        ({{ ms.para_count}})
+                    </th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for para_mss in alignment_data.paras %}
+                <tr>
+                    <td>
+                        {{ para_mss.section }}
+                        <br/>
+                        {{ para_mss.id }}
+                    </td>
+                    {% for ms in alignment_data.mss %}
+                        {% with para_ms=para_mss.mss|get_item:ms.name %}
+                            <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
+                                {{ para_ms.location }}
+                                {{ para_ms.rubric }}
+                                {% if para_ms.verse %}
+                                    <br/>
+                                    Verse: {{ para_ms.verse }}
+                                {% endif %}
+                            </td>
+                        {% endwith %}
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        <tbody>
+    </table>
+    
 </section>
 
 {% endblock %}
@@ -60,6 +121,37 @@ Alignment
     
     <script type="text/javascript">
         $(function() {
-        })
+            var $win = $(window);
+            var row_top = 0;
+            function fix_width_row($row) {
+                $row.children().each(function(index, th) {
+                    $th = $(th);
+                    $th.css('min-width', $th.outerWidth());
+                });
+            }
+            function fix_thead() {
+                $('.fixed-tr').remove();
+                
+                $row = $('.alignment-paras thead tr:first');
+                fix_width_row($row);
+                
+                $row_fixed = $row.clone();
+                $row.parent().append($row_fixed);
+                
+                $row_fixed.addClass('fixed-tr');
+                
+                $row_fixed.data('threshold', $row.offset().top);
+            }
+
+            $win.on('scroll', function() {
+                var top = $win.scrollTop();
+                $('.fixed-tr').each(function(index, row) {
+                    var $row = $(row);
+                    $row.toggle(top > $(row).data('threshold')).css('top', top);
+                });
+            });
+
+            fix_thead();
+        });
     </script>
 {% endblock %}

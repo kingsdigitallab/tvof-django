@@ -234,5 +234,5 @@ def unslugify_filter(value):
 
 
 @register.filter
-def get_item(dictionary, key):
-    return dictionary[key]
+def get_item(dictionary, key, default=None):
+    return dictionary.get(key, default)
