@@ -118,7 +118,7 @@ def fetch_alignment_data(nocache=False):
                             if seg.text is not None:
                                 fields[seg.attrib.get('type')] = seg.text
 
-                        ms_name = para_ms['ms_name']
+                        ms_name = para_ms['ms_name'] or 'UNSPECIFIED'
 
                         para['mss'][ms_name] = para_ms
 
@@ -139,9 +139,9 @@ def fetch_alignment_data(nocache=False):
             'mss': sorted(mss.values(), key=lambda ms: -ms['para_count']),
         }
 
-        print mss
-
         cache.set('alignment_data', ret)
+
+    print ret['mss']
 
     return ret
 
@@ -160,19 +160,34 @@ def view_alignment(request, path):
 
 
 def view_alignment_fragment(request, path):
-    # e.g. /textviewer/
+    '''
+    ! None or empty value in request.GET means default value from <config>
+    ! None or empty value in <config> means ALL
+    '''
 
     config = {
         'view': 'table',
-        'sections': None,
+        'sections': ['eneas'],
         'unit': 'para',
         'paras': None,
-        'mss': None,
+        'mss': ['Fr20125', 'Add 19669'],
         'info': None
     }
 
     for name in config:
         config[name] = request.GET.get(name, config[name])
+
+        if config[name] == 'all':
+            config[name] = None
+
+        if config[name] is None:
+            continue
+
+        if name.endswith('s') and not hasattr(config[name], 'append'):
+            config[name] = config[name].split(',')
+
+        if hasattr(config[name], 'append'):
+            config[name] = [v.lower().strip() for v in config[name]]
 
     context = {
         'config': config,
@@ -198,12 +213,31 @@ def view_alignment_fragment(request, path):
 def get_requested_alignment_data(config):
     ret = fetch_alignment_data()
 
-    sections = config['sections'].lower().split(',')
+    sections = config['sections']
+    mss = config['mss']
+
+    print config
+    print mss
 
     # filter by section
     for i in range(len(ret['paras']) - 1, -1, -1):
         if sections and ret['paras'][i]['section'].lower() not in sections:
             del ret['paras'][i]
+            continue
+        if mss:
+            for ms_name in ret['paras'][i]['mss'].keys():
+                if ms_name.lower() not in mss:
+                    del ret['paras'][i]['mss'][ms_name]
+
+    # only keep requested mss and preserve the order
+    print ret['mss']
+    if mss:
+        mss2 = []
+        for ms in mss:
+            for ms2 in ret['mss']:
+                if (ms2['name'] or 'undefined').lower() == ms:
+                    mss2.append(ms2)
+        ret['mss'] = mss2
 
     return ret
 
