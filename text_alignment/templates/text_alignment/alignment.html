@@ -96,6 +96,12 @@
     .option-selected {
         background: #f0f0e0;
     }
+    /* bars view */
+    .canvas-bars {
+        width: 96vw;
+        height: 80vh;
+        border: 0;
+    }
 </style>
 {% endblock %}
 
@@ -322,5 +328,90 @@ Alignment
                 });
             };
         });
+        
+        // Bars view / visualisation
+        function update_bars_view(canvas, align, config) {
+            var ctx = canvas.getContext('2d');
+            
+            var bh_min = 15;
+            var ms_names = [];
+            $.each(config.mss.options, function(idx, ms) {
+                if (ms.selected) ms_names.push(ms.name);
+            });
+            var rows = ms_names.length + 1;
+            
+            var bh = ($('body').height() - 200) / rows;
+            if (bh < bh_min) {
+                bh = bh_min;
+            }
+            var bw = 2;
+
+            $(canvas).height(bh * rows);
+            
+            var mxh = canvas.height;
+            var mxw = canvas.width;
+            var cah = $(canvas).height();
+            var caw = $(canvas).width();
+            var labels_padding = 2;
+            canvas.height = cah;
+            canvas.width = caw;
+                
+            var text_color = 'black';
+            ctx.fillStyle = '#ff0000';
+            var labels_max_width = 100;
+            
+            bw = (caw - labels_max_width) / align.paras.length;
+            
+            var idx_from_ms_name = {};
+            
+            // write MS labels
+            $.each(ms_names, function(idx, name) {
+                ctx.font = '12px Arial';
+                ctx.fillStyle = text_color;
+                ctx.fillText(name, labels_padding, (idx + 2) * bh - 1);
+                idx_from_ms_name[name] = idx;
+            });
+            
+            // draw the paras
+            var section = null; 
+            var last_section_x = -10000;
+            $.each(align.paras, function(idx, para) {
+                $.each(para.mss, function(ms_name, para_ms) {
+                    if (!para_ms.absent) {
+                        ctx.fillStyle = 'darkgrey';
+                        if (para_ms.verse) ctx.fillStyle = 'lightblue';
+                        ctx.fillRect(labels_max_width + idx * bw, (idx_from_ms_name[ms_name] + 1) * bh, bw, bh);
+                    }
+                });
+                if (section != para.section) {
+                    section = para.section;
+                    ctx.fillStyle = 'black';
+                    
+                    var x0 = labels_max_width + idx * bw;
+                        
+                    ctx.fillRect(x0, 0, 1, cah)
+                    
+                    if ((x0 - last_section_x) < 12) {
+                        x0 += 12;
+                    }
+
+                    //ctx.save();
+                    ctx.fillStyle = text_color;
+                    ctx.fillText(section, x0, 1 * bh - 1);
+                    //ctx.translate(x0, 1 * bh);
+                    //ctx.rotate(-Math.PI/2);
+                    //ctx.fillText(section, 0, 0);
+                    //ctx.restore();
+                    last_section_x = x0;
+                }
+            });
+
+            // draw MS separators
+            $.each(ms_names, function(idx, ms) {
+                ctx.fillStyle = 'grey';
+                ctx.fillRect(0, (idx + 2) * bh, caw, 1);
+            });
+            ctx.fillRect(0, 1 * bh, caw, 1);
+        }
     </script>
 {% endblock %}

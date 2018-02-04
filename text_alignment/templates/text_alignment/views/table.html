@@ -4,33 +4,40 @@
     <thead>
         <tr>
             <th>Section</th>
-            {% for ms in alignment_data.mss %}
-                <th>{{ ms.name }}
-                    <br/>
-                    ({{ ms.para_count}})
-                </th>
+            {% for ms in params.mss.options %}
+                {% if ms.selected %}
+                    <th>
+                        {{ ms.name }}
+                        {% comment %}
+                        <br/>
+                        ({{ ms.para_count}})
+                        {% endcomment %}
+                    </th>
+                {% endif %}
             {% endfor %}
         </tr>
     </thead>
     <tbody>
-        {% for para_mss in alignment_data.paras %}
+        {% for para in alignment_data.paras %}
             <tr>
                 <td>
-                    {{ para_mss.section }}
+                    {{ para.section }}
                     <br/>
-                    {{ para_mss.id }}
+                    {{ para.id }}
                 </td>
-                {% for ms in alignment_data.mss %}
-                    {% with para_ms=para_mss.mss|get_item:ms.name %}
-                        <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
-                            {% if fields_locus %}{{ para_ms.location }}{% endif %}
-                            {% if fields_rubric %}{{ para_ms.rubric }}{% endif %}
-                            {% if fields_verse and para_ms.verse %}
-                                <br/>
-                                Verse: {{ para_ms.verse }}
-                            {% endif %}
-                        </td>
-                    {% endwith %}
+                {% for ms in params.mss.options %}
+                    {% if ms.selected %}
+                        {% with para_ms=para.mss|get_item:ms.name %}
+                            <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
+                                {% if fields_locus %}{{ para_ms.location }}{% endif %}
+                                {% if fields_rubric %}{{ para_ms.rubric }}{% endif %}
+                                {% if fields_verse and para_ms.verse %}
+                                    <br/>
+                                    Verse: {{ para_ms.verse }}
+                                {% endif %}
+                            </td>
+                        {% endwith %}
+                    {% endif %}
                 {% endfor %}
             </tr>
         {% endfor %}

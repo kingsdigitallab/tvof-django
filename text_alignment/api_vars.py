@@ -24,16 +24,17 @@ class API_Vars(object):
         options_selected = var.get('selected', [])
         options_default = var.get('default', [])
         if var['options'] and not isinstance(var['options'][0], dict):
-            var['options'] = [
-                {
-                    'key': name.lower().strip(),
+            options = []
+            for name in var['options']:
+                option_key = name.lower().strip().replace(' ', '-')
+                options.append({
+                    'key': option_key,
                     'name': name,
-                    'selected': name in options_selected,
-                    'default': name in options_default,
-                }
-                for name
-                in var['options']
-            ]
+                    'selected': option_key in options_selected,
+                    'default': option_key in options_default,
+                })
+
+            var['options'] = options
 
         assert(var.get('key') or var.get('name'))
         assert(var.get('type'))
@@ -46,6 +47,9 @@ class API_Vars(object):
         self.vars[var['key']] = var
 
     def get_dict(self):
+        return dict(self.vars)
+
+    def get_list(self):
         ret = [var for var in self.vars.values()]
         # Help vue.js to manage radio button
         # by placing a single selected value directly under the var.
@@ -85,9 +89,9 @@ class API_Vars(object):
                 continue
             option['selected'] = ('all' in values) or (option['key'] in values)
 
-    def get(self, akey, first=False):
+    def get(self, akey, first=False, prop='key'):
         ret = [
-            option['key']
+            option.get(prop)
             for option
             in self.vars[akey]['options']
             if option.get('selected')

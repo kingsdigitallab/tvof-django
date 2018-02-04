@@ -22,7 +22,7 @@ class Alignment(object):
         alignment_data = self.fetch_all_alignment_data(True)
         config = self.get_config(request, path, alignment_data)
         context = {
-            'config': config.get_dict()
+            'config': config.get_list()
         }
 
         return render(request, 'text_alignment/alignment.html', context)
@@ -61,7 +61,7 @@ class Alignment(object):
         from django.template.loader import get_template
         template = get_template(template_path)
         json_res = {
-            'config': config.get_dict(),
+            'config': config.get_list(),
             'html': template.render(context),
             'qs': config.get_query_string(),
         }
@@ -70,6 +70,11 @@ class Alignment(object):
         return JsonResponse(json_res)
 
     def set_context_table(self, context):
+        # easier for template to check which fields to show in table
+        for k in context['config'].get('fields'):
+            context['fields_%s' % k] = 1
+
+    def set_context_bars(self, context):
         for k in context['config'].get('fields'):
             context['fields_%s' % k] = 1
 
@@ -126,7 +131,7 @@ class Alignment(object):
             },
             {
                 'key': 'sections',
-                'default': ['Eneas'],
+                'default': ['eneas'],
                 'options': alignment_data['sections'],
                 'type': 'multi',
             },
@@ -138,7 +143,7 @@ class Alignment(object):
             },
             {
                 'key': 'mss',
-                'default': ['Fr20125', 'Royal_20_D_1'],
+                'default': ['fr-20125', 'royal-20-d-1'],
                 'options': [ms['name'] for ms in alignment_data['mss']],
                 'name': 'Manuscripts',
                 'type': 'multi',
@@ -167,10 +172,7 @@ class Alignment(object):
         ret = alignment_data
 
         sections = config.get('sections')
-        mss = config.get('mss')
-
-        print config
-        print mss
+        mss = config.get('mss', prop='name')
 
         # filter by section
         for i in range(len(ret['paras']) - 1, -1, -1):
@@ -179,17 +181,18 @@ class Alignment(object):
                 continue
             if mss:
                 for ms_name in ret['paras'][i]['mss'].keys():
-                    if ms_name.lower() not in mss:
+                    if ms_name not in mss:
                         del ret['paras'][i]['mss'][ms_name]
 
         # only keep requested mss and preserve the order
-        if mss:
-            mss2 = []
-            for ms in mss:
-                for ms2 in ret['mss']:
-                    if (ms2['name'] or 'undefined').lower() == ms:
-                        mss2.append(ms2)
-            ret['mss'] = mss2
+        if 0:
+            if mss:
+                mss2 = []
+                for ms in mss:
+                    for ms2 in ret['mss']:
+                        if (ms2['key'] or 'undefined') == ms:
+                            mss2.append(ms2)
+                ret['mss'] = mss2
 
         return ret
 
@@ -199,9 +202,9 @@ class Alignment(object):
             'id': 'fr20125_00001',
             'section': 'Genesis',
             'mss': {
-                Fr20125:
+                Fr 20125:
                     {
-                        'ms_name': 'Fr20125',
+                        'ms_name': 'Fr 20125',
                         'note': """Inhabited initial, 10 lines, with gold and
                             partial border""",
                         'verse': '284 lines',
@@ -236,6 +239,11 @@ class Alignment(object):
         fields = {}
         sections = []
 
+        # extract, normalise and merge the manuscript names
+        # <seg type="ms_name">Vienna</seg>
+        ms_names = self.get_ms_names_from_xml(root)
+
+        # extract the paras
         for alignments in alignments_set:
             for element in alignments:
                 if len(paras) > 50000:
@@ -260,6 +268,8 @@ class Alignment(object):
                                 fields[seg.attrib.get('type')] = seg.text
 
                         ms_name = para_ms['ms_name'] or 'UNSPECIFIED'
+                        # take normalises name
+                        ms_name = ms_names.get(ms_name, ms_name)
 
                         para['mss'][ms_name] = para_ms
 
@@ -279,11 +289,63 @@ class Alignment(object):
         ret = {
             'paras': paras,
             # 'mss': sorted(mss.values(), key=lambda ms: -ms['para_count']),
-            'mss': sorted(mss.values(), key=lambda ms: ms['name']),
+            'mss': sorted(mss.values(), key=lambda ms: ms['name'].lower()),
             'sections': sections,
         }
 
+        # print ret['mss']
+
         return ret
+
+    def get_ms_names_from_xml(self, root):
+        '''
+        Returns a mapping between all unique MS names
+        found in root and normalised names.
+        e.g. {Dijon -> Dijon 262, Dijon262 -> Dijon 262, ...}
+        '''
+
+        # get all unique names
+        ms_names = {}
+        for seg in root.findall('.//seg[@type="ms_name"]'):
+            name = seg.text
+            if name:
+                ms_names[name] = ms_names.get(name, 0) + 1
+
+        # now normalise the names
+        # Fr15455 | Fr 15455, Marciana_fr_Z_II | Marciana Fr Z Ii
+        import re
+        for name in ms_names:
+            normalised = name.replace(
+                '-',
+                ' ').replace(
+                '_',
+                ' ').lower().strip()
+            normalised = re.sub(ur'(?i)([a-z])(\d)', ur'\1 \2', normalised)
+            normalised = normalised.title()
+            ms_names[name] = normalised
+
+        # merge
+        # e.g. Dijon -> Dijon 562
+        for name, normalised in ms_names.items():
+            if ' ' not in normalised:
+                candidates = [
+                    v
+                    for v
+                    in set(ms_names.values())
+                    if v.startswith(normalised + ' ')
+                ]
+                c = len(candidates)
+                if c == 1:
+                    ms_names[name] = candidates[0]
+                elif c > 2:
+                    print 'WARNING: ambiguous MS name: %s (%s ?)' %\
+                        (name, ', '.join(candidates))
+                elif c == 0:
+                    print 'INFO: MS name without number: %s' % name
+
+        # print '\n'.join(['%s | %s' % (k, v) for k, v in ms_names.items()])
+
+        return ms_names
 
 
 '''
