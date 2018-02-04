@@ -3,6 +3,7 @@
 
 {% block extra_head %}
 {# TODO: move this to external file #}
+{# TODO: SASS it #}
 <style>
     .alignment-paras {
         border-spacing: 0px;
@@ -71,10 +72,29 @@
     .settings-body input[type=radio] {
         margin-right: 0.1em;
         margin-left: 0.3em;
+        margin-bottom: 0;
     }
     .settings-head {
         background-color: #1c2434;
         color: white;
+    }
+    .settings-body .var-actions {
+        font-size: small;
+        
+    }
+    .settings-body .var-actions a:hover {
+        text-decoration: underline;
+    }
+    .settings-body label {
+        margin: 2px;
+        padding: 0.3em;    
+        line-height: 1em;
+    }
+    .settings-body label:hover {
+        background: #e0e0d0;
+    }
+    .option-selected {
+        background: #f0f0e0;
     }
 </style>
 {% endblock %}
@@ -155,6 +175,16 @@ Alignment
                         vars: config
                     },
                     methods: {
+                        'select_all': function(avar) {
+                            $.each(avar.options, function(idx, option) {
+                                option.selected = true;
+                            });
+                        },
+                        'select_none': function(avar) {
+                            $.each(avar.options, function(idx, option) {
+                                option.selected = false;
+                            });
+                        },
                         'get_request_data': function() {
                             // We convert the config vars into a 
                             // dictionary: {field: [values]}
