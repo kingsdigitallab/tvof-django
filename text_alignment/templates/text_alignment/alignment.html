@@ -2,6 +2,7 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
 {% block extra_head %}
+{# TODO: move this to external file #}
 <style>
     .alignment-paras {
         border-spacing: 0px;
@@ -23,6 +24,57 @@
     }
     .para-ms-verse {
         background-color: lightblue;
+    }
+    
+    /* Settings modal */
+    #settings {
+        /* make the settings body div scrollable */
+        height: 90vh;
+        flex-direction: column;;
+    
+        position: fixed;
+        z-index: 10000;
+        top: 2em;
+        left: 5vw;
+        width: 90vw;
+        
+        display: none;
+
+        border: 1px solid grey;
+        padding: 0;
+        background-color: white;
+        box-shadow: 0.5em 0.5em 0.4em #202020;
+    }
+    #settings > div {
+        padding: 0.5em;
+    }
+    body.settings-visible {
+        /* html body no longer scrollable when settings model is open*/
+        overflow: hidden;
+    }
+    body.settings-visible #settings {
+        display: flex;
+    }
+    .settings-body {
+        /* make the settings body div scrollable */
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .settings-body ul {
+        margin-left: 0;
+    }
+    .settings-body ul li, .settings-body label {
+        /* inline-block to prevent line break between checkboxk and label text */
+        display: inline-block;
+    }
+    .settings-body input[type=checkbox],
+    .settings-body input[type=radio] {
+        margin-right: 0.1em;
+        margin-left: 0.3em;
+    }
+    .settings-head {
+        background-color: #1c2434;
+        color: white;
     }
 </style>
 {% endblock %}
@@ -55,11 +107,14 @@ Alignment
             <a href=""><i class="fa fa-expand"></i></a>
         </li>
         {% endcomment %}
+        <li>
+            <a id="toggle-settings" href="#settings"><i class="fa fa-cog"></i></a>
+        </li>
     </ul>
 {% endblock %}
 
 {% block minimal_breadcrumb %}
-    <small>/ Alignment</small>
+    <small>/ <a href=".">Alignment</a></small>
 {% endblock %}
 
 {% block main_wrapper %}
@@ -68,6 +123,8 @@ Alignment
 <section id="alignment-fragment" class="main">
     
 </section>
+
+{% include 'text_alignment/settings.html' %}
 
 {% endblock %}
 
@@ -79,27 +136,114 @@ Alignment
 {% endblock %}
 
 {% block extra_js %}
-    {# TODO: bower those leaflet scripts, externalise the custom code and move script tags to footer_scripts #}
+    <script src="{% static 'vendor/vue/vue.js' %}"></script>
     
+    {# TODO: move this to external file #}
     <script type="text/javascript">
         $(function() {
             var $win = $(window);
+            var $body = $('body');
+            var $settings = $('#settings');
+            var $fragment = $('#alignment-fragment');
+            var config = {{config|json}};
+            var vue_config = new_vue_config(config);
             
+            function new_vue_config(config) {
+                var ret = new Vue({
+                    el: '#settings .settings-body',
+                    data: {
+                        vars: config
+                    },
+                    methods: {
+                        'get_request_data': function() {
+                            // We convert the config vars into a 
+                            // dictionary: {field: [values]}
+                            var ret = {};
+                            $.each(this.vars, function(idx, avar) {
+                                var values = [];
+                                if (avar.type == 'single') {
+                                    // selection is help in var.selected
+                                    ret[avar.key] = avar.selected;
+                                } else {
+                                    // selctions are held in var.options.X.selected
+                                    $.each(avar.options, function(idx, option) {
+                                        if (option.selected) {
+                                            values.push(option.key);
+                                        }
+                                    });
+                                    ret[avar.key] = values.join(',');
+                                }
+                            });
+                            console.log(ret);
+                            return ret;
+                        }
+                    }
+                });
+                return ret;
+            }
+            
+            $('#toggle-settings').on('click', function(e) {
+                toggle_settings();
+                return false;
+            });
+
+            function toggle_settings() {
+                if ($settings.is(':visible')) {
+                    close_settings();
+                } else {
+                    open_settings();
+                }
+            }
+            
+            function open_settings() {
+                $body.addClass('settings-visible');
+            }
+
+            function close_settings() {
+                $body.removeClass('settings-visible');
+                
+                // update results
+                request_fragment();
+            }
+
             function request_fragment() {
+                $fragment.stop(true, true).fadeTo('slow', 0.2);
+                
                 var url = document.location.href;
-                url += (url.indexOf('?') > -1) ? '&' : '?;';
-                url += 'js=1'
+                var params = {}
+                
+                if (0) {
+                    var argjs = (url.indexOf('?') > -1) ? '&' : '?';
+                    argjs += 'js=1';
+                    url = url.replace(/(#|$)/i, argjs + '$1');
+                } else {
+                    url = url.replace(/(#|\?).*/i, '');
+                    params = vue_config.get_request_data();
+                    params.js = 1;
+                }
+                
                 var req = $.getJSON({
-                    url: url
+                    url: url,
+                    data: params,
                 })
+                
                 req.done(function(data, textStatus, jqXHR) {
+                    Vue.set(vue_config, 'vars', data.config);
                     replace_fragment(data);
+                    $fragment.stop(true, true).css('opacity', 1);
+                    // remove
+                    //open_settings();
                 });
             }
             request_fragment();
+            //open_settings();
             
             function replace_fragment(data) {
-                $('#alignment-fragment').html(data.html);
+                $fragment.html(data.html);
+                if (history.pushState) {
+                    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + data.qs;
+                    window.history.pushState({path:newurl},'',newurl);
+                }
                 fix_thead();
             }
             
@@ -125,15 +269,28 @@ Alignment
                 $row_fixed.addClass('fixed-tr');
                 
                 $row_fixed.data('threshold', $row.offset().top);
+                
+                update_table_heads();
             }
 
+            $win.on('keyup', function(ev) {
+                if (ev.which == 27) {
+                    toggle_settings();
+                    return false;
+                }
+            });
+            
             $win.on('scroll', function() {
+                update_table_heads();
+            });
+            
+            function update_table_heads() {
                 var top = $win.scrollTop();
                 $('.fixed-tr').each(function(index, row) {
                     var $row = $(row);
                     $row.toggle(top > $(row).data('threshold')).css('top', top);
                 });
-            });
+            };
         });
     </script>
 {% endblock %}

@@ -1,0 +1,38 @@
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+<table class="alignment-paras">
+    <thead>
+        <tr>
+            <th>Section</th>
+            {% for ms in alignment_data.mss %}
+                <th>{{ ms.name }}
+                    <br/>
+                    ({{ ms.para_count}})
+                </th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for para_mss in alignment_data.paras %}
+            <tr>
+                <td>
+                    {{ para_mss.section }}
+                    <br/>
+                    {{ para_mss.id }}
+                </td>
+                {% for ms in alignment_data.mss %}
+                    {% with para_ms=para_mss.mss|get_item:ms.name %}
+                        <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
+                            {% if fields_locus %}{{ para_ms.location }}{% endif %}
+                            {% if fields_rubric %}{{ para_ms.rubric }}{% endif %}
+                            {% if fields_verse and para_ms.verse %}
+                                <br/>
+                                Verse: {{ para_ms.verse }}
+                            {% endif %}
+                        </td>
+                    {% endwith %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    <tbody>
+</table>
