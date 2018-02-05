@@ -234,5 +234,12 @@ def unslugify_filter(value):
 
 
 @register.filter
-def get_item(dictionary, key):
-    return dictionary[key]
+def get_item(dictionary, key, default=None):
+    return dictionary.get(key, default)
+
+
+@register.filter
+def json(obj):
+    import json
+    from django.utils.safestring import mark_safe
+    return mark_safe(json.dumps(obj))

@@ -1,0 +1,417 @@
+{% extends "base_minimal.html" %}
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+{% block extra_head %}
+{# TODO: move this to external file #}
+{# TODO: SASS it #}
+<style>
+    .alignment-paras {
+        border-spacing: 0px;
+    }
+    .alignment-paras td, .alignment-paras th {
+        border: 0px;
+        border-left: 1px solid grey;
+        border-bottom: 1px solid grey;
+    }
+    .alignment-paras thead tr {
+        background-color: white;
+    }
+    .fixed-tr {
+        position: absolute;
+        display: none;
+    }
+    .para-ms-absent {
+        background-color: darkgrey;
+    }
+    .para-ms-verse {
+        background-color: lightblue;
+    }
+    
+    /* Settings modal */
+    #settings {
+        /* make the settings body div scrollable */
+        height: 90vh;
+        flex-direction: column;;
+    
+        position: fixed;
+        z-index: 10000;
+        top: 2em;
+        left: 5vw;
+        width: 90vw;
+        
+        display: none;
+
+        border: 1px solid grey;
+        padding: 0;
+        background-color: white;
+        box-shadow: 0.5em 0.5em 0.4em #202020;
+    }
+    #settings > div {
+        padding: 0.5em;
+    }
+    body.settings-visible {
+        /* html body no longer scrollable when settings model is open*/
+        overflow: hidden;
+    }
+    body.settings-visible #settings {
+        display: flex;
+    }
+    .settings-body {
+        /* make the settings body div scrollable */
+        flex-grow: 1;
+        overflow-y: auto;
+    }
+    .settings-body ul {
+        margin-left: 0;
+    }
+    .settings-body ul li, .settings-body label {
+        /* inline-block to prevent line break between checkboxk and label text */
+        display: inline-block;
+    }
+    .settings-body input[type=checkbox],
+    .settings-body input[type=radio] {
+        margin-right: 0.1em;
+        margin-left: 0.3em;
+        margin-bottom: 0;
+    }
+    .settings-head {
+        background-color: #1c2434;
+        color: white;
+    }
+    .settings-body .var-actions {
+        font-size: small;
+        
+    }
+    .settings-body .var-actions a:hover {
+        text-decoration: underline;
+    }
+    .settings-body label {
+        margin: 2px;
+        padding: 0.3em;    
+        line-height: 1em;
+    }
+    .settings-body label:hover {
+        background: #e0e0d0;
+    }
+    .option-selected {
+        background: #f0f0e0;
+    }
+    /* bars view */
+    .canvas-bars {
+        width: 96vw;
+        height: 80vh;
+        border: 0;
+    }
+</style>
+{% endblock %}
+
+{% block title %}
+Alignment
+{% endblock %}
+
+{% block body_classes %}body-alignment{% endblock %}
+
+{% block header_top_bar %}
+    <ul class="horizontal menu float-right mini-header">
+        {% comment %}
+        <li>
+            <a href=""><i class="fa fa-key"></i></a>
+        </li>
+        {% endcomment %}
+        {% comment %}
+        <li>
+            <a href=""><i class="fa fa-random"></i></a>
+        </li>
+        <li>
+            {# <a href=""><i class="fa fa-columns"></i></a> #}
+    
+            <a id="btn-open-panel" href="#" title="Open a new panel">
+                <i class="fa fa-columns"></i>
+            </a>
+        </li>
+        <li>
+            <a href=""><i class="fa fa-expand"></i></a>
+        </li>
+        {% endcomment %}
+        <li>
+            <a id="toggle-settings" href="#settings"><i class="fa fa-cog"></i></a>
+        </li>
+    </ul>
+{% endblock %}
+
+{% block minimal_breadcrumb %}
+    <small>/ <a href=".">Alignment</a></small>
+{% endblock %}
+
+{% block main_wrapper %}
+
+<!-- #text-viewer height is adjusted automatically with JS  -->
+<section id="alignment-fragment" class="main">
+    
+</section>
+
+{% include 'text_alignment/settings.html' %}
+
+{% endblock %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+    {# TODO: load this with require.js or webpack ? #}
+    <script src="{% static 'vendor/vue/vue.js' %}"></script>
+    <script src="{% static 'text_alignment/alignment.js' %}"></script>
+{% endblock %}
+
+{% block extra_js %}
+    <script src="{% static 'vendor/vue/vue.js' %}"></script>
+    
+    {# TODO: move this to external file #}
+    <script type="text/javascript">
+        $(function() {
+            var $win = $(window);
+            var $body = $('body');
+            var $settings = $('#settings');
+            var $fragment = $('#alignment-fragment');
+            var config = {{config|json}};
+            var vue_config = new_vue_config(config);
+            
+            function new_vue_config(config) {
+                var ret = new Vue({
+                    el: '#settings .settings-body',
+                    data: {
+                        vars: config
+                    },
+                    methods: {
+                        'select_all': function(avar) {
+                            $.each(avar.options, function(idx, option) {
+                                option.selected = true;
+                            });
+                        },
+                        'select_none': function(avar) {
+                            $.each(avar.options, function(idx, option) {
+                                option.selected = false;
+                            });
+                        },
+                        'get_request_data': function() {
+                            // We convert the config vars into a 
+                            // dictionary: {field: [values]}
+                            var ret = {};
+                            $.each(this.vars, function(idx, avar) {
+                                var values = [];
+                                if (avar.type == 'single') {
+                                    // selection is help in var.selected
+                                    ret[avar.key] = avar.selected;
+                                } else {
+                                    // selctions are held in var.options.X.selected
+                                    $.each(avar.options, function(idx, option) {
+                                        if (option.selected) {
+                                            values.push(option.key);
+                                        }
+                                    });
+                                    ret[avar.key] = values.join(',');
+                                }
+                            });
+                            console.log(ret);
+                            return ret;
+                        }
+                    }
+                });
+                return ret;
+            }
+            
+            $('#toggle-settings').on('click', function(e) {
+                toggle_settings();
+                return false;
+            });
+
+            function toggle_settings() {
+                if ($settings.is(':visible')) {
+                    close_settings();
+                } else {
+                    open_settings();
+                }
+            }
+            
+            function open_settings() {
+                $body.addClass('settings-visible');
+            }
+
+            function close_settings() {
+                $body.removeClass('settings-visible');
+                
+                // update results
+                request_fragment();
+            }
+
+            function request_fragment() {
+                $fragment.stop(true, true).fadeTo('slow', 0.2);
+                
+                var url = document.location.href;
+                var params = {}
+                
+                if (0) {
+                    var argjs = (url.indexOf('?') > -1) ? '&' : '?';
+                    argjs += 'js=1';
+                    url = url.replace(/(#|$)/i, argjs + '$1');
+                } else {
+                    url = url.replace(/(#|\?).*/i, '');
+                    params = vue_config.get_request_data();
+                    params.js = 1;
+                }
+                
+                var req = $.getJSON({
+                    url: url,
+                    data: params,
+                })
+                
+                req.done(function(data, textStatus, jqXHR) {
+                    Vue.set(vue_config, 'vars', data.config);
+                    replace_fragment(data);
+                    $fragment.stop(true, true).css('opacity', 1);
+                    // remove
+                    //open_settings();
+                });
+            }
+            request_fragment();
+            //open_settings();
+            
+            function replace_fragment(data) {
+                $fragment.html(data.html);
+                if (history.pushState) {
+                    var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + data.qs;
+                    window.history.pushState({path:newurl},'',newurl);
+                }
+                fix_thead();
+            }
+            
+            var row_top = 0;
+            function fix_width_row($row) {
+                $row.children().each(function(index, th) {
+                    $th = $(th);
+                    $th.css('min-width', $th.outerWidth());
+                });
+            }
+            function fix_thead() {
+                $('.fixed-tr').remove();
+                
+                $row = $('.alignment-paras thead tr:first');
+                
+                if ($row.length == 0) return;
+                
+                fix_width_row($row);
+                
+                $row_fixed = $row.clone();
+                $row.parent().append($row_fixed);
+                
+                $row_fixed.addClass('fixed-tr');
+                
+                $row_fixed.data('threshold', $row.offset().top);
+                
+                update_table_heads();
+            }
+
+            $win.on('keyup', function(ev) {
+                if (ev.which == 27) {
+                    toggle_settings();
+                    return false;
+                }
+            });
+            
+            $win.on('scroll', function() {
+                update_table_heads();
+            });
+            
+            function update_table_heads() {
+                var top = $win.scrollTop();
+                $('.fixed-tr').each(function(index, row) {
+                    var $row = $(row);
+                    $row.toggle(top > $(row).data('threshold')).css('top', top);
+                });
+            };
+        });
+        
+        // Bars view / visualisation
+        function update_bars_view(canvas, align, config) {
+            var ctx = canvas.getContext('2d');
+            
+            var bh_min = 15;
+            var ms_names = [];
+            $.each(config.mss.options, function(idx, ms) {
+                if (ms.selected) ms_names.push(ms.name);
+            });
+            var rows = ms_names.length + 1;
+            
+            var bh = ($('body').height() - 200) / rows;
+            if (bh < bh_min) {
+                bh = bh_min;
+            }
+            var bw = 2;
+
+            $(canvas).height(bh * rows);
+            
+            var mxh = canvas.height;
+            var mxw = canvas.width;
+            var cah = $(canvas).height();
+            var caw = $(canvas).width();
+            var labels_padding = 2;
+            canvas.height = cah;
+            canvas.width = caw;
+                
+            var text_color = 'black';
+            ctx.fillStyle = '#ff0000';
+            var labels_max_width = 100;
+            
+            bw = (caw - labels_max_width) / align.paras.length;
+            
+            var idx_from_ms_name = {};
+            
+            // write MS labels
+            $.each(ms_names, function(idx, name) {
+                ctx.font = '12px Arial';
+                ctx.fillStyle = text_color;
+                ctx.fillText(name, labels_padding, (idx + 2) * bh - 1);
+                idx_from_ms_name[name] = idx;
+            });
+            
+            // draw the paras
+            var section = null; 
+            var last_section_x = -10000;
+            $.each(align.paras, function(idx, para) {
+                $.each(para.mss, function(ms_name, para_ms) {
+                    if (!para_ms.absent) {
+                        ctx.fillStyle = 'darkgrey';
+                        if (para_ms.verse) ctx.fillStyle = 'lightblue';
+                        ctx.fillRect(labels_max_width + idx * bw, (idx_from_ms_name[ms_name] + 1) * bh, bw, bh);
+                    }
+                });
+                if (section != para.section) {
+                    section = para.section;
+                    ctx.fillStyle = 'black';
+                    
+                    var x0 = labels_max_width + idx * bw;
+                        
+                    ctx.fillRect(x0, 0, 1, cah)
+                    
+                    if ((x0 - last_section_x) < 12) {
+                        x0 += 12;
+                    }
+
+                    //ctx.save();
+                    ctx.fillStyle = text_color;
+                    ctx.fillText(section, x0, 1 * bh - 1);
+                    //ctx.translate(x0, 1 * bh);
+                    //ctx.rotate(-Math.PI/2);
+                    //ctx.fillText(section, 0, 0);
+                    //ctx.restore();
+                    last_section_x = x0;
+                }
+            });
+
+            // draw MS separators
+            $.each(ms_names, function(idx, ms) {
+                ctx.fillStyle = 'grey';
+                ctx.fillRect(0, (idx + 2) * bh, caw, 1);
+            });
+            ctx.fillRect(0, 1 * bh, caw, 1);
+        }
+    </script>
+{% endblock %}

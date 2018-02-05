@@ -104,6 +104,7 @@ INSTALLED_APPS += (
     'kiln',
     'text_viewer',
     'text_patterns',
+    'text_alignment',
     'tvof',
 )
 

@@ -40,10 +40,13 @@ class CachedRequesterKiln(object):
         import time
         t0 = time.time()
         ret = self._request(url)
-        d = time.time() - t0
-        size_mb = len(ret) / 1024.0 / 1024
-        print 'Request: %s from %s (%0.4f MB, %0.2f s.)' %\
-            (url, self.last_request_origin, size_mb, d)
+
+        if ret is not None:
+            d = time.time() - t0
+            size_mb = len(ret) / 1024.0 / 1024
+            print 'Request: %s from %s (%0.4f MB, %0.2f s.)' %\
+                (url, self.last_request_origin, size_mb, d)
+
         return ret
 
     def _request(self, url, force=False):
