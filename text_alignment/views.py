@@ -78,6 +78,10 @@ class Alignment(object):
         for k in context['config'].get('fields'):
             context['fields_%s' % k] = 1
 
+    def set_context_viztest(self, context):
+        for k in context['config'].get('fields'):
+            context['fields_%s' % k] = 1
+
     def fetch_all_alignment_data(self, nocache=False):
         '''
         {
@@ -126,7 +130,7 @@ class Alignment(object):
             {
                 'key': 'view',
                 'default': 'table',
-                'options': ['table', 'bars'],
+                'options': ['table', 'bars', 'viztest'],
                 'type': 'single',
             },
             {
