@@ -1,108 +1,12 @@
 {% extends "base_minimal.html" %}
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
-{% block extra_head %}
-{# TODO: move this to external file #}
-{# TODO: SASS it #}
-<style>
-    .alignment-paras {
-        border-spacing: 0px;
-    }
-    .alignment-paras td, .alignment-paras th {
-        border: 0px;
-        border-left: 1px solid grey;
-        border-bottom: 1px solid grey;
-    }
-    .alignment-paras thead tr {
-        background-color: white;
-    }
-    .fixed-tr {
-        position: absolute;
-        display: none;
-    }
-    .para-ms-absent {
-        background-color: darkgrey;
-    }
-    .para-ms-verse {
-        background-color: lightblue;
-    }
-    
-    /* Settings modal */
-    #settings {
-        /* make the settings body div scrollable */
-        height: 90vh;
-        flex-direction: column;;
-    
-        position: fixed;
-        z-index: 10000;
-        top: 2em;
-        left: 5vw;
-        width: 90vw;
-        
-        display: none;
+{% block meta_title %}Text alignment visualization{% endblock %}
 
-        border: 1px solid grey;
-        padding: 0;
-        background-color: white;
-        box-shadow: 0.5em 0.5em 0.4em #202020;
-    }
-    #settings > div {
-        padding: 0.5em;
-    }
-    body.settings-visible {
-        /* html body no longer scrollable when settings model is open*/
-        overflow: hidden;
-    }
-    body.settings-visible #settings {
-        display: flex;
-    }
-    .settings-body {
-        /* make the settings body div scrollable */
-        flex-grow: 1;
-        overflow-y: auto;
-    }
-    .settings-body ul {
-        margin-left: 0;
-    }
-    .settings-body ul li, .settings-body label {
-        /* inline-block to prevent line break between checkboxk and label text */
-        display: inline-block;
-    }
-    .settings-body input[type=checkbox],
-    .settings-body input[type=radio] {
-        margin-right: 0.1em;
-        margin-left: 0.3em;
-        margin-bottom: 0;
-    }
-    .settings-head {
-        background-color: #1c2434;
-        color: white;
-    }
-    .settings-body .var-actions {
-        font-size: small;
-        
-    }
-    .settings-body .var-actions a:hover {
-        text-decoration: underline;
-    }
-    .settings-body label {
-        margin: 2px;
-        padding: 0.3em;    
-        line-height: 1em;
-    }
-    .settings-body label:hover {
-        background: #e0e0d0;
-    }
-    .option-selected {
-        background: #f0f0e0;
-    }
-    /* bars view */
-    .canvas-bars {
-        width: 96vw;
-        height: 80vh;
-        border: 0;
-    }
-</style>
+{% block extra_head %}
+{% compress css %}
+<link rel="stylesheet" type="text/x-scss" href="{% static 'scss/text-alignment.scss' %}">
+{% endcompress %}
 {% endblock %}
 
 {% block title %}
