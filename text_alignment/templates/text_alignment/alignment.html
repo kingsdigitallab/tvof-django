@@ -16,7 +16,7 @@ Alignment
 {% block body_classes %}body-alignment{% endblock %}
 
 {% block header_top_bar %}
-    <ul class="horizontal menu float-right mini-header">
+    <ul class="horizontal menu float-right mini-header" data-sticky>
         {% comment %}
         <li>
             <a href=""><i class="fa fa-key"></i></a>
@@ -38,7 +38,7 @@ Alignment
         </li>
         {% endcomment %}
         <li>
-            <a id="toggle-settings" href="#settings"><i class="fa fa-cog"></i></a>
+            <a id="toggle-settings" href="#settings">Settings <i class="fa fa-cog"></i></a>
         </li>
     </ul>
 {% endblock %}
@@ -236,7 +236,7 @@ Alignment
         // Bars view / visualisation
         function update_bars_view(canvas, align, config) {
             var ctx = canvas.getContext('2d');
-            
+
             var bh_min = 15;
             var ms_names = [];
             $.each(config.mss.options, function(idx, ms) {
@@ -263,6 +263,17 @@ Alignment
             var text_color = 'black';
             ctx.fillStyle = '#ff0000';
             var labels_max_width = 100;
+
+            // Test
+            // Create a pattern
+           for (var i=0;i<7;i++){
+              
+              for (var j=0;j<7;j++){   
+                 ctx.fillStyle='rgb(' + Math.floor(255-20.5*i)+ ','+ Math.floor(255 - 42.5*j) + ',255)';
+                 ctx.fillRect( j*25, i* 25, 55, 55 );
+              }
+           }
+           // End Test
             
             bw = (caw - labels_max_width) / align.paras.length;
             
