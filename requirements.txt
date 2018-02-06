@@ -1,4 +1,4 @@
-django<1.10
+django<2
 django-compressor
 django-grappelli
 django-libsass
@@ -12,6 +12,6 @@ libsass==0.10.0
 pillow
 psycopg2
 requests
-wagtail<1.9
+wagtail<2
 html5lib==0.9999999
 regex

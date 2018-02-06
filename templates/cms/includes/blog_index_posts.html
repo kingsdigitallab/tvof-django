@@ -12,7 +12,7 @@
                 <section class="postcontent">
                     {% for child in post.blogpost.content %} 
                         <p>
-                            {% if child.block_type = 'paragraph' %}
+                            {% if child.block_type == 'paragraph' %}
                                 {% if forloop.first %}
                                 {{ child.value|richtext|truncatewords:15 }}
                                 {% endif %}
