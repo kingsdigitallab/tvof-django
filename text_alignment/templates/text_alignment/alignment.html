@@ -294,8 +294,11 @@ Alignment
                 $.each(para.mss, function(ms_name, para_ms) {
                     if (!para_ms.absent) {
                         ctx.fillStyle = 'darkgrey';
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle = 'white';
                         if (para_ms.verse) ctx.fillStyle = 'lightblue';
                         ctx.fillRect(labels_max_width + idx * bw, (idx_from_ms_name[ms_name] + 1) * bh, bw, bh);
+                        ctx.strokeRect(labels_max_width + idx * bw, (idx_from_ms_name[ms_name] + 1) * bh, bw, bh);
                     }
                 });
                 if (section != para.section) {
