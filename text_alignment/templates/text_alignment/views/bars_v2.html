@@ -190,7 +190,10 @@
             function update_info_box(ev) {
                 // convert mouse position into indices [para_idx, ms_idx]
                 var mouse_pos = [ev.pageX, ev.pageY];
-                $('#vis-info-box').css({left: mouse_pos[0] + 5, top: mouse_pos[1] + 5});
+                $('#vis-info-box').css({
+                    left: mouse_pos[0] + 5,
+                    top: mouse_pos[1] + 5 - $(document).scrollTop()
+                });
                 var data_pos = [
                     Math.floor((mouse_pos[0] - canvas_left - labels_max_width) / bw),
                     Math.floor((mouse_pos[1] - canvas_top - head_height) / bh), 
@@ -211,11 +214,15 @@
                             info += ' ' + para_ms.location;
                             if (config_fields.verse && para_ms.verse) {
                                 info += '<br/>';
-                                info += 'Verse: ' + para_ms.verse;
+                                info += '<b>Verse</b>: ' + para_ms.verse;
                             }
                             if (config_fields.rubric && para_ms.rubric) {
                                 info += '<br/>';
-                                info += ' ' + para_ms.rubric;
+                                info += '<b>Rubric</b>: ' + para_ms.rubric;
+                            }
+                            if (config_fields.note && para_ms.note) {
+                                info += '<br/>';
+                                info += '<b>Note</b>: ' + para_ms.note;
                             }
                         }
                     }
