@@ -46,16 +46,20 @@ class API_Vars(object):
 
         self.vars[var['key']] = var
 
+    def _set_selected(self):
+        # Help vue.js to manage radio button
+        # by placing a single selected value directly under the var.
+        # Also helps javascript to quickly access selected values.
+        for var in self.vars.values():
+            var['selected'] = self.get(var['key'], var['type'] == 'single')
+
     def get_dict(self):
+        self._set_selected()
         return dict(self.vars)
 
     def get_list(self):
+        self._set_selected()
         ret = [var for var in self.vars.values()]
-        # Help vue.js to manage radio button
-        # by placing a single selected value directly under the var.
-        for var in self.vars.values():
-            if var['type'] == 'single':
-                var['selected'] = self.get(var['key'], True)
         return ret
 
     def set_vars(self, keys_values):

@@ -1,0 +1,182 @@
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+<div id="alignemnt-view-bars">
+    <canvas class="canvas-bars" height="1000" width=1000>
+    </canvas>
+    
+    <script>
+    $(function() {
+        var alignment_data = {{ alignment_data|json }};
+        var config = {{ params|json }};
+        var canvas = $('canvas')[0];
+        
+        update_bars_2_view(canvas, alignment_data, config);
+        
+        // Bars view / visualisation
+        function update_bars_2_view(canvas, align, config) {
+            // extract info from config
+            var ms_names = [];
+            $.each(config.mss.options, function(idx, ms) {
+                if (ms.selected) ms_names.push(ms.name);
+            });
+            var config_fields = {};
+            $.each(config.fields.selected, function(idx, field_key) {
+                config_fields[field_key] = 1;
+            });            
+            var idx_from_ms_name = {};
+
+            // reset widths
+            $('body').width('');
+            $(canvas).width('96vw');
+            //
+            var ctx = canvas.getContext('2d');
+            
+            // adapt canvas height to fit all on remaining space
+            var bh_min = 15;
+            var rows = ms_names.length;
+            
+            var canvas_top = $(canvas).offset().top;
+            var head_height = 20;
+            var bh = ($('body').height() - canvas_top - head_height) / rows;
+            if (bh < bh_min) {
+                bh = bh_min;
+            }
+
+            $(canvas).height(bh * rows + head_height);
+            
+            // adapt bar widths
+            var labels_max_width = 100;
+            var bw = 2;
+
+            var cah = $(canvas).height();
+            var caw = $(canvas).width();
+            
+            //     chose a bar width that tries to fit into screen width
+            //     then round down to avoid aliasing
+            bw = (caw - labels_max_width) / align.paras.length;
+            var is_compressed = (bw < 1);
+            bw = Math.floor(bw);
+            if (is_compressed) {
+                bw = 1;
+                // we stretch the canvas horizontally beyond the screen
+                // need to scroll
+                caw = labels_max_width + align.paras.length;
+                // adapt width
+                $(canvas).width(caw);
+                $('body').width(caw + 2);
+            }
+            
+            // force internal canvas dims to match external ones
+            canvas.height = cah;
+            canvas.width = caw;
+            
+            // other settings
+            var labels_padding = 2;
+            var font_size = 12;
+            var font = '' + font_size + 'px Arial';
+            var colors = {
+                'text': 'black',
+                'separator': 'black',
+                'even': '#f4f4f4',
+                'odd': '#e8e8e8',
+                'absent': 'darkgrey',
+                'verse': 'lightblue',
+                'rubric': '#ffa0a0',
+            }
+            var band_height = (bh / 3);
+            if (band_height < 1) {
+                band_height = 1;
+            }
+            band_height = Math.floor(band_height);
+            
+            // DRAWING
+            
+            // write MS labels
+            $.each(ms_names, function(idx, name) {
+                ctx.font = font;
+                ctx.fillStyle = colors.text;
+                ctx.fillText(name, labels_padding, head_height + (idx + 1) * bh - labels_padding);
+                idx_from_ms_name[name] = idx;
+            });
+            
+            // draw the paras
+            ctx.fillStyle = colors.absent;
+            ctx.fillRect(labels_max_width, head_height, caw, caw);
+
+            var section = null; 
+            var last_section_x = -10000;
+            var is_odd = false;
+            $.each(align.paras, function(idx, para) {
+                is_odd = !is_odd;
+                $.each(para.mss, function(ms_name, para_ms) {
+                    // draw a bar
+                    if (para_ms.absent) return;
+
+                    var color = colors.even;
+
+                    if (is_odd) {
+                        color = colors.odd;
+                    }
+                    if (para_ms.verse && config_fields.verse) {
+                        color = colors.verse;
+                    }
+                    if (color) {
+                        ctx.fillStyle = color;
+                        ctx.fillRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, bh);
+                    } else {
+                        ctx.clearRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, bh);
+                    }
+                    
+                    // rubric
+                    if (config_fields.rubric && para_ms.rubric && para_ms.rubric.length > 3) {
+                        ctx.fillStyle = colors.rubric;
+                        ctx.fillRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, band_height);
+                    }
+                });
+                if (section != para.section) {
+                    section = para.section;
+                    var x0 = labels_max_width + idx * bw;
+
+                    // draw section label background (to erase overrunning label)
+                    ctx.clearRect(x0, 0, caw, head_height);
+                    
+                    // draw section separator
+                    ctx.fillStyle = colors.separator;
+                    ctx.fillRect(x0, 0, 1, cah);
+                    
+                    // draw the section label
+                    if ((x0 - last_section_x) < font_size) {
+                        x0 += font_size;
+                    }
+
+                    ctx.fillStyle = colors.text;
+                    ctx.fillText(section, x0 + labels_padding, head_height - labels_padding);
+                    last_section_x = x0;
+                }
+            });
+            // sep after last section on the right
+            //ctx.fillStyle = colors.separator;
+            //ctx.fillRect(labels_max_width + align.paras.length * bw + 1, 0, 1, cah)
+
+            // draw MS separators
+            $.each(ms_names, function(idx, ms) {
+                ctx.fillStyle = colors.separator;
+                ctx.fillRect(0, head_height + (idx + 1) * bh, caw, 1);
+            });
+            ctx.fillRect(0, head_height, caw, 1);
+            
+            // clear the right hand side after bar area
+            ctx.clearRect(labels_max_width + align.paras.length * bw + 1, 0, caw, cah)
+            
+            // draw some info
+            ctx.font = font;
+            var width_avail = (caw - labels_max_width);
+            ctx.fillStyle = is_compressed ? 'red' : 'green';
+            var info = 'Res:' + (caw - labels_max_width) + ' x ' + cah;
+            info += ' | Paras: ' + align.paras.length;
+            ctx.fillText(info, labels_padding, cah - font_size);
+        }
+        
+    });
+    </script>
+</div>
