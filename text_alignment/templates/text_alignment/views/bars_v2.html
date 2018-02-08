@@ -1,6 +1,10 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
 <div id="alignemnt-view-bars">
+    <div id="vis-info-box" style="position: fixed; display: block; background: white; border: 1px solid green; color: #101010;">
+        TEST
+    </div>
+
     <canvas class="canvas-bars" height="1000" width=1000>
     </canvas>
     
@@ -36,11 +40,13 @@
             var rows = ms_names.length;
             
             var canvas_top = $(canvas).offset().top;
+            var canvas_left = $(canvas).offset().left;
             var head_height = 20;
-            var bh = ($('body').height() - canvas_top - head_height) / rows;
+            var bh = ($(window).height() - canvas_top - head_height) / rows;
             if (bh < bh_min) {
                 bh = bh_min;
             }
+            bh = Math.floor(bh);
 
             $(canvas).height(bh * rows + head_height);
             
@@ -175,8 +181,54 @@
             var info = 'Res:' + (caw - labels_max_width) + ' x ' + cah;
             info += ' | Paras: ' + align.paras.length;
             ctx.fillText(info, labels_padding, cah - font_size);
+            
+            // reset hover event
+            $(canvas).off('mousemove');
+            $(canvas).on('mousemove', update_info_box);
+            $('#vis-info-box').off('mouseenter mousemove');
+            $('#vis-info-box').on('mouseenter mousemove', update_info_box);
+            function update_info_box(ev) {
+                // convert mouse position into indices [para_idx, ms_idx]
+                var mouse_pos = [ev.pageX, ev.pageY];
+                $('#vis-info-box').css({left: mouse_pos[0] + 5, top: mouse_pos[1] + 5});
+                var data_pos = [
+                    Math.floor((mouse_pos[0] - canvas_left - labels_max_width) / bw),
+                    Math.floor((mouse_pos[1] - canvas_top - head_height) / bh), 
+                ];
+                
+                // get the alignment data at that position
+                var info = '';
+                if (data_pos[0] > -1 && data_pos[0] < align.paras.length) {
+                    var para = align.paras[data_pos[0]];
+                    info += para.id;
+                    if (data_pos[1] > -1 && data_pos[1] < ms_names.length) {
+                        var ms_name = ms_names[data_pos[1]];
+                        info += '<br/>';
+                        info += ' ' + ms_name;
+                        para_ms = para.mss[ms_name];
+                        if (para_ms) {
+                            info += '<br/>';
+                            info += ' ' + para_ms.location;
+                            if (config_fields.verse && para_ms.verse) {
+                                info += '<br/>';
+                                info += 'Verse: ' + para_ms.verse;
+                            }
+                            if (config_fields.rubric && para_ms.rubric) {
+                                info += '<br/>';
+                                info += ' ' + para_ms.rubric;
+                            }
+                        }
+                    }
+                    //info += '' + data_pos[0] + ' x ' + data_pos[1];
+                    //align.paras[]
+                }
+                // show the info box
+                if (info) {
+                    $('#vis-info-box').html(info);
+                }
+                $('#vis-info-box').toggle(!!info);
+            };
         }
-        
     });
     </script>
 </div>
