@@ -306,7 +306,10 @@ class Alignment(object):
                             location = para_ms.get('location')
 
                             if 0 and not re.match(r'^\d+[rv][ab]?$', location):
-                                print 'FORMAT: ', location, ms_name, para['id']
+                                print u'FORMAT: {}, {} : \'{}\''.format(
+                                    ms_name, para['id'], re.sub(
+                                        ur'(?musi)\s+', ' ', location)
+                                )
 
                             last_location = mss[ms_name].get('location', None)
                             if last_location and\
@@ -315,10 +318,11 @@ class Alignment(object):
                                     (last_location.strip('ab') != location):
 
                                 s = u'{0:5s} {1:15s} {2:20.20s} {3:20.20s}'
-                                print s.format(
-                                    para['id'], ms_name,
-                                    last_location, location
-                                )
+                                if 0:
+                                    print s.format(
+                                        para['id'], ms_name,
+                                        last_location, location
+                                    )
 
                             mss[ms_name]['location'] = location
 
