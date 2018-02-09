@@ -78,6 +78,10 @@ class Alignment(object):
         for k in context['config'].get('fields'):
             context['fields_%s' % k] = 1
 
+    def set_context_bars_v2(self, context):
+        for k in context['config'].get('fields'):
+            context['fields_%s' % k] = 1
+
     def fetch_all_alignment_data(self, nocache=False):
         '''
         {
@@ -126,7 +130,7 @@ class Alignment(object):
             {
                 'key': 'view',
                 'default': 'table',
-                'options': ['table', 'bars'],
+                'options': ['table', 'bars', 'bars_v2'],
                 'type': 'single',
             },
             {
@@ -140,6 +144,7 @@ class Alignment(object):
                 'default': 'para',
                 'options': ['section', 'para'],
                 'type': 'single',
+                'hidden': 1,
             },
             {
                 'key': 'mss',
@@ -243,7 +248,19 @@ class Alignment(object):
         # <seg type="ms_name">Vienna</seg>
         ms_names = self.get_ms_names_from_xml(root)
 
+        def get_nat_parts(astring):
+            ret = []
+            for p in re.findall(ur'(\d+|\D+)', astring):
+                try:
+                    p = int(p)
+                except Exception:
+                    pass
+                ret.append(p)
+
+            return ret
+
         # extract the paras
+        print 'HERE'
         for alignments in alignments_set:
             for element in alignments:
                 if len(paras) > 50000:
@@ -268,7 +285,7 @@ class Alignment(object):
                                 fields[seg.attrib.get('type')] = seg.text
 
                         ms_name = para_ms['ms_name'] or 'UNSPECIFIED'
-                        # take normalises name
+                        # take normalised name
                         ms_name = ms_names.get(ms_name, ms_name)
 
                         para['mss'][ms_name] = para_ms
@@ -283,6 +300,31 @@ class Alignment(object):
 
                         if not para_ms.get('absent', False):
                             mss[ms_name]['para_count'] += 1
+
+                            # detect displaced text
+                            # 12ra
+                            location = para_ms.get('location')
+
+                            if 0 and not re.match(r'^\d+[rv][ab]?$', location):
+                                print u'FORMAT: {}, {} : \'{}\''.format(
+                                    ms_name, para['id'], re.sub(
+                                        ur'(?musi)\s+', ' ', location)
+                                )
+
+                            last_location = mss[ms_name].get('location', None)
+                            if last_location and\
+                                (get_nat_parts(last_location) >
+                                 get_nat_parts(location)) and\
+                                    (last_location.strip('ab') != location):
+
+                                s = u'{0:5s} {1:15s} {2:20.20s} {3:20.20s}'
+                                if 0:
+                                    print s.format(
+                                        para['id'], ms_name,
+                                        last_location, location
+                                    )
+
+                            mss[ms_name]['location'] = location
 
                     paras.append(para)
 
