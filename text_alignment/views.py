@@ -13,10 +13,24 @@ def view_alignment(request, path):
 
 
 class Alignment(object):
+    '''
+    Responds to user and ajax requests with a list of paragraphs
+    for a given range (e.g. sections) and a given set of manuscripts.
+
+    Sources:
+        * alignment file (XML/TEI) obtained from Kiln then cached
+        * converted into python dictionary and cached
+    '''
 
     def process_request(self, request, path):
+        '''
+        If user request, we regenerate the python dictionary from the XML file.
+        If ajax request, we read the dictionary from the cache.
+        The response contains only the requested data from the dictionary.
+        '''
         is_fragment = request.GET.get('js', 0)
         if is_fragment:
+            # ajax request
             return self.get_alignment_fragment(request, path)
 
         alignment_data = self.fetch_all_alignment_data(True)
@@ -84,6 +98,11 @@ class Alignment(object):
 
     def fetch_all_alignment_data(self, nocache=False):
         '''
+        Cache and returns a python dictionary with ALL alignment data.
+        If the dictionary is not in the django cache or <nocache> is True,
+        we request the alignment file (XML) from Kiln then convert it to
+        a dictionary.
+
         {
             mss: []
             paras: []
@@ -174,36 +193,35 @@ class Alignment(object):
         return ret
 
     def get_requested_alignment_data(self, alignment_data, config):
+        '''
+        Remove all non requested data from <alignment_data> and returns it.
+
+        <alignment_data>: the whole alignment data as a python dictionary
+        <config>: requested data
+        '''
         ret = alignment_data
 
         sections = config.get('sections')
         mss = config.get('mss', prop='name')
 
-        # filter by section
         for i in range(len(ret['paras']) - 1, -1, -1):
+            # remove unwanted sections
             if sections and ret['paras'][i]['section'].lower() not in sections:
                 del ret['paras'][i]
                 continue
+            # remove unwanted manuscripts
             if mss:
                 for ms_name in ret['paras'][i]['mss'].keys():
                     if ms_name not in mss:
                         del ret['paras'][i]['mss'][ms_name]
 
-        # only keep requested mss and preserve the order
-        if 0:
-            if mss:
-                mss2 = []
-                for ms in mss:
-                    for ms2 in ret['mss']:
-                        if (ms2['key'] or 'undefined') == ms:
-                            mss2.append(ms2)
-                ret['mss'] = mss2
-
         return ret
 
     def get_dict_from_alignemnt_xml(self, xml_string):
         '''
-        paras = [
+        Convert the XML alignment file into a python dictionary.
+
+        paras: [
             'id': 'fr20125_00001',
             'section': 'Genesis',
             'mss': {
@@ -221,7 +239,7 @@ class Alignment(object):
             },
             [...]
         ]
-        mss = [
+        mss: [
             {
                 'name': 'Fr20125',
                 'para_count': 0,
@@ -260,7 +278,6 @@ class Alignment(object):
             return ret
 
         # extract the paras
-        print 'HERE'
         for alignments in alignments_set:
             for element in alignments:
                 if len(paras) > 50000:
@@ -330,12 +347,9 @@ class Alignment(object):
 
         ret = {
             'paras': paras,
-            # 'mss': sorted(mss.values(), key=lambda ms: -ms['para_count']),
             'mss': sorted(mss.values(), key=lambda ms: ms['name'].lower()),
             'sections': sections,
         }
-
-        # print ret['mss']
 
         return ret
 
