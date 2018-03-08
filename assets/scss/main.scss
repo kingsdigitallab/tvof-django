@@ -436,9 +436,16 @@ footer {
             max-height: rem-calc(200);
         }
     }
+
 }
 
 /* Media queries */
+
+@media print {
+    .social-links {
+        display: none;
+    }
+}
 
 @media screen and (max-width: 575px) {
     nav {

@@ -177,6 +177,11 @@ a vue directive:
                                 <i class="fa fa-columns"></i>
                             </a>
                         </li>
+                        <li>
+                            <a target="_blank" v-bind:href="getPrintUrl()" aria-label="Print view" title="Print view">
+                                <i class="fa fa-print"></i>
+                            </a>
+                        </li>
                         <li v-bind:class="{toolbar: 1, hidden: display_settings.length == 0}">
                             <a><i class="fa fa-pencil"></i></a>
                             <ul class="text-left">
