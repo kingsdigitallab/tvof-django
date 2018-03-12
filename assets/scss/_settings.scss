@@ -120,6 +120,7 @@ $font-family-monospace: Consolas, 'Liberation Mono', Courier, monospace;
 $header-color: inherit;
 $header-lineheight: 1.4;
 $header-margin-bottom: 0.5rem;
+// TODO: update $header-sizes to $header-styles
 $header-sizes: (
   small: (
     'h1': 24,
