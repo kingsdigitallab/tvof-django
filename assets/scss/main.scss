@@ -501,3 +501,63 @@ footer {
         // }
     }
 }
+
+@media print {
+    a {
+        text-decoration: none;
+    }
+
+    h4.tei-rubric {
+        color: $secondary-color !important;
+    }
+
+    span.tei-pb,
+    span.tei-cb {
+        color: teal !important;
+    }
+
+    span.tei-corr-text {
+        color: $dark-orange !important;
+    }
+
+    .tei-c.red, .tei-rubric, .tei-hi.red {
+        color: scale-color($secondary-color, $lightness: 25%) !important;
+    }
+    .first-letter-red::first-letter {
+        color: scale-color($secondary-color, $lightness: 25%) !important;
+    }
+
+    sup {
+        &.tei-gen {
+            &:after {
+                color: scale-color($success-color, $lightness: 30%) !important;
+            }
+        }
+
+        &.tei-note {
+            &:after {
+                color: scale-color($secondary-color, $lightness: 30%) !important;
+            }
+        }
+
+        &.tei-source {
+            &:after {
+                color: scale-color($primary-color, $lightness: 40%) !important;
+            }
+        }
+
+        &.tei-trad {
+            &:after {
+                color: scale-color($tertiary-color, $lightness: 50%) !important;
+            }
+        }
+    }
+
+    .tei-unclear {
+        &:before {
+            color: $tertiary-color !important;
+            content: "\f128";
+            font-family: "FontAwesome";
+        }
+    }
+}
