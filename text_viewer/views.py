@@ -29,5 +29,5 @@ def view_text_print(request, path):
         'res': res,
         'title': title,
     }
-    print(context)
+    # print(context)
     return render(request, 'text_viewer/text_print.html', context)
