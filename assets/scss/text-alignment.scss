@@ -129,209 +129,210 @@ body {
 
 /* Viztest specific */
 
-/* Variables */
-
-// Colours
-$primary-color: #1c2434;
-$secondary-color: #4e2626;
-$tertiary-color: #4b4d25;
-
-$neutral: #c7cb00;
-
-$grey: #d8d8d8;
-
-.one {
-    color: $primary-color;
-}
-
-.one-bg {
-    background: $primary-color;
-    color: white;
-}
-
-.two {
-    color: $secondary-color;
-}
-
-.two-bg {
-    background: $secondary-color;
-    color: white;
-}
-
-.three {
-    color: $tertiary-color;
-}
-
-.three-bg {
-    background: $tertiary-color;
-    color: white;
-}
-
-// Fonts
-$body-font-family: 'Archivo Narrow', sans-serif;
-
-/* Globals */
-
-body {
-    box-sizing: border-box; 
-    font-family: $body-font-family;
+.viz {
     margin: 0;
     padding: 0;
-}
+    widht: 100%;
+    /* Variables */
 
-button {
-    border: 0;
-    cursor: pointer;
-    min-height: 100px;
-    min-width: 100px;
+    // Colours
+    $primary-color: #1c2434;
+    $secondary-color: #4e2626;
+    $tertiary-color: #4b4d25;
 
-    svg {
-        width: 100%;
+    $neutral: #c7cb00;
+
+    $grey: #d8d8d8;
+
+    .one {
+        color: $primary-color;
     }
-}
 
-header,
-main,
-footer {
-    clear: both;
-    display: block;
-    padding: 0 20px;
-}
+    .one-bg {
+        background: $primary-color;
+        color: white;
+    }
 
-header {
-    border-bottom: 1px solid grey;
-    margin-bottom: 20px;
-}
+    .two {
+        color: $secondary-color;
+    }
 
-footer {
-    border-top: 1px solid grey;
-    margin-top: 20px;
-}
+    .two-bg {
+        background: $secondary-color;
+        color: white;
+    }
 
-ol,
-ul {
-    margin: 0;
+    .three {
+        color: $tertiary-color;
+    }
 
-    li {
-        border-bottom: 2px solid $grey;
-        min-height: 20px; // causes issues when zooming in/out
-        padding: 3px 8px;
+    .three-bg {
+        background: $tertiary-color;
+        color: white;
+    }
 
-        &.connect.active {
-            background: darken($neutral, 10%);
-        }
+    // Fonts
+    $body-font-family: 'Archivo Narrow', sans-serif;
 
-        &.missing.active {
-            background: darken($grey, 10%);
-        }
+    /* Globals */
+
+    body {
+        box-sizing: border-box; 
+        font-family: $body-font-family;
+        margin: 0;
+        padding: 0;
+    }
+
+    button {
+        border: 0;
+        cursor: pointer;
+        min-height: 100px;
+        min-width: 100px;
 
         svg {
-            padding-left: 5px;
-            padding-right: 5px;
+            width: 100%;
         }
     }
-}
 
-ul {
-
-    padding: 0;
-
-    li {
-        list-style: none;
+    header,
+    main,
+    footer {
+        clear: both;
+        display: block;
+        padding: 0 20px;
     }
-}
 
-.connect {
-    background: $neutral;
-
-    &:hover {
-        background: darken($neutral, 10%);
-        cursor: pointer;
+    header {
+        border-bottom: 1px solid grey;
+        margin-bottom: 20px;
     }
-}
 
-.hide {
-    display: none;
-}
-
-.missing {
-    background: $grey;
-
-    &:hover {
-        background: darken($grey, 10%);
-        cursor: pointer;
+    footer {
+        border-top: 1px solid grey;
+        margin-top: 20px;
     }
-}
 
-.section {
-    background: #cff0ff;
-    border-bottom: 3px solid $neutral;
-    font-size: 18px;
-    margin: 0;
-}
+    ol,
+    ul {
+        margin: 0;
 
-.show {
-    display: block;
-}
+        li {
+            border-bottom: 2px solid $grey;
+            padding: 3px 8px;
 
-.title {
-    color: white;
-    margin: 0;
-    padding: 20px;
-}
+            &.connect.active {
+                background: darken($neutral, 10%);
+            }
 
-.zoom {
-    transform: scale(2);
-}
+            &.missing.active {
+                background: darken($grey, 10%);
+            }
 
-/* Headings */
-
-h1, h2, h3, h4, h5, h6 {
-    font-weight: normal;
-}
-
-/* Grid */
-
-.row {
-    clear: both;
-    display: block;
-    width: 100%;
-}
-
-[class*='col-'] {
-    box-sizing: border-box;
-    float: left;
-    width: 100%;
-}
-
-.col-eighth:nth-child(3),
-.col-eighth:nth-child(5),
-.col-eighth:nth-child(7) {
-    border-left: 1px solid #666;
-    border-right: 1px solid #666;
-}
-
-.col-eighth:nth-child(even) {
-    li {
-        height: 19px;
+            svg {
+                padding-left: 5px;
+                padding-right: 5px;
+            }
+        }
     }
-}
- 
-/* Media queries */
 
-@media screen and (min-width: 801px) {
+    ol {
+        list-style-position: inside;
+    }
 
-    .col-full {
+    ul {
+        padding: 0;
+
+        li {
+            list-style: none;
+        }
+    }
+
+    .connect {
+        background: $neutral;
+
+        &:hover {
+            background: darken($neutral, 10%);
+            cursor: pointer;
+        }
+    }
+
+    .hide {
+        display: none;
+    }
+
+    .missing {
+        background: $grey;
+
+        &:hover {
+            background: darken($grey, 10%);
+            cursor: pointer;
+        }
+    }
+
+    .section {
+        background: #cff0ff;
+        border-bottom: 3px solid $neutral;
+        font-size: 18px;
+        margin: 0;
+    }
+
+    .show {
+        display: block;
+    }
+
+    .title {
+        color: white;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .zoom {
+        transform: scale(2);
+    }
+
+    /* Headings */
+
+    h1, h2, h3, h4, h5, h6 {
+        font-weight: normal;
+    }
+
+    /* Grid */
+
+    .row {
+        clear: both;
+        display: block;
+        width: 100% !important;
+    }
+
+    [class*='col-'] {
+        box-sizing: border-box;
+        float: left;
         width: 100%;
     }
 
-    .col-eighth:nth-child(even) {
-        display: inline-block;
-        width: 3%;
+    .col-eighth:nth-child(3),
+    .col-eighth:nth-child(5),
+    .col-eighth:nth-child(7) {
+        border-left: 1px solid #666;
+        border-right: 1px solid #666;
     }
+     
+    /* Media queries */
 
-    .col-eighth:nth-child(odd) {
-        display: inline-block;
-        width: 22%;
+    @media screen and (min-width: 801px) {
+
+        .col-full {
+            width: 100%;
+        }
+
+        .col-eighth:nth-child(even) {
+            display: inline-block;
+            width: 3%;
+        }
+
+        .col-eighth:nth-child(odd) {
+            display: inline-block;
+            width: 22%;
+        }
     }
 }
