@@ -9,8 +9,6 @@
 {% endcompress %}
 {% endblock %}
 
-{% block meta_title %}Alignment{% endblock %}
-
 {% block title %}Alignment{% endblock %}
 
 {% block body_classes %}body-alignment{% endblock %}
@@ -266,13 +264,13 @@
 
             // Test
             // Create a pattern
-           for (var i=0;i<7;i++){
+           // for (var i=0;i<7;i++){
               
-              for (var j=0;j<7;j++){   
-                 ctx.fillStyle='rgb(' + Math.floor(255-20.5*i)+ ','+ Math.floor(255 - 42.5*j) + ',255)';
-                 ctx.fillRect( j*25, i* 25, 55, 55 );
-              }
-           }
+           //    for (var j=0;j<7;j++){   
+           //       ctx.fillStyle='rgb(' + Math.floor(255-20.5*i)+ ','+ Math.floor(255 - 42.5*j) + ',255)';
+           //       ctx.fillRect( j*25, i* 25, 55, 55 );
+           //    }
+           // }
            // End Test
             
             bw = (caw - labels_max_width) / align.paras.length;
