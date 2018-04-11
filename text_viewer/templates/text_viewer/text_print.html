@@ -1,0 +1,35 @@
+{% extends "base_minimal.html" %}
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+{% block extra_head %}
+    <style>
+    </style>
+{% endblock %}
+
+{% block body_classes %}text-print{% endblock %}
+
+{% block header_top_bar %}
+{% endblock %}
+
+{% block minimal_breadcrumb %}
+    <small> </small>
+{% endblock %}
+
+{% block title %}<h1>{{ title }}</h1>{% endblock %}
+
+{% block main %}
+  {{ res.chunk|safe }}
+  
+  <div>
+    {{ res.generated }}
+  </div>
+{% endblock %}
+
+{% block footer_scripts %}
+    {{ block.super }}
+{% endblock %}
+
+{% block extra_js %}
+    <script type="text/javascript">
+    </script>
+{% endblock %}

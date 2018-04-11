@@ -1,6 +1,7 @@
 import thread
 from django.core.cache import caches
 from requests.exceptions import ConnectionError
+from django.conf import settings
 
 
 class CachedRequesterKiln(object):
@@ -13,7 +14,7 @@ class CachedRequesterKiln(object):
     share instances among threads.
 
     Caching strategy:
-    * if the response is in memory, return it
+    * if the response is in memory, returns it
     * if not, read from disk and get response length from remote server
     * if lengths are different, stream the whole response to disk
     * convert response to unicode and it in memory
@@ -87,10 +88,14 @@ class CachedRequesterKiln(object):
                 # request
                 self.dmsg('DOWNLOAD response')
                 parts = []
-                apply_vagrant_fix = '10.0.2.2' in url and self.chunk_size > 100
+                apply_vagrant_fix = 0 and (
+                    '10.0.2.2' in url and self.chunk_size > 100
+                )
                 for data in stream.iter_content(chunk_size=self.chunk_size):
-                    # don't ask!!
                     if apply_vagrant_fix:
+                        # Some very weird bug when download got stuck in
+                        # vagrant, I had to print something to make it
+                        # work consistently.
                         print '.'
                     parts.append(data)
                 self.dmsg('WRITE to disk cache')
@@ -109,9 +114,10 @@ class CachedRequesterKiln(object):
         return ret
 
     def dmsg(self, message):
-        print '%s' % message
-        if 0:
-            print '%s %s' % (thread.get_ident(), message)
+        if settings.DEBUG:
+            print '%s' % message
+            if 0:
+                print '%s %s' % (thread.get_ident(), message)
 
     def clear_disk_cache(self):
         self.cache.clear()

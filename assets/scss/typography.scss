@@ -1,0 +1,28 @@
+/*
+ * Archivo Narrow
+ * https://fonts.google.com/?query=archivo+narrow&selection.family=Archivo+Narrow
+ */
+
+@font-face {
+    font-family: "Archivo Narrow";
+    src:    url("/static/fonts/Archivo_Narrow/ArchivoNarrow-Regular.ttf") format("truetype");
+}
+
+@font-face {
+    font-family: "Archivo Narrow";
+    src:    url("/static/fonts/Archivo_Narrow/ArchivoNarrow-Italic.ttf") format("truetype");
+    font-style: italic;
+}
+
+@font-face {
+    font-family: "Archivo Narrow";
+    src:    url("/static/fonts/Archivo_Narrow/ArchivoNarrow-Bold.ttf") format("truetype");
+    font-weight: bold;
+}
+
+@font-face {
+    font-family: "Archivo Narrow";
+    src:    url("/static/fonts/Archivo_Narrow/ArchivoNarrow-BoldItalic.ttf") format("truetype");
+    font-style: italic;
+    font-weight: bold;
+}

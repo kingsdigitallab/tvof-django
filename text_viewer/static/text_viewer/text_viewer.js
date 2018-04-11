@@ -57,8 +57,8 @@
     Viewer.prototype.updateQueryString = function() {
         // update the title and the browsing history
         var title = '';
-        
         var query_string = ''
+            
         for (var k in this.panes) {
             if (this.panes.hasOwnProperty(k)) {
                 if (query_string) query_string += '&';
@@ -68,6 +68,7 @@
                 title += this.panes[k].getTitleFromAddress();
             }
         }
+        
         change_broswer_query_string(query_string, title);
     }
 
@@ -709,12 +710,15 @@
                 },
                 getSyncTitle: function() {
                     return this.canBeSynced ? (this.is_synced ? 'Click to unsync this pane' : 'Click to synchronise this pane with another') : 'This pane cannot be synced';
-                }
+                },
             },
             methods: {
                 clearLocationFilter: function(location_type) {
                     this.location_type_filters[location_type.slug] = '';
                     this.filterLocations(location_type);
+                },
+                getPrintUrl: function() {
+                    return 'print/' + this.pane.address;
                 },
                 filterLocations: function(location_type) {
                     var filter = this.location_type_filters[location_type.slug] || '';
