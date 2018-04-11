@@ -1,0 +1,75 @@
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+<div class="expanded row">
+    <div class="col-eighth">
+        &nbsp;
+    </div>
+    <div class="col-eighth">
+        &nbsp;
+    </div>
+    {% for ms in params.mss.options %}
+    {% if ms.selected %}
+    <div class="col-eighth">
+        <h2 class="title one-bg">{{ ms.name }}</h2>
+    </div>
+    <div class="col-eighth">
+        &nbsp;
+    </div>
+    {% endif %}
+    {% endfor %}
+</div>
+
+<div class="expanded row">
+    <div class="col-eighth">
+        <p class="section">Section name</p>
+        {% for para in alignment_data.paras %}
+        <ol>
+            <li>{{ para.id }} {{ para.section }}</li>
+        </ol>
+        {% endfor %}
+    </div>
+</div>
+
+<table class="alignment-paras">
+    <thead>
+        <tr>
+            <th>Section</th>
+            {% for ms in params.mss.options %}
+                {% if ms.selected %}
+                    <th>
+                        {{ ms.name }}
+                        {% comment %}
+                        <br/>
+                        ({{ ms.para_count}})
+                        {% endcomment %}
+                    </th>
+                {% endif %}
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for para in alignment_data.paras %}
+            <tr>
+                <td>
+                    {{ para.section }}
+                    <br/>
+                    {{ para.id }}
+                </td>
+                {% for ms in params.mss.options %}
+                    {% if ms.selected %}
+                        {% with para_ms=para.mss|get_item:ms.name %}
+                            <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
+                                {% if fields_locus %}{{ para_ms.location }}{% endif %}
+                                {% if fields_rubric %}{{ para_ms.rubric }}{% endif %}
+                                {% if fields_verse and para_ms.verse %}
+                                    <br/>
+                                    Verse: {{ para_ms.verse }}
+                                {% endif %}
+                            </td>
+                        {% endwith %}
+                    {% endif %}
+                {% endfor %}
+            </tr>
+        {% endfor %}
+    <tbody>
+</table>
