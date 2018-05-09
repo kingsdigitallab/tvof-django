@@ -5,11 +5,14 @@
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.fields import StreamField
 from wagtail.wagtailcore.blocks import *  # noqa
-from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
+from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
 from wagtail.wagtailimages.blocks import ImageChooserBlock
 from wagtail.contrib.wagtailroutablepage.models import route
 
 from django import forms
+
+# STREAMFIELD BLOCKS
+############################################
 
 
 class ImageFormatChoiceBlock(FieldBlock):
@@ -34,86 +37,62 @@ class ImageAndTextBlock(StructBlock):
     caption = RichTextBlock()
     alignment = ImageFormatChoiceBlock()
 
+# STREAMFIELD TYPES
+############################################
 
-class HomePage(Page):
+
+def get_advanced_streamfield():
+    return StreamField([
+        ('heading', CharBlock(classname="")),
+        ('paragraph', RichTextBlock()),
+        ('image', ImageChooserBlock()),
+        ('image_caption', CharBlock(classname="richtext-caption")),
+        ('image_and_caption', ImageAndCaptionBlock()),
+        ('image_and_text', ImageAndTextBlock()),
+    ])
+
+
+# PAGES
+############################################
+
+
+class BaseRichPage(Page):
+    class Meta:
+        abstract = True
+
+    content_panels = Page.content_panels + [
+        StreamFieldPanel('content'),
+    ]
+
+
+class HomePage(BaseRichPage):
     """Basic home page."""
     subpage_types = ['IndexPage', 'RichTextPage', 'BlogIndexPage']
+
     content = StreamField([
         ('paragraph', RichTextBlock()),
         ('image_and_caption', ImageAndCaptionBlock()),
     ])
 
 
-HomePage.content_panels = [
-    FieldPanel('title'),
-    StreamFieldPanel('content'),
-]
-
-
-class IndexPage(Page):
+class IndexPage(BaseRichPage):
     """Streamfield richtextpage."""
 
     subpage_types = ['IndexPage', 'RichTextPage', 'BlogIndexPage']
-    content = StreamField([
-        ('heading', CharBlock(classname="")),
-        ('paragraph', RichTextBlock()),
-        ('image', ImageChooserBlock()),
-        ('image_caption', CharBlock(classname="richtext-caption")),
-        ('image_and_caption', ImageAndCaptionBlock()),
-        ('image_and_text', ImageAndTextBlock()),
-    ])
+    content = get_advanced_streamfield()
 
 
-IndexPage.content_panels = [
-    FieldPanel('title'),
-    StreamFieldPanel('content'),
-]
-
-
-class RichTextPage(Page):
+class RichTextPage(BaseRichPage):
     """Streamfield richtextpage."""
 
-    content = StreamField([
-        ('heading', CharBlock(classname="")),
-        ('paragraph', RichTextBlock()),
-        ('image', ImageChooserBlock()),
-        ('image_caption', CharBlock(classname="richtext-caption")),
-        ('image_and_caption', ImageAndCaptionBlock()),
-        ('image_and_text', ImageAndTextBlock()),
-    ])
+    content = get_advanced_streamfield()
 
 
-RichTextPage.content_panels = [
-    FieldPanel('title'),
-    StreamFieldPanel('content'),
-]
-
-
-# class BlogIndexPage(Page):
-#    """Blog index Page."""
-
-#    search_name = "Blog"
-#    subpage_types = ['BlogPost', ]
-
-
-class BlogPost(Page):
+class BlogPost(BaseRichPage):
     """Blog post."""
 
     search_name = "Blog post"
-    content = StreamField([
-        ('heading', CharBlock(classname="")),
-        ('paragraph', RichTextBlock()),
-        ('image', ImageChooserBlock()),
-        ('image_caption', CharBlock(classname="richtext-caption")),
-        ('image_and_caption', ImageAndCaptionBlock()),
-        ('image_and_text', ImageAndTextBlock()),
-    ], null=True, blank=True)
-
-
-BlogPost.content_panels = [
-    FieldPanel('title'),
-    StreamFieldPanel('content'),
-]
+    content = get_advanced_streamfield()
 
 
 class BlogIndexPage(Page):
