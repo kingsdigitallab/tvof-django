@@ -142,8 +142,18 @@ nav {
     }
 }
 
-.menu.submenu.is-dropdown-submenu {
+.menu {
+    &.submenu {
+        &.is-dropdown-submenu {
+            background: $primary-color;
+        }
+    }
+}
+
+ul.sticky {
     background: $primary-color;
+    margin-top: 0 !important;
+    right: 0;
 }
 
 

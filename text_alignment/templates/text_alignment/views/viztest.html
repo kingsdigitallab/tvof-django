@@ -1,0 +1,104 @@
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+{# TODO: move this to external file (main.js?) #}
+<script>
+$(document).ready(function() {
+    // Expand / Collapse
+    $('.expand').on("click", function () {
+        $(this).children().next('p').slideToggle(400).toggleClass("hide show");
+        $(this).toggleClass("active");
+        return false;
+    });
+});
+</script>
+
+<div class="viz">
+    <div class="row expanded">
+        <div class="col-eighth">
+            &nbsp;
+        </div>
+        <div class="col-eighth">
+            &nbsp;
+        </div>
+        {% for ms in params.mss.options %}
+        {% if ms.selected %}
+        <div class="col-eighth">
+            <h2 class="title one-bg">{{ ms.name }}</h2>
+        </div>
+        <div class="col-eighth">
+            &nbsp;
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+
+    <div class="row expanded">
+        <div class="col-eighth">
+            <ol>
+            {% for para in alignment_data.paras %}
+            {% ifchanged para.section %}
+            </ol>
+            <p class="section">{{ para.section }}</p>
+            <ol start="{{ forloop.counter }}">
+            {% endifchanged %}
+                <li>{{ para.id }} {{ para.section }}</li>
+            {% endfor %}
+            </ol>
+        </div>
+
+        {% for ms in params.mss.options %}
+        {% if ms.selected %}
+        <div class="col-eighth">
+            <ul>
+            {% for para in alignment_data.paras %}
+            {% ifchanged para.section %}
+            </ul>
+            <p class="section">&nbsp;</p>
+            <ul>
+            {% endifchanged %}
+                <li class="connect">&nbsp;</li>
+            {% endfor %}
+            </ul>
+        </div>
+        {# TODO: replace 'one-bg' with dynamic class for different colours #}
+        <div class="col-eighth one-bg">
+            <ul>
+            {% for para in alignment_data.paras %}
+            {% ifchanged para.section %}
+            </ul>
+            <p class="section">&nbsp;</p>
+            <ul>
+            {% endifchanged %}
+            {% with para_ms=para.mss|get_item:ms.name %}
+                <li class="connect expand">
+                    <i class="fa fa-info-circle"></i> <i class="fa fa-file"></i> <i class="fa fa-pencil"></i>
+                    <p class="hide">
+                        {% if fields_locus %}{{ para_ms.location }}{% endif %}
+                        {% if fields_rubric %}{{ para_ms.rubric }}{% endif %}
+                        {% if fields_verse and para_ms.verse %}
+                            <br/>
+                            Verse: {{ para_ms.verse }}
+                        {% endif %}
+                    </p>
+                </li>
+            {% endwith %}
+            {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+        {% endfor %}
+
+        <div class="col-eighth">
+            <ul>
+            {% for para in alignment_data.paras %}
+            {% ifchanged para.section %}
+            </ul>
+            <p class="section">&nbsp;</p>
+            <ul>
+            {% endifchanged %}
+                <li class="connect">&nbsp;</li>
+            {% endfor %}
+            </ul>
+        </div>
+    </div>
+</div>
