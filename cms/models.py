@@ -5,11 +5,32 @@
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.fields import StreamField
 from wagtail.wagtailcore.blocks import *  # noqa
-from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel
 from wagtail.wagtailimages.blocks import ImageChooserBlock
-from wagtail.contrib.wagtailroutablepage.models import route
-
+from wagtail.contrib.wagtailroutablepage.models import (
+    route, RoutablePageMixin)
+from django.db import models
+from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel, FieldPanel,\
+    TabbedInterface, ObjectList
 from django import forms
+from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
+from django.urls.base import translate_url
+from django.shortcuts import render
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+
+def get_field_lang(obj, field_name):
+    if obj is None:
+        return ''
+
+    from django.utils import translation
+    ret = getattr(obj, '%s_%s' % (
+        field_name, translation.get_language()
+    ), None)
+    if not ret:
+        ret = getattr(obj, '%s' % field_name, None)
+
+    return ret
 
 # STREAMFIELD BLOCKS
 ############################################
@@ -37,11 +58,8 @@ class ImageAndTextBlock(StructBlock):
     caption = RichTextBlock()
     alignment = ImageFormatChoiceBlock()
 
-# STREAMFIELD TYPES
-############################################
 
-
-def get_advanced_streamfield():
+def get_advanced_streamfield(blank=False):
     return StreamField([
         ('heading', CharBlock(classname="")),
         ('paragraph', RichTextBlock()),
@@ -49,23 +67,109 @@ def get_advanced_streamfield():
         ('image_caption', CharBlock(classname="richtext-caption")),
         ('image_and_caption', ImageAndCaptionBlock()),
         ('image_and_text', ImageAndTextBlock()),
-    ])
+    ], blank=blank)
 
-
-# PAGES
+# MUTLILINGUAL BASE PAGE
 ############################################
 
 
-class BaseRichPage(Page):
+class AbstractMultilingualContentPage(Page):
+    '''A multilingual abstract wagtail page.
+
+    Language supported: English and French.
+
+    It provides a new tab in the admin for each alternative language.
+    title & content fields are duplicated for each language.
+    e.g. title_fr, content_fr
+
+    Provides language-based web path:
+
+    /PATH (for english)
+    /lang/PATH (for other languages)
+
+    Author: GN, May 2018
+    '''
     class Meta:
         abstract = True
+
+    # TODO: generalise the title_X and content_X and language tabs
+    title_fr = models.CharField(
+        verbose_name='Title',
+        max_length=255,
+        help_text=_(
+            "The page title as you'd like it to be seen by the public"
+        ),
+        blank=True, null=False, default=''
+    )
+    content_fr = get_advanced_streamfield(blank=True)
 
     content_panels = Page.content_panels + [
         StreamFieldPanel('content'),
     ]
 
+    content_panels_fr = [
+        FieldPanel('title_fr', classname="full title"),
+        StreamFieldPanel('content_fr'),
+    ]
 
-class HomePage(BaseRichPage):
+    edit_handler = TabbedInterface([
+        ObjectList(content_panels, heading='Content'),
+        ObjectList(content_panels_fr, heading='Content (French)'),
+        ObjectList(Page.promote_panels, heading='Promote'),
+        ObjectList(
+            Page.settings_panels, heading='Settings',
+            classname="settings"
+        ),
+    ])
+
+    def content_lang(self):
+        return get_field_lang(self, 'content')
+
+    def title_lang(self):
+        return get_field_lang(self, 'title')
+
+    @classmethod
+    def get_languages(cls, request=None):
+        languages = []
+
+        code = settings.CMS_LANGUAGES[0]['code']
+        if request:
+            code = request.LANGUAGE_CODE
+
+        # if we find /fr/ in the requested path.
+        # we set selected = <french>.
+        selected = None
+        for lang in settings.CMS_LANGUAGES:
+            lang = lang.copy()
+
+            if selected is None or lang['code'] == code:
+                selected = lang
+
+            if request:
+                lang['href'] = translate_url(request.path, lang['code'])
+
+            languages.append(lang)
+
+        # alternative = the first non-selected language.
+        # useful when dealing with only two languages.
+        for lang in languages:
+            lang['selected'] = (lang == selected)
+            if not lang['selected']:
+                alternative = lang
+
+        ret = {
+            'selected': selected,
+            'all': languages,
+            'alt': alternative or selected,
+        }
+
+        return ret
+
+# PAGES
+############################################
+
+
+class HomePage(AbstractMultilingualContentPage):
     """Basic home page."""
     subpage_types = ['IndexPage', 'RichTextPage', 'BlogIndexPage']
 
@@ -75,27 +179,27 @@ class HomePage(BaseRichPage):
     ])
 
 
-class IndexPage(BaseRichPage):
+class IndexPage(AbstractMultilingualContentPage):
     """Streamfield richtextpage."""
 
     subpage_types = ['IndexPage', 'RichTextPage', 'BlogIndexPage']
     content = get_advanced_streamfield()
 
 
-class RichTextPage(BaseRichPage):
+class RichTextPage(AbstractMultilingualContentPage):
     """Streamfield richtextpage."""
 
     content = get_advanced_streamfield()
 
 
-class BlogPost(BaseRichPage):
+class BlogPost(AbstractMultilingualContentPage):
     """Blog post."""
 
     search_name = "Blog post"
     content = get_advanced_streamfield()
 
 
-class BlogIndexPage(Page):
+class BlogIndexPage(RoutablePageMixin, Page):
     """Blog post index page."""
 
     search_name = 'Blog'

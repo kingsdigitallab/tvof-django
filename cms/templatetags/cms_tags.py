@@ -12,7 +12,7 @@ from \
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
 
-from ..models import BlogPost, HomePage
+from ..models import BlogPost, HomePage, get_field_lang
 
 logger = logging.getLogger(__name__)
 
@@ -142,6 +142,22 @@ def latest_n_blog_posts(context, nentries, parent=None):
     posts = base_model.objects.all().order_by('-date')[0:nentries]
 
     return {'request': context['request'], 'posts': posts}
+
+
+@register.simple_tag(takes_context=True)
+def page_title(context, page=None):
+    return get_page_field_lang(context, 'title', page)
+
+
+@register.simple_tag(takes_context=True)
+def page_content(context, page=None):
+    return get_page_field_lang(context, 'content', page)
+
+
+def get_page_field_lang(context, field_name, page=None):
+    if page is None:
+        page = context.get('self', None)
+    return get_field_lang(page, field_name)
 
 
 @register.inclusion_tag('cms/tags/local_menu.html', takes_context=True)

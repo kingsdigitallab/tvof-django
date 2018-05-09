@@ -184,6 +184,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wagtail.wagtailcore.middleware.SiteMiddleware',
     'wagtail.wagtailredirects.middleware.RedirectMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 )
 
 ROOT_URLCONF = PROJECT_NAME + '.urls'
@@ -204,13 +205,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.template.context_processors.static',
                 'django.contrib.messages.context_processors.messages',
+                'cms.context_processor.cms_lang',
             ],
         },
     },
 ]
 
 # https://docs.djangoproject.com/en/dev/topics/i18n/
-LANGUAGE_CODE = 'en-gb'
+LANGUAGE_CODE = 'en'
 TIME_ZONE = 'Europe/London'
 USE_I18N = True
 USE_L10N = False
@@ -384,3 +386,19 @@ TVOF_WEBPATH_TO_KILN = {
     '{}/bibliography'.format(TVOF_URL_TEXT):
         'bibliography/',
 }
+
+#
+CMS_LANGUAGES = [
+    {
+        'code': 'en',
+        'label': 'English',
+        'label_en': 'English',
+    },
+    {
+        'code': 'fr',
+        'label': 'Francais',
+        'label_en': 'French',
+    }
+]
+
+ITEMS_PER_PAGE = 10
