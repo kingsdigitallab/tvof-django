@@ -5,11 +5,35 @@
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.fields import StreamField
 from wagtail.wagtailcore.blocks import *  # noqa
-from wagtail.wagtailadmin.edit_handlers import FieldPanel, StreamFieldPanel
 from wagtail.wagtailimages.blocks import ImageChooserBlock
-from wagtail.contrib.wagtailroutablepage.models import route
-
+from wagtail.contrib.wagtailroutablepage.models import (
+    route, RoutablePageMixin)
+from django.db import models
+from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel, FieldPanel,\
+    TabbedInterface, ObjectList
 from django import forms
+from django.utils.translation import ugettext_lazy as _
+from django.conf import settings
+from django.urls.base import translate_url
+from django.shortcuts import render
+from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+
+
+def get_field_lang(obj, field_name):
+    if obj is None:
+        return ''
+
+    from django.utils import translation
+    ret = getattr(obj, '%s_%s' % (
+        field_name, translation.get_language()
+    ), None)
+    if not ret:
+        ret = getattr(obj, '%s' % field_name, None)
+
+    return ret
+
+# STREAMFIELD BLOCKS
+############################################
 
 
 class ImageFormatChoiceBlock(FieldBlock):
@@ -35,88 +59,147 @@ class ImageAndTextBlock(StructBlock):
     alignment = ImageFormatChoiceBlock()
 
 
-class HomePage(Page):
+def get_advanced_streamfield(blank=False):
+    return StreamField([
+        ('heading', CharBlock(classname="")),
+        ('paragraph', RichTextBlock()),
+        ('image', ImageChooserBlock()),
+        ('image_caption', CharBlock(classname="richtext-caption")),
+        ('image_and_caption', ImageAndCaptionBlock()),
+        ('image_and_text', ImageAndTextBlock()),
+    ], blank=blank)
+
+# MUTLILINGUAL BASE PAGE
+############################################
+
+
+class AbstractMultilingualContentPage(Page):
+    '''A multilingual abstract wagtail page.
+
+    Language supported: English and French.
+
+    It provides a new tab in the admin for each alternative language.
+    title & content fields are duplicated for each language.
+    e.g. title_fr, content_fr
+
+    Provides language-based web path:
+
+    /PATH (for english)
+    /lang/PATH (for other languages)
+
+    Author: GN, May 2018
+    '''
+    class Meta:
+        abstract = True
+
+    # TODO: generalise the title_X and content_X and language tabs
+    title_fr = models.CharField(
+        verbose_name='Title',
+        max_length=255,
+        help_text=_(
+            "The page title as you'd like it to be seen by the public"
+        ),
+        blank=True, null=False, default=''
+    )
+    content_fr = get_advanced_streamfield(blank=True)
+
+    content_panels = Page.content_panels + [
+        StreamFieldPanel('content'),
+    ]
+
+    content_panels_fr = [
+        FieldPanel('title_fr', classname="full title"),
+        StreamFieldPanel('content_fr'),
+    ]
+
+    edit_handler = TabbedInterface([
+        ObjectList(content_panels, heading='Content'),
+        ObjectList(content_panels_fr, heading='Content (French)'),
+        ObjectList(Page.promote_panels, heading='Promote'),
+        ObjectList(
+            Page.settings_panels, heading='Settings',
+            classname="settings"
+        ),
+    ])
+
+    def content_lang(self):
+        return get_field_lang(self, 'content')
+
+    def title_lang(self):
+        return get_field_lang(self, 'title')
+
+    @classmethod
+    def get_languages(cls, request=None):
+        languages = []
+
+        code = settings.CMS_LANGUAGES[0]['code']
+        if request:
+            code = request.LANGUAGE_CODE
+
+        # if we find /fr/ in the requested path.
+        # we set selected = <french>.
+        selected = None
+        for lang in settings.CMS_LANGUAGES:
+            lang = lang.copy()
+
+            if selected is None or lang['code'] == code:
+                selected = lang
+
+            if request:
+                lang['href'] = translate_url(request.path, lang['code'])
+
+            languages.append(lang)
+
+        # alternative = the first non-selected language.
+        # useful when dealing with only two languages.
+        for lang in languages:
+            lang['selected'] = (lang == selected)
+            if not lang['selected']:
+                alternative = lang
+
+        ret = {
+            'selected': selected,
+            'all': languages,
+            'alt': alternative or selected,
+        }
+
+        return ret
+
+# PAGES
+############################################
+
+
+class HomePage(AbstractMultilingualContentPage):
     """Basic home page."""
     subpage_types = ['IndexPage', 'RichTextPage', 'BlogIndexPage']
+
     content = StreamField([
         ('paragraph', RichTextBlock()),
         ('image_and_caption', ImageAndCaptionBlock()),
     ])
 
 
-HomePage.content_panels = [
-    FieldPanel('title'),
-    StreamFieldPanel('content'),
-]
-
-
-class IndexPage(Page):
+class IndexPage(AbstractMultilingualContentPage):
     """Streamfield richtextpage."""
 
     subpage_types = ['IndexPage', 'RichTextPage', 'BlogIndexPage']
-    content = StreamField([
-        ('heading', CharBlock(classname="")),
-        ('paragraph', RichTextBlock()),
-        ('image', ImageChooserBlock()),
-        ('image_caption', CharBlock(classname="richtext-caption")),
-        ('image_and_caption', ImageAndCaptionBlock()),
-        ('image_and_text', ImageAndTextBlock()),
-    ])
+    content = get_advanced_streamfield()
 
 
-IndexPage.content_panels = [
-    FieldPanel('title'),
-    StreamFieldPanel('content'),
-]
-
-
-class RichTextPage(Page):
+class RichTextPage(AbstractMultilingualContentPage):
     """Streamfield richtextpage."""
 
-    content = StreamField([
-        ('heading', CharBlock(classname="")),
-        ('paragraph', RichTextBlock()),
-        ('image', ImageChooserBlock()),
-        ('image_caption', CharBlock(classname="richtext-caption")),
-        ('image_and_caption', ImageAndCaptionBlock()),
-        ('image_and_text', ImageAndTextBlock()),
-    ])
+    content = get_advanced_streamfield()
 
 
-RichTextPage.content_panels = [
-    FieldPanel('title'),
-    StreamFieldPanel('content'),
-]
-
-
-# class BlogIndexPage(Page):
-#    """Blog index Page."""
-
-#    search_name = "Blog"
-#    subpage_types = ['BlogPost', ]
-
-
-class BlogPost(Page):
+class BlogPost(AbstractMultilingualContentPage):
     """Blog post."""
 
     search_name = "Blog post"
-    content = StreamField([
-        ('heading', CharBlock(classname="")),
-        ('paragraph', RichTextBlock()),
-        ('image', ImageChooserBlock()),
-        ('image_caption', CharBlock(classname="richtext-caption")),
-        ('image_and_caption', ImageAndCaptionBlock()),
-        ('image_and_text', ImageAndTextBlock()),
-    ], null=True, blank=True)
+    content = get_advanced_streamfield()
 
 
-BlogPost.content_panels = [
-    FieldPanel('title'),
-    StreamFieldPanel('content'),
-]
-
-
-class BlogIndexPage(Page):
+class BlogIndexPage(RoutablePageMixin, Page):
     """Blog post index page."""
 
     search_name = 'Blog'
