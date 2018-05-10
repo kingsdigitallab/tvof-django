@@ -105,6 +105,10 @@ nav {
             border-color: $white transparent transparent transparent !important;
         }
 
+        &:before {
+            border-color: transparent $white transparent transparent !important;
+        }
+
         &:focus,
         &:visited {
             color: $white;
@@ -447,21 +451,25 @@ footer {
 }
 
 @media screen and (max-width: 575px) {
-    // nav {
-    //     background-color: #1c2434;
+    nav {
+        background-color: #1c2434;
         
-    //     a {
-    //         color: $white;
-    //         &:hover {
-    //             color: scale-color($primary-color, $lightness: 80%);
-    //             background: scale-color($primary-color, $lightness: 20%);
-    //         }
+        a {
+            color: $white;
+            &:hover {
+                color: scale-color($primary-color, $lightness: 80%);
+                background: scale-color($primary-color, $lightness: 20%);
+            }
 
-    //         &:after {
-    //             border-color: transparent transparent transparent $white !important;
-    //         }
-    //     }
-    // }
+            &:after {
+                border-color: transparent transparent transparent $white !important;
+            }
+
+            &:before {
+                border-color: transparent $white transparent transparent !important;
+            }
+        }
+    }
 }
 
 @media screen and (max-width: 768px) {
