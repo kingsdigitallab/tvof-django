@@ -123,19 +123,6 @@ nav {
     .title-bar {
         background: #1c2434;
     }
-
-    .menu,
-    .menu > * {
-        z-index: 9;
-    }
-}
-
-.menu {
-    &.submenu {
-        &.is-dropdown-submenu {
-            background: $primary-color;
-        }
-    }
 }
 
 ul.sticky {
@@ -161,7 +148,6 @@ ul.sticky {
 
     h4 {
         font-size: 1.25rem;
-        //color: scale-color($almost-black, $lightness: 15%);
     }
 
     // Images
@@ -461,21 +447,21 @@ footer {
 }
 
 @media screen and (max-width: 575px) {
-    nav {
-        background-color: #1c2434;
+    // nav {
+    //     background-color: #1c2434;
         
-        a {
-            color: $white;
-            &:hover {
-                color: scale-color($primary-color, $lightness: 80%);
-                background: scale-color($primary-color, $lightness: 20%);
-            }
+    //     a {
+    //         color: $white;
+    //         &:hover {
+    //             color: scale-color($primary-color, $lightness: 80%);
+    //             background: scale-color($primary-color, $lightness: 20%);
+    //         }
 
-            &:after {
-                border-color: transparent transparent transparent $white !important;
-            }
-        }
-    }
+    //         &:after {
+    //             border-color: transparent transparent transparent $white !important;
+    //         }
+    //     }
+    // }
 }
 
 @media screen and (max-width: 768px) {
@@ -505,13 +491,14 @@ footer {
     footer {
         display: none;
         height: 1px;
+    }
+}
 
-        // padding: .5rem 0;
-
-        // .logo img,
-        // img {
-        //     max-height: rem-calc(50);
-        // }
+@media screen and (min-width: 769px) {
+    .menu {
+        &.nested {
+            margin-left: 0;
+        }
     }
 }
 

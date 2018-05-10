@@ -37,6 +37,19 @@
 .text-viewer {
     display: flex;
     flex-wrap: wrap;
+
+    .menu,
+    .menu > * {
+        z-index: 9;
+    }
+
+    .menu {
+        &.submenu {
+            &.is-dropdown-submenu {
+                background: $primary-color;
+            }
+        }
+    }
 }
 
 .main {
