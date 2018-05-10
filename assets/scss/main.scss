@@ -132,6 +132,10 @@ nav {
     .menu > * {
         z-index: 9;
     }
+
+    [data-toggle] {
+        cursor: pointer;
+    }
 }
 
 .menu.submenu.is-dropdown-submenu {
