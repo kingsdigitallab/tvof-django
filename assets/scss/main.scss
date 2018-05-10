@@ -127,6 +127,15 @@ nav {
     .title-bar {
         background: #1c2434;
     }
+
+    .menu,
+    .menu > * {
+        z-index: 9;
+    }
+}
+
+.menu.submenu.is-dropdown-submenu {
+    background: $primary-color;
 }
 
 ul.sticky {
@@ -210,7 +219,6 @@ ul.sticky {
     }
 
     .menu > li > a {
-        // color: $primary-color;
         &:hover {
             background: #5871a4;
         }
@@ -228,7 +236,6 @@ ul.sticky {
 
     .notes {
         padding: .5rem 1rem;
-        //background: scale-color($secondary-color, $lightness: 70%);
         border-top: 1px solid $secondary-color;
         font-size: .9375rem;
         p {
