@@ -1,6 +1,6 @@
 {% load wagtailcore_tags cms_tags %}
 
-<ul class="vertical medium-horizontal menu dropdown" data-dropdown-menu>
+<ul class="vertical medium-horizontal menu dropdown" data-responsive-menu="drilldown medium-dropdown">
     <li{% if current_page and root.url == current_page.url %} class="active"{% endif %}>
         <a href="{% pageurl root %}">{{ root.title }}</a>
     </li>
@@ -11,7 +11,7 @@
 
         <!-- only needed to show sub-pages in the main nav -->
         {% if page.get_children %}
-    	<ul class="menu">
+    	<ul class="vertical menu">
     		{% for child in page.get_children %}
     		<li><a href="{% pageurl child %}">{{ child.title }}</a></li>
     		{% endfor %}

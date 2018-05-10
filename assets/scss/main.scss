@@ -105,6 +105,10 @@ nav {
             border-color: $white transparent transparent transparent !important;
         }
 
+        &:before {
+            border-color: transparent $white transparent transparent !important;
+        }
+
         &:focus,
         &:visited {
             color: $white;
@@ -130,12 +134,8 @@ nav {
     }
 }
 
-.menu {
-    &.submenu {
-        &.is-dropdown-submenu {
-            background: $primary-color;
-        }
-    }
+.menu.submenu.is-dropdown-submenu {
+    background: $primary-color;
 }
 
 ul.sticky {
@@ -161,7 +161,6 @@ ul.sticky {
 
     h4 {
         font-size: 1.25rem;
-        //color: scale-color($almost-black, $lightness: 15%);
     }
 
     // Images
@@ -220,7 +219,6 @@ ul.sticky {
     }
 
     .menu > li > a {
-        // color: $primary-color;
         &:hover {
             background: #5871a4;
         }
@@ -238,7 +236,6 @@ ul.sticky {
 
     .notes {
         padding: .5rem 1rem;
-        //background: scale-color($secondary-color, $lightness: 70%);
         border-top: 1px solid $secondary-color;
         font-size: .9375rem;
         p {
@@ -474,6 +471,10 @@ footer {
             &:after {
                 border-color: transparent transparent transparent $white !important;
             }
+
+            &:before {
+                border-color: transparent $white transparent transparent !important;
+            }
         }
     }
 }
@@ -505,13 +506,14 @@ footer {
     footer {
         display: none;
         height: 1px;
+    }
+}
 
-        // padding: .5rem 0;
-
-        // .logo img,
-        // img {
-        //     max-height: rem-calc(50);
-        // }
+@media screen and (min-width: 769px) {
+    .menu {
+        &.nested {
+            margin-left: 0;
+        }
     }
 }
 
