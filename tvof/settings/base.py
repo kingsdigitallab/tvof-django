@@ -402,3 +402,12 @@ CMS_LANGUAGES = [
 ]
 
 ITEMS_PER_PAGE = 10
+
+# The list of MSS which will be on the public website
+# Go to http://localhost:8000/lab/alignment/
+# Click settings and select the desired MSS
+# then copy &ms=...& from the querystring
+# and paste it here
+# ALIGNEMENT_MSS = 'add-15268,add-19669,fr-17177,fr-20125,royal-20-d-1'\
+#     .split(',')
+ALIGNEMENT_MSS = []

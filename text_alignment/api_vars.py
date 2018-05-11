@@ -26,7 +26,7 @@ class API_Vars(object):
         if var['options'] and not isinstance(var['options'][0], dict):
             options = []
             for name in var['options']:
-                option_key = name.lower().strip().replace(' ', '-')
+                option_key = get_key_from_name(name)
                 options.append({
                     'key': option_key,
                     'name': name,
@@ -126,7 +126,7 @@ class API_Vars(object):
 
 def get_key_from_name(name):
     import re
-    return re.sub(ur'[^\W_]+', r'-', name.lower()).strip()
+    return re.sub(ur'[^\w_]+', r'-', name.lower()).strip()
 
 
 def get_name_from_key(akey):

@@ -4,6 +4,7 @@ from django.shortcuts import render
 from text_viewer.kiln_requester import CachedRequesterKiln
 from django.core.cache import caches
 from api_vars import API_Vars
+from text_alignment.api_vars import get_key_from_name
 
 
 def view_alignment(request, path):
@@ -149,6 +150,8 @@ class Alignment(object):
     def get_config_schema(self, alignment_data):
         # cache = caches['kiln']
 
+        possible_mss = getattr(settings, 'ALIGNMENT_MSS', None)
+
         ret = [
             {
                 'key': 'view',
@@ -172,7 +175,13 @@ class Alignment(object):
             {
                 'key': 'mss',
                 'default': ['fr-20125', 'royal-20-d-1'],
-                'options': [ms['name'] for ms in alignment_data['mss']],
+                'options': [
+                    ms['name']
+                    for ms
+                    in alignment_data['mss']
+                    if (not possible_mss) or
+                    get_key_from_name(ms['name']) in possible_mss
+                ],
                 'name': 'Manuscripts',
                 'type': 'multi',
             },
