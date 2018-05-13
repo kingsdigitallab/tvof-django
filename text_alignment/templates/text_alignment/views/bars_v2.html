@@ -85,7 +85,10 @@
                 'separator': 'black',
                 'even': '#f4f4f4',
                 'odd': '#e8e8e8',
-                'absent': 'darkgrey',
+                'absent.2': '#202020', // location = "" - NO LONGER USED 
+                'absent.3': '#804040', // no location element in the para
+                'absent.1': '#707070', // location = "absent"
+                'nodata': '#808080',  // no para element for that MS - frequent 
                 'verse': 'lightblue',
                 'rubric': '#ffa0a0',
             }
@@ -106,7 +109,7 @@
             });
             
             // draw the paras
-            ctx.fillStyle = colors.absent;
+            ctx.fillStyle = colors.nodata;
             ctx.fillRect(labels_max_width, head_height, caw, caw);
 
             var section = null; 
@@ -116,7 +119,7 @@
                 is_odd = !is_odd;
                 $.each(para.mss, function(ms_name, para_ms) {
                     // draw a bar
-                    if (para_ms.absent) return;
+                    // if (para_ms.absent) return;
 
                     var color = colors.even;
 
@@ -126,6 +129,11 @@
                     if (para_ms.verse && config_fields.verse) {
                         color = colors.verse;
                     }
+                    
+                    if (para_ms.absent) {
+                        color = colors['absent.'+para_ms.absent];
+                    }
+                    
                     if (color) {
                         ctx.fillStyle = color;
                         ctx.fillRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, bh);
@@ -191,7 +199,7 @@
                 // convert mouse position into indices [para_idx, ms_idx]
                 var mouse_pos = [ev.pageX, ev.pageY];
                 $('#vis-info-box').css({
-                    left: mouse_pos[0] + 5,
+                    left: mouse_pos[0] + 5 - $(document).scrollLeft(),
                     top: mouse_pos[1] + 5 - $(document).scrollTop()
                 });
                 var data_pos = [
@@ -209,9 +217,9 @@
                         info += '<br/>';
                         info += ' ' + ms_name;
                         para_ms = para.mss[ms_name];
+                        info += '<br/>';
                         if (para_ms) {
-                            info += '<br/>';
-                            info += ' ' + para_ms.location;
+                            info += '<b>Location</b>: ' + (para_ms.location === null ? 'Unspecified' : para_ms.location);
                             if (config_fields.verse && para_ms.verse) {
                                 info += '<br/>';
                                 info += '<b>Verse</b>: ' + para_ms.verse;
@@ -224,6 +232,8 @@
                                 info += '<br/>';
                                 info += '<b>Note</b>: ' + para_ms.note;
                             }
+                        } else {
+                            info += '[No para]';
                         }
                     }
                     //info += '' + data_pos[0] + ' x ' + data_pos[1];

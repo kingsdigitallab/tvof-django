@@ -320,9 +320,16 @@ class Alignment(object):
 
                         para['mss'][ms_name] = para_ms
 
-                        if (para_ms.get('location') or '').lower(
-                        ).strip() in ['', 'absent']:
+                        location_clean = (
+                            para_ms.get('location') or 'none'
+                        ).lower().strip()
+                        if 'absent' in location_clean:
                             para_ms['absent'] = 1
+                        if location_clean == '':
+                            # NO LONGER USED
+                            para_ms['absent'] = 2
+                        if location_clean == 'none':
+                            para_ms['absent'] = 3
 
                         if ms_name not in mss:
                             mss[ms_name] = {
