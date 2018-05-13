@@ -90,7 +90,9 @@
                 'absent.1': '#707070', // location = "absent"
                 'nodata': '#808080',  // no para element for that MS - frequent 
                 'verse': 'lightblue',
-                'rubric': '#ffa0a0',
+                'rubric.undefined': '#ff8080',
+                'rubric.add': '#ff6060',
+                'rubric.move': '#ff4040',
             }
             var band_height = (bh / 3);
             if (band_height < 1) {
@@ -120,6 +122,7 @@
                 $.each(para.mss, function(ms_name, para_ms) {
                     // draw a bar
                     // if (para_ms.absent) return;
+                    var ms_top = head_height + (idx_from_ms_name[ms_name] * bh);
 
                     var color = colors.even;
 
@@ -136,15 +139,19 @@
                     
                     if (color) {
                         ctx.fillStyle = color;
-                        ctx.fillRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, bh);
+                        ctx.fillRect(labels_max_width + idx * bw, ms_top, bw, bh);
                     } else {
-                        ctx.clearRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, bh);
+                        ctx.clearRect(labels_max_width + idx * bw, ms_top, bw, bh);
                     }
                     
                     // rubric
-                    if (config_fields.rubric && para_ms.rubric && para_ms.rubric.length > 3) {
-                        ctx.fillStyle = colors.rubric;
-                        ctx.fillRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, band_height);
+                    if (config_fields.rubric && para_ms.rubric && para_ms.rubric.length > 0) {
+                        subband_height = band_height * 1.0 / para_ms.rubric.length;
+                        for (var j = 0; j < para_ms.rubric.length; j++) {
+                            var rubric = para_ms.rubric[j];
+                            ctx.fillStyle = colors['rubric.' + rubric.diff];
+                            ctx.fillRect(labels_max_width + idx * bw, ms_top + (j * subband_height), bw, subband_height);
+                        }
                     }
                 });
                 if (section != para.section) {
@@ -225,8 +232,10 @@
                                 info += '<b>Verse</b>: ' + para_ms.verse;
                             }
                             if (config_fields.rubric && para_ms.rubric) {
-                                info += '<br/>';
-                                info += '<b>Rubric</b>: ' + para_ms.rubric;
+                                $.each(para_ms.rubric, function(i, rubric) {
+                                    info += '<br/>';
+                                    info += '<b>Rubric</b>: ' + rubric.t;
+                                });
                             }
                             if (config_fields.note && para_ms.note) {
                                 info += '<br/>';

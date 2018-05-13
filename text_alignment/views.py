@@ -5,6 +5,7 @@ from text_viewer.kiln_requester import CachedRequesterKiln
 from django.core.cache import caches
 from api_vars import API_Vars
 from text_alignment.api_vars import get_key_from_name
+from cms.templatetags.cms_tags import json
 
 
 def view_alignment(request, path):
@@ -272,7 +273,7 @@ class Alignment(object):
 
         paras = []
         mss = {}
-        fields = {}
+#         fields = {}
         sections = []
 
         # extract, normalise and merge the manuscript names
@@ -289,6 +290,10 @@ class Alignment(object):
                 ret.append(p)
 
             return ret
+
+        # multivalued_seg_types = []
+        multivalued_seg_types = ['rubric']
+        dict_seg_types = ['rubric']
 
         # extract the paras
         for alignments in alignments_set:
@@ -310,9 +315,35 @@ class Alignment(object):
                     for manuscript in element:
                         para_ms = {}
                         for seg in manuscript:
-                            para_ms[seg.attrib.get('type')] = seg.text
-                            if seg.text is not None:
-                                fields[seg.attrib.get('type')] = seg.text
+                            typ = seg.attrib.get('type')
+                            text = seg.text
+
+                            if text and len(text) <= 3 and typ in ['rubric']:
+                                continue
+
+                            if text:
+                                text = re.sub(r'\s+', r' ', text)
+
+                            if typ in dict_seg_types:
+                                val = {
+                                    re.sub(r'\{.*\}', r'', k): v
+                                    for k, v
+                                    in seg.attrib.items()
+                                }
+                                val['t'] = text
+                                del val['type']
+                            else:
+                                val = text
+
+                            if typ in multivalued_seg_types:
+                                if typ in para_ms:
+                                    para_ms[typ].append(val)
+                                else:
+                                    para_ms[typ] = [val]
+                            else:
+                                para_ms[typ] = val
+#                             if seg.text is not None:
+#                                 fields[seg.attrib.get('type')] = seg.text
 
                         ms_name = para_ms['ms_name'] or 'UNSPECIFIED'
                         # take normalised name
@@ -370,6 +401,8 @@ class Alignment(object):
             'mss': sorted(mss.values(), key=lambda ms: ms['name'].lower()),
             'sections': sections,
         }
+
+        print len(json(paras))
 
         return ret
 

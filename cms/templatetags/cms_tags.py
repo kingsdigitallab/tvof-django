@@ -258,4 +258,4 @@ def get_item(dictionary, key, default=None):
 def json(obj):
     import json
     from django.utils.safestring import mark_safe
-    return mark_safe(json.dumps(obj))
+    return mark_safe(json.dumps(obj, separators=(',', ':')))
