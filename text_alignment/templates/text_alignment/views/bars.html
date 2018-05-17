@@ -1,0 +1,17 @@
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+<div id="alignemnt-view-bars">
+    <h3>This is bars</h3>
+    <canvas class="canvas-bars" height="1000" width="1000">
+    </canvas>
+    
+    <script>
+    $(function() {
+        var alignment_data = {{ alignment_data|json }};
+        var config = {{ params|json }};
+        var canvas = $('canvas')[0];
+        
+        update_bars_view(canvas, alignment_data, config);
+    });
+    </script>
+</div>

@@ -14,7 +14,19 @@
 // TODO: we should use Foundation flexbox instead. But without enabling the flex
 // grid. Only the foundation flex helper classes.
 
-.textviewer-header {
+/**/
+
+.body-text-viewer {
+    // Content should fit the viewport, always.
+    // So hide the scrollbars. Without this the JS height calculations may fail.
+    overflow: hidden;
+}
+
+.text-viewer-header {
+    display: block;
+    height: 50px;
+    position: relative;
+
     h1 {
         font-size: rem-calc(20);
         line-height: 1.25;
@@ -44,7 +56,6 @@
         color: $dark-gray;
         height: rem-calc(28);
         margin-right: rem-calc(16);
-        //margin-top: rem-calc(-16);
         text-align: center;
         text-decoration: none;
         width: rem-calc(28);
@@ -145,7 +156,7 @@
     }
 
     .toolbar {
-        height: 100vh;
+        /* height: 100vh; */
     }
 
     /* GN: temporary, any active item in any dropdown should have a primary 
@@ -173,6 +184,7 @@
 
         .list-filter {
             display: block;
+            z-index: 1;
 
             input {
                 display: inline;
@@ -219,9 +231,17 @@
 
     .pane-sidebar {
         background: $light-gray;
-        height: calc(100vh - 400px);
-        max-height: rem-calc(800);
-        position: relative;
+
+        // GN: fixed-width is more consistent than
+        // relying on foundation columns width
+        // for the sidebar.
+        width: 3rem;
+        position: absolute;
+        right: 0;
+        
+        // height: calc(100vh - 400px);
+        // max-height: rem-calc(800);
+        // position: relative;
 
         a {
             border: 0;
@@ -272,7 +292,7 @@
 .main .text-pane {
     flex-basis: 0;
     flex-grow: 1;
-    margin: rem-calc(16) auto;
+    margin: rem-calc(5) auto;
     max-width: rem-calc(1440);
     
     .hidden {
@@ -280,14 +300,35 @@
     }
 }
 
-.text-chunk {
+.pane-content-wrapper {
     margin-top: rem-calc(12);
-    max-height: calc(100vh - 250px);
+    
+    .pane-content {
+        position: relative;
+    }
+}
+
+.text-chunk {
+    // GN: move to .pane-content-wrapper so text block and side bar are aligned
+    // margin-top: rem-calc(12);
+    // max-height: calc(100vh - 250px);
     overflow-y: scroll;
+    
+    // GN: fixed space allowance for the sidebar
+    margin-right: 4rem;
+
+    [class*='fa-'] {
+        // color: scale-color($primary-color, $lightness: 50%);
+        color: $light-blue;
+        font-family: "FontAwesome";
+        font-size: rem-calc(20);
+    }
 
     div[data-corresp]:hover {
-        cursor: pointer;
+        /* 
+        cursor: pointer; 
         text-decoration-color: scale-color($primary-color, $lightness: 50%);
+        */
     }
 
     &.hide-notes .note {
@@ -324,3 +365,4 @@
     height: 100%;
     z-index: 10;
 }
+

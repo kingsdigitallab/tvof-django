@@ -120,11 +120,6 @@ class TextViewerAPITvof(TextViewerAPIXML):
         data-corresp="#edRoyal20D1_00525_01 #edRoyal20D1_00525_04">
     '''
     location_types = [
-        #         {
-        #             'slug': 'whole',
-        #             'label': 'Whole Text',
-        #             'xpath': './/div[@class="tei body"]',
-        #         },
         {
             'slug': 'section',
             'label': 'Section',
@@ -146,6 +141,11 @@ class TextViewerAPITvof(TextViewerAPIXML):
             'xpath_from_location': _get_xpath_from_location,
             # used to get location of a default chunk
             'location_from_chunk': lambda c: unicode(int(c.attrib['id'][-5:]))
+        },
+        {
+            'slug': 'whole',
+            'label': 'Whole Text',
+            'xpath': './/div[@class="tei body"]',
         },
     ]
 
@@ -200,7 +200,11 @@ class TextViewerAPITvof(TextViewerAPIXML):
     def is_location_visible(self, location_xml, doc_slug, view_slug,
                             location_type_slug):
         ret = True
-        filters = getattr(settings, 'TEXT_VIEWER_DOC_FILTERS', None)
+        filters = getattr(
+            settings,
+            'TEXT_VIEWER_DOC_FILTERS',
+            {}
+        ).get(self.client)
         if filters:
             filter = filters.get(doc_slug, None)
             if filter is not None:

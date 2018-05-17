@@ -57,8 +57,8 @@
     Viewer.prototype.updateQueryString = function() {
         // update the title and the browsing history
         var title = '';
-        
         var query_string = ''
+            
         for (var k in this.panes) {
             if (this.panes.hasOwnProperty(k)) {
                 if (query_string) query_string += '&';
@@ -68,6 +68,7 @@
                 title += this.panes[k].getTitleFromAddress();
             }
         }
+        
         change_broswer_query_string(query_string, title);
     }
 
@@ -561,7 +562,7 @@
         // Without this if you move away from the page and then click back
         // it will show only the last Ajax response instead of the full HTML page.
         url = url ? url : '';
-        var url_ajax = url + ((url.indexOf('?') === -1) ? '?' : '&') + 'jx=1';
+        var url_ajax = url + ((url.indexOf('?') === -1) ? '?' : '&') + 'jx=1&client=textviewer';
 
         var getData = {
             url: url_ajax,
@@ -631,6 +632,7 @@
                     // TODO: make sure this reactive
                     self.addresses = addresses;
                 });
+                $(window).trigger('text_viewer.pane_count_change');
             },
             data: function() {
                 this.pane = this.apane;
@@ -661,7 +663,7 @@
                     var self = this;
                     this.$nextTick(function() {
                         // convert the hrefs to the bibliography page
-                        $(this.$el).find(".text-chunk a[href]").each(function() {
+                        $(this.$el).find(".text-chunk a.bibliography[href]").each(function() {
                             var link = $(this).attr('href');
                             // TODO: we shouldn't hard-code this link
                             link = '/k/bibliography/#' + link;
@@ -708,12 +710,15 @@
                 },
                 getSyncTitle: function() {
                     return this.canBeSynced ? (this.is_synced ? 'Click to unsync this pane' : 'Click to synchronise this pane with another') : 'This pane cannot be synced';
-                }
+                },
             },
             methods: {
                 clearLocationFilter: function(location_type) {
                     this.location_type_filters[location_type.slug] = '';
                     this.filterLocations(location_type);
+                },
+                getPrintUrl: function() {
+                    return 'print/' + this.pane.address;
                 },
                 filterLocations: function(location_type) {
                     var filter = this.location_type_filters[location_type.slug] || '';
@@ -923,11 +928,42 @@
             }
         });
         
+        // auto resize panes
+        function autosize_text_viewer_contents($text_viewer) {
+            var margin = 20;
+            var height = $text_viewer.height() - ($('.text-chunk:first').offset().top - $text_viewer.offset().top);
+            $('.text-chunk').css('height', height - margin);
+            $('.pane-sidebar').css('height', height - margin);
+        }
+        
+        $(window).on('text_viewer.pane_count_change', function() {
+            autosize_text_viewer_contents($('#text-viewer'));
+        });
+        
+        window.elastic_element(
+            $('#text-viewer'), 
+            autosize_text_viewer_contents,
+            300, 
+            $('footer').outerHeight()
+        );
+        
         // viewer.load('Fr_20125/critical/section/588/');
         
+        // events
+        
         $('section.main').on('click', 'div[data-corresp]', function() {
-            $('section.main div[data-corresp]').removeClass('highlight');
-            $(this).addClass('highlight');
+            if (0) {
+                // GN: disabled the yellow highlight to help user find 
+                // corresponding text units in // view.
+                // we don't support this for the moment.
+                $('section.main div[data-corresp]').removeClass('highlight');
+                $(this).addClass('highlight');
+            }
+        });
+        
+        $('#btn-open-panel').on('click', function() {
+            window.text_viewer.cloneAPane();
+            return false;
         });
         
         $('#btn-open-panel').on('click', function() {

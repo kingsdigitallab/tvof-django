@@ -1,6 +1,4 @@
-import requests
-from collections import OrderedDict
-from django.conf import settings
+from kiln_requester import CachedRequesterKiln
 
 '''
 TODO: instead of inheritence we should use a strategy pattern for:
@@ -17,14 +15,14 @@ class TextViewerAPI(object):
 
     API: /document/view/location_type/location
     '''
-    cache = OrderedDict()
 
     part_levels = ['document', 'view', 'location_type', 'location']
 
     def __init__(self):
-        pass
+        # TODO: don't hard-code Kiln here
+        self.requester = CachedRequesterKiln()
 
-    def add_error(self, code, message, info):
+    def add_error(self, code, message, info=None):
         error = {'code': code, 'message': message}
         if info:
             error['info'] = info
@@ -34,11 +32,15 @@ class TextViewerAPI(object):
         self.errors = []
 
     def process_request(self, request, path):
+
         self.response = {}
         self.errors = []
 
         self.request = request
         self.requested_address = path.strip('/')
+        self.client = None
+        if request:
+            self.client = request.GET.get('client')
 
         parts = self.get_address_parts()
         level = parts['level']
@@ -160,26 +162,8 @@ class TextViewerAPI(object):
             }
         return ret
 
-    @classmethod
-    def get_cache_size(cls):
-        return getattr(settings, 'TEXT_VIEWER_CACHE_SIZE', 10)
-
-    @classmethod
-    def get_cached_request(cls, url):
-        cache = cls.cache
-
-        ret = cls.cache.get(url, None)
-        if ret is None:
-            print 'REQUEST %s' % url
-            r = requests.get(url, timeout=60)
-            ret = r.text.encode('utf-8')
-            cache[url] = ret
-            print len(ret)
-            if len(cache.keys()) > cls.get_cache_size():
-                print 'CACHE ITEM REMOVED'
-                cache.popitem(True)
-
-        return ret
+    def request_backend(self, url):
+        return self.requester.request(url)
 
 
 def get_xml_element_text(element):

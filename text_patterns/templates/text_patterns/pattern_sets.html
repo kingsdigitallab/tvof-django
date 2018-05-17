@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+
+{% block meta_title %}Patterns detection{% endblock %}
+{% block meta_title_site %}
+{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+{% endblock %}
+
+{% block main %}
+
+    <h1>Pattern Sets</h1>
+
+    <h2>New Set</h2>
+    
+    <form class="input-group frm-create-set">
+        <label class="input-group-label" for="tbx-set-name">Name:</label>
+        <input class="input-group-field" type="text" id="tbx-set-name" />
+        <div class="input-group-button">
+            <button type="submit" class="button primary">Create</button>
+        </div>
+    </form>
+
+    
+    {% if pattern_sets.count > 0 %}
+        <h2>Existing Sets ({{ pattern_sets.count }})</h2>
+    
+        <table>
+          <thead>
+            <tr>
+              <th>Name</th>
+              <th>Patterns</th>
+              <th>Last modified</th>
+              <th>Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for pattern_set in pattern_sets %}
+                <tr data-setid="{{ pattern_set.slug }}">
+                  <td><a href="{{ pattern_set.get_absolute_url }}">{{ pattern_set.slug }}</a></td>
+                  <td>{{ pattern_set.get_size }}</td>
+                  <td>{{ pattern_set.modified }}</td>
+                  <td><a title="Remove this set" class="btn-remove-set" href="#"><i class="fa fa-trash"></i></a></td>
+                </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+    {% endif %}
+
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script>
+        $(function() {
+           $('.frm-create-set').on('submit', function() {
+               var slug = $('#tbx-set-name').val();
+               slug = slug.trim().replace(' ', '-').toLowerCase();
+               if (slug) {
+                   window.location.href = slug;
+               }
+               return false;
+           });
+           $('.btn-remove-set').on('click', function() {
+               var $tr = $(this).parents('[data-setid]:first');
+               var slug = $tr.data('setid');
+               var req = $.ajax({
+                   dataType: 'json',
+                   url: 'api/'+slug,
+                   data: {},
+                   method: 'DELETE',
+               });
+               req.done(function(data) {
+                   $tr.detach();
+               });
+               return false;
+           });
+        });
+    </script>
+{% endblock %}

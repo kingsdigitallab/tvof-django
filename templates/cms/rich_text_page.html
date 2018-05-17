@@ -6,20 +6,20 @@
 
 
 <div class="row">
-	<div class="large-12 columns">
-		{% block streamfield %}
-                {% include "cms/includes/streamfield.html" with content=self.content %}
-		{% endblock %}
-	</div>
+  <div class="large-12 columns">
+  	{% block streamfield %}
+        {% include "cms/includes/streamfield.html" with content=self.content_lang %}
+  	{% endblock %}
+  </div>
 </div>
 
 
 {% block related_links %}
-{% include "cms/includes/related_links.html" with related_links=self.related_links.all title="Related links" %}
+    {% include "cms/includes/related_links.html" with related_links=self.related_links.all title="Related links" %}
 {% endblock %}
 
 {% block attachments %}
-{% include "cms/includes/attachments.html" with attachments=self.attachments.all title="Attachments" %}
+    {% include "cms/includes/attachments.html" with attachments=self.attachments.all title="Attachments" %}
 {% endblock %}
 
 {% endblock %}

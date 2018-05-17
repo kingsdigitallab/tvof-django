@@ -48,9 +48,15 @@ CACHES = {
     'text_patterns': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
         'LOCATION': os.path.join(BASE_DIR, 'django_cache/text_patterns/'),
-        'TIMEOUT': 60 * 60 * 24,
+        'TIMEOUT': 30 * 60 * 60 * 24,
+        # 'MAX_ENTRIES': 600,
+    },
+    'kiln': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(BASE_DIR, 'django_cache/kiln/'),
+        'TIMEOUT': 30 * 60 * 60 * 24,
         # 'TIMEOUT': 1,
-        'MAX_ENTRIES': 600,
+        # 'MAX_ENTRIES': 600,
     }
 }
 
@@ -98,6 +104,7 @@ INSTALLED_APPS += (
     'kiln',
     'text_viewer',
     'text_patterns',
+    'text_alignment',
     'tvof',
 )
 
@@ -177,6 +184,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'wagtail.wagtailcore.middleware.SiteMiddleware',
     'wagtail.wagtailredirects.middleware.RedirectMiddleware',
+    'django.middleware.locale.LocaleMiddleware',
 )
 
 ROOT_URLCONF = PROJECT_NAME + '.urls'
@@ -197,13 +205,14 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.template.context_processors.static',
                 'django.contrib.messages.context_processors.messages',
+                'cms.context_processor.cms_lang',
             ],
         },
     },
 ]
 
 # https://docs.djangoproject.com/en/dev/topics/i18n/
-LANGUAGE_CODE = 'en-gb'
+LANGUAGE_CODE = 'en'
 TIME_ZONE = 'Europe/London'
 USE_I18N = True
 USE_L10N = False
@@ -377,3 +386,28 @@ TVOF_WEBPATH_TO_KILN = {
     '{}/bibliography'.format(TVOF_URL_TEXT):
         'bibliography/',
 }
+
+#
+CMS_LANGUAGES = [
+    {
+        'code': 'en',
+        'label': 'English',
+        'label_en': 'English',
+    },
+    {
+        'code': 'fr',
+        'label': 'Francais',
+        'label_en': 'French',
+    }
+]
+
+ITEMS_PER_PAGE = 10
+
+# The list of MSS which will be on the public website
+# Go to http://localhost:8000/lab/alignment/
+# Click settings and select the desired MSS
+# then copy &ms=...& from the querystring
+# and paste it here
+# ALIGNEMENT_MSS = 'add-15268,add-19669,fr-17177,fr-20125,royal-20-d-1'\
+#     .split(',')
+ALIGNEMENT_MSS = []
