@@ -10,8 +10,8 @@ django-taggit
 elasticsearch
 libsass==0.10.0
 pillow
-psycopg2
-requests
+psycopg2-binary
+requests[security]
 wagtail<2
 html5lib==0.9999999
 regex
