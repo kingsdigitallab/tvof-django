@@ -965,11 +965,6 @@
             window.text_viewer.cloneAPane();
             return false;
         });
-        
-        $('#btn-open-panel').on('click', function() {
-            window.text_viewer.cloneAPane();
-            return false;
-        });
     });
     
 }( window.TextViewer = window.TextViewer || {}, jQuery ));
