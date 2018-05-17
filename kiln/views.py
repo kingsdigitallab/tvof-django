@@ -4,9 +4,8 @@ import requests
 
 from django.conf import settings
 from django.http import JsonResponse
-from django.shortcuts import render_to_response
-from django.template import RequestContext
 from django.views.decorators.gzip import gzip_page
+from django.shortcuts import render
 
 
 @gzip_page
@@ -28,8 +27,7 @@ def process(request, kiln_url, template):
     if 'texts/' not in kiln_url:
         template = 'kiln_page.html'
 
-    return render_to_response(template, params,
-                              context_instance=RequestContext(request))
+    return render(request, template, params)
 
 
 def _send_to_kiln_and_process_response(request, kiln_url):
