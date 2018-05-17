@@ -157,7 +157,8 @@ class Alignment(object):
             {
                 'key': 'view',
                 'default': 'table',
-                'options': ['table', 'bars', 'bars_v2', 'viztest'],
+                # 'options': ['table', 'bars', 'bars_v2', 'viztest'],
+                'options': ['table', 'bars_v2', 'viztest'],
                 'type': 'single',
             },
             {

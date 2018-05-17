@@ -411,3 +411,24 @@ ITEMS_PER_PAGE = 10
 # ALIGNEMENT_MSS = 'add-15268,add-19669,fr-17177,fr-20125,royal-20-d-1'\
 #     .split(',')
 ALIGNEMENT_MSS = []
+
+# Filter which MSS and sections are visible
+# Don't modify it here, copy and change it in your 'local.py'
+# TEXT_VIEWER_DOC_FILTERS = {
+#     'textviewer': {
+#         'Fr20125': {
+#             'semi-diplomatic': [],
+#             'interpretive': [
+#                 '6', '6bis'
+#             ],
+#         },
+#         'Royal': {
+#             'semi-diplomatic': [
+#                 '6', '6bis'
+#             ],
+#             'interpretive': [
+#                 '6', '6bis'
+#             ],
+#         },
+#     }
+# }
