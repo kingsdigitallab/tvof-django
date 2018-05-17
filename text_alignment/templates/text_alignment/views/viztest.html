@@ -38,7 +38,7 @@ $(document).ready(function() {
             {% for para in alignment_data.paras %}
             {% ifchanged para.section %}
             </ol>
-            <p class="section">{{ para.section }}</p>
+            <p class="section"><strong>{{ para.section }}</strong></p>
             <ol start="{{ forloop.counter }}">
             {% endifchanged %}
                 <li>{{ para.id }} {{ para.section }}</li>
@@ -71,8 +71,10 @@ $(document).ready(function() {
             {% endifchanged %}
             {% with para_ms=para.mss|get_item:ms.name %}
 
-                <li class="connect expand {% if para_ms %}absent-{{ para_ms.absent|default:'0' }}{% else %}nopara{% endif %}">
-                    <i class="fa fa-info-circle"></i> <i class="fa fa-file"></i> <i class="fa fa-pencil"></i>
+                <li class="connect expand{% if para_ms %} absent-{{ para_ms.absent|default:'0' }}{% else %} nopara{% endif %}">
+                    {% if fields_locus or fields_rubric or fields_verse %}<i class="fa fa-info-circle"></i>{% endif %}
+                    {% if fields_rubric and para_ms.rubric %} <i class="fa fa-file"></i>{% endif %}
+                    {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
                     <p class="hide">
                         {% if fields_locus %}{{ para_ms.location }}{% endif %}
                         {% if fields_rubric %}{{ para_ms.rubric }}{% endif %}
