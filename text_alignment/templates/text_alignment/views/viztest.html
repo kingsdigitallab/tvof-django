@@ -70,7 +70,8 @@ $(document).ready(function() {
             <ul>
             {% endifchanged %}
             {% with para_ms=para.mss|get_item:ms.name %}
-                <li class="connect expand">
+
+                <li class="connect expand {% if para_ms %}absent-{{ para_ms.absent|default:'0' }}{% else %}nopara{% endif %}">
                     <i class="fa fa-info-circle"></i> <i class="fa fa-file"></i> <i class="fa fa-pencil"></i>
                     <p class="hide">
                         {% if fields_locus %}{{ para_ms.location }}{% endif %}
