@@ -30,7 +30,12 @@
                         {% with para_ms=para.mss|get_item:ms.name %}
                             <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
                                 {% if fields_locus %}{{ para_ms.location }}{% endif %}
-                                {% if fields_rubric %}{{ para_ms.rubric }}{% endif %}
+                                {% for rubric in para_ms.rubric %}
+                                    {% if rubric.diff %}
+                                        [rubric.diff]
+                                    {% endif %}
+                                    {{ rubric.t }}
+                                {% endfor %}
                                 {% if fields_verse and para_ms.verse %}
                                     <br/>
                                     Verse: {{ para_ms.verse }}
