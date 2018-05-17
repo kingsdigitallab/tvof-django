@@ -144,6 +144,26 @@ body {
 
     $grey: #d8d8d8;
 
+    .absent-0 {
+        background: $neutral;
+    }
+
+    .absent-1 {
+        background: $secondary-color;
+    }
+
+    .absent-2 {
+        background: $tertiary-color;
+    }
+
+    .absent-3 {
+        background: $primary-color;
+    }
+
+    .nopara {
+        background: darken($grey, 20%);
+    }
+
     .one {
         color: $primary-color;
     }
@@ -220,9 +240,9 @@ body {
             border-bottom: 2px solid $grey;
             padding: 3px 8px;
 
-            &.connect.active {
-                background: darken($neutral, 10%);
-            }
+            // &.connect.active {
+            //     background: darken($neutral, 10%);
+            // }
 
             &.missing.active {
                 background: darken($grey, 10%);
@@ -248,7 +268,7 @@ body {
     }
 
     .connect {
-        background: $neutral;
+        // background: $neutral;
 
         &:hover {
             background: darken($neutral, 10%);
@@ -312,7 +332,10 @@ body {
 
     .col-eighth:nth-child(3),
     .col-eighth:nth-child(5),
-    .col-eighth:nth-child(7) {
+    .col-eighth:nth-child(7),
+    .col-eighth:nth-child(9),
+    .col-eighth:nth-child(11),
+    .col-eighth:nth-child(13) {
         border-left: 1px solid #666;
         border-right: 1px solid #666;
     }
@@ -327,12 +350,12 @@ body {
 
         .col-eighth:nth-child(even) {
             display: inline-block;
-            width: 3%;
+            width: 1.5%;
         }
 
         .col-eighth:nth-child(odd) {
             display: inline-block;
-            width: 22%;
+            width: 15%;
         }
     }
 }
