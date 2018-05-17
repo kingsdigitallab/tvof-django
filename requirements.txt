@@ -11,7 +11,7 @@ elasticsearch
 libsass==0.10.0
 pillow
 psycopg2
-requests
+requests[security]
 wagtail<2
 html5lib==0.9999999
 regex
