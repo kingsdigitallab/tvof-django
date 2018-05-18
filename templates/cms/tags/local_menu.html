@@ -1,9 +1,9 @@
-{% load wagtailcore_tags %}
+{% load wagtailcore_tags cms_tags %}
 
 <ul class="local-navigation">
     {% for page in menu_pages %}
-    <li class="{% if page.url == current_page.url %}active{% endif %}">
-        <a href="{% pageurl page %}">{{ page.title }}</a>
-    </li>
+      <li class="{% if page.url == current_page.url %}active{% endif %}">
+          <a href="{% pageurl page %}">{% page_title page %}</a>
+      </li>
     {% endfor %}
 </ul>

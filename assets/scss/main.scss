@@ -130,6 +130,10 @@ nav {
     .menu,
     .menu > * {
         z-index: 9;
+        // GN: active menu item wasn't highlighted (AC-234, 17 May 2018)
+        .active > a {
+            background: scale-color($primary-color, $lightness: 20%);
+        }
     }
 
     [data-toggle] {
@@ -205,6 +209,8 @@ ul.sticky {
 
     .side-menu {
         background: #42547a;
+        // GN: without this the side bar can touch the footer
+        margin-bottom: 1rem;
         li {
             border-bottom: 1px solid #5871a4;
             a {
