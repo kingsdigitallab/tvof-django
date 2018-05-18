@@ -13,6 +13,7 @@ from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
 
 from ..models import BlogPost, HomePage, get_field_lang
+from cms.models import IndexPage
 
 logger = logging.getLogger(__name__)
 
@@ -157,6 +158,8 @@ def page_content(context, page=None):
 def get_page_field_lang(context, field_name, page=None):
     if page is None:
         page = context.get('self', None)
+    if page:
+        page = page.specific
     return get_field_lang(page, field_name)
 
 
@@ -252,6 +255,21 @@ def unslugify_filter(value):
 @register.filter
 def get_item(dictionary, key, default=None):
     return dictionary.get(key, default)
+
+
+@register.filter
+def in_path(page, request):
+    return page.get_url(request) in request.path
+
+
+@register.filter
+def get_section_page(page):
+    ret = None
+    for p in page.get_ancestors(inclusive=True):
+        if p.specific_class in [IndexPage]:
+            ret = p
+            break
+    return ret
 
 
 @register.filter
