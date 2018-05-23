@@ -146,22 +146,47 @@ body {
 
     .absent-0 {
         background: $neutral;
+
+        &:hover,
+        &.active {
+            background: darken($neutral, 20%);
+        }
     }
 
     .absent-1 {
         background: $secondary-color;
+
+        &:hover,
+        &.active {
+            background: darken($secondary-color, 10%);
+        }
     }
 
     .absent-2 {
         background: $tertiary-color;
+
+        &:hover,
+        &.active {
+            background: darken($tertiary-color, 10%);
+        }
     }
 
     .absent-3 {
         background: $primary-color;
+
+        &:hover,
+        &.active {
+            background: darken($primary-color, 20%);
+        }
     }
 
     .nopara {
         background: darken($grey, 20%);
+
+        &:hover,
+        &.active {
+            background: darken($grey, 40%);
+        }
     }
 
     .one {
@@ -269,11 +294,12 @@ body {
 
     .connect {
         // background: $neutral;
+        margin-bottom: 0;
 
-        &:hover {
-            background: darken($neutral, 10%);
-            cursor: pointer;
-        }
+        // &:hover {
+        //     background: darken($neutral, 10%);
+        //     cursor: pointer;
+        // }
     }
 
     .hide {
