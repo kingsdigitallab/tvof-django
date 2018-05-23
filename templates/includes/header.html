@@ -1,7 +1,10 @@
 {% load staticfiles %}
 <div class="row header">
-	<div class="large-12 columns">
+	<div class="large-11 medium-9 columns">
 		<h1><a href="/">The Values of French</a></h1>
-                <p>The Values of French Literature and Language in the European Middle Ages. ERC Advanced Grant at King's College London</p>
+        <p>The Values of French Literature and Language in the European Middle Ages. ERC Advanced Grant at King's College London</p>
 	</div>
+    <div class="large-1 medium-3 columns alt-lang">
+        <a href="{{ cms_lang.alt.href }}" class="button float-right">{{ cms_lang.alt.label }}</a>
+    </div>
 </div>

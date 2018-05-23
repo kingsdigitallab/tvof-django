@@ -13,6 +13,7 @@ from text_viewer import urls as text_viewer_urls
 from text_patterns import urls as text_patterns_urls
 from text_alignment import urls as text_alignment_urls
 import views as tvof_views
+from django.conf.urls.i18n import i18n_patterns
 
 admin.autodiscover()
 wagtailsearch_register_signal_handlers()
@@ -26,16 +27,17 @@ urlpatterns = [
         include('kiln.urls')),
 ]
 
-try:
-    if settings.DEBUG:
-        import debug_toolbar
-        urlpatterns += [
-            url(r'^__debug__/',
-                include(debug_toolbar.urls)),
-        ]
+if 0:
+    try:
+        if settings.DEBUG:
+            import debug_toolbar
+            urlpatterns += [
+                url(r'^__debug__/',
+                    include(debug_toolbar.urls)),
+            ]
 
-except ImportError:
-    pass
+    except ImportError:
+        pass
 
 # GN: redirects to texts from menu.
 # we do it here because Wagtail doesn't allow menu items to link to arbitrary
@@ -69,10 +71,14 @@ urlpatterns += [
     # TVOF
     url(r'^documents/(\d+)/(.*)$',
         tvof_views.serve_wagtail_doc, name='wagtaildocs_serve'),
+]
+
+urlpatterns += i18n_patterns(
     url(r'^search/', include(wagtailsearch_frontend_urls)),
     url(r'^wagtail/', include(wagtailadmin_urls)),
     url(r'', include(wagtail_urls)),
-]
+    prefix_default_language=False
+)
 
 if settings.DEBUG:
     from django.conf.urls.static import static

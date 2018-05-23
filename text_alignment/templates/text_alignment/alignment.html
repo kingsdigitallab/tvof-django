@@ -1,118 +1,20 @@
 {% extends "base_minimal.html" %}
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
+{% block meta_title %}Text alignment visualization{% endblock %}
+
 {% block extra_head %}
-{# TODO: move this to external file #}
-{# TODO: SASS it #}
-<style>
-    .alignment-paras {
-        border-spacing: 0px;
-    }
-    .alignment-paras td, .alignment-paras th {
-        border: 0px;
-        border-left: 1px solid grey;
-        border-bottom: 1px solid grey;
-    }
-    .alignment-paras thead tr {
-        background-color: white;
-    }
-    .fixed-tr {
-        position: absolute;
-        display: none;
-    }
-    .para-ms-absent {
-        background-color: darkgrey;
-    }
-    .para-ms-verse {
-        background-color: lightblue;
-    }
-    
-    /* Settings modal */
-    #settings {
-        /* make the settings body div scrollable */
-        height: 90vh;
-        flex-direction: column;;
-    
-        position: fixed;
-        z-index: 10000;
-        top: 2em;
-        left: 5vw;
-        width: 90vw;
-        
-        display: none;
-
-        border: 1px solid grey;
-        padding: 0;
-        background-color: white;
-        box-shadow: 0.5em 0.5em 0.4em #202020;
-    }
-    #settings > div {
-        padding: 0.5em;
-    }
-    body.settings-visible {
-        /* html body no longer scrollable when settings model is open*/
-        overflow: hidden;
-    }
-    body.settings-visible #settings {
-        display: flex;
-    }
-    .settings-body {
-        /* make the settings body div scrollable */
-        flex-grow: 1;
-        overflow-y: auto;
-    }
-    .settings-body ul {
-        margin-left: 0;
-    }
-    .settings-body ul li, .settings-body label {
-        /* inline-block to prevent line break between checkboxk and label text */
-        display: inline-block;
-    }
-    .settings-body input[type=checkbox],
-    .settings-body input[type=radio] {
-        margin-right: 0.1em;
-        margin-left: 0.3em;
-        margin-bottom: 0;
-    }
-    .settings-head {
-        background-color: #1c2434;
-        color: white;
-    }
-    .settings-body .var-actions {
-        font-size: small;
-        
-    }
-    .settings-body .var-actions a:hover {
-        text-decoration: underline;
-    }
-    .settings-body label {
-        margin: 2px;
-        padding: 0.3em;    
-        line-height: 1em;
-    }
-    .settings-body label:hover {
-        background: #e0e0d0;
-    }
-    .option-selected {
-        background: #f0f0e0;
-    }
-    /* bars view */
-    .canvas-bars {
-        width: 96vw;
-        height: 80vh;
-        border: 0;
-    }
-</style>
+{% compress css %}
+<link rel="stylesheet" type="text/x-scss" href="{% static 'scss/text-alignment.scss' %}">
+{% endcompress %}
 {% endblock %}
-
-{% block meta_title %}Alignment{% endblock %}
 
 {% block title %}Alignment{% endblock %}
 
 {% block body_classes %}body-alignment{% endblock %}
 
 {% block header_top_bar %}
-    <ul class="horizontal menu float-right mini-header">
+    <ul class="horizontal menu float-right mini-header" data-sticky>
         {% comment %}
         <li>
             <a href=""><i class="fa fa-key"></i></a>
@@ -134,7 +36,7 @@
         </li>
         {% endcomment %}
         <li>
-            <a id="toggle-settings" href="#settings"><i class="fa fa-cog"></i></a>
+            <a id="toggle-settings" href="#settings">Settings <i class="fa fa-cog"></i></a>
         </li>
     </ul>
 {% endblock %}
@@ -332,7 +234,7 @@
         // Bars view / visualisation
         function update_bars_view(canvas, align, config) {
             var ctx = canvas.getContext('2d');
-            
+
             var bh_min = 15;
             var ms_names = [];
             $.each(config.mss.options, function(idx, ms) {
@@ -359,6 +261,17 @@
             var text_color = 'black';
             ctx.fillStyle = '#ff0000';
             var labels_max_width = 100;
+
+            // Test
+            // Create a pattern
+           // for (var i=0;i<7;i++){
+              
+           //    for (var j=0;j<7;j++){   
+           //       ctx.fillStyle='rgb(' + Math.floor(255-20.5*i)+ ','+ Math.floor(255 - 42.5*j) + ',255)';
+           //       ctx.fillRect( j*25, i* 25, 55, 55 );
+           //    }
+           // }
+           // End Test
             
             bw = (caw - labels_max_width) / align.paras.length;
             
@@ -379,8 +292,11 @@
                 $.each(para.mss, function(ms_name, para_ms) {
                     if (!para_ms.absent) {
                         ctx.fillStyle = 'darkgrey';
+                        ctx.lineWidth = 3;
+                        ctx.strokeStyle = 'white';
                         if (para_ms.verse) ctx.fillStyle = 'lightblue';
                         ctx.fillRect(labels_max_width + idx * bw, (idx_from_ms_name[ms_name] + 1) * bh, bw, bh);
+                        ctx.strokeRect(labels_max_width + idx * bw, (idx_from_ms_name[ms_name] + 1) * bh, bw, bh);
                     }
                 });
                 if (section != para.section) {

@@ -2,6 +2,7 @@
 @import '../vendor/foundation-sites/scss/foundation';
 @import 'text-viewer';
 @import '../vendor/motion-ui/motion-ui';
+@import 'typography';
 
 @include foundation-everything;
 
@@ -79,14 +80,15 @@ a.ext-links {
 
 .header {
     color: white;
-    h1 {
-        margin-top: 2rem;
-        font-weight: 700;
-        text-shadow: 0 0 5px #000;
 
-        a {
-            color: $white;
-        }
+    a {
+        color: $white;
+    }
+
+    h1 {
+        font-weight: 700;
+        margin-top: 2rem;
+        text-shadow: 0 0 5px #000;
     }
 }
 
@@ -100,6 +102,10 @@ nav {
         // Display the dropdown menu caret
         &:after {
             border-color: $white transparent transparent transparent !important;
+        }
+
+        &:before {
+            border-color: transparent $white transparent transparent !important;
         }
 
         &:focus,
@@ -124,11 +130,25 @@ nav {
     .menu,
     .menu > * {
         z-index: 9;
+        // GN: active menu item wasn't highlighted (AC-234, 17 May 2018)
+        .active > a {
+            background: scale-color($primary-color, $lightness: 20%);
+        }
+    }
+
+    [data-toggle] {
+        cursor: pointer;
     }
 }
 
 .menu.submenu.is-dropdown-submenu {
     background: $primary-color;
+}
+
+ul.sticky {
+    background: $primary-color;
+    margin-top: 0 !important;
+    right: 0;
 }
 
 
@@ -148,7 +168,6 @@ nav {
 
     h4 {
         font-size: 1.25rem;
-        //color: scale-color($almost-black, $lightness: 15%);
     }
 
     // Images
@@ -190,6 +209,8 @@ nav {
 
     .side-menu {
         background: #42547a;
+        // GN: without this the side bar can touch the footer
+        margin-bottom: 1rem;
         li {
             border-bottom: 1px solid #5871a4;
             a {
@@ -207,7 +228,6 @@ nav {
     }
 
     .menu > li > a {
-        // color: $primary-color;
         &:hover {
             background: #5871a4;
         }
@@ -225,7 +245,6 @@ nav {
 
     .notes {
         padding: .5rem 1rem;
-        //background: scale-color($secondary-color, $lightness: 70%);
         border-top: 1px solid $secondary-color;
         font-size: .9375rem;
         p {
@@ -461,6 +480,10 @@ footer {
             &:after {
                 border-color: transparent transparent transparent $white !important;
             }
+
+            &:before {
+                border-color: transparent $white transparent transparent !important;
+            }
         }
     }
 }
@@ -492,13 +515,14 @@ footer {
     footer {
         display: none;
         height: 1px;
+    }
+}
 
-        // padding: .5rem 0;
-
-        // .logo img,
-        // img {
-        //     max-height: rem-calc(50);
-        // }
+@media screen and (min-width: 769px) {
+    .menu {
+        &.nested {
+            margin-left: 0;
+        }
     }
 }
 

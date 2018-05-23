@@ -5,7 +5,7 @@
         TEST
     </div>
 
-    <canvas class="canvas-bars" height="1000" width=1000>
+    <canvas class="canvas-bars" height="1000" width="1000">
     </canvas>
     
     <script>
@@ -85,9 +85,14 @@
                 'separator': 'black',
                 'even': '#f4f4f4',
                 'odd': '#e8e8e8',
-                'absent': 'darkgrey',
+                'absent.2': '#202020', // location = "" - NO LONGER USED 
+                'absent.3': '#804040', // no location element in the para
+                'absent.1': '#707070', // location = "absent"
+                'nodata': '#808080',  // no para element for that MS - frequent 
                 'verse': 'lightblue',
-                'rubric': '#ffa0a0',
+                'rubric.undefined': '#ff8080',
+                'rubric.add': '#ff6060',
+                'rubric.move': '#ff4040',
             }
             var band_height = (bh / 3);
             if (band_height < 1) {
@@ -106,7 +111,7 @@
             });
             
             // draw the paras
-            ctx.fillStyle = colors.absent;
+            ctx.fillStyle = colors.nodata;
             ctx.fillRect(labels_max_width, head_height, caw, caw);
 
             var section = null; 
@@ -116,7 +121,8 @@
                 is_odd = !is_odd;
                 $.each(para.mss, function(ms_name, para_ms) {
                     // draw a bar
-                    if (para_ms.absent) return;
+                    // if (para_ms.absent) return;
+                    var ms_top = head_height + (idx_from_ms_name[ms_name] * bh);
 
                     var color = colors.even;
 
@@ -126,17 +132,26 @@
                     if (para_ms.verse && config_fields.verse) {
                         color = colors.verse;
                     }
+                    
+                    if (para_ms.absent) {
+                        color = colors['absent.'+para_ms.absent];
+                    }
+                    
                     if (color) {
                         ctx.fillStyle = color;
-                        ctx.fillRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, bh);
+                        ctx.fillRect(labels_max_width + idx * bw, ms_top, bw, bh);
                     } else {
-                        ctx.clearRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, bh);
+                        ctx.clearRect(labels_max_width + idx * bw, ms_top, bw, bh);
                     }
                     
                     // rubric
-                    if (config_fields.rubric && para_ms.rubric && para_ms.rubric.length > 3) {
-                        ctx.fillStyle = colors.rubric;
-                        ctx.fillRect(labels_max_width + idx * bw, head_height + idx_from_ms_name[ms_name] * bh, bw, band_height);
+                    if (config_fields.rubric && para_ms.rubric && para_ms.rubric.length > 0) {
+                        subband_height = band_height * 1.0 / para_ms.rubric.length;
+                        for (var j = 0; j < para_ms.rubric.length; j++) {
+                            var rubric = para_ms.rubric[j];
+                            ctx.fillStyle = colors['rubric.' + rubric.diff];
+                            ctx.fillRect(labels_max_width + idx * bw, ms_top + (j * subband_height), bw, subband_height);
+                        }
                     }
                 });
                 if (section != para.section) {
@@ -191,7 +206,7 @@
                 // convert mouse position into indices [para_idx, ms_idx]
                 var mouse_pos = [ev.pageX, ev.pageY];
                 $('#vis-info-box').css({
-                    left: mouse_pos[0] + 5,
+                    left: mouse_pos[0] + 5 - $(document).scrollLeft(),
                     top: mouse_pos[1] + 5 - $(document).scrollTop()
                 });
                 var data_pos = [
@@ -209,21 +224,25 @@
                         info += '<br/>';
                         info += ' ' + ms_name;
                         para_ms = para.mss[ms_name];
+                        info += '<br/>';
                         if (para_ms) {
-                            info += '<br/>';
-                            info += ' ' + para_ms.location;
+                            info += '<b>Location</b>: ' + (para_ms.location === null ? 'Unspecified' : para_ms.location);
                             if (config_fields.verse && para_ms.verse) {
                                 info += '<br/>';
                                 info += '<b>Verse</b>: ' + para_ms.verse;
                             }
                             if (config_fields.rubric && para_ms.rubric) {
-                                info += '<br/>';
-                                info += '<b>Rubric</b>: ' + para_ms.rubric;
+                                $.each(para_ms.rubric, function(i, rubric) {
+                                    info += '<br/>';
+                                    info += '<b>Rubric</b>: ' + rubric.t;
+                                });
                             }
                             if (config_fields.note && para_ms.note) {
                                 info += '<br/>';
                                 info += '<b>Note</b>: ' + para_ms.note;
                             }
+                        } else {
+                            info += '[No para]';
                         }
                     }
                     //info += '' + data_pos[0] + ' x ' + data_pos[1];

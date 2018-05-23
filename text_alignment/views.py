@@ -4,6 +4,8 @@ from django.shortcuts import render
 from text_viewer.kiln_requester import CachedRequesterKiln
 from django.core.cache import caches
 from api_vars import API_Vars
+from text_alignment.api_vars import get_key_from_name
+from cms.templatetags.cms_tags import json
 
 
 def view_alignment(request, path):
@@ -96,6 +98,10 @@ class Alignment(object):
         for k in context['config'].get('fields'):
             context['fields_%s' % k] = 1
 
+    def set_context_viztest(self, context):
+        for k in context['config'].get('fields'):
+            context['fields_%s' % k] = 1
+
     def fetch_all_alignment_data(self, nocache=False):
         '''
         Cache and returns a python dictionary with ALL alignment data.
@@ -145,11 +151,14 @@ class Alignment(object):
     def get_config_schema(self, alignment_data):
         # cache = caches['kiln']
 
+        possible_mss = getattr(settings, 'ALIGNMENT_MSS', None)
+
         ret = [
             {
                 'key': 'view',
                 'default': 'table',
-                'options': ['table', 'bars', 'bars_v2'],
+                # 'options': ['table', 'bars', 'bars_v2', 'viztest'],
+                'options': ['table', 'bars_v2', 'viztest'],
                 'type': 'single',
             },
             {
@@ -168,7 +177,13 @@ class Alignment(object):
             {
                 'key': 'mss',
                 'default': ['fr-20125', 'royal-20-d-1'],
-                'options': [ms['name'] for ms in alignment_data['mss']],
+                'options': [
+                    ms['name']
+                    for ms
+                    in alignment_data['mss']
+                    if (not possible_mss) or
+                    get_key_from_name(ms['name']) in possible_mss
+                ],
                 'name': 'Manuscripts',
                 'type': 'multi',
             },
@@ -259,7 +274,7 @@ class Alignment(object):
 
         paras = []
         mss = {}
-        fields = {}
+#         fields = {}
         sections = []
 
         # extract, normalise and merge the manuscript names
@@ -276,6 +291,10 @@ class Alignment(object):
                 ret.append(p)
 
             return ret
+
+        # multivalued_seg_types = []
+        multivalued_seg_types = ['rubric']
+        dict_seg_types = ['rubric']
 
         # extract the paras
         for alignments in alignments_set:
@@ -297,9 +316,35 @@ class Alignment(object):
                     for manuscript in element:
                         para_ms = {}
                         for seg in manuscript:
-                            para_ms[seg.attrib.get('type')] = seg.text
-                            if seg.text is not None:
-                                fields[seg.attrib.get('type')] = seg.text
+                            typ = seg.attrib.get('type')
+                            text = seg.text
+
+                            if text and len(text) <= 3 and typ in ['rubric']:
+                                continue
+
+                            if text:
+                                text = re.sub(r'\s+', r' ', text)
+
+                            if typ in dict_seg_types:
+                                val = {
+                                    re.sub(r'\{.*\}', r'', k): v
+                                    for k, v
+                                    in seg.attrib.items()
+                                }
+                                val['t'] = text
+                                del val['type']
+                            else:
+                                val = text
+
+                            if typ in multivalued_seg_types:
+                                if typ in para_ms:
+                                    para_ms[typ].append(val)
+                                else:
+                                    para_ms[typ] = [val]
+                            else:
+                                para_ms[typ] = val
+#                             if seg.text is not None:
+#                                 fields[seg.attrib.get('type')] = seg.text
 
                         ms_name = para_ms['ms_name'] or 'UNSPECIFIED'
                         # take normalised name
@@ -307,9 +352,16 @@ class Alignment(object):
 
                         para['mss'][ms_name] = para_ms
 
-                        if (para_ms.get('location') or '').lower(
-                        ).strip() in ['', 'absent']:
+                        location_clean = (
+                            para_ms.get('location') or 'none'
+                        ).lower().strip()
+                        if 'absent' in location_clean:
                             para_ms['absent'] = 1
+                        if location_clean == '':
+                            # NO LONGER USED
+                            para_ms['absent'] = 2
+                        if location_clean == 'none':
+                            para_ms['absent'] = 3
 
                         if ms_name not in mss:
                             mss[ms_name] = {
@@ -350,6 +402,8 @@ class Alignment(object):
             'mss': sorted(mss.values(), key=lambda ms: ms['name'].lower()),
             'sections': sections,
         }
+
+        print len(json(paras))
 
         return ret
 
