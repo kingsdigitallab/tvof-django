@@ -144,6 +144,7 @@ body {
 
     $grey: #d8d8d8;
 
+
     .absent-0 {
         background: $neutral;
 
@@ -189,129 +190,46 @@ body {
         }
     }
 
-    .one {
-        color: $primary-color;
-    }
-
-    .one-bg {
-        background: $primary-color;
-        color: white;
-    }
-
-    .two {
-        color: $secondary-color;
-    }
-
-    .two-bg {
-        background: $secondary-color;
-        color: white;
-    }
-
-    .three {
-        color: $tertiary-color;
-    }
-
-    .three-bg {
-        background: $tertiary-color;
-        color: white;
-    }
-
     // Fonts
     $body-font-family: 'Archivo Narrow', sans-serif;
 
-    /* Globals */
-
-    body {
-        box-sizing: border-box; 
-        font-family: $body-font-family;
+    .column,
+    .column-block {
+        line-height: 1.6;
         margin: 0;
-        padding: 0;
     }
 
-    button {
-        border: 0;
-        cursor: pointer;
-        min-height: 100px;
-        min-width: 100px;
+    .column {
+        border-bottom: 2px solid #f2f2f2;
+        border-left: 5px solid #f2f2f2;
+        border-right: 5px solid #f2f2f2;
+
+        &.first {
+            border-top: 2px solid $grey;
+        }
 
         svg {
-            width: 100%;
-        }
-    }
-
-    header,
-    main,
-    footer {
-        clear: both;
-        display: block;
-        padding: 0 20px;
-    }
-
-    header {
-        border-bottom: 1px solid grey;
-        margin-bottom: 20px;
-    }
-
-    footer {
-        border-top: 1px solid grey;
-        margin-top: 20px;
-    }
-
-    ol,
-    ul {
-        margin: 0;
-
-        li {
-            border-bottom: 2px solid $grey;
-            padding: 3px 8px;
-
-            // &.connect.active {
-            //     background: darken($neutral, 10%);
-            // }
-
-            &.missing.active {
-                background: darken($grey, 10%);
-            }
-
-            svg {
-                padding-left: 5px;
-                padding-right: 5px;
-            }
-        }
-    }
-
-    ol {
-        list-style-position: inside;
-    }
-
-    ul {
-        padding: 0;
-
-        li {
-            list-style: none;
+            padding-left: 5px;
+            padding-right: 5px;
         }
     }
 
     .connect {
-        // background: $neutral;
+        color: white;
         margin-bottom: 0;
 
-        // &:hover {
-        //     background: darken($neutral, 10%);
-        //     cursor: pointer;
-        // }
+        &:hover {
+            cursor: pointer;
+        }
     }
 
     .hide {
         display: none;
     }
 
-    .missing {
-        background: $grey;
-
-        &:hover {
-            background: darken($grey, 10%);
-            cursor: pointer;
+    .thead {
+        .column {
+            border: 0;
         }
     }
 
@@ -320,6 +238,7 @@ body {
         border-bottom: 3px solid $neutral;
         font-size: 18px;
         margin: 0;
+        padding-left: 15px;
     }
 
     .show {
@@ -327,9 +246,11 @@ body {
     }
 
     .title {
+        background: $primary-color;
         color: white;
+        font-size: 18px;
         margin: 0;
-        padding: 20px;
+        padding: 10px;
     }
 
     .zoom {
@@ -340,48 +261,5 @@ body {
 
     h1, h2, h3, h4, h5, h6 {
         font-weight: normal;
-    }
-
-    /* Grid */
-
-    .row {
-        clear: both;
-        display: block;
-        width: 100% !important;
-    }
-
-    [class*='col-'] {
-        box-sizing: border-box;
-        float: left;
-        width: 100%;
-    }
-
-    .col-eighth:nth-child(3),
-    .col-eighth:nth-child(5),
-    .col-eighth:nth-child(7),
-    .col-eighth:nth-child(9),
-    .col-eighth:nth-child(11),
-    .col-eighth:nth-child(13) {
-        border-left: 1px solid #666;
-        border-right: 1px solid #666;
-    }
-     
-    /* Media queries */
-
-    @media screen and (min-width: 801px) {
-
-        .col-full {
-            width: 100%;
-        }
-
-        .col-eighth:nth-child(even) {
-            display: inline-block;
-            width: 1.5%;
-        }
-
-        .col-eighth:nth-child(odd) {
-            display: inline-block;
-            width: 15%;
-        }
     }
 }
