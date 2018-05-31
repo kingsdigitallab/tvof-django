@@ -16,6 +16,7 @@ Global styles
 Header
 Navigation
 Main content area
+    Blog
     Images
     Notes
     Quick tips or Disclaimer
@@ -159,7 +160,14 @@ ul.sticky {
 
     h1 {
         border-bottom: 1px solid scale-color($primary-color, $lightness: 50%);
+        font-size: 2rem;
+        line-height: 1.25;
         margin: 1rem 0;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+        line-height: 1.125;
     }
 
     h3 {
@@ -168,6 +176,20 @@ ul.sticky {
 
     h4 {
         font-size: 1.25rem;
+    }
+
+    // Blog
+
+    .bydate {
+        color: scale-color($almost-black, $lightness: 25%);
+        font-style: italic;
+        line-height: 1;
+        margin: 0;
+    }
+    
+    .item {
+        border-bottom: 1px solid scale-color($almost-black, $lightness: 65%);
+        margin-bottom: 1rem;
     }
 
     // Images
