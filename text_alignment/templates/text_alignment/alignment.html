@@ -159,11 +159,12 @@
                     params = vue_config.get_request_data();
                     params.js = 1;
                 }
-                
+
                 var req = $.getJSON({
                     url: url,
                     data: params,
                 })
+                console.log(url);
                 
                 req.done(function(data, textStatus, jqXHR) {
                     Vue.set(vue_config, 'vars', data.config);

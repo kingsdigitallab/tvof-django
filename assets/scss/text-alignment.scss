@@ -144,7 +144,6 @@ body {
 
     $grey: #d8d8d8;
 
-
     .absent-0 {
         background: $neutral;
 
@@ -173,11 +172,11 @@ body {
     }
 
     .absent-3 {
-        background: $primary-color;
+        background: white;
 
         &:hover,
         &.active {
-            background: darken($primary-color, 20%);
+            background: darken(white, 10%);
         }
     }
 
@@ -187,6 +186,35 @@ body {
         &:hover,
         &.active {
             background: darken($grey, 40%);
+        }
+    }
+
+    // Combinations
+
+    .variation {
+        background: #d86d0f;
+
+        &:hover,
+        &.active {
+            background: darken(#d86d0f, 20%);
+        }
+
+        &.location {
+            background: #dd614a;
+
+            &:hover,
+            &.active {
+                background: darken(#dd614a, 20%);
+            }
+
+            &.rubric {
+                background: #9c89b8;
+
+                &:hover,
+                &.active {
+                    background: darken(#9c89b8, 20%);
+                }
+            }
         }
     }
 

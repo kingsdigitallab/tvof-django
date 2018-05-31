@@ -26,6 +26,7 @@ $(document).ready(function() {
         {% endfor %}
     </div>
     {% for para in alignment_data.paras %}
+    {# [{{ para }}] #}
     {% ifchanged para.section %}
     <div class="row expanded">
         <div class="large-12">
@@ -40,26 +41,43 @@ $(document).ready(function() {
         {% for ms in params.mss.options %}
         {% if ms.selected %}
         {% with para_ms=para.mss|get_item:ms.name %}
-        <div class="column column-block connect{% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %} expand{% endif%}{% if para_ms %} absent-{{ para_ms.absent|default:'0' }}{% else %} nopara{% endif %}">
+        <div class="column column-block connect
+        {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse or fields_note and para_ms.note %} expand{% endif%}
+        {% if para_ms %} absent-{{ para_ms.absent|default:'0' }}{% else %} nopara{% endif %}
+        {% if para_ms.location %} location{% endif %}
+        {% if para_ms.rubric %} rubric{% endif %}
+        {% if para_ms.variation %} variation{% endif %}
+        ">
             {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %}
-            <i class="fa fa-info-circle"></i>
+            {% if fields_locus and para_ms.location %}<i class="fa fa-map-marker"></i>{% endif %}
+            {% if fields_rubric and para_ms.rubric %} <i class="fa fa-align-center"></i>{% endif %}
+            {% if para_ms.variation %} <i class="fa fa-edit"></i>{% endif %}
+            {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
+            {% if fields_note and para_ms.note and para_ms.note.feat %} <i class="fa fa-file"></i>{% endif %}
             {% else %}
             <p class="connect">&nbsp;</p>
             {% endif %}
-            {% if fields_rubric and para_ms.rubric %} <i class="fa fa-file"></i>{% endif %}
-            {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
+            
             <p class="hide">
-                {% if fields_locus and para_ms.location %}<strong>Location:</strong> {{ para_ms.location }}<br>{% endif %}
+                {% if fields_locus and para_ms.location %}
+                <strong><i class="fa fa-map-marker"></i> Location:</strong> {{ para_ms.location }}<br>
+                {% endif %}
                 {% if fields_rubric and para_ms.rubric %}                
                 {% for rubric in para_ms.rubric %}
                     {% if rubric.diff %}
-                    <strong>Rubric:</strong> [rubric.diff]<br>
+                    <strong><i class="fa fa-align-center"></i> Rubric:</strong> [rubric.diff]<br>
                     {% endif %}
-                    <strong>Rubric:</strong> {{ rubric.t }}<br>
+                    <strong><i class="fa fa-align-center"></i> Rubric:</strong> {{ rubric.t }}<br>
                 {% endfor %}
                 {% endif %}
+                {% if para_ms.variation %}
+                    <strong><i class="fa fa-edit"></i> Variation:</strong> {% if para_ms.variation == "PML" %}Partial {% endif %}Materia Lacuna<br>
+                {% endif %}
                 {% if fields_verse and para_ms.verse %}
-                    <strong>Verse:</strong> {{ para_ms.verse }}
+                    <strong><i class="fa fa-pencil"></i> Verse:</strong> {{ para_ms.verse }}
+                {% endif %}
+                {% if fields_note and para_ms.note and para_ms.note.feat %}
+                    <strong><i class="fa fa-file"></i> Note:</strong> {{ para_ms.note.t }}
                 {% endif %}
             </p>
         </div>
