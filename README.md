@@ -5,6 +5,7 @@ The projects is configured to use [Vagrant](https://www.vagrantup.com/) for loca
 
 # Release 0.10.5
 * 'Column' alignment to be shared. In preparation for June seminar.
+* Styled blog pages
 
 # Release 0.2.5
 * flake8 pre-commit hook added to git during provisioning
