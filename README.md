@@ -3,7 +3,7 @@ Start up configuration for Django based projects.
 
 The projects is configured to use [Vagrant](https://www.vagrantup.com/) for local development and [fabric](http://www.fabfile.org/) for deployment. The project also has some default templates based on [Foundation](http://foundation.zurb.com/) and it uses [RequireJS](http://www.requirejs.org/) for JavaScript loading and optimisation.
 
-# Release 0.10.1
+# Release 0.10.5
 * 'Column' alignment to be shared. In preparation for June seminar.
 
 # Release 0.2.5
