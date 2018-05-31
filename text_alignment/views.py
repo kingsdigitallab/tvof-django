@@ -294,7 +294,7 @@ class Alignment(object):
 
         # multivalued_seg_types = []
         multivalued_seg_types = ['rubric']
-        dict_seg_types = ['note', 'rubric']
+        dict_seg_types = ['locus', 'note', 'rubric']
 
         # extract the paras
         for alignments in alignments_set:

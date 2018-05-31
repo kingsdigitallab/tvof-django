@@ -164,7 +164,6 @@
                     url: url,
                     data: params,
                 })
-                console.log(url);
                 
                 req.done(function(data, textStatus, jqXHR) {
                     Vue.set(vue_config, 'vars', data.config);

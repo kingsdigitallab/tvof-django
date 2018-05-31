@@ -251,14 +251,15 @@ body {
         }
     }
 
-    .hide {
-        display: none;
+    .fixed {
+        background: white;
+        display: block;
+        position: fixed;
+        width: 100%;
     }
 
-    .thead {
-        .column {
-            border: 0;
-        }
+    .hide {
+        display: none;
     }
 
     .section {
@@ -273,12 +274,22 @@ body {
         display: block;
     }
 
+    .thead {
+        .column {
+            border: 0;
+        }
+    }
+
     .title {
         background: $primary-color;
         color: white;
         font-size: 18px;
         margin: 0;
         padding: 10px;
+    }
+
+    .top-margin {
+        height: 50px;
     }
 
     .zoom {
