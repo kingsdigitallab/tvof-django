@@ -3,18 +3,19 @@
 <ul class="{{ class }} no-bullet">
     {% for post in self.get_descendants.live|dictsortreversed:"first_published_at" %}
 
-        <li>
+        <li class="item">
             {% block blog_post_title %}
                 <h2 class="posttitle">
                     <a href="{{ post.url }}">{{ post.title }}</a>
                 </h2>
-                <p>by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at|date:"j M Y" }}</p>
+                <p class="bydate">by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at|date:"j M Y" }}</p>
                 <section class="postcontent">
                     {% for child in post.blogpost.content %} 
                         <p>
                             {% if child.block_type == 'paragraph' %}
                                 {% if forloop.first %}
                                 {{ child.value|richtext|truncatewords:15 }}
+                                <a href="{{ post.url }}"><strong>Read more &raquo;</strong></a>
                                 {% endif %}
                             {% endif %}
                         </p>

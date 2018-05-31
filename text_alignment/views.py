@@ -156,10 +156,11 @@ class Alignment(object):
         ret = [
             {
                 'key': 'view',
+                # 'default': 'table',
                 'default': 'column',
                 # 'options': ['table', 'bars', 'bars_v2', 'viztest'],
-                # 'options': ['table', 'bars', 'column'],
-                'options': ['column'],
+                'options': ['table', 'bars', 'column'],
+                # 'options': ['column'],
                 'type': 'single',
             },
             {
