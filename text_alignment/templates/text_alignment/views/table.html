@@ -32,7 +32,7 @@
                                 {% if fields_locus %}{{ para_ms.location }}{% endif %}
                                 {% for rubric in para_ms.rubric %}
                                     {% if rubric.diff %}
-                                        [rubric.diff]
+                                        {{ rubric.diff }}
                                     {% endif %}
                                     {{ rubric.t }}
                                 {% endfor %}

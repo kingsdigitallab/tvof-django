@@ -90,15 +90,15 @@ class Alignment(object):
         for k in context['config'].get('fields'):
             context['fields_%s' % k] = 1
 
+    def set_context_bars_old(self, context):
+        for k in context['config'].get('fields'):
+            context['fields_%s' % k] = 1
+
     def set_context_bars(self, context):
         for k in context['config'].get('fields'):
             context['fields_%s' % k] = 1
 
-    def set_context_bars_v2(self, context):
-        for k in context['config'].get('fields'):
-            context['fields_%s' % k] = 1
-
-    def set_context_viztest(self, context):
+    def set_context_column(self, context):
         for k in context['config'].get('fields'):
             context['fields_%s' % k] = 1
 
@@ -158,7 +158,7 @@ class Alignment(object):
                 'key': 'view',
                 'default': 'table',
                 # 'options': ['table', 'bars', 'bars_v2', 'viztest'],
-                'options': ['table', 'bars_v2', 'viztest'],
+                'options': ['table', 'bars', 'column'],
                 'type': 'single',
             },
             {
@@ -294,7 +294,7 @@ class Alignment(object):
 
         # multivalued_seg_types = []
         multivalued_seg_types = ['rubric']
-        dict_seg_types = ['rubric']
+        dict_seg_types = ['locus', 'note', 'rubric']
 
         # extract the paras
         for alignments in alignments_set:
