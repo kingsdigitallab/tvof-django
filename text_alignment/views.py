@@ -295,7 +295,7 @@ class Alignment(object):
             return ret
 
         # multivalued_seg_types = []
-        multivalued_seg_types = ['rubric']
+        multivalued_seg_types = ['note', 'rubric']
         dict_seg_types = ['note', 'rubric']
 
         # extract the paras
