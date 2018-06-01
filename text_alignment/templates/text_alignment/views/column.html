@@ -48,43 +48,56 @@ $(document).ready(function() {
         {% if para_ms.rubric %} rubric{% endif %}
         {% if para_ms.variation %} variation{% endif %}
         ">
-            {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %}
-            {% if fields_locus and para_ms.location %}<i class="fa fa-map-marker"></i>{% endif %}
-            {% if fields_rubric and para_ms.rubric %} <i class="fa fa-align-center"></i>{% endif %}
-            {% if para_ms.variation %} <i class="fa fa-edit"></i>{% endif %}
-            {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
-            {% if fields_note and para_ms.note and para_ms.note.feat %} <i class="fa fa-file"></i>{% endif %}
-            {% else %}
-            <p class="connect">&nbsp;</p>
-            {% endif %}
-            
-            <p class="hide">
-                {% if fields_locus and para_ms.location %}
-                <strong><i class="fa fa-map-marker"></i> Location:</strong> {{ para_ms.location }}<br>
-                {% endif %}
-                {% if fields_rubric and para_ms.rubric %}                
-                {% for rubric in para_ms.rubric %}
-                    {% if rubric.diff %}
-                    <strong><i class="fa fa-align-center"></i> Rubric:</strong> {{ rubric.diff }}<br>
-                    {% endif %}
-                    {% if rubric.diff == "move" %}Before {{ rubric.dest }}<br>{% endif %}
-                    {% if not rubric.diff %}<strong><i class="fa fa-align-center"></i> Rubric:</strong>{% endif %} {{ rubric.t }}<br>
-                {% endfor %}
-                {% endif %}
-                {% if para_ms.variation %}
-                    <strong><i class="fa fa-edit"></i> Variation:</strong> {% if para_ms.variation == "PML" %}Partial {% endif %}Material Lacuna<br>
-                {% endif %}
-                {% if fields_verse and para_ms.verse %}
-                    <strong><i class="fa fa-pencil"></i> Verse:</strong> {{ para_ms.verse }}
-                {% endif %}
-                {% if fields_note and para_ms.note and para_ms.note.feat %}
-                    <strong><i class="fa fa-file"></i> Note:</strong> {{ para_ms.note.t }}
-                {% endif %}
-            </p>
-        </div>
-        {% endwith %}
+        {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %}
+        {% if fields_locus and para_ms.location %}<i class="fa fa-map-marker"></i>{% endif %}
+        {% if fields_rubric and para_ms.rubric %} <i class="fa fa-align-center"></i>{% endif %}
+        {% if para_ms.variation %} <i class="fa fa-edit"></i>{% endif %}
+        {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
+
+        {% if fields_note and para_ms.note %}
+        {% for note in param_ms.note %}
+        {% if note.feat %}
+        <i class="fa fa-file"></i>
         {% endif %}
         {% endfor %}
+        {% endif %}
+
+        {% else %}
+        <p class="connect">&nbsp;</p>
+        {% endif %}
+
+        <p class="hide">
+            {% if fields_locus and para_ms.location %}
+            <strong><i class="fa fa-map-marker"></i> Location:</strong> {{ para_ms.location }}<br>
+            {% endif %}
+            {% if fields_rubric and para_ms.rubric %}
+            {% for rubric in para_ms.rubric %}
+            {% if rubric.diff %}
+            <strong><i class="fa fa-align-center"></i> Rubric:</strong> {{ rubric.diff }}<br>
+            {% endif %}
+            {% if rubric.diff == "move" %}Before {{ rubric.dest }}<br>{% endif %}
+            {% if not rubric.diff %}<strong><i class="fa fa-align-center"></i> Rubric:</strong>{% endif %} {{ rubric.t }}<br>
+            {% endfor %}
+            {% endif %}
+            {% if para_ms.variation %}
+            <strong><i class="fa fa-edit"></i> Variation:</strong> {% if para_ms.variation == "PML" %}Partial {% endif %}Material Lacuna<br>
+            {% endif %}
+            {% if fields_verse and para_ms.verse %}
+            <strong><i class="fa fa-pencil"></i> Verse:</strong> {{ para_ms.verse }}
+            {% endif %}
+
+            {% if fields_note and para_ms.note %}
+            {% for note in param_ms.note %}
+            {% if note.feat %}
+            <strong><i class="fa fa-file"></i> Note:</strong> {{ note.t }}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        </p>
     </div>
+    {% endwith %}
+    {% endif %}
     {% endfor %}
+</div>
+{% endfor %}
 </div>
