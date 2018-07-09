@@ -15,6 +15,15 @@ require([
             $(this).toggleClass("active");
             return false;
         });
+
+        // Cookie consent
+        if (!cookie.get('tvof-cookie')) {
+            $("#cookie-disclaimer").removeClass('hide');
+        }
+        // Set cookie
+        $('#cookie-disclaimer .closeme').on("click", function() {
+            cookie.set('tvof-cookie', 'tvof-cookie-set', { expires: 30 });
+        });
     });
 
 });
