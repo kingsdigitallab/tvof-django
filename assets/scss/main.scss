@@ -22,6 +22,7 @@ Main content area
     Quick tips or Disclaimer
     Text viewer - TEI
 Footer
+    Cookie consent
 Media queries
     Navigation
 
@@ -477,7 +478,32 @@ footer {
             max-height: rem-calc(200);
         }
     }
+}
 
+// Cookie consent
+
+
+
+// Cookies
+
+.cookies-box {
+    background: $primary-color;
+    bottom: 0;
+    color: $white;
+    margin: 0;
+    opacity: 0.95;
+    position: fixed;
+    text-align: center;
+    width: 100%;
+
+    button,
+    .button {
+        font-weight: 700;
+    }
+
+    p {
+        margin-bottom: rem-calc(16);
+    }
 }
 
 /* Media queries */
