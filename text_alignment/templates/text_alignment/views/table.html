@@ -32,13 +32,25 @@
                                 {% if fields_locus %}{{ para_ms.location }}{% endif %}
                                 {% for rubric in para_ms.rubric %}
                                     {% if rubric.diff %}
-                                        {{ rubric.diff }}
+                                        [{{ rubric.diff }}]
                                     {% endif %}
                                     {{ rubric.t }}
                                 {% endfor %}
                                 {% if fields_verse and para_ms.verse %}
                                     <br/>
                                     Verse: {{ para_ms.verse }}
+                                {% endif %}
+                                {% if fields_variation %}
+                                    {% for var in para_ms.vars %}
+                                        <br/>
+                                        Variation: {{ var.t }}
+                                    {% endfor %}
+                                {% endif %}
+                                {% if fields_note %}
+                                    {% for note in para_ms.note %}
+                                        <br/>
+                                        Note: {{ note.t }}
+                                    {% endfor %}
                                 {% endif %}
                             </td>
                         {% endwith %}

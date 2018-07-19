@@ -104,22 +104,28 @@ class Alignment(object):
         from django.http import JsonResponse
         return JsonResponse(json_res)
 
-    def set_context_table(self, context):
+    def set_context_base(self, context):
+        '''
+        Each metadata field selected by the web user in the config
+        will be added to the template context as a flag:
+        field_XXX = 1
+        (e.g. field_locus = 1, field_rubric = 1)
+        '''
         # easier for template to check which fields to show in table
         for k in context['config'].get('fields'):
             context['fields_%s' % k] = 1
 
+    def set_context_table(self, context):
+        self.set_context_base(context)
+
     def set_context_bars_old(self, context):
-        for k in context['config'].get('fields'):
-            context['fields_%s' % k] = 1
+        self.set_context_base(context)
 
     def set_context_bars(self, context):
-        for k in context['config'].get('fields'):
-            context['fields_%s' % k] = 1
+        self.set_context_base(context)
 
     def set_context_column(self, context):
-        for k in context['config'].get('fields'):
-            context['fields_%s' % k] = 1
+        self.set_context_base(context)
 
     def fetch_all_alignment_data(self, nocache=False):
         '''
@@ -175,11 +181,8 @@ class Alignment(object):
         ret = [
             {
                 'key': 'view',
-                # 'default': 'table',
                 'default': 'column',
-                # 'options': ['table', 'bars', 'bars_v2', 'viztest'],
-                # 'options': ['table', 'bars', 'column'],
-                'options': ['column'],
+                'options': ['table', 'bars', 'column'],
                 'type': 'single',
             },
             {
@@ -218,8 +221,8 @@ class Alignment(object):
             },
             {
                 'key': 'fields',
-                'default': ['locus', 'rubric', 'verse'],
-                'options': ['locus', 'rubric', 'verse', 'note'],
+                'default': ['locus', 'rubric', 'verse', 'variation'],
+                'options': ['locus', 'rubric', 'verse', 'variation', 'note'],
                 'name': 'Metadata fields',
                 'type': 'multi',
             },
@@ -465,10 +468,60 @@ class Alignment(object):
             else:
                 ret[typ] = val
 
+
 #             if seg.text is not None:
 #                 fields[seg.attrib.get('type')] = seg.text
 
+        self.expand_para_ms(ret)
+
         return ret
+
+    def expand_para_ms(self, para_ms_dict):
+        '''
+        Expand the dictionary that contains the description of a para in a MS.
+        So the frontend code doesn't have to know about acronyms, etc.
+        E.g.
+        <seg type="variation">PML</seg>
+        => {
+            [...]
+            'variation': 'PML'
+        }
+        => {
+            [...]
+            'variation': 'PML'
+            'variations': [
+                {
+                    't': 'Partial Material Lacunae'
+                }
+            ]
+        }
+        '''
+
+        # Expand variations
+
+        variation_names = {
+            'PML': 'Partial Material Lacunae',
+            'ML': 'Material Lacunae',
+        }
+
+        variations = para_ms_dict.get('variation', None)
+        if variations:
+            para_ms_dict['vars'] = [
+                {
+                    't': variation_names.get(var, var)
+                }
+                for var in variations.split(' ')
+            ]
+
+        # TODO: Remove empty notes
+        # => smaller json data for client
+        # & no need to filter in the visualisation
+        notes = para_ms_dict.get('note', [])
+        for i in range(len(notes) - 1, -1, -1):
+            if not notes[i]['t']:
+                del notes[i]
+
+        return para_ms_dict
 
     def get_ms_names_from_xml(self, root):
         '''
