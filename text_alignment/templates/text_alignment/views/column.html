@@ -51,12 +51,12 @@ $(document).ready(function() {
         {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %}
         {% if fields_locus and para_ms.location %}<i class="fa fa-map-marker"></i>{% endif %}
         {% if fields_rubric and para_ms.rubric %} <i class="fa fa-align-center"></i>{% endif %}
-        {% if para_ms.variation %} <i class="fa fa-edit"></i>{% endif %}
+        {% if fields_variation and para_ms.variation %} <i class="fa fa-edit"></i>{% endif %}
         {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
 
         {% if fields_note and para_ms.note %}
         {% for note in para_ms.note %}
-        {% if note.feat %}
+        {% if 1 or note.feat %}
         <i class="fa fa-file"></i>
         {% endif %}
         {% endfor %}
@@ -79,16 +79,17 @@ $(document).ready(function() {
             {% if not rubric.diff %}<strong><i class="fa fa-align-center"></i> Rubric:</strong>{% endif %} {{ rubric.t }}<br>
             {% endfor %}
             {% endif %}
-            {% if para_ms.variation %}
-            <strong><i class="fa fa-edit"></i> Variation:</strong> {% if para_ms.variation == "PML" %}Partial {% endif %}Material Lacuna<br>
+            {% if fields_variation and para_ms.vars %}
+            {% for var in para_ms.vars %}
+            <strong><i class="fa fa-edit"></i> Variation:</strong> {{ var.t }}<br>
+            {% endfor %}
             {% endif %}
             {% if fields_verse and para_ms.verse %}
             <strong><i class="fa fa-pencil"></i> Verse:</strong> {{ para_ms.verse }}
             {% endif %}
-
             {% if fields_note and para_ms.note %}
             {% for note in para_ms.note %}
-            {% if note.feat %}
+            {% if 1 or note.feat %}
             <strong><i class="fa fa-file"></i> Note:</strong> {{ note.t }}
             {% endif %}
             {% endfor %}

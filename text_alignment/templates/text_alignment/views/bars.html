@@ -237,9 +237,19 @@
                                     info += '<b>Rubric</b>: ' + rubric.t;
                                 });
                             }
+                            if (config_fields.variation && para_ms.vars) {
+                                $.each(para_ms.vars, function(note_idx, avar) {
+                                    if (avar.t) { 
+                                        info += '<br/>';
+                                        info += '<b>Variation</b>: ' + avar.t;
+                                    }
+                                });
+                            }
                             if (config_fields.note && para_ms.note) {
-                                info += '<br/>';
-                                info += '<b>Note</b>: ' + para_ms.note;
+                                $.each(para_ms.note, function(note_idx, note) {
+                                    info += '<br/>';
+                                    info += '<b>Note</b>: ' + note.t;
+                                });
                             }
                         } else {
                             info += '[No para]';
