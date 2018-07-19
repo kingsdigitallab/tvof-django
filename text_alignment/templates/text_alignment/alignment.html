@@ -36,7 +36,7 @@
         </li>
         {% endcomment %}
         <li>
-            <a id="toggle-settings" href="#settings">Settings <i class="fa fa-cog"></i></a>
+            <a id="toggle-settings" href="#settings" class="toggle-settings">Settings <i class="fa fa-cog"></i></a>
         </li>
     </ul>
 {% endblock %}
@@ -120,7 +120,7 @@
                 return ret;
             }
             
-            $('#toggle-settings').on('click', function(e) {
+            $('.toggle-settings').on('click', function(e) {
                 toggle_settings();
                 return false;
             });
