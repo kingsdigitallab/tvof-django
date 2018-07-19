@@ -3,7 +3,8 @@
 {% verbatim %}
 <div id="settings">
     <div class="settings-head">
-        <h3>Settings</h3>
+        <h3 class="float-left">Settings</h3>
+        <button class="button float-right toggle-settings">Close <i class="fa fa-lg fa-times"></i></button>
     </div>
     <div class="settings-body">
         <div v-for="v in vars" class="settings-field">
@@ -34,6 +35,7 @@
                 </ul>
             </template>
         </div>
+        <button class="button float-right toggle-settings">Apply &amp; Close</button>
     </div>
 </div>
 {% endverbatim %}
