@@ -1,0 +1,103 @@
+{% load staticfiles compress require cms_tags wagtailcore_tags %}
+
+{# TODO: move this to external file (main.js?) #}
+<script>
+$(document).ready(function() {
+    // Expand / Collapse
+    $('.expand').on("click", function () {
+        $(this).children().next('p').slideToggle(400).toggleClass("hide show");
+        $(this).toggleClass("active");
+        return false;
+    });
+});
+</script>
+
+<div class="viz">
+    <div class="row thead expanded small-up-4 medium-up-6 fixed">
+        <div class="column column-block">
+            &nbsp;
+        </div>
+        {% for ms in params.mss.options %}
+        {% if ms.selected %}
+        <div class="column column-block">
+            <h2 class="title">{{ ms.name }}</h2>
+        </div>
+        {% endif %}
+        {% endfor %}
+    </div>
+    <div class="top-margin"></div>
+    {% for para in alignment_data.paras %}
+    {% ifchanged para.section %}
+    <div class="row expanded">
+        <div class="large-12">
+            <p class="section"><strong>{{ para.section }}</strong></p>
+        </div>
+    </div>
+    {% endifchanged %}
+    <div class="row expanded small-up-4 medium-up-6">
+        <div class="column column-block first">
+            {{ para.id }}
+        </div>
+        {% for ms in params.mss.options %}
+        {% if ms.selected %}
+        {% with para_ms=para.mss|get_item:ms.name %}
+        <div class="column column-block connect
+        {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse or fields_note and para_ms.note %} expand{% endif%}
+        {% if para_ms %} absent-{{ para_ms.absent|default:'0' }}{% else %} nopara{% endif %}
+        {% if para_ms.location %} location{% endif %}
+        {% if para_ms.rubric %} rubric{% endif %}
+        {% if para_ms.variation %} variation{% endif %}
+        ">
+        {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %}
+        {% if fields_locus and para_ms.location %}<i class="fa fa-map-marker"></i>{% endif %}
+        {% if fields_rubric and para_ms.rubric %} <i class="fa fa-align-center"></i>{% endif %}
+        {% if para_ms.variation %} <i class="fa fa-edit"></i>{% endif %}
+        {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
+
+        {% if fields_note and para_ms.note %}
+        {% for note in para_ms.note %}
+        {% if note.feat %}
+        <i class="fa fa-file"></i>
+        {% endif %}
+        {% endfor %}
+        {% endif %}
+
+        {% else %}
+        <p class="connect">&nbsp;</p>
+        {% endif %}
+
+        <p class="hide">
+            {% if fields_locus and para_ms.location %}
+            <strong><i class="fa fa-map-marker"></i> Location:</strong> {{ para_ms.location }}<br>
+            {% endif %}
+            {% if fields_rubric and para_ms.rubric %}
+            {% for rubric in para_ms.rubric %}
+            {% if rubric.diff %}
+            <strong><i class="fa fa-align-center"></i> Rubric:</strong> {{ rubric.diff }}<br>
+            {% endif %}
+            {% if rubric.diff == "move" %}Before {{ rubric.dest }}<br>{% endif %}
+            {% if not rubric.diff %}<strong><i class="fa fa-align-center"></i> Rubric:</strong>{% endif %} {{ rubric.t }}<br>
+            {% endfor %}
+            {% endif %}
+            {% if para_ms.variation %}
+            <strong><i class="fa fa-edit"></i> Variation:</strong> {% if para_ms.variation == "PML" %}Partial {% endif %}Material Lacuna<br>
+            {% endif %}
+            {% if fields_verse and para_ms.verse %}
+            <strong><i class="fa fa-pencil"></i> Verse:</strong> {{ para_ms.verse }}
+            {% endif %}
+
+            {% if fields_note and para_ms.note %}
+            {% for note in para_ms.note %}
+            {% if note.feat %}
+            <strong><i class="fa fa-file"></i> Note:</strong> {{ note.t }}
+            {% endif %}
+            {% endfor %}
+            {% endif %}
+        </p>
+    </div>
+    {% endwith %}
+    {% endif %}
+    {% endfor %}
+</div>
+{% endfor %}
+</div>

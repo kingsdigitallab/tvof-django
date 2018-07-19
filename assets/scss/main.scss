@@ -16,11 +16,13 @@ Global styles
 Header
 Navigation
 Main content area
+    Blog
     Images
     Notes
     Quick tips or Disclaimer
     Text viewer - TEI
 Footer
+    Cookie consent
 Media queries
     Navigation
 
@@ -159,7 +161,14 @@ ul.sticky {
 
     h1 {
         border-bottom: 1px solid scale-color($primary-color, $lightness: 50%);
+        font-size: 2rem;
+        line-height: 1.25;
         margin: 1rem 0;
+    }
+
+    h2 {
+        font-size: 1.75rem;
+        line-height: 1.125;
     }
 
     h3 {
@@ -168,6 +177,20 @@ ul.sticky {
 
     h4 {
         font-size: 1.25rem;
+    }
+
+    // Blog
+
+    .bydate {
+        color: scale-color($almost-black, $lightness: 25%);
+        font-style: italic;
+        line-height: 1;
+        margin: 0;
+    }
+    
+    .item {
+        border-bottom: 1px solid scale-color($almost-black, $lightness: 65%);
+        margin-bottom: 1rem;
     }
 
     // Images
@@ -455,7 +478,32 @@ footer {
             max-height: rem-calc(200);
         }
     }
+}
 
+// Cookie consent
+
+
+
+// Cookies
+
+.cookies-box {
+    background: $primary-color;
+    bottom: 0;
+    color: $white;
+    margin: 0;
+    opacity: 0.95;
+    position: fixed;
+    text-align: center;
+    width: 100%;
+
+    button,
+    .button {
+        font-weight: 700;
+    }
+
+    p {
+        margin-bottom: rem-calc(16);
+    }
 }
 
 /* Media queries */

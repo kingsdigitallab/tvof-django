@@ -150,14 +150,14 @@ window.addEventListener('WebComponentsReady', function(e) {
   * [Custom element's constructor property is unreliable](#constructor)
   * [Contenteditable elements do not trigger MutationObserver](#contentedit)
   * [ShadyCSS: :host(.zot:not(.bar:nth-child(2))) doesn't work](#nestedparens)
-  
+
 ### ShadowDOM CSS is not encapsulated out of the box <a id="shadycss"></a>
 The ShadowDOM polyfill is not able to encapsulate CSS in ShadowDOM out of the box. You need to use specific code from the ShadyCSS library, included with the polyfill. See [ShadyCSS instructions](https://github.com/webcomponents/shadycss).
 
 ### Custom element's constructor property is unreliable <a id="constructor"></a>
 See [#215](https://github.com/webcomponents/webcomponentsjs/issues/215) for background.
 
-In Safari and IE, instances of Custom Elements have a `constructor` property of `HTMLUnknownElementConstructor` and `HTMLUnknownElement`, respectively. It's unsafe to rely on this property for checking element types.
+In Edge and IE, instances of Custom Elements have a `constructor` property of `HTMLUnknownElementConstructor` and `HTMLUnknownElement`, respectively. It's unsafe to rely on this property for checking element types.
 
 It's worth noting that `customElement.__proto__.__proto__.constructor` is `HTMLElementPrototype` and that the prototype chain isn't modified by the polyfills(onto `ElementPrototype`, etc.)
 

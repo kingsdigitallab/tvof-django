@@ -31,6 +31,19 @@ $(function() {
 		$this.text(text).toggleClass('secondary darker'); 
 		$(this).prev('.long-list').children('li.more-items').slideToggle();
 	});
+
+    // Cookie consent
+    // To be removed if switching to requirejs
+
+    $(document).ready(function() {
+        if (!Cookies.get('tvof-cookie')) {
+            $("#cookie-disclaimer").removeClass('hide');
+        }
+        // Set cookie
+        $('#cookie-disclaimer .closeme').on("click", function() {
+            Cookies.set('tvof-cookie', 'tvof-cookie-set', { expires: 30 });
+        });
+    });
 	
 	// TVOF 131: click on PDF open the document in new tab instead of 
 	// downloading it
