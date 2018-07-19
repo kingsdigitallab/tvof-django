@@ -110,13 +110,14 @@ nav {
             border-color: transparent $white transparent transparent !important;
         }
 
+        &:active,
         &:focus,
         &:visited {
-            color: $white;
+            color: $white !important;
         }
 
         &:hover {
-            color: scale-color($primary-color, $lightness: 80%);
+            color: scale-color($primary-color, $lightness: 80%) !important;
             background: scale-color($primary-color, $lightness: 20%);
         }
     }
@@ -131,7 +132,7 @@ nav {
 
     .menu,
     .menu > * {
-        z-index: 9;
+        // z-index: 9;
         // GN: active menu item wasn't highlighted (AC-234, 17 May 2018)
         .active > a {
             background: scale-color($primary-color, $lightness: 20%);
@@ -143,8 +144,21 @@ nav {
     }
 }
 
-.menu.submenu.is-dropdown-submenu {
-    background: $primary-color;
+.menu {
+    &.submenu {
+        &.is-dropdown-submenu {
+            background: $primary-color;
+        }
+    }
+
+    &.dropdown {
+        .is-dropdown-submenu-parent {
+            &:hover {
+                background: scale-color($primary-color, $lightness: 20%);
+                color: $white !important;
+            }
+        }
+    }
 }
 
 ul.sticky {

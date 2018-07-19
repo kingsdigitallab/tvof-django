@@ -69,7 +69,6 @@ $global-font-size: 100%;
 $global-width: rem-calc(1200);
 $global-lineheight: 1.5;
 $foundation-palette: (
-  // primary: rgb(45, 18, 11),
   primary:  #1c2434,
   secondary: #4e2626,
   light-blue: #2199e8,
@@ -370,10 +369,13 @@ $drilldown-transition: transform 0.15s linear;
 $drilldown-arrows: true;
 $drilldown-padding: $global-menu-padding;
 $drilldown-nested-margin: 0;
-$drilldown-background: $white;
+// $drilldown-background: $white;
+$drilldown-background: $primary-color;
 $drilldown-submenu-padding: $drilldown-padding;
-$drilldown-submenu-background: $white;
-$drilldown-arrow-color: $primary-color;
+// $drilldown-submenu-background: $white;
+$drilldown-submenu-background: $primary-color;
+// $drilldown-arrow-color: $primary-color;
+$drilldown-arrow-color: $white;
 $drilldown-arrow-size: 6px;
 
 // 17. Dropdown
@@ -406,6 +408,7 @@ $dropdownmenu-padding: $global-menu-padding;
 $dropdownmenu-nested-margin: 0;
 $dropdownmenu-submenu-padding: $dropdownmenu-padding;
 // $dropdownmenu-border: 1px solid $medium-gray;
+$dropdownmenu-border: 0;
 $dropdown-menu-item-color-active: get-color(primary);
 $dropdown-menu-item-background-active: transparent;
 
@@ -855,7 +858,8 @@ $tooltip-radius: $global-radius;
 // 55. Top Bar
 // -----------
 
-$topbar-padding: 0.5rem;
+// $topbar-padding: 0.5rem;
+$topbar-padding: 0;
 $topbar-background: $primary-color;
 $topbar-submenu-background: $topbar-background;
 $topbar-title-spacing: 0.5rem 1rem 0.5rem 0;
