@@ -1,8 +1,8 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
 <div id="alignemnt-view-bars">
-    <div id="vis-info-box" style="position: fixed; display: block; background: white; border: 1px solid green; color: #101010;">
-        TEST
+    <div id="vis-info-box">
+        
     </div>
 
     <canvas class="canvas-bars" height="1000" width="1000">
@@ -234,7 +234,12 @@
                             if (config_fields.rubric && para_ms.rubric) {
                                 $.each(para_ms.rubric, function(i, rubric) {
                                     info += '<br/>';
-                                    info += '<b>Rubric</b>: ' + rubric.t;
+                                    info += '<b>'+(rubric.diff_label || 'Rubric');
+                                    info += '</b>: ';
+                                    if (rubric.dest_label) {
+                                        info += '<i>' + rubric.dest_label + '</i><br/>'
+                                    }
+                                    info += rubric.t;
                                 });
                             }
                             if (config_fields.variation && para_ms.vars) {

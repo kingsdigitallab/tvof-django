@@ -31,25 +31,25 @@
                             <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
                                 {% if fields_locus %}{{ para_ms.location }}{% endif %}
                                 {% for rubric in para_ms.rubric %}
-                                    {% if rubric.diff %}
-                                        [{{ rubric.diff }}]
-                                    {% endif %}
+                                    {% if not forloop.first %}<br>{% endif %}
+                                    <label>{{ rubric.diff_label|default:'Rubric' }}:</label>
+                                    {% if rubric.dest_label %}<span class="rubric-dest">{{ rubric.dest_label }}</span>{% endif %}
                                     {{ rubric.t }}
                                 {% endfor %}
                                 {% if fields_verse and para_ms.verse %}
                                     <br/>
-                                    Verse: {{ para_ms.verse }}
+                                    <label>Verse:</label> {{ para_ms.verse }}
                                 {% endif %}
                                 {% if fields_variation %}
                                     {% for var in para_ms.vars %}
                                         <br/>
-                                        Variation: {{ var.t }}
+                                        <label>Variation:</label> {{ var.t }}
                                     {% endfor %}
                                 {% endif %}
                                 {% if fields_note %}
                                     {% for note in para_ms.note %}
                                         <br/>
-                                        Note: {{ note.t }}
+                                        <label>Note:</label> {{ note.t }}
                                     {% endfor %}
                                 {% endif %}
                             </td>

@@ -2,7 +2,7 @@
 
 {# TODO: move this to external file (main.js?) #}
 <script>
-$(document).ready(function() {
+$(function() {
     // Expand / Collapse
     $('.expand').on("click", function () {
         $(this).children().next('p').slideToggle(400).toggleClass("hide show");
@@ -72,11 +72,9 @@ $(document).ready(function() {
             {% endif %}
             {% if fields_rubric and para_ms.rubric %}
             {% for rubric in para_ms.rubric %}
-            {% if rubric.diff %}
-            <strong><i class="fa fa-align-center"></i> Rubric:</strong> {{ rubric.diff }}<br>
-            {% endif %}
-            {% if rubric.diff == "move" %}Before {{ rubric.dest }}<br>{% endif %}
-            {% if not rubric.diff %}<strong><i class="fa fa-align-center"></i> Rubric:</strong>{% endif %} {{ rubric.t }}<br>
+            <strong><i class="fa fa-align-center"></i> {{ rubric.diff_label|default:'Rubric' }}:</strong>
+            {% if rubric.dest_label %}<span class="rubric-dest">{{ rubric.dest_label }}</span>{% endif %}
+            {{ rubric.t }}<br>
             {% endfor %}
             {% endif %}
             {% if fields_variation and para_ms.vars %}

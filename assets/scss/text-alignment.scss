@@ -15,6 +15,11 @@
             background-color: white;
         }
     }
+
+    label {
+        font-weight: bold;
+        display: inline;
+    }
 }
 
 .fixed-tr {
@@ -28,6 +33,12 @@
 
 .para-ms-verse {
     background-color: lightblue;
+}
+
+/* GN */
+.rubric-dest {
+    display: block;
+    font-style: italic;
 }
 
 /* Settings modal */
@@ -125,6 +136,17 @@ body {
     border: 0;
     height: 80vh;
     width: 96vw;
+}
+
+#vis-info-box {
+    position: fixed; 
+    display: block; 
+    background: white; 
+    border: 2px solid green; 
+    color: #101010;
+    padding: 0.5em;
+    opacity: 0.8;
+    box-shadow: 10px 10px 5px #404040;
 }
 
 /* Viztest specific */

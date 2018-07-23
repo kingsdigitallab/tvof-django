@@ -60,7 +60,9 @@ class Alignment(object):
             'config': config.get_list()
         }
 
-        return render(request, 'text_alignment/alignment.html', context)
+        ret = render(request, 'text_alignment/alignment.html', context)
+
+        return ret
 
     def get_alignment_fragment(self, request, path):
         '''
@@ -93,16 +95,23 @@ class Alignment(object):
         getattr(self, 'set_context_%s' % selected_view)(context)
 
         template_path = 'text_alignment/views/%s.html' % selected_view
-        from django.template.loader import get_template
-        template = get_template(template_path)
         json_res = {
             'config': config.get_list(),
-            'html': template.render(context),
+            'html': self.render_template(template_path, context),
             'qs': config.get_query_string(),
         }
 
         from django.http import JsonResponse
         return JsonResponse(json_res)
+
+    def render_template(self, template_path, context):
+        from django.template.loader import get_template
+        template = get_template(template_path)
+        ret = template.render(context)
+        # compress spaces (divide size by 10!)
+        ret = re.sub(ur'\n+', r'\n', ret)
+        ret = re.sub(ur' +', ' ', ret)
+        return ret
 
     def set_context_base(self, context):
         '''
@@ -261,6 +270,7 @@ class Alignment(object):
         Convert the XML alignment file into a python dictionary.
 
         paras: [
+            {
             'id': 'fr20125_00001',
             'section': 'Genesis',
             'mss': {
@@ -340,7 +350,8 @@ class Alignment(object):
                         para_ms = self.get_para_ms_from_xml(
                             para_manuscript,
                             dict_seg_types,
-                            multivalued_seg_types
+                            multivalued_seg_types,
+                            para
                         )
 
                         ms_name = para_ms['ms_name'] or 'UNSPECIFIED'
@@ -415,7 +426,7 @@ class Alignment(object):
             mss[ms_name]['location'] = location
 
     def get_para_ms_from_xml(self, para_manuscript, dict_seg_types,
-                             multivalued_seg_types):
+                             multivalued_seg_types, para):
         '''
 
         para_manuscript is an ElementTree that represents the following XML:
@@ -472,11 +483,11 @@ class Alignment(object):
 #             if seg.text is not None:
 #                 fields[seg.attrib.get('type')] = seg.text
 
-        self.expand_para_ms(ret)
+        self.expand_para_ms(ret, para)
 
         return ret
 
-    def expand_para_ms(self, para_ms_dict):
+    def expand_para_ms(self, para_ms_dict, para):
         '''
         Expand the dictionary that contains the description of a para in a MS.
         So the frontend code doesn't have to know about acronyms, etc.
@@ -513,13 +524,33 @@ class Alignment(object):
                 for var in variations.split(' ')
             ]
 
-        # TODO: Remove empty notes
+        # Remove empty notes
         # => smaller json data for client
         # & no need to filter in the visualisation
         notes = para_ms_dict.get('note', [])
         for i in range(len(notes) - 1, -1, -1):
             if not notes[i]['t']:
                 del notes[i]
+
+        # expand the diff="move" => diff_label="displaced rubric"
+        for rubric in para_ms_dict.get('rubric', []):
+            diff = rubric.get('diff', '')
+            if diff == 'move':
+                rubric['diff_label'] = 'Displaced rubric'
+            if diff == 'add':
+                rubric['diff_label'] = 'Additional rubric'
+
+            # expand the @dest attribute
+            # e.g. "-10" -> 'Before fr20125_00025_10'
+            dest = rubric.get('dest', '')
+            base_seg = para['id'] + '_01'
+            if dest:
+                modifier = ''
+                if dest[0] == '-':
+                    modifier = 'Before '
+                    dest = re.sub(ur'^[- ]+', '', dest)
+                dest = base_seg[:len(base_seg) - len(dest)] + dest
+                rubric['dest_label'] = modifier + dest
 
         return para_ms_dict
 
