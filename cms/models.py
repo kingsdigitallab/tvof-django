@@ -17,6 +17,7 @@ from django.conf import settings
 from django.urls.base import translate_url
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel
 
 
 def get_field_lang(obj, field_name):
@@ -112,15 +113,42 @@ class AbstractMultilingualContentPage(Page):
         StreamFieldPanel('content_fr'),
     ]
 
+    redirect_url = models.CharField(
+        verbose_name='Redirect URL',
+        max_length=255,
+        help_text=_(
+            'Absolute or relative URL to the web page'
+            ' this page will redirect to'
+        ),
+        blank=True, null=False, default=''
+    )
+
+    promote_panels = Page.promote_panels + [
+        MultiFieldPanel([
+            FieldPanel('redirect_url'),
+        ], 'Redirect'),
+    ]
+
+    # TODO: move that to a function...
+    # Problem is that changes to the panels in the subclasses
+    # will be ignored.
     edit_handler = TabbedInterface([
         ObjectList(content_panels, heading='Content'),
         ObjectList(content_panels_fr, heading='Content (French)'),
-        ObjectList(Page.promote_panels, heading='Promote'),
+        ObjectList(promote_panels, heading='Promote'),
         ObjectList(
             Page.settings_panels, heading='Settings',
             classname="settings"
         ),
     ])
+
+    def clean(self, *args, **kwargs):
+        ret = super(AbstractMultilingualContentPage,
+                    self).clean(*args, **kwargs)
+
+        self.redirect_url = self.redirect_url.strip()
+
+        return ret
 
     def content_lang(self):
         return get_field_lang(self, 'content')
@@ -164,6 +192,15 @@ class AbstractMultilingualContentPage(Page):
         }
 
         return ret
+
+    def get_url_parts(self, *args, **kwargs):
+        ret = super(AbstractMultilingualContentPage,
+                    self).get_url_parts(*args, **kwargs)
+        redirect_url = self.redirect_url
+        if redirect_url:
+            ret = (ret[0], ret[1], redirect_url)
+        return ret
+
 
 # PAGES
 ############################################
@@ -239,10 +276,14 @@ class BlogIndexPage(RoutablePageMixin, Page):
         """Main listing."""
         posts = self.posts
 
-        return render(request,
-                      self.get_template(request),
-                      {'self': self,
-                       'posts': self._paginate(request, posts)})
+        return render(
+            request,
+            self.get_template(request),
+            {
+                'self': self,
+                'posts': self._paginate(request, posts)
+            }
+        )
 
     @route(r'^author/(?P<author>[\w ]+)/$')
     def author(self, request, author=None):
