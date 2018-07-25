@@ -546,7 +546,10 @@ class Alignment(object):
             base_seg = para['id'] + '_01'
             if dest:
                 modifier = ''
-                if dest[0] == '-':
+                # -X means BEFORE X
+                # But editors mean Before without using -
+                # Hence the '1 or' bit
+                if 1 or dest[0] == '-':
                     modifier = 'Before '
                     dest = re.sub(ur'^[- ]+', '', dest)
                 dest = base_seg[:len(base_seg) - len(dest)] + dest

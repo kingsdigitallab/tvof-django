@@ -41,6 +41,25 @@
     font-style: italic;
 }
 
+/* Botched attempt at making a modifier to the rubric
+add: a small plus on top of the rubric icon
+move: a > on top the rubric icon*/
+.rubric-diff:after {
+    content: '?';
+    position: relative;
+    top: -0.2rem;
+    right: 0.2rem;
+    font-weight: bolder;
+    font-size: x-large;
+}
+.rubric-diff-add:after {
+    content: '+';
+}
+.rubric-diff-move:after {
+    content: '>';
+    font-size: larger;
+}
+
 /* Settings modal */
 
 .option-selected {

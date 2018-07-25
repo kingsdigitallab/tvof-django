@@ -50,7 +50,11 @@ $(function() {
         ">
         {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %}
         {% if fields_locus and para_ms.location %}<i class="fa fa-map-marker"></i>{% endif %}
-        {% if fields_rubric and para_ms.rubric %} <i class="fa fa-align-center"></i>{% endif %}
+        {% if fields_rubric %}
+            {% for rubric in para_ms.rubric %}
+                <i class="fa fa-align-center {% if rubric.diff %}rubric-diff rubric-diff-{{rubric.diff}}{%endif%}"></i>
+            {% endfor %}
+        {% endif %}
         {% if fields_variation and para_ms.variation %} <i class="fa fa-edit"></i>{% endif %}
         {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
 
@@ -72,7 +76,9 @@ $(function() {
             {% endif %}
             {% if fields_rubric and para_ms.rubric %}
             {% for rubric in para_ms.rubric %}
-            <strong><i class="fa fa-align-center"></i> {{ rubric.diff_label|default:'Rubric' }}:</strong>
+            <strong><i class="fa fa-align-center {% if rubric.diff %}rubric-diff rubric-diff-{{rubric.diff}}{%endif%}"></i>
+                {{ rubric.diff_label|default:'Rubric' }}:
+            </strong>
             {% if rubric.dest_label %}<span class="rubric-dest">{{ rubric.dest_label }}</span>{% endif %}
             {{ rubric.t }}<br>
             {% endfor %}
