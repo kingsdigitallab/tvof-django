@@ -39,15 +39,15 @@ if 0:
         pass
 
 urlpatterns += [
-    url(r'^textviewer/', include(text_viewer_urls)),
+    url(r'^textviewer/', include(text_viewer_urls), name='textviewer'),
 ]
 
 urlpatterns += [
-    url(r'^lab/alignment/', include(text_alignment_urls)),
+    url(r'^lab/alignment/', include(text_alignment_urls), name='textviewer'),
 ]
 
 urlpatterns += [
-    url(r'^lab/patterns/', include(text_patterns_urls)),
+    url(r'^lab/patterns/', include(text_patterns_urls), name='patterns'),
 ]
 
 urlpatterns += [

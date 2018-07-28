@@ -106,7 +106,7 @@
             $.each(ms_names, function(idx, name) {
                 ctx.font = font;
                 ctx.fillStyle = colors.text;
-                ctx.fillText(name, labels_padding, head_height + (idx + 1) * bh - labels_padding);
+                ctx.fillText(name, labels_padding, head_height + (idx + 0.5) * bh - labels_padding);
                 idx_from_ms_name[name] = idx;
             });
             
@@ -195,14 +195,20 @@
             ctx.fillStyle = is_compressed ? 'red' : 'green';
             var info = 'Res:' + (caw - labels_max_width) + ' x ' + cah;
             info += ' | Paras: ' + align.paras.length;
-            ctx.fillText(info, labels_padding, cah - font_size);
+            //ctx.fillText(info, labels_padding, cah - font_size);
             
             // reset hover event
+            $(canvas).off('click');
+            $(canvas).on('click', function(ev) {
+                update_info_box(ev, 1);
+            });
+
             $(canvas).off('mousemove');
             $(canvas).on('mousemove', update_info_box);
             $('#vis-info-box').off('mouseenter mousemove');
             $('#vis-info-box').on('mouseenter mousemove', update_info_box);
-            function update_info_box(ev) {
+            
+            function update_info_box(ev, clicked) {
                 // convert mouse position into indices [para_idx, ms_idx]
                 var mouse_pos = [ev.pageX, ev.pageY];
                 $('#vis-info-box').css({
@@ -221,11 +227,29 @@
                     info += para.id;
                     if (data_pos[1] > -1 && data_pos[1] < ms_names.length) {
                         var ms_name = ms_names[data_pos[1]];
+                        para_ms = para.mss[ms_name];
+                        
+                        if (para_ms.corresp) {
+                            info += ', ' + para_ms.corresp;
+                        }
+                        
                         info += '<br/>';
                         info += ' ' + ms_name;
-                        para_ms = para.mss[ms_name];
                         info += '<br/>';
+                        
                         if (para_ms) {
+                            if (clicked) {
+                                // link to text viewer
+                                // we need to pass the ms name
+                                // and the para number
+                                // For Royal, the para number = para_ms.corresp
+                                // for all other MSs, it is para.id
+                                var ms_para_number = parseInt((para_ms.corresp || para.id).split('_')[1]);
+                                var href = get_text_href(ms_name, ms_para_number);
+                                console.log(href);
+                                window.open(href, '_blank');
+                            }
+                        
                             info += '<b>Location</b>: ' + (para_ms.location === null ? 'Unspecified' : para_ms.location);
                             if (config_fields.verse && para_ms.verse) {
                                 info += '<br/>';

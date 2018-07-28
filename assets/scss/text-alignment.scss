@@ -1,3 +1,5 @@
+@import 'settings';
+
 /* Text Visualisations Aligment Styles */
 
 .alignment-paras {
@@ -25,6 +27,7 @@
 .fixed-tr {
     display: none;
     position: absolute;
+    z-index: 1;
 }
 
 .para-ms-absent {
@@ -58,6 +61,23 @@ move: a > on top the rubric icon*/
 .rubric-diff-move:after {
     content: '>';
     font-size: larger;
+}
+
+[data-plink] {
+    position: relative;
+}
+
+#plink {
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    display: none;
+    padding: 0.3em;
+
+    &:hover {
+        color: scale-color($primary-color, $lightness: 80%);
+        background: scale-color($primary-color, $lightness: 20%);
+    }
 }
 
 /* Settings modal */

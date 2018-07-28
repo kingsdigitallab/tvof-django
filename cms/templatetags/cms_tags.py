@@ -68,6 +68,11 @@ def get_site_root(context):
 
 
 @register.filter
+def short_para_id(para_id):
+    return int(para_id.split('_')[-1])
+
+
+@register.filter
 def is_current_or_ancestor(page, current_page):
     """Returns True if the given page is the current page or is an ancestor of
     the current page."""
