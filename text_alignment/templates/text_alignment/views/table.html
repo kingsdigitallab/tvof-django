@@ -1,62 +1,63 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
 <table class="alignment-paras">
-    <thead>
-        <tr>
-            <th>Section</th>
-            {% for ms in params.mss.options %}
-                {% if ms.selected %}
-                    <th>
-                        {{ ms.name }}
-                        {% comment %}
-                        <br/>
-                        ({{ ms.para_count}})
-                        {% endcomment %}
-                    </th>
-                {% endif %}
-            {% endfor %}
-        </tr>
-    </thead>
-    <tbody>
-        {% for para in alignment_data.paras %}
-            <tr>
-                <td>
-                    {{ para.section }}
-                    <br/>
-                    {{ para.id }}
-                </td>
-                {% for ms in params.mss.options %}
-                    {% if ms.selected %}
-                        {% with para_ms=para.mss|get_item:ms.name %}
-                            <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}">
-                                {% if fields_locus %}{{ para_ms.location }}{% endif %}
-                                {% for rubric in para_ms.rubric %}
-                                    {% if not forloop.first %}<br>{% endif %}
-                                    <label>{{ rubric.diff_label|default:'Rubric' }}:</label>
-                                    {% if rubric.dest_label %}<span class="rubric-dest">{{ rubric.dest_label }}</span>{% endif %}
-                                    {{ rubric.t }}
-                                {% endfor %}
-                                {% if fields_verse and para_ms.verse %}
-                                    <br/>
-                                    <label>Verse:</label> {{ para_ms.verse }}
-                                {% endif %}
-                                {% if fields_variation %}
-                                    {% for var in para_ms.vars %}
-                                        <br/>
-                                        <label>Variation:</label> {{ var.t }}
-                                    {% endfor %}
-                                {% endif %}
-                                {% if fields_note %}
-                                    {% for note in para_ms.note %}
-                                        <br/>
-                                        <label>Note:</label> {{ note.t }}
-                                    {% endfor %}
-                                {% endif %}
-                            </td>
-                        {% endwith %}
-                    {% endif %}
+  <thead>
+    <tr>
+      <th>Section</th>
+      {% for ms in params.mss.options %}
+        {% if ms.selected %}
+          <th>
+            {{ ms.name }}
+            {% comment %}
+            <br/>
+            ({{ ms.para_count}})
+            {% endcomment %}
+          </th>
+        {% endif %}
+      {% endfor %}
+    </tr>
+  </thead>
+  <tbody>
+    {% for para in alignment_data.paras %}
+      <tr>
+        <td>
+          {{ para.section }}
+          <br/>
+          {{ para.id }}
+        </td>
+        {% for ms in params.mss.options %}
+          {% if ms.selected %}
+            {% with para_ms=para.mss|get_item:ms.name %}
+              <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}"
+                data-plink="{{forloop.counter0}}/{{para_ms.corresp|default:para.id|short_para_id}}">
+                {% if fields_locus %}{{ para_ms.location }}{% endif %}
+                {% for rubric in para_ms.rubric %}
+                  {% if not forloop.first %}<br>{% endif %}
+                  <label>{{ rubric.diff_label|default:'Rubric' }}:</label>
+                  {% if rubric.dest_label %}<span class="rubric-dest">{{ rubric.dest_label }}</span>{% endif %}
+                  {{ rubric.t }}
                 {% endfor %}
-            </tr>
+                {% if fields_verse and para_ms.verse %}
+                  <br/>
+                  <label>Verse:</label> {{ para_ms.verse }}
+                {% endif %}
+                {% if fields_variation %}
+                  {% for var in para_ms.vars %}
+                    <br/>
+                    <label>Variation:</label> {{ var.t }}
+                  {% endfor %}
+                {% endif %}
+                {% if fields_note %}
+                  {% for note in para_ms.note %}
+                    <br/>
+                    <label>Note:</label> {{ note.t }}
+                  {% endfor %}
+                {% endif %}
+              </td>
+            {% endwith %}
+          {% endif %}
         {% endfor %}
-    <tbody>
+      </tr>
+    {% endfor %}
+  <tbody>
 </table>

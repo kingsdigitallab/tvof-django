@@ -111,6 +111,7 @@ class Alignment(object):
         # compress spaces (divide size by 10!)
         ret = re.sub(ur'\n+', r'\n', ret)
         ret = re.sub(ur' +', ' ', ret)
+        ret = re.sub(ur'(\n )+', r'\n', ret)
         return ret
 
     def set_context_base(self, context):
@@ -449,6 +450,21 @@ class Alignment(object):
 
         ret = {}
 
+        # convert the corresp attribute
+        # corresp="#edRoyal20D1_00001_01 #edRoyal20D1_00001_03">
+        # => 'corresp': Royal20D1_00001
+        corresps = para_manuscript.attrib.get('corresp', None)
+        if corresps:
+            corresps = re.findall(ur'#ed(\S*_(?:\d{5,5}))', corresps)
+            if corresps and corresps[0] != para['id']\
+                    and 'fr20125' not in corresps[0]:
+                ret['corresp'] = corresps[0]
+                # TODO: use this detect fr corresp not pointing
+                # to fr reference!
+                # i.e. remove the last AND condition
+                # print(corresps[0], para['id'])
+
+        # convert all the seg elements under the para_ms
         for seg in para_manuscript:
 
             typ = seg.attrib.get('type')
@@ -502,7 +518,7 @@ class Alignment(object):
             'variation': 'PML'
             'variations': [
                 {
-                    't': 'Partial Material Lacunae'
+                    't': 'Partial material lacuna'
                 }
             ]
         }
@@ -510,9 +526,11 @@ class Alignment(object):
 
         # Expand variations
 
+        # TODO: moved thos hard-coded values to settings/base.py
+
         variation_names = {
-            'PML': 'Partial Material Lacunae',
-            'ML': 'Material Lacunae',
+            'pml': 'Partial material lacuna',
+            'ml': 'Material lacuna',
         }
 
         variations = para_ms_dict.get('variation', None)
@@ -521,8 +539,15 @@ class Alignment(object):
                 {
                     't': variation_names.get(var, var)
                 }
-                for var in variations.split(' ')
+                for var in variations.lower().split(' ')
             ]
+
+            # MT asked us to not show location: None if there is
+            # a material lacuna
+            if 'ml' in variations.lower().split(' '):
+                # print(para_ms_dict)
+                if para_ms_dict.get('location') is None:
+                    para_ms_dict['location'] = ''
 
         # Remove empty notes
         # => smaller json data for client

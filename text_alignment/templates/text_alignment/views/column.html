@@ -47,7 +47,9 @@ $(function() {
         {% if para_ms.location %} location{% endif %}
         {% if para_ms.rubric %} rubric{% endif %}
         {% if para_ms.variation %} variation{% endif %}
-        ">
+        "
+        data-plink="{{forloop.counter0}}/{{para_ms.corresp|default:para.id|short_para_id}}"
+        >
         {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %}
         {% if fields_locus and para_ms.location %}<i class="fa fa-map-marker"></i>{% endif %}
         {% if fields_rubric %}
