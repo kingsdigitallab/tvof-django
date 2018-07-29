@@ -7,7 +7,10 @@ $(function() {
     $('.expand').on("click", function () {
         $(this).children().next('p').slideToggle(400).toggleClass("hide show");
         $(this).toggleClass("active");
-        return false;
+        // GN: removed 'return false' as it prevents links inside the element
+        // to open their href on click.
+        // See AC-265.
+        // return false;
     });
 });
 </script>
