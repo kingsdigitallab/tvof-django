@@ -52,21 +52,23 @@
             
             // adapt bar widths
             var labels_max_width = 100;
-            var bw = 2;
 
             var cah = $(canvas).height();
             var caw = $(canvas).width();
             
+            var bw_min = 2;
             //     chose a bar width that tries to fit into screen width
             //     then round down to avoid aliasing
-            bw = (caw - labels_max_width) / align.paras.length;
-            var is_compressed = (bw < 1);
+            var bw = (caw - labels_max_width) / align.paras.length;
+            // is_compressed = true if the bar width are smaller than a pixel
+            // in that case, give up compression and stretch beyond viewport
+            var is_compressed = (bw < bw_min);
             bw = Math.floor(bw);
             if (is_compressed) {
-                bw = 1;
+                bw = bw_min;
                 // we stretch the canvas horizontally beyond the screen
                 // need to scroll
-                caw = labels_max_width + align.paras.length;
+                caw = labels_max_width + align.paras.length * bw;
                 // adapt width
                 $(canvas).width(caw);
                 $('body').width(caw + 2);
@@ -89,12 +91,17 @@
                 'absent.3': '#804040', // no location element in the para
                 'absent.1': '#707070', // location = "absent"
                 'nodata': '#808080',  // no para element for that MS - frequent 
-                'verse': 'lightblue',
-                'rubric.undefined': '#ff8080',
-                'rubric.add': '#ff6060',
-                'rubric.move': '#ff4040',
+                'verse': '#b0b0ff',
+                'rubric.undefined': '#ffb0b0',
+                'rubric.add': '#fe8080',
+                'rubric.move': '#ee4040',
             }
-            var band_height = (bh / 3);
+            // we split the bar vertically into bands to show variations of
+            // features such as rubrication.
+            // At the moment only used for rubrics, so maximise it 1.5
+            // If we want to show more, we d need to reduce to 2 or lower
+            var features_per_bar = 1.5;
+            var band_height = (bh / features_per_bar);
             if (band_height < 1) {
                 band_height = 1;
             }
@@ -144,9 +151,14 @@
                         ctx.clearRect(labels_max_width + idx * bw, ms_top, bw, bh);
                     }
                     
-                    // rubric
+                    // RUBRIC
+                    // We have one vertical band of a bar for showing the rubrics.
+                    // we split that band into 3 sub-bands for one rubric and 
+                    // up to 2 additional rubrics.
                     if (config_fields.rubric && para_ms.rubric && para_ms.rubric.length > 0) {
-                        subband_height = band_height * 1.0 / para_ms.rubric.length;
+                        var subband_count = 3;
+                        //subband_height = band_height * 1.0 / para_ms.rubric.length;
+                        subband_height = band_height * 1.0 / subband_count;
                         for (var j = 0; j < para_ms.rubric.length; j++) {
                             var rubric = para_ms.rubric[j];
                             ctx.fillStyle = colors['rubric.' + rubric.diff];
@@ -197,6 +209,9 @@
             info += ' | Paras: ' + align.paras.length;
             //ctx.fillText(info, labels_padding, cah - font_size);
             
+
+            // EVENTS
+            
             // reset hover event
             $(canvas).off('click');
             $(canvas).on('click', function(ev) {
@@ -229,7 +244,7 @@
                         var ms_name = ms_names[data_pos[1]];
                         para_ms = para.mss[ms_name];
                         
-                        if (para_ms.corresp) {
+                        if (para_ms && para_ms.corresp) {
                             info += ', ' + para_ms.corresp;
                         }
                         
