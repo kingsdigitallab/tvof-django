@@ -130,7 +130,11 @@ class TextViewerAPIXML(TextViewerAPI):
         return ret
 
     def compress_html(self, html_str):
-        return re.sub(ur'(\s)+', ur'\1', html_str)
+        # remove empty class attributes
+        ret = re.sub(ur'''class\s*=\s*("\s*"|'\s*')''', ur'', html_str)
+        # compress multiple spaces
+        ret = re.sub(ur'(\s)+', ur'\1', ret)
+        return ret
 
     def request_chunk(self, address_parts=None, synced_with=None):
         '''
@@ -224,9 +228,15 @@ class TextViewerAPIXML(TextViewerAPI):
                 reveals.append(match.group(0))
             chunk = re.sub(ur'(?musi)<div[^<>]+reveal.*?</button>\s*</div>',
                            extract_reveal, u'\n'.join(chunks))
+
+            chunk = self.compress_html(chunk)
+
+            classes = ['tv-view-{}'.format(view)]
+
             self.response = {
-                'chunk': ur'<div>{}<div class="reveals">{}</div></div>'.
-                format(chunk, u'\n'.join(reveals)),
+                'chunk':
+                    ur'<div class="{}">{}<div class="reveals">{}</div></div>'.
+                    format(' '.join(classes), chunk, u'\n'.join(reveals)),
                 'address': address,
                 'generated': self.generated_date
             }

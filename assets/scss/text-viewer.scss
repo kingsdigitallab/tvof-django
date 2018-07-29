@@ -338,6 +338,20 @@
     &.hide-sics .tei-corr-popup {
         display: none;
     }
+
+    // GN: line break & indentation for seg with a .pc-rend-6
+    .tv-view-interpretive .pc-rend-6 {
+        &:before {
+            content: '';
+            display: block;
+        }
+
+        span:first-child {
+            padding-left: 2em;
+            text-indent: -2em;
+        }
+    }
+
 }
 
 /* Legacy Text Viewer */
@@ -365,4 +379,7 @@
     height: 100%;
     z-index: 10;
 }
+
+
+
 
