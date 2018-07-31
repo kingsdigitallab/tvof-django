@@ -145,11 +145,11 @@ a vue directive:
                             </a>
                             <template v-if="alocation_type.locations.length > 1">
                                 <div class="list-filter">
-                                    <input v-on:keyup.stop.prevent="filterLocations(alocation_type)" type="text" name="filter" value="keyword" v-model="location_type_filters[alocation_type.slug]" placeholder="Search...">
+                                    <input v-on:keyup.stop.prevent="filterLocations(alocation_type, $event)" type="text" name="filter" value="keyword" v-model="location_type_filters[alocation_type.slug]" placeholder="Search...">
                                     <a class="clear-filter fa fa-times-circle" href="#" v-on:click.prevent="clearLocationFilter(alocation_type)"></a>
                                 </div>
                                 <ul>
-                                    <li v-for="alocation in alocation_type.locations" 
+                                    <li v-for="alocation in alocation_type.locations"
                                         v-bind:class="{active: (alocation.slug == location.slug), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1, 'hidden': alocation.hidden}">
                                         <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)" 
                                             href="#" v-html="alocation.label_long">
@@ -258,6 +258,24 @@ a vue directive:
                 window.image_viewer_map_layer = L.tileLayer.iiif('//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
                     tileSize: 1024,
                 }).addTo(window.image_viewer_map);
+            });
+            
+            // TOOLTIPS
+            // unclear
+            var tooltip = null;
+            $('body').on('mouseenter mouseleave', '.tei-unclear', function(ev) {
+                if (tooltip) {
+                    tooltip.destroy();
+                    tooltip = null;
+                }
+                if (ev.type == 'mouseenter') {
+                    tooltip = new Foundation.Tooltip($(this), {
+                        tipText: 'texte illisible', 
+                        triggerClass: 'has-tip-tv',
+                        positionClass: 'top',
+                    });
+                    tooltip.show();
+                }
             });
         })
     </script>

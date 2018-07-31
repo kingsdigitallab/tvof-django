@@ -58,7 +58,8 @@ class TextViewerAPI(object):
             if synced_with:
                 synced_with = self.get_address_parts(synced_with)
             self.request_chunk_best_match(
-                parts, synced_with=synced_with, best_match=best_match)
+                parts, synced_with=synced_with, best_match=best_match
+            )
         else:
             self.add_error('invalid_call', 'Invalid API call')
 

@@ -437,10 +437,18 @@ ul.sticky {
     }
 
     .tei-unclear {
-        &:before {
+        &:after {
             color: $tertiary-color;
             content: "\f128";
             font-family: "FontAwesome";
+            font-size: 0.80em;
+            vertical-align: super;
+            line-height: 0;
+        }
+        &:hover {
+            // GN: TODO: change color
+            // background color to indicate which characters are unclear
+            background-color: #c0c0ff;
         }
     }
 
@@ -448,6 +456,7 @@ ul.sticky {
     .paragraph {
         margin-bottom: 1rem;
     }
+    
 }
 
 // GN: nothing preventing default Foundation modal to have a close icon

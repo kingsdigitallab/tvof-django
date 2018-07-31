@@ -134,6 +134,13 @@ class TextViewerAPIXML(TextViewerAPI):
         ret = re.sub(ur'''class\s*=\s*("\s*"|'\s*')''', ur'', html_str)
         # compress multiple spaces
         ret = re.sub(ur'(\s)+', ur'\1', ret)
+
+        empty_spans = re.findall(ur'<span[^>]*/>', ret)
+        if (empty_spans):
+            print('WARNING: empty <span/>')
+            print(empty_spans)
+            ret = re.sub(ur'<span[^>]*/>', '', ret)
+
         return ret
 
     def request_chunk(self, address_parts=None, synced_with=None):
