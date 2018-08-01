@@ -153,6 +153,15 @@ ul.sticky {
     right: 0;
 }
 
+@mixin inline-icon {
+    color: $tertiary-color;
+    font-family: "FontAwesome";
+    font-size: 0.80em;
+    vertical-align: super;
+    line-height: 0;
+    cursor: pointer;
+}
+
 
 /* Main content area */
 
@@ -438,12 +447,8 @@ ul.sticky {
 
     .tei-unclear {
         &:after {
-            color: $tertiary-color;
+            @include inline-icon;
             content: "\f128";
-            font-family: "FontAwesome";
-            font-size: 0.80em;
-            vertical-align: super;
-            line-height: 0;
         }
         &:hover {
             // GN: TODO: change color
@@ -452,12 +457,30 @@ ul.sticky {
         }
     }
 
+    .tei-note.tei-type-gloss {
+        // GN: icon even if superscripted, 
+        // without this hover on top of icon doesn't do anything  
+        padding: 0.5em 0.2em;
+        
+        &:before {
+            @include inline-icon;
+            content: '\f14b';
+            font-size: 1em;
+        }
+    
+        span.note-text {
+            display: none;
+        }
+    }
+
+
     // See TVOF-146
     .paragraph {
         margin-bottom: 1rem;
     }
     
 }
+
 
 // GN: nothing preventing default Foundation modal to have a close icon
 // overlapping the modal text => difficult to read, don't know how to close

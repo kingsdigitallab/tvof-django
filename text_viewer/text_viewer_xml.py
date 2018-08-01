@@ -130,16 +130,23 @@ class TextViewerAPIXML(TextViewerAPI):
         return ret
 
     def compress_html(self, html_str):
+        # TODO: should be applied before the content is cached
+        # otherwise we redo it each time a chunk is requested
+
         # remove empty class attributes
         ret = re.sub(ur'''class\s*=\s*("\s*"|'\s*')''', ur'', html_str)
         # compress multiple spaces
         ret = re.sub(ur'(\s)+', ur'\1', ret)
 
+        # remove empty spans (invalid HTML)
         empty_spans = re.findall(ur'<span[^>]*/>', ret)
         if (empty_spans):
             print('WARNING: empty <span/>')
             print(empty_spans)
             ret = re.sub(ur'<span[^>]*/>', '', ret)
+
+        # remove spans without attributes (saves a lot of space!)
+        ret = re.sub(ur'(?musi)<span>([^<]*)</span>', r'\1', ret)
 
         return ret
 
@@ -152,7 +159,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
         TODO: generalise this. But very difficult as the information for
         address resolution can require the document and vice versa depending on
-        the document backend and the document format. Both of wich can vary
+        the document backend and the document format. Both of which can vary
         from one project to another.
         '''
 
@@ -228,9 +235,10 @@ class TextViewerAPIXML(TextViewerAPI):
 
         if chunks:
             # TVOF 146: move all the reveals to the end otherwise they disrupt
-            # the html rendering, e.g. <div> within <span>
+            # the HTML rendering, e.g. <div> within <span>
             reveals = []
 
+            # TODO: move to text_viewer_tvof
             def extract_reveal(match):
                 reveals.append(match.group(0))
             chunk = re.sub(ur'(?musi)<div[^<>]+reveal.*?</button>\s*</div>',

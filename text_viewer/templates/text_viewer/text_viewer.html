@@ -220,6 +220,12 @@ a vue directive:
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
+<div class="reveal" id="shared-reveal" data-reveal>
+    <div class="reveal-body"></div>
+    <button class="close-button" data-close aria-label="Close modal" type="button">
+        <span aria-hidden="true">&times;</span>
+    </button>
+</div>
 {% endblock %}
 
 {% block footer_scripts %}
@@ -277,6 +283,28 @@ a vue directive:
                     tooltip.show();
                 }
             });
+            
+            // note type="gloss"
+            // .tei-note.tei-type-gloss > .note-text
+            var reveal = null;
+            $('body').on('click', '.tei-note.tei-type-gloss', function(ev) {
+                if (reveal) {
+                    reveal.close();
+                }
+                if (ev.type == 'click') {
+                    var hand = $(this).attr('data-tei-resp') || '';
+                    if (hand) hand = ' (' + hand + ')';
+                    $reveal = $('#shared-reveal');
+                    $reveal.find('.reveal-body').html('Note de lecteur médiéval' + hand + ': ' + $(this).find('.note-text').html());
+                    if (!reveal) {
+                        reveal = new Foundation.Reveal($reveal, {
+                            overlay: false,
+                        });
+                    }
+                    reveal.open();
+                }
+            });
+            
         })
     </script>
 {% endblock %}
