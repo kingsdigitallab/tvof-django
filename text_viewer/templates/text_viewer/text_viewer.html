@@ -282,10 +282,19 @@ a vue directive:
                     });
                     tooltip.show();
                 }
+                return false;
             });
             
             // note type="gloss"
             // .tei-note.tei-type-gloss > .note-text
+            var short_hands = {
+                'S': 'Scribe',
+                'E': 'Medieval editor',
+                'R': 'Rubricator',
+                'LH': 'Later hand',
+                'U': 'Unknown',
+            };
+            
             var reveal = null;
             $('body').on('click', '.tei-note.tei-type-gloss', function(ev) {
                 if (reveal) {
@@ -293,7 +302,10 @@ a vue directive:
                 }
                 if (ev.type == 'click') {
                     var hand = $(this).attr('data-tei-resp') || '';
-                    if (hand) hand = ' (' + hand + ')';
+                    hand = short_hands[hand] || hand;
+                    if (hand) {
+                        hand = ' (' + hand + ')';
+                    }
                     $reveal = $('#shared-reveal');
                     $reveal.find('.reveal-body').html('Note de lecteur médiéval' + hand + ': ' + $(this).find('.note-text').html());
                     if (!reveal) {
@@ -303,6 +315,7 @@ a vue directive:
                     }
                     reveal.open();
                 }
+                return false;
             });
             
         })
