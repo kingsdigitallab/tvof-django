@@ -159,7 +159,22 @@ ul.sticky {
     font-size: 0.80em;
     vertical-align: super;
     line-height: 0;
-    cursor: pointer;
+    // GN: no longer a pointer as we show info in a tooltip
+    // cursor: pointer;
+}
+
+@mixin tooltip-and-icon($content) {
+    padding: 0.5em 0em;
+
+    &:after {
+        @include inline-icon;
+        content: $content;
+    }
+    &:hover {
+        // GN: TODO: change color
+        // background color to indicate which characters are unclear
+        background-color: scale-color($primary-color, $lightness: 80%);
+    }
 }
 
 
@@ -441,19 +456,18 @@ ul.sticky {
     }
     //-----
 
-    span.add[data-teia-type=annotation] {
-        display: none;
+    .tei-unclear {
+        // GN: icon even if superscripted, 
+        // without this hover on top of icon doesn't do anything
+        @include tooltip-and-icon("\f128");  
+        padding: 0.5em 0em;
     }
 
-    .tei-unclear {
+    .tei-corr {
+        @include tooltip-and-icon('\f24a');
+
         &:after {
-            @include inline-icon;
-            content: "\f128";
-        }
-        &:hover {
-            // GN: TODO: change color
-            // background color to indicate which characters are unclear
-            background-color: #c0c0ff;
+            background-color: scale-color(yellow, $lightness: 50%);
         }
     }
 
@@ -471,6 +485,10 @@ ul.sticky {
         span.note-text {
             display: none;
         }
+    }
+
+    .tei-type-explicit {
+        display: block;
     }
 
 
@@ -494,6 +512,55 @@ ul.sticky {
     right: 0.5rem;
     color: $primary-color;
 }
+
+// TODO: make the tooltip and reveal look more consistent
+// TODO: use variables for colors
+.tv-reveal {
+    background-color: #1c2434;
+    border-color: scale-color($primary-color, $lightness: 20%);
+    color: #e0e0e0;
+    box-shadow: 7px 7px 10px #666;
+    
+    &:focus {
+        border-color: scale-color($primary-color, $lightness: 20%);
+    }
+    
+    .close-button {
+        color: #e0e0e0;
+        top: 0;
+        right: 0;
+        padding: 0rem 0.3rem;
+        
+        &:hover {
+            background-color: scale-color($primary-color, $lightness: 50%);
+        }
+    }
+}
+
+.tv-tooltip, .tv-reveal {
+    padding: 0;
+    
+    h3 {
+        white-space: nowrap;
+        font-size: 1.1rem;
+        padding: 0.2rem 0.5rem;
+        margin: 0;
+        background-color: scale-color($primary-color, $lightness: 20%);
+    }
+
+    .body {
+        padding: 0.5rem;
+        
+        a {
+            color: scale-color($primary-color, $lightness: 70%);
+            font-weight: bolder;
+            &:hover {
+                text-decoration: underline;
+            }
+        }    
+    }
+}
+
 
 /* Footer */
 

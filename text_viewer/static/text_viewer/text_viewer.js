@@ -674,8 +674,10 @@
                         $('.reveal[data-panel="'+this.pane_slug+'"]').remove();
                         // we init Foundation on all the new reveals
                         $(this.$el).find('.reveal').each(function() {
+                            // TODO: GN: use proper server-side django html template for this
+                            // would be faster, get less data from Kiln and easier for designers to edit
                             var $reveal = $(this);
-                            $reveal.attr('data-panel', self.pane_slug);
+                            $reveal.attr('data-panel', self.pane_slug).addClass('tv-reveal');
                             new window.Foundation.Reveal($reveal);
                         });
                                                 
@@ -684,6 +686,9 @@
                         if ($stickies.length > 0) {
                             $stickies.foundation('_calc', true);
                         }
+                        
+                        // scroll to top
+                        $(this.$el).find('.text-chunk').scrollTop(0);
                     });
                 },
                 'is_synced': function(val) {

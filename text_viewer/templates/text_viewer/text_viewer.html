@@ -79,7 +79,6 @@ GN: the code below serves as a template for any number of text panes.
 Apart from id="vue-template-text-pane", please do not use hardcoded id attribute
 (they would be duplicated which is not allowed in HTML).
 
-
 Some of the Foundation controls or special behaviour/plugins are managed with
 a vue directive:
 * v-f-dropdown: for a Foundation dropdown-menu
@@ -266,35 +265,68 @@ a vue directive:
                 }).addTo(window.image_viewer_map);
             });
             
-            // TOOLTIPS
-            // unclear
-            var tooltip = null;
-            $('body').on('mouseenter mouseleave', '.tei-unclear', function(ev) {
-                if (tooltip) {
-                    tooltip.destroy();
-                    tooltip = null;
-                }
-                if (ev.type == 'mouseenter') {
-                    tooltip = new Foundation.Tooltip($(this), {
-                        tipText: 'texte illisible', 
-                        triggerClass: 'has-tip-tv',
-                        positionClass: 'top',
-                    });
-                    tooltip.show();
-                }
-                return false;
-            });
-            
             // note type="gloss"
             // .tei-note.tei-type-gloss > .note-text
             var short_hands = {
-                'S': 'copiste',
-                'E': 'rédacteur médiéval',
-                'R': 'rubricateur',
+                'S':  'copiste',
+                'E':  'rédacteur médiéval',
+                'R':  'rubricateur',
                 'LH': 'Later hand',
-                'U': 'inconnu',
+                'U':  'inconnu',
+                '':   'indeterminé',
             };
             
+            function get_hand_label(hand_acronym) {
+                var ret = '';
+                ret = short_hands[hand_acronym || ''] || hand_acronym;
+                return ret;
+            }
+            
+
+            // TOOLTIPS
+            // unclear
+            window.tv_tooltip = null;
+            
+            function attach_tooltip(anchors, tooltip_fields_fct) {
+                $('body').on('mouseenter mouseleave', anchors, function(ev) {
+                    if (window.tv_tooltip) {
+                        window.tv_tooltip.destroy();
+                        window.tv_tooltip = null;
+                    }
+                    if (ev.type == 'mouseenter') {
+                        var tootlip_fields = tooltip_fields_fct($(this));
+                        
+                        var content = '';
+                        content = '<h3>'+tootlip_fields.title+'</h3>';
+                        content += '<div class="body">'+tootlip_fields.body+'</div>';
+                    
+                        window.tv_tooltip = new Foundation.Tooltip($(this), {
+                            tipText: content, 
+                            triggerClass: 'has-tip-tv',
+                            tooltipClass: 'tooltip tv-tooltip',
+                            positionClass: 'top',
+                            allowHtml: true,
+                        });
+                        window.tv_tooltip.show();
+                    }
+                    return false;
+                });
+            };
+            
+            attach_tooltip('.tei-unclear', function() {
+                return {
+                    'title': 'Texte illisible',
+                    'body': 'hand: ' + get_hand_label('E'),
+                }; 
+            });
+            attach_tooltip('.tei-corr', function($el) { 
+                return {
+                    'title': 'Correction',
+                    'body': 'ms. ' + $el.attr('data-sic'),
+                }; 
+            });
+                        
+            /* 
             var reveal = null;
             $('body').on('click', '.tei-note.tei-type-gloss', function(ev) {
                 if (reveal) {
@@ -317,6 +349,7 @@ a vue directive:
                 }
                 return false;
             });
+            */
             
         })
     </script>
