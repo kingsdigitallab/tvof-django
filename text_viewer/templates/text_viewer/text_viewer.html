@@ -316,13 +316,24 @@ a vue directive:
             attach_tooltip('.tei-unclear', function() {
                 return {
                     'title': 'Texte illisible',
-                    'body': 'hand: ' + get_hand_label('E'),
                 }; 
             });
             attach_tooltip('.tei-corr', function($el) { 
                 return {
                     'title': 'Correction',
                     'body': 'ms. ' + $el.attr('data-sic'),
+                }; 
+            });
+            attach_tooltip('.tei-add', function($el) { 
+                return {
+                    'title': 'Addition',
+                    'body': 'Main: ' + get_hand_label($el.data('tei-hand')),
+                }; 
+            });
+            attach_tooltip('.tei-note.tei-type-gloss', function($el) { 
+                return {
+                    'title': 'Note de lecteur médiéval',
+                    'body': $el.find('.note-text').html(),
                 }; 
             });
                         

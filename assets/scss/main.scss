@@ -163,13 +163,9 @@ ul.sticky {
     // cursor: pointer;
 }
 
-@mixin tooltip-and-icon($content) {
+@mixin tooltip {
     padding: 0.5em 0em;
 
-    &:after {
-        @include inline-icon;
-        content: $content;
-    }
     &:hover {
         // GN: TODO: change color
         // background color to indicate which characters are unclear
@@ -177,6 +173,14 @@ ul.sticky {
     }
 }
 
+@mixin tooltip-and-icon($content) {
+    @include tooltip;
+
+    &:after {
+        @include inline-icon;
+        content: $content;
+    }
+}
 
 /* Main content area */
 
@@ -463,22 +467,37 @@ ul.sticky {
         padding: 0.5em 0em;
     }
 
-    .tei-corr {
-        @include tooltip-and-icon('\f24a');
+//     .tei-corr {
+//         @include tooltip-and-icon('\f24a');
+// 
+//         &:after {
+//             background-color: scale-color(yellow, $lightness: 50%);
+//         }
+//     }
 
+    .tei-add, .tei-corr, .tei-supplied {
+        @include tooltip;
+    }
+
+    .tv-view-semi-diplomatic .tei-add, 
+    .tv-view-interpretive .tei-corr, 
+    .tv-view-interpretive .tei-supplied, 
+    {
+        &:before {
+            content: '<';   
+        }
         &:after {
-            background-color: scale-color(yellow, $lightness: 50%);
+            content: '>';   
         }
     }
 
     .tei-note.tei-type-gloss {
         // GN: icon even if superscripted, 
         // without this hover on top of icon doesn't do anything  
+        @include tooltip-and-icon('\f14b');
         padding: 0.5em 0.2em;
         
         &:before {
-            @include inline-icon;
-            content: '\f14b';
             font-size: 1em;
         }
     
@@ -559,6 +578,12 @@ ul.sticky {
             }
         }    
     }
+}
+
+.tv-tooltip {
+    // GN: foundation max-width is too narrow for long titles
+    // e.g.Fr 68 (note de lecteur medieval)
+    max-width: 20rem;
 }
 
 
