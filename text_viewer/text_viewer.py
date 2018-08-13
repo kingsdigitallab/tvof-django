@@ -37,6 +37,7 @@ class TextViewerAPI(object):
         self.errors = []
 
         self.request = request
+        self.synced_with = None
         self.requested_address = path.strip('/')
         self.client = None
         if request:
@@ -50,15 +51,14 @@ class TextViewerAPI(object):
         elif level == 'document':
             self.request_document(parts['document'])
         elif level == 'location':
-            synced_with = None
             best_match = False
             if request:
-                synced_with = request.GET.get('sw', None)
+                self.synced_with = request.GET.get('sw', None)
                 best_match = request.GET.get('bm', False)
-            if synced_with:
-                synced_with = self.get_address_parts(synced_with)
+            if self.synced_with:
+                self.synced_with = self.get_address_parts(self.synced_with)
             self.request_chunk_best_match(
-                parts, synced_with=synced_with, best_match=best_match
+                parts, synced_with=self.synced_with, best_match=best_match
             )
         else:
             self.add_error('invalid_call', 'Invalid API call')
@@ -93,6 +93,16 @@ class TextViewerAPI(object):
         return self.requested_address
 
     def get_address_parts(self, address=None):
+        '''Returns the requested address as a dictionary
+        {
+            'document': ...
+            'view': ...
+            'location_type': ...
+            'location': ...
+            'level': 'document|view|location_type|location'
+        }
+        '''
+
         parts = (address or self.requested_address).split('/')[::-1]
         ret = {'level': 'root'}
         for level in self.part_levels:

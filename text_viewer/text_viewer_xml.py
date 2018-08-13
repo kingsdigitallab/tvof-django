@@ -210,11 +210,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
             # build response from chunk and address
             if chunk is None:
-                self.add_error(
-                    'notfound', 'Chunk not found: {}'.format(
-                        self.get_requested_address()),
-                    'XPATH = {}'.format(xpath)
-                )
+                self.set_chunk_not_found_error(xpath)
             else:
                 location_from_chunk = location_type.get(
                     'location_from_chunk')

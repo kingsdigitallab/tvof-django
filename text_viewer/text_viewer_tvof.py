@@ -197,8 +197,32 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
         return ret
 
+    def set_chunk_not_found_error(self, xpath):
+        message = 'Chunk not found: {}'.format(
+            self.get_requested_address()
+        )
+
+        if self.synced_with:
+            address = '/'.join(
+                self.get_list_from_address_parts(self.synced_with)
+            )
+            print(address)
+            tv_errors = getattr(settings, 'TV_NOT_FOUND_ERRORS', [])
+            for anerror in tv_errors:
+                if re.search(anerror[0], address):
+                    message = anerror[1]
+                    break
+
+        self.add_error(
+            'notfound',
+            message,
+            'XPATH = {}'.format(xpath)
+        )
+
     def is_location_visible(self, location_xml, doc_slug, view_slug,
                             location_type_slug):
+        '''Returns True if the location can be shown on the site
+        according to the filters set in settings.py:TEXT_VIEWER_DOC_FILTERS'''
         ret = True
         filters = getattr(
             settings,
