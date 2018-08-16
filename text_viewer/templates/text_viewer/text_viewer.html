@@ -316,6 +316,12 @@ a vue directive:
                 });
             };
             
+            attach_tooltip('.tv-view-semi-diplomatic .tei-pc-rend-6', function() {
+                return {
+                    'title': 'Deux barres obliques',
+                    'body': 'probablement pour designer la position d’un pied-de-mouche',
+                }; 
+            });
             attach_tooltip('.tei-unclear', function() {
                 return {
                     'title': 'Texte illisible',

@@ -321,6 +321,10 @@ ul.sticky {
         background-color: #ece4b7;
     }
 
+    .tei-l {
+        background-color: #ebe6ff;
+    }
+
     // Text viewer - TEI
 
     #manuscripts-content,
@@ -475,14 +479,18 @@ ul.sticky {
 //         }
 //     }
 
-    .tei-add, .tei-corr, .tei-supplied {
+    .tei-add, .tei-corr, .tei-supplied, 
+    .tv-view-semi-diplomatic .tei-pc-rend-6 {
         @include tooltip;
+    }
+
+    .tv-view-semi-diplomatic .tei-pc-rend-6 {
+        padding: 0.5em 0.2em;
     }
 
     .tv-view-semi-diplomatic .tei-add, 
     .tv-view-interpretive .tei-corr, 
-    .tv-view-interpretive .tei-supplied, 
-    {
+    .tv-view-interpretive .tei-supplied, {
         &:before {
             content: '<';   
         }
