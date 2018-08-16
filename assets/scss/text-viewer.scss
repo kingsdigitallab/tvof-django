@@ -309,6 +309,12 @@
 }
 
 .text-chunk {
+    
+    &.tv-error {
+        font-style: italic;
+        background-color: #fff0f0;
+    }
+    
     // GN: move to .pane-content-wrapper so text block and side bar are aligned
     // margin-top: rem-calc(12);
     // max-height: calc(100vh - 250px);

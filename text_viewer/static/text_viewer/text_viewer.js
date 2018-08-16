@@ -158,13 +158,15 @@
     Viewer.prototype.canPaneBeSynced = function(pane) {
         var cnt = 0;
 
-        for (var k in this.panes) {
-            if (this.panes.hasOwnProperty(k) && !this.panes[k].isSynced() && (this.panes[k] !== pane)) {
+        var first_pane = null;
+        $.each(this.panes, function(idx, apane) {
+            first_pane = first_pane || apane;
+            if (!apane.isSynced() && apane != pane) {
                 cnt += 1;
             }
-        }
+        });
         
-        return (cnt > 0);
+        return ((first_pane != pane) && (cnt > 0));
     };
 
     // Request the list of documents from the API and pass it to the callback
@@ -366,6 +368,7 @@
         if (!response.errors) {
             this.uimodel.chunk = response.chunk;
             this.onReceivedAddress(response.address);
+            this.uimodel.errors = [];
         } else {
             this.uimodel.errors = response.errors;
             this.uimodel.chunk = response.errors[0].message; 
@@ -805,6 +808,14 @@
                         });
                     }
                     
+                    var errors = this.pane.uimodel.errors;
+                    if (errors && errors.length) {
+                        ret += ' tv-error';
+                        $.each(errors, function(idx, error) {
+                            ret += ' tv-error-' + error.code;
+                        });
+                    }
+                                        
                     return ret;
                 },
                 canClosePane: function() {
