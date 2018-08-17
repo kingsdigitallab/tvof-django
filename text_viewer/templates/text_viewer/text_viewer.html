@@ -270,11 +270,15 @@ a vue directive:
             
             // note type="gloss"
             // .tei-note.tei-type-gloss > .note-text
+            // See Dropbox 15_conversion of XML for the TExt viewer.docx 
             var short_hands = {
                 'S':  'copiste',
                 'E':  'rédacteur médiéval',
+                'CE': 'rédacteur médiéval en cursive',
                 'R':  'rubricateur',
-                'LH': 'Later hand',
+                'D':  'annotateur D',
+                'LH': 'annotateur catalan?',
+                'LH2': 'annotateur X',
                 'U':  'inconnu',
                 '':   'indeterminé',
             };
@@ -315,6 +319,11 @@ a vue directive:
                     return false;
                 });
             };
+
+            jQuery.expr[':'].notchildof = function(a,i,m){
+                return jQuery(a).parents(m[3]).length < 1;
+            };
+
             
             attach_tooltip('.tv-view-semi-diplomatic .tei-pc-rend-6', function() {
                 return {
@@ -333,10 +342,20 @@ a vue directive:
                     'body': 'ms. ' + $el.attr('data-sic'),
                 }; 
             });
-            attach_tooltip('.tei-add', function($el) { 
+            attach_tooltip('.tei-add:notchildof(".tei-mod")', function($el) { 
                 return {
                     'title': 'Addition',
                     'body': 'Main: ' + get_hand_label($el.data('tei-hand')),
+                }; 
+            });
+            attach_tooltip('.tv-view-semi-diplomatic .tei-mod', function($el) { 
+                return {
+                    'title': 'Modification',
+                    'body': 
+                        'Contenu original: ' + 
+                        $el.find('.tei-del').html() +
+                        '<br/>Main: ' + 
+                        get_hand_label($el.data('tei-hand')),
                 }; 
             });
             attach_tooltip('.tei-note.tei-type-gloss', function($el) { 

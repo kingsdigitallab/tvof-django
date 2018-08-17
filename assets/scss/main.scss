@@ -471,17 +471,18 @@ ul.sticky {
         padding: 0.5em 0em;
     }
 
-//     .tei-corr {
-//         @include tooltip-and-icon('\f24a');
-// 
-//         &:after {
-//             background-color: scale-color(yellow, $lightness: 50%);
-//         }
-//     }
-
-    .tei-add, .tei-corr, .tei-supplied, 
-    .tv-view-semi-diplomatic .tei-pc-rend-6 {
+    .tv-view-semi-diplomatic .tei-mod, 
+    .tv-view-semi-diplomatic .tei-add, 
+    .tei-corr, 
+    .tv-view-semi-diplomatic .tei-pc-rend-6 
+    {
         @include tooltip;
+    }
+
+    .tv-view-semi-diplomatic .tei-supplied,
+    .tv-view-semi-diplomatic .tei-mod .tei-del
+    {
+        display: none;
     }
 
     .tv-view-semi-diplomatic .tei-pc-rend-6 {
