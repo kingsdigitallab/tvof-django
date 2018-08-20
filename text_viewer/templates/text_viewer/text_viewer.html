@@ -246,10 +246,13 @@ a vue directive:
     
     <script type="text/javascript">
         $(function() {
+            // Note that 256 leaves small black lines between tiles.
+            var image_viewer_tile_size = 512;
+             
             if (1) {
                 window.image_modal = new Foundation.Reveal($('#image-viewer-modal'), {});
             }
-            $('body').on('click', '.tei-graphic', function() {
+            $('body').on('click', 'figure', function() {
                 window.image_modal.open();
                 if (!window.image_viewer_map) {
                     window.image_viewer_map = L.map('image-viewer', {
@@ -261,10 +264,10 @@ a vue directive:
                     window.image_viewer_map.removeLayer(window.image_viewer_map_layer);
                 }
                     
-                var image_url = $(this).data('tei-url');
+                var image_url = $(this).find('img').attr('src');
 
                 window.image_viewer_map_layer = L.tileLayer.iiif('//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
-                    tileSize: 1024,
+                    tileSize: image_viewer_tile_size,
                 }).addTo(window.image_viewer_map);
             });
             
@@ -280,7 +283,7 @@ a vue directive:
                 'LH': 'annotateur catalan?',
                 'LH2': 'annotateur X',
                 'U':  'inconnu',
-                '':   'indeterminé',
+                '':   'indeterminée',
             };
             
             function get_hand_label(hand_acronym) {
@@ -325,6 +328,12 @@ a vue directive:
             };
 
             
+            attach_tooltip('figure', function($el) {
+                return {
+                    'title': 'Image (click to view)',
+                    'body': $el.find('img').attr('title'),
+                }; 
+            });
             attach_tooltip('.tv-view-semi-diplomatic .tei-pc-rend-6', function() {
                 return {
                     'title': 'Deux barres obliques',
@@ -352,16 +361,17 @@ a vue directive:
                 return {
                     'title': 'Modification',
                     'body': 
-                        'Contenu original: ' + 
+                        'Contenu originel: ' + 
                         $el.find('.tei-del').html() +
                         '<br/>Main: ' + 
                         get_hand_label($el.data('tei-hand')),
                 }; 
             });
-            attach_tooltip('.tei-note.tei-type-gloss', function($el) { 
+            attach_tooltip('.tei-note.tei-type-gloss', function($el) {
                 return {
                     'title': 'Note de lecteur médiéval',
-                    'body': $el.find('.note-text').html(),
+                    'body': $el.find('.note-text').html() + '<br>' 
+                            + 'Main: ' + get_hand_label($el.attr('resp')),
                 }; 
             });
                         

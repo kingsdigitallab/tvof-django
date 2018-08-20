@@ -156,8 +156,6 @@ ul.sticky {
 @mixin inline-icon {
     color: $tertiary-color;
     font-family: "FontAwesome";
-    font-size: 0.80em;
-    vertical-align: super;
     line-height: 0;
     // GN: no longer a pointer as we show info in a tooltip
     // cursor: pointer;
@@ -174,6 +172,17 @@ ul.sticky {
 }
 
 @mixin tooltip-and-icon($content) {
+    @include tooltip;
+
+    &:after {
+        @include inline-icon;
+        font-size: 0.80em;
+        vertical-align: super;
+        content: $content;
+    }
+}
+
+@mixin tooltip-and-icon-full($content) {
     @include tooltip;
 
     &:after {
@@ -511,6 +520,24 @@ ul.sticky {
         }
     
         span.note-text {
+            display: none;
+        }
+    }
+
+    figure {
+        // GN: icon even if superscripted, 
+        // without this hover on top of icon doesn't do anything  
+        @include tooltip-and-icon-full('\f030');
+        display: inline-block;
+        line-height: 0;
+        padding: 0.8em 0.3em;
+        cursor: pointer;
+        
+        &:before {
+            font-size: 1.2em;
+        }
+    
+        img, figcaption {
             display: none;
         }
     }
