@@ -21,6 +21,7 @@ Main content area
     Notes
     Quick tips or Disclaimer
     Text viewer - TEI
+    Reveal/Modal & Tooltip
 Footer
     Cookie consent
 Media queries
@@ -558,43 +559,10 @@ ul.sticky {
 }
 
 
-// GN: nothing preventing default Foundation modal to have a close icon
-// overlapping the modal text => difficult to read, don't know how to close
-// Were increase padding and move the icon closer to the boder 
-// See TVOF-146
-.reveal {
-    padding-right: 1.7rem;
-    padding-left: 1.7rem;
-}
-.close-button {
-    right: 0.5rem;
-    color: $primary-color;
-}
+/* Reveal/Modal & Tooltip */
 
 // TODO: make the tooltip and reveal look more consistent
 // TODO: use variables for colors
-.tv-reveal {
-    background-color: #1c2434;
-    border-color: scale-color($primary-color, $lightness: 20%);
-    color: #e0e0e0;
-    box-shadow: 7px 7px 10px #666;
-    
-    &:focus {
-        border-color: scale-color($primary-color, $lightness: 20%);
-    }
-    
-    .close-button {
-        color: #e0e0e0;
-        top: 0;
-        right: 0;
-        padding: 0rem 0.3rem;
-        
-        &:hover {
-            background-color: scale-color($primary-color, $lightness: 50%);
-        }
-    }
-}
-
 .tv-tooltip, .tv-reveal {
     padding: 0;
     
@@ -619,10 +587,87 @@ ul.sticky {
     }
 }
 
+.tv-reveal {
+    background-color: #1c2434;
+    border-color: scale-color($primary-color, $lightness: 20%);
+    color: #e0e0e0;
+    box-shadow: 7px 7px 10px #666;
+    
+    &:focus {
+        border-color: scale-color($primary-color, $lightness: 20%);
+    }
+    
+    .close-button {
+        color: #e0e0e0;
+        top: 0;
+        right: 0;
+        padding: 0rem 0.3rem;
+        
+        &:hover {
+            background-color: scale-color($primary-color, $lightness: 50%);
+        }
+    }
+}
+
 .tv-tooltip {
     // GN: foundation max-width is too narrow for long titles
     // e.g.Fr 68 (note de lecteur medieval)
     max-width: 20rem;
+}
+
+// Image modal
+
+.close-button {
+    right: 0.5rem;
+    color: $primary-color;
+}
+
+#image-viewer-modal {
+    overflow: hidden;
+    padding: 0;
+    display: none;
+    flex-direction: column;
+    
+    @include breakpoint(medium) {
+        // Foundation set full screen in mobile, otherwise we need
+        // to force width for image-viewer
+        width: 90vw;
+        height: 90vh;
+    }
+
+    #image-viewer {
+        // leaflet container
+        flex: 1;
+        width: 100%;
+        background-color: black;
+    }
+
+    .image-viewer-caption {
+        // caption at the bottom
+        
+        max-height: 4em;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0 0.5em;
+        
+        // GN: Artificially add shaded areas on top and bottom of text div
+        // reason is that scrolling requires overflow-y which in turn 
+        // cancels the padding-top and padding-bottom on scrolling text
+        // Without this the text is abruptly cut off on the edge of the
+        // div which is inelegant.
+        // TODO: try input type="text" in read-only mode           
+        &:before, &:after {
+            background-color: rgba(0,0,0,0.3);
+            content: '';
+            display: block;
+            height: 0.3em;
+            position: sticky;
+            top: 0;            
+        }
+        &:after {
+            bottom: 0;            
+        }
+    }
 }
 
 
@@ -796,3 +841,4 @@ footer {
         }
     }
 }
+

@@ -14,8 +14,6 @@
 // TODO: we should use Foundation flexbox instead. But without enabling the flex
 // grid. Only the foundation flex helper classes.
 
-/**/
-
 .body-text-viewer {
     // Content should fit the viewport, always.
     // So hide the scrollbars. Without this the JS height calculations may fail.
@@ -343,19 +341,6 @@
 
     &.hide-sics .tei-corr-popup {
         display: none;
-    }
-
-    // GN: line break & indentation for seg with a .pc-rend-6
-    .tv-view-interpretive .pc-rend-6 {
-        &:before {
-            content: '';
-            display: block;
-        }
-
-        span:first-child {
-            padding-left: 2em;
-            text-indent: -2em;
-        }
     }
 
 }

@@ -2,27 +2,6 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
 {% block extra_head %}
-    <style>
-        #image-viewer-modal {
-            padding: 0;
-        }
-        #image-viewer-modal .close-button {
-            background-color: white;
-            position: absolute;
-            z-index: 1000;
-        }
-        #image-viewer-modal {
-            height: 90%;
-            width: 90%;
-            overflow: hidden;
-        }
-        #image-viewer {
-            width: 100%;
-            height: 100%;
-            background-color: black;
-            /* position: absolute; */ 
-        }
-    </style>
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
         integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
         crossorigin=""/>
@@ -216,12 +195,16 @@ a vue directive:
     </div>
 </div>
 {% endverbatim %}
-<div class="reveal" id="image-viewer-modal" data-reveal>
+
+<div class="reveal tv-reveal" id="image-viewer-modal" data-reveal>
+    <h3>Image Viewer</h3>
     <div id="image-viewer"></div>
+    <div class="image-viewer-caption"></div>
     <button class="close-button" data-close aria-label="Close modal" type="button">
         <span aria-hidden="true">&times;</span>
     </button>
 </div>
+
 <div class="reveal" id="shared-reveal" data-reveal>
     <div class="reveal-body"></div>
     <button class="close-button" data-close aria-label="Close modal" type="button">
@@ -248,28 +231,124 @@ a vue directive:
         $(function() {
             // Note that 256 leaves small black lines between tiles.
             var image_viewer_tile_size = 512;
+            
+            window.image_modal = null;
+            window.image_viewer_map = null;
+            window.image_viewer_map_layer = null;
              
-            if (1) {
-                window.image_modal = new Foundation.Reveal($('#image-viewer-modal'), {});
-            }
             $('body').on('click', 'figure', function() {
-                window.image_modal.open();
-                if (!window.image_viewer_map) {
-                    window.image_viewer_map = L.map('image-viewer', {
-                        center: [0, 0],
-                        crs: L.CRS.Simple,
-                        zoom: 1,
-                    });
-                } else {
-                    window.image_viewer_map.removeLayer(window.image_viewer_map_layer);
-                }
-                    
-                var image_url = $(this).find('img').attr('src');
+                destroy_tooltip();
 
-                window.image_viewer_map_layer = L.tileLayer.iiif('//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
-                    tileSize: image_viewer_tile_size,
-                }).addTo(window.image_viewer_map);
+                if (window.image_viewer_map) {
+                    window.image_viewer_map.remove();
+                    window.image_viewer_map = null;
+                    window.image_viewer_map_layer = null;
+                }
+            
+                if (window.image_modal) {
+                    window.image_modal.destroy();
+                    window.image_modal = null;
+                }
+                
+                var modal = window.image_modal = new Foundation.Reveal($('#image-viewer-modal'), {
+                    overlay: false,
+                });
+                
+                modal.open();
+                var $modal = modal.$element;
+                $modal.css('display', 'flex');
+                
+                var map = window.image_viewer_map = L.map('image-viewer', {
+                    center: [0, 0],
+                    crs: L.CRS.Simple,
+                    zoom: 1,
+                });
+                
+                var $img = $(this).find('img');
+                var image_url = $img.attr('src');
+                var title = $img.attr('title') || 'Image Viewer';
+                var caption = $(this).find('figcaption').html() || '';
+                caption = "The temple lies in the center of a vast sanctuary, whose extent and complexity was revealed by excavations conducted from 2013 to 2016, on a site whose history goes back to Neolithic times, and which experienced an important phase of monumental constructions in the 1st Century CE. The temple was abandoned at the onset of the Early Middle Ages, and its structures were later reused in the fashioning of a Medieval defensive work. The temple has retained two sides of its square cella, at a height of over 20 meters, as well as vestiges of its ambulatory and side structure foundations. The temple's supposed dedication to the Roman god Janus is not based on any archaeological or historic fact, and the deity that was venerated in the temple is unknown.";
+                
+                $modal.find('h3').html(title);
+                $modal.find('.image-viewer-caption').toggle(!!caption).html(caption);
+                
+                window.image_viewer_map_layer = L.tileLayer.iiif(
+                    '//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
+                        tileSize: image_viewer_tile_size,
+                        setMaxBounds: true,
+                    }
+                ).addTo(map);
+                
             });
+            
+            
+            // Returns [xmin,ymin,xmax,ymax]
+            // e.g, "19,26,42,42"
+            // They represent the coordinates of the currently selected view
+            // in the image viewer. Those coordinates are proportional
+            // to the image size (in pc)
+            /*
+            window.image_viewer_map.getBounds()
+T {_southWest: M, _northEast: M}
+_northEast
+:
+M {lat: -187.64285278320312, lng: 204.98214721679688}
+_southWest
+:
+M {lat: -301.2678527832031, lng: 92.23214721679688}
+__proto__
+:
+Object
+
+    window.get_relative_view_bounds()
+"19,26,42,41"
+window.set_relative_view_bounds("19,26,42,41")
+            */
+            function get_relative_view_bounds() {
+                // Don't use this as bounds scale with zoom level!
+                // var pbs = window.image_viewer_map.getPixelBounds();
+                var bs = window.image_viewer_map.getBounds();
+                var width = window.image_viewer_map_layer.x;
+                var height = window.image_viewer_map_layer.y;
+                ret = [
+                    window.image_viewer_map.project(bs.getNorthWest()),
+                    window.image_viewer_map.project(bs.getSouthEast()),
+                ];
+                var ret = [
+                    '',
+                    ret[0].x / width,
+                    ret[0].y / height,
+                    ret[1].x / width,
+                    ret[1].y / height,
+                ];
+                ret = ret.reduce(function(str, abs) {
+                    return (str ? str + ',' : '')+Math.round(abs*100);
+                });
+                
+                return ret;
+            }
+            
+            // opposite of get_ function, it takes something like
+            // "19,26,42,42"
+            // and returns LatLong bounds
+            function set_relative_view_bounds(bounds_string) {
+                var width = window.image_viewer_map_layer.x;
+                var height = window.image_viewer_map_layer.y;
+                var pcs = bounds_string.split(',');
+                var vs = pcs.map(function(rel, idx) {
+                    return Math.round(parseInt(rel)/100.0*[width, height][idx % 2]);
+                });
+                var ret = L.latLngBounds(
+                    window.image_viewer_map.unproject([vs[0], vs[3]]),
+                    window.image_viewer_map.unproject([vs[2], vs[1]]),
+                );
+                window.image_viewer_map.fitBounds(ret);
+                return ret;
+            }
+            
+            window.get_relative_view_bounds = get_relative_view_bounds;
+            window.set_relative_view_bounds = set_relative_view_bounds;
             
             // note type="gloss"
             // .tei-note.tei-type-gloss > .note-text
@@ -297,12 +376,16 @@ a vue directive:
             // unclear
             window.tv_tooltip = null;
             
+            function destroy_tooltip() {
+                if (window.tv_tooltip) {
+                    window.tv_tooltip.destroy();
+                    window.tv_tooltip = null;
+                }
+            }
+            
             function attach_tooltip(anchors, tooltip_fields_fct) {
                 $('body').on('mouseenter mouseleave', anchors, function(ev) {
-                    if (window.tv_tooltip) {
-                        window.tv_tooltip.destroy();
-                        window.tv_tooltip = null;
-                    }
+                    destroy_tooltip();
                     if (ev.type == 'mouseenter') {
                         var tootlip_fields = tooltip_fields_fct($(this));
                         
