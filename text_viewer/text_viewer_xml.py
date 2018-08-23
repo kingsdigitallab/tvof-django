@@ -194,6 +194,9 @@ class TextViewerAPIXML(TextViewerAPI):
             xpaths = [xpaths]
 
         chunks = []
+        notes_info = {
+            'notes': []
+        }
         address = ''
         for xpath in xpaths:
             chunk_list = xml.findall(xpath)
@@ -217,6 +220,9 @@ class TextViewerAPIXML(TextViewerAPI):
                 if location_from_chunk:
                     location = location_from_chunk(chunk)
 
+                if self.is_print:
+                    self.extract_notes_from_chunk(chunk, notes_info)
+
                 chunks.append(ET.tostring(chunk))
 
                 address = '/'.join([document, view,
@@ -230,30 +236,36 @@ class TextViewerAPIXML(TextViewerAPI):
             )
 
         if chunks:
-            # TVOF 146: move all the reveals to the end otherwise they disrupt
-            # the HTML rendering, e.g. <div> within <span>
-            reveals = []
+            chunk = '\n'.join(chunks)
 
-            # TODO: move to text_viewer_tvof
-            def extract_reveal(match):
-                reveals.append(match.group(0))
-            chunk = re.sub(ur'(?musi)<div[^<>]+reveal.*?</button>\s*</div>',
-                           extract_reveal, u'\n'.join(chunks))
+            if notes_info['notes']:
+                chunk = '{}<div class="notes-all"><h3>Notes</h3>{}</div>'.\
+                    format(
+                        chunk,
+                        '\n'.join(notes_info['notes'])
+                    )
 
             chunk = self.compress_html(chunk)
 
             classes = ['tv-view-{}'.format(view)]
+            if self.is_print:
+                classes.append('tv-viewer-proofreader')
+            else:
+                classes.append('tv-viewer-pane')
 
             self.response = {
                 'chunk':
-                    ur'<div class="{}">{}<div class="reveals">{}</div></div>'.
-                    format(' '.join(classes), chunk, u'\n'.join(reveals)),
+                    ur'<div class="{}">{}</div>'.
+                    format(' '.join(classes), chunk),
                 'address': address,
                 'generated': self.generated_date
             }
             ret = True
 
         return ret
+
+    def extract_notes_from_chunk(self, chunk, notes_info):
+        pass
 
     def get_notational_conventions(self, xml, view_slug):
         conventions = ''

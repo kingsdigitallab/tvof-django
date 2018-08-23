@@ -672,17 +672,6 @@
                             link = '/k/bibliography/#' + link;
                             $(this).attr('href', link);
                         });
-                        // we remove all reveals initialised by foundation
-                        // to avoid endless accumulation and duplicates
-                        $('.reveal[data-panel="'+this.pane_slug+'"]').remove();
-                        // we init Foundation on all the new reveals
-                        $(this.$el).find('.reveal').each(function() {
-                            // TODO: GN: use proper server-side django html template for this
-                            // would be faster, get less data from Kiln and easier for designers to edit
-                            var $reveal = $(this);
-                            $reveal.attr('data-panel', self.pane_slug).addClass('tv-reveal');
-                            new window.Foundation.Reveal($reveal);
-                        });
                                                 
                         // recalc stickies...
                         var $stickies = $('.sticky:visible');

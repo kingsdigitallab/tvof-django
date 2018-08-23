@@ -151,7 +151,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
     def compute_section_mappings(self):
         '''
-        Build a mapping among the units from all documents
+        Build a mapping among the units from Royal and its corresp(s)
         e.g.
         ret = {
             'Royal_Fr20125': {
@@ -321,3 +321,64 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 }
 
         return ret
+
+    def extract_notes_from_chunk(self, chunk, notes_info):
+        # TODO: move that to TVoF class
+        '''
+            <div class="tei-note tei-type-note tei-subtype-source"
+                data-tei-subtype="source" id="edfr20125_0590_peach">
+                <div class="note-text">
+                    [...]HTML
+                </div>
+            </div>
+        '''
+        # nested loop is b/c ET needs parent to remove child but
+        # there is no .parent() function
+        for parent in chunk.findall('.//*[@class="note-text"]/../..'):
+            for note in parent.findall('.//*[@class="note-text"]/..'):
+                note_number = len(notes_info['notes']) + 1
+
+                # create a unique note handle
+                note_cat_from_subtype = {
+                    '': '?',
+                    'source': 'S',
+                    'trad': 'T',
+                    'gen': 'G',
+                }
+                note_subtype = note.attrib.get('data-tei-subtype', '')
+                note_cat = note_cat_from_subtype.get(note_subtype, '')
+                note_handle = '{}:{}'.format(note_number, note_cat)
+
+                # add a unique number at the beginning of the note
+                note_text = note.find('*[@class="note-text"]')
+                note_anchor = ET.fromstring(
+                    '<a class="note-anchor" id="note-{}" '
+                    ' href="#ref-{}">{}</a>'.
+                    format(
+                        note_number,
+                        note_number,
+                        note_handle,
+                    )
+                )
+                note_anchor.tail = note_text.text or ''
+                note_text.text = ''
+                note_text.insert(0, note_anchor)
+
+                # print(ET.tostring(note_text))
+
+                # add note to the notes_info
+                notes_info['notes'].append(ET.tostring(note))
+
+                # replace note with an inline reference
+                tail = note.tail
+                note.clear()
+                note_ref = note
+                note_ref.tail = tail
+                note_ref.tag = 'a'
+                note_ref.attrib['class'] = 'note-ref tei-subtype-{}'\
+                    .format(note_subtype)
+                note_ref.attrib['href'] = '#note-{}'.format(note_number)
+                note_ref.attrib['id'] = 'ref-{}'.format(note_number)
+                note_ref.text = note_handle
+                # print(note.tail)
+                # parent.remove(note)

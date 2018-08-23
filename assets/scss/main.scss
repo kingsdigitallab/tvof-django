@@ -417,41 +417,6 @@ ul.sticky {
         font-weight: 700;
     }
 
-    sup {
-        &.tei-note,
-        &.tei-gen,
-        &.tei-source,
-        &.tei-trad {
-            &:after {
-                content: "\f075";
-                font-family: "FontAwesome";
-            }
-        }
-
-        &.tei-gen {
-            &:after {
-                color: scale-color($success-color, $lightness: 30%);
-            }
-        }
-
-        &.tei-note {
-            &:after {
-                color: scale-color($secondary-color, $lightness: 30%);
-            }
-        }
-
-        &.tei-source {
-            &:after {
-                color: scale-color($primary-color, $lightness: 40%);
-            }
-        }
-
-        &.tei-trad {
-            &:after {
-                color: scale-color($tertiary-color, $lightness: 50%);
-            }
-        }
-    }
 
     // GN: two types of verses: 
     // .cont (flows continuously within a p/div) 
@@ -510,18 +475,96 @@ ul.sticky {
         }
     }
 
-    .tei-note.tei-type-gloss {
-        // GN: icon even if superscripted, 
-        // without this hover on top of icon doesn't do anything  
-        @include tooltip-and-icon('\f14b');
-        padding: 0.5em 0.2em;
-        
+    /* NOTES */
+
+    .note-ref,
+    .note-anchor {
         &:before {
-            font-size: 1em;
+            content: '[';   
+        }
+        &:after {
+            content: '] ';   
         }
     
-        span.note-text {
-            display: none;
+        &:focus {
+            background-color: #ffff80;
+        }
+
+        /*
+        &.tei-subtype-gen {
+            background-color: scale-color($success-color, $lightness: 30%);
+        }
+
+        &.tei-subtype-note {
+            background-color: scale-color($secondary-color, $lightness: 30%);
+        }
+
+        &.tei-subtype-source {
+            background-color: scale-color($primary-color, $lightness: 40%);
+        }
+
+        &.tei-subtype-trad {
+            background-color: scale-color($tertiary-color, $lightness: 50%);
+        }
+        */
+
+    }
+    .note-ref {
+        font-size: 0.80em;
+        vertical-align: super;
+        
+    }
+
+    .tv-viewer-proofreader {
+        .tei-note {
+            margin-bottom: 0.5rem;            
+        }
+    }
+
+    .tv-viewer-pane {
+        .tei-note.tei-type-note {
+            @include tooltip-and-icon('\f075');
+            
+            &.tei-subtype-gen {
+                &:after {
+                    color: scale-color($success-color, $lightness: 30%);
+                }
+            }
+    
+            &.tei-subtype-note {
+                &:after {
+                    color: scale-color($secondary-color, $lightness: 30%);
+                }
+            }
+    
+            &.tei-subtype-source {
+                &:after {
+                    color: scale-color($primary-color, $lightness: 40%);
+                }
+            }
+    
+            &.tei-subtype-trad {
+                &:after {
+                    color: scale-color($tertiary-color, $lightness: 50%);
+                }
+            }
+        }
+    
+        .tei-note.tei-type-gloss {
+            @include tooltip-and-icon('\f14b');
+        }
+    
+        .tei-note.tei-type-note,
+        .tei-note.tei-type-gloss {
+            // GN: icon even if superscripted, 
+            // without this hover on top of icon doesn't do anything  
+            padding: 0.5em 0.2em;
+            display: inline;
+            cursor: pointer;
+            
+            .note-text {
+                display: none;
+            }
         }
     }
 
@@ -534,10 +577,6 @@ ul.sticky {
         padding: 0.8em 0.3em;
         cursor: pointer;
         
-        &:before {
-            font-size: 1.2em;
-        }
-    
         img, figcaption {
             display: none;
         }

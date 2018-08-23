@@ -31,11 +31,18 @@ class TextViewerAPI(object):
     def clear_errors(self):
         self.errors = []
 
-    def process_request(self, request, path):
+    def process_request(self, request, path, is_print=False):
+        '''
+        is_print = True will remove interactive features from output
+        and replace them with explicit text.
+        E.g. notes will be at the end of the text rather than clickable
+        icons.
+        '''
 
         self.response = {}
         self.errors = []
 
+        self.is_print = is_print
         self.request = request
         self.synced_with = None
         self.requested_address = path.strip('/')
@@ -216,6 +223,8 @@ def get_unicode_from_xml(xmltree, encoding='utf-8', text_only=False,
 
 
 def remove_xml_elements(xml, xpath):
+    # TODO: optimise & better logic: find parents then children in parents
+    # TODO: make sure the tail survives*
     ret = 0
     '''Remove all the elements matching xpath (and all their content)'''
     items = xml.findall(xpath)

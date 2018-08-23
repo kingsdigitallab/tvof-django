@@ -1,6 +1,8 @@
 {% extends "base_minimal.html" %}
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
+{% block meta_title %}{{ title }} | Proof Reader{% endblock %}
+
 {% block extra_head %}
     <style>
     </style>
@@ -12,7 +14,8 @@
 {% endblock %}
 
 {% block minimal_breadcrumb %}
-    <small> </small>
+    <small>/ <a href="{{ link_text_viewer }}">Text Viewer</a></small>
+    <small>/ Proof Reader </small>
 {% endblock %}
 
 {% block title %}<h1>{{ title }}</h1>{% endblock %}

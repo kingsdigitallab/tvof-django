@@ -205,8 +205,9 @@ a vue directive:
     </button>
 </div>
 
-<div class="reveal" id="shared-reveal" data-reveal>
-    <div class="reveal-body"></div>
+<div class="reveal tv-reveal" id="shared-reveal" data-reveal>
+    <h3>Image Viewer</h3>
+    <div class="body"></div>
     <button class="close-button" data-close aria-label="Close modal" type="button">
         <span aria-hidden="true">&times;</span>
     </button>
@@ -457,21 +458,23 @@ window.set_relative_view_bounds("19,26,42,41")
                             + 'Main: ' + get_hand_label($el.attr('resp')),
                 }; 
             });
-                        
-            /* 
+
             var reveal = null;
-            $('body').on('click', '.tei-note.tei-type-gloss', function(ev) {
+            $('body').on('click', '.tei-note.tei-type-note', function(ev) {
                 if (reveal) {
                     reveal.close();
                 }
                 if (ev.type == 'click') {
-                    var hand = $(this).attr('data-tei-resp') || '';
-                    hand = short_hands[hand] || hand;
-                    if (hand) {
-                        hand = ' (' + hand + ')';
-                    }
                     $reveal = $('#shared-reveal');
-                    $reveal.find('.reveal-body').html('Note de lecteur médiéval' + hand + ': ' + $(this).find('.note-text').html());
+                    $reveal.find('.body').html($(this).find('.note-text').html());
+                    
+                    var subtype_to_title = {
+                        'source': 'Sources',
+                        'trad':   'Tradition',
+                        'gen':    'Note',
+                        '':       'Note',
+                    };
+                    $reveal.find('h3').html(subtype_to_title[$(this).data('tei-subtype')] || 'Note');
                     if (!reveal) {
                         reveal = new Foundation.Reveal($reveal, {
                             overlay: false,
@@ -481,7 +484,6 @@ window.set_relative_view_bounds("19,26,42,41")
                 }
                 return false;
             });
-            */
             
         })
     </script>
