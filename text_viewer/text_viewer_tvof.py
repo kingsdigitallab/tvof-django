@@ -346,6 +346,10 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 }
                 note_subtype = note.attrib.get('data-tei-subtype', '')
                 note_cat = note_cat_from_subtype.get(note_subtype, '')
+
+                if note.attrib.get('data-tei-type', '') == 'gloss':
+                    note_cat = 'A'  # as in annotation
+
                 note_handle = '{}:{}'.format(note_number, note_cat)
 
                 # add a unique number at the beginning of the note
