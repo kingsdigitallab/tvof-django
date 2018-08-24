@@ -335,9 +335,12 @@ class TextViewerAPITvof(TextViewerAPIXML):
         # there is no .parent() function
         for parent in chunk.findall('.//*[@class="note-text"]/../..'):
             for note in parent.findall('.//*[@class="note-text"]/..'):
-                note_number = len(notes_info['notes']) + 1
+                note_tail = note.tail
+                note.tail = ''
 
                 # create a unique note handle
+                note_number = len(notes_info['notes']) + 1
+
                 note_cat_from_subtype = {
                     '': '?',
                     'source': 'S',
@@ -373,10 +376,9 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 notes_info['notes'].append(ET.tostring(note))
 
                 # replace note with an inline reference
-                tail = note.tail
                 note.clear()
                 note_ref = note
-                note_ref.tail = tail
+                note_ref.tail = note_tail
                 note_ref.tag = 'a'
                 note_ref.attrib['class'] = 'note-ref tei-subtype-{}'\
                     .format(note_subtype)
