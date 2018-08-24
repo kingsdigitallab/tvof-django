@@ -7,6 +7,11 @@ TODO: instead of inheritence we should use a strategy pattern for:
 '''
 
 
+def lt(msg=''):
+    from datetime import datetime
+    print(datetime.now(), msg)
+
+
 class TextViewerAPI(object):
     '''
     Text Viewer Web API Skeleton
@@ -76,6 +81,7 @@ class TextViewerAPI(object):
         # error
         # Otherwise we try our best to return something close to the requested
         # address.
+
         parts = parts.copy()
         ret = False
         while True:
@@ -223,13 +229,13 @@ def get_unicode_from_xml(xmltree, encoding='utf-8', text_only=False,
 
 
 def remove_xml_elements(xml, xpath):
-    # TODO: optimise & better logic: find parents then children in parents
-    # TODO: make sure the tail survives*
+    # TODO: !! will cause loss of tails!
     ret = 0
     '''Remove all the elements matching xpath (and all their content)'''
     items = xml.findall(xpath)
     parents = xml.findall(xpath + '/..')
     for i, item in enumerate(items):
         ret += 1
+        assert not (item.tail or '').strip(), item.tail
         parents[i].remove(item)
     return ret

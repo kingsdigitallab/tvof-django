@@ -197,7 +197,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
         return ret
 
-    def set_chunk_not_found_error(self, xpath):
+    def set_chunk_not_found_error(self, xpath=None):
         message = 'Chunk not found: {}'.format(
             self.get_requested_address()
         )
@@ -206,7 +206,6 @@ class TextViewerAPITvof(TextViewerAPIXML):
             address = '/'.join(
                 self.get_list_from_address_parts(self.synced_with)
             )
-            print(address)
             tv_errors = getattr(settings, 'TV_NOT_FOUND_ERRORS', [])
             for anerror in tv_errors:
                 if re.search(anerror[0], address):

@@ -229,11 +229,7 @@ class TextViewerAPIXML(TextViewerAPI):
                                     location_type_slug, location])
 
         if not xpaths:
-            self.add_error(
-                'notfound', 'Text not found ({})'.format(
-                    self.get_requested_address()),
-                ''
-            )
+            self.set_chunk_not_found_error()
 
         if chunks:
             chunk = '\n'.join(chunks)
@@ -281,6 +277,9 @@ class TextViewerAPIXML(TextViewerAPI):
         response = self.request_backend(url)
 
         # Create a new XML tree from the response.
+        # TODO: this is very slow, we should move that to kiln_requester
+        # and cache it there. The catch though is that callers modify
+        # the tree... so we'd need to clone it.
         root = ET.fromstring(response)
 
         ret = root.find('.//text[@name="{}"]'.format(kilnid))
