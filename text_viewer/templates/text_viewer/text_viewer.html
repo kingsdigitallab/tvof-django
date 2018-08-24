@@ -455,7 +455,7 @@ window.set_relative_view_bounds("19,26,42,41")
                 return {
                     'title': 'Note de lecteur médiéval',
                     'body': $el.find('.note-text').html() + '<br>' 
-                            + 'Main: ' + get_hand_label($el.attr('resp')),
+                            + 'Main: ' + get_hand_label($el.data('tei-resp')),
                 }; 
             });
 
