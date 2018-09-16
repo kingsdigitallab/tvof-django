@@ -461,3 +461,6 @@ TV_NOT_FOUND_ERRORS = [
      '''Royal 20 D 1 n’inclut pas cette section de l’Histoire ancienne.'''
      ],
 ]
+
+# tells which MSS can be linked from the visualisation to the Text Editor
+ALIGNMENT_LINKABLE_MSS = ['fr20125', 'royal20d1']

@@ -57,7 +57,8 @@ class Alignment(object):
         alignment_data = self.fetch_all_alignment_data(True)
         config = self.get_config(request, path, alignment_data)
         context = {
-            'config': config.get_list()
+            'config': config.get_list(),
+            'ALIGNMENT_LINKABLE_MSS': settings.ALIGNMENT_LINKABLE_MSS,
         }
 
         ret = render(request, 'text_alignment/alignment.html', context)

@@ -78,6 +78,7 @@
             var config = {{config|json}};
             var vue_config = new_vue_config(config);
             var $plink = $('#plink').detach();
+            window.ALIGNMENT_LINKABLE_MSS = {{ ALIGNMENT_LINKABLE_MSS|json }};
             
             // returns a URL to the textviewer opened
             // at a specific paragraph for a given manuscript.
@@ -86,6 +87,11 @@
             // Note that apart from Royal, all other MS will be
             // redirected to Fr20125.
             function get_text_href(ms_name, para_number) {
+                var ms_name_normalised = ms_name.replace(/\s+/gi, '').toLowerCase();
+                // MS is not viewable in the Text Viewer we don't return a link.
+                if (window.ALIGNMENT_LINKABLE_MSS.join(',').indexOf(ms_name_normalised) <= -1) {
+                    return null;
+                }
                 var doc = 'Fr20125';
                 if (/royal.*20.*d.*1/i.test(ms_name)) {
                     doc = 'Royal';
