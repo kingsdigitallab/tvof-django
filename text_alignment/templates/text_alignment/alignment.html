@@ -87,7 +87,7 @@
             // Note that apart from Royal, all other MS will be
             // redirected to Fr20125.
             function get_text_href(ms_name, para_number) {
-                var ms_name_normalised = ms_name.replace(/\s+/gi, '').toLowerCase();
+                var ms_name_normalised = ms_name.replace(/\W+/gi, '').toLowerCase();
                 // MS is not viewable in the Text Viewer we don't return a link.
                 if (window.ALIGNMENT_LINKABLE_MSS.join(',').indexOf(ms_name_normalised) <= -1) {
                     return null;
@@ -113,6 +113,7 @@
                 var plink_data = $para_div.data('plink');
                 var parts = plink_data.split('/');
                 var ms_idx = parseInt(parts[0]);
+                var href = null;
                 // TODO: shouldn't be hard-coded
                 $.each(config, function(idx, field) {
                     if (field.key == 'mss') {
@@ -121,10 +122,11 @@
                     }
                 });
                 
-                $plink.attr('href', href);
-                $para_div.prepend($plink.detach());
-                
-                $plink.show();
+                if (href) {
+                    $plink.attr('href', href);
+                    $para_div.prepend($plink.detach());
+                    $plink.show();
+                }
             });
             
             // Visualisation Settings modal
