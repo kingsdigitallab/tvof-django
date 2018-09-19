@@ -91,20 +91,6 @@
             var colors = {
                 'text': 'black',
                 'separator': 'black',
-                'even': '#f4f4f4',
-                'odd': '#e8e8e8',
-                'absent.2': '#202020', // location = "" - NO LONGER USED 
-                'absent.3': '#804040', // no location element in the para
-                'absent.1': '#707070', // location = "absent"
-                'nodata': '#808080',  // no para element for that MS - frequent 
-                'verse': '#b0b0ff',
-                'rubric.undefined': '#ffb0b0',
-                'rubric.add': '#fe8080',
-                'rubric.move': '#ee4040',
-            }
-            var colors = {
-                'text': 'black',
-                'separator': 'black',
                 'even': get_viz_css_var('absent-0'),
                 'odd': get_viz_css_var('absent-0-alt'),
                 'absent.2': get_viz_css_var('absent-2'), 
@@ -178,8 +164,6 @@
                                 color = colors['var.pml'];
                             }
                         }
-                        console.log(variation);
-                        console.log(color);
                     }
                     
                     if (color) {
@@ -246,7 +230,6 @@
             var info = 'Res:' + (caw - labels_max_width) + ' x ' + cah;
             info += ' | Paras: ' + align.paras.length;
             //ctx.fillText(info, labels_padding, cah - font_size);
-            
 
             // EVENTS
             
@@ -256,18 +239,47 @@
                 update_info_box(ev, 1);
             });
 
+            $(canvas).off('mouseleave');
+            $(canvas).on('mouseleave', function() {
+               $('#vis-info-box').hide(); 
+            });
             $(canvas).off('mousemove');
             $(canvas).on('mousemove', update_info_box);
             $('#vis-info-box').off('mouseenter mousemove');
             $('#vis-info-box').on('mouseenter mousemove', update_info_box);
             
+            function get_info_box_position(mouse_pos) {
+                // returns position for the info box, closest to mouse_pos.
+                // but without truncating the box.
+                // so it might align it left or right accordingly.
+                // default pos = top right corner where the mouse is
+                // pos are relative to viewport, not body/document
+                var min_width = 200;
+
+                var window_width = $(window).width();
+                
+                var ret = {
+                    left: mouse_pos[0] + 5 - $(document).scrollLeft(),
+                    top: mouse_pos[1] + 5 - $(document).scrollTop(),
+                    right: 'auto'
+                }
+                
+                // align right                
+                if ((ret.left +  min_width) > window_width) {
+                    ret.right = window_width - ret.left + 10;
+                    ret.left = 'auto';
+                }
+                
+                return ret;
+            }
+            
             function update_info_box(ev, clicked) {
                 // convert mouse position into indices [para_idx, ms_idx]
                 var mouse_pos = [ev.pageX, ev.pageY];
-                $('#vis-info-box').css({
-                    left: mouse_pos[0] + 5 - $(document).scrollLeft(),
-                    top: mouse_pos[1] + 5 - $(document).scrollTop()
-                });
+                
+                var pos = get_info_box_position(mouse_pos);
+                
+                $('#vis-info-box').css(pos);
                 var data_pos = [
                     Math.floor((mouse_pos[0] - canvas_left - labels_max_width) / bw),
                     Math.floor((mouse_pos[1] - canvas_top - head_height) / bh), 
@@ -303,8 +315,15 @@
                                     window.open(href, '_blank');
                                 }
                             }
-                        
-                            info += '<b>Location</b>: ' + (para_ms.location === null ? 'Unspecified' : para_ms.location);
+                            
+                            if (typeof para_ms.location === 'undefined') {
+                                // GN: as requested by MT, 19/09/2018
+                                info += 'Absent paragraph';
+                            } else {
+                                info += '<b>Location</b>: ' + 
+                                    (para_ms.location === null ? 'Unspecified' : para_ms.location);
+                            }
+                            
                             if (config_fields.verse && para_ms.verse) {
                                 info += '<br/>';
                                 info += '<b>Verse</b>: ' + para_ms.verse;

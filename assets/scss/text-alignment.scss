@@ -181,11 +181,12 @@ body {
     position: fixed; 
     display: none;
     background: white; 
-    border: 2px solid green; 
+    border: 2px solid #101010; 
     color: #101010;
     padding: 0.5em;
     opacity: 0.8;
     box-shadow: 10px 10px 5px #404040;
+    max-width: 16rem;
 }
 
 /* Viztest specific */
@@ -264,9 +265,9 @@ $viz-grey: #d8d8d8;
     // @include viz-class-color("variation", #d86d0f);
     // @include viz-class-color("variation.location", #dd614a);
     // @include viz-class-color("variation.location.rubric", #9c89b8);
-    @include viz-class-color("variation", #ffbb00, 10%);
-    @include viz-class-color("variation.location", #757eff);
-    @include viz-class-color("variation.location.rubric", #4e8738, 10%);
+    @include viz-class-color("variation", #ffbb00, 10%); // ML
+    @include viz-class-color("variation.location", #757eff); // 
+    @include viz-class-color("variation.location.rubric", #4e8738, 10%); // PML
 
     @include viz-class-color("para-ms-verse", #6fbad3);
 
