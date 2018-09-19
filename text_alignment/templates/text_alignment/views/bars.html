@@ -82,6 +82,12 @@
             var labels_padding = 2;
             var font_size = 12;
             var font = '' + font_size + 'px Arial';
+            
+            function get_viz_css_var(var_name) {
+                var html_styles = getComputedStyle($('html')[0]);
+                return html_styles.getPropertyValue('--viz-'+var_name);                
+            }
+
             var colors = {
                 'text': 'black',
                 'separator': 'black',
@@ -96,6 +102,25 @@
                 'rubric.add': '#fe8080',
                 'rubric.move': '#ee4040',
             }
+            var colors = {
+                'text': 'black',
+                'separator': 'black',
+                'even': get_viz_css_var('absent-0'),
+                'odd': get_viz_css_var('absent-0-alt'),
+                'absent.2': get_viz_css_var('absent-2'), 
+                'absent.3': get_viz_css_var('absent-3'),
+                'absent.1': get_viz_css_var('absent-1'),
+                'nodata': get_viz_css_var('nopara'), 
+                'verse': get_viz_css_var('para-ms-verse'),
+                // TODO: not accurate
+                'var': get_viz_css_var('variation-location'),
+                'var.ml': get_viz_css_var('variation'),
+                'var.pml': get_viz_css_var('variation-location-rubric'),
+                'rubric.undefined': '#ffb0b0',
+                'rubric.add': '#fe8080',
+                'rubric.move': '#ee4040',
+            }
+
             // we split the bar vertically into bands to show variations of
             // features such as rubrication.
             // At the moment only used for rubrics, so maximise it 1.5
@@ -142,6 +167,19 @@
                     
                     if (para_ms.absent) {
                         color = colors['absent.'+para_ms.absent];
+                    }
+                    
+                    if (para_ms.variation) {
+                        color = colors['var'];
+                        var variation = para_ms.variation.toLowerCase();
+                        if (variation.indexOf('ml') > -1) {
+                            color = colors['var.ml'];
+                            if (variation.indexOf('pml') > -1) {
+                                color = colors['var.pml'];
+                            }
+                        }
+                        console.log(variation);
+                        console.log(color);
                     }
                     
                     if (color) {

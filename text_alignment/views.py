@@ -517,7 +517,7 @@ class Alignment(object):
         => {
             [...]
             'variation': 'PML'
-            'variations': [
+            'vars': [
                 {
                     't': 'Partial material lacuna'
                 }

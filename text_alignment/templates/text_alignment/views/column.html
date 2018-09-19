@@ -45,6 +45,7 @@ $(function() {
         {% if ms.selected %}
         {% with para_ms=para.mss|get_item:ms.name %}
         <div class="column column-block connect
+        {% if para_ms.verse %} para-ms-verse {% endif %}
         {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse or fields_note and para_ms.note %} expand{% endif%}
         {% if para_ms %} absent-{{ para_ms.absent|default:'0' }}{% else %} nopara{% endif %}
         {% if para_ms.location %} location{% endif %}

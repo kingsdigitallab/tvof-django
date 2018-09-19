@@ -190,94 +190,80 @@ body {
 
 /* Viztest specific */
 
+// Viz Colours
+$viz-primary-color: #1c2434;
+$viz-secondary-color: #4e2626;
+$viz-tertiary-color: #4b4d25;
+
+$viz-neutral: #c7cb00;
+
+$viz-grey: #d8d8d8;
+
+
 .viz {
     margin: 0;
     padding: 0;
-    widht: 100%;
+    width: 100%;
+    
     /* Variables */
 
-    // Colours
-    $primary-color: #1c2434;
-    $secondary-color: #4e2626;
-    $tertiary-color: #4b4d25;
-
-    $neutral: #c7cb00;
-
-    $grey: #d8d8d8;
-
-    .absent-0 {
-        background: $neutral;
-
-        &:hover,
-        &.active {
-            background: darken($neutral, 20%);
+    @function str-replace($string, $search, $replace: '') {
+        $index: str-index($string, $search);
+        
+        @if $index {
+          @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
         }
+        
+        @return $string;
     }
-
-    .absent-1 {
-        background: $secondary-color;
-
-        &:hover,
-        &.active {
-            background: darken($secondary-color, 10%);
-        }
-    }
-
-    .absent-2 {
-        background: $tertiary-color;
-
-        &:hover,
-        &.active {
-            background: darken($tertiary-color, 10%);
-        }
-    }
-
-    .absent-3 {
-        background: white;
-
-        &:hover,
-        &.active {
-            background: darken(white, 10%);
-        }
-    }
-
-    .nopara {
-        background: darken($grey, 20%);
-
-        &:hover,
-        &.active {
-            background: darken($grey, 40%);
-        }
-    }
-
-    // Combinations
-
-    .variation {
-        background: #d86d0f;
-
-        &:hover,
-        &.active {
-            background: darken(#d86d0f, 20%);
-        }
-
-        &.location {
-            background: #dd614a;
+    
+    @mixin viz-class-color($class, $color, $darkenpc: 20%) {
+        .#{$class} {
+            // background: $color;
+            @include viz-shared-color($class, $color);
 
             &:hover,
             &.active {
-                background: darken(#dd614a, 20%);
-            }
-
-            &.rubric {
-                background: #9c89b8;
-
-                &:hover,
-                &.active {
-                    background: darken(#9c89b8, 20%);
-                }
+                @include viz-shared-color(#{$class}-active, darken($color, $darkenpc));
             }
         }
     }
+
+    @mixin viz-shared-color($class, $color, $property: background) {
+
+        #{$property}: $color;
+
+        // Declare that variable in html:root so it can be shared with
+        // visualisations written in JS only (e.g. canvas).
+        // e.g. 
+        // --viz-variation-location-rubric-active: #685289;
+        @at-root html {
+            --viz-#{str-replace($class, ".", "-")}: $color;
+        }
+    }
+
+    @include viz-class-color("absent-0", $viz-neutral);
+    @include viz-class-color("absent-0-alt", darken($viz-neutral, 5%));
+
+    @include viz-class-color("absent-1", $viz-secondary-color, 10%);
+
+    @include viz-class-color("absent-2", $viz-tertiary-color, 10%);
+
+    @include viz-class-color("absent-3", white, 10%);
+
+    @include viz-class-color("nopara", darken($viz-grey, 20%));
+
+    // Combinations
+
+    // TODO: GN/GS - conditions won't always match partners requirements
+    // they want colors for ML & PML
+    // In practice ML won't have a location and PML won't have a rubric
+    // but it might be bext to directly test the ML and PML 
+    @include viz-class-color("variation", #d86d0f);
+    @include viz-class-color("variation.location", #dd614a);
+    @include viz-class-color("variation.location.rubric", #9c89b8);
+    
+    @include viz-class-color("para-ms-verse", #6fbad3);
 
     // Fonts
     $body-font-family: 'Archivo Narrow', sans-serif;
@@ -294,7 +280,7 @@ body {
         border-right: 5px solid #f2f2f2;
 
         &.first {
-            border-top: 2px solid $grey;
+            border-top: 2px solid $viz-grey;
         }
 
         svg {
@@ -326,7 +312,7 @@ body {
 
     .section {
         background: #cff0ff;
-        border-bottom: 3px solid $neutral;
+        border-bottom: 3px solid $viz-neutral;
         font-size: 18px;
         margin: 0;
         padding-left: 15px;
@@ -343,7 +329,7 @@ body {
     }
 
     .title {
-        background: $primary-color;
+        background: $viz-primary-color;
         color: white;
         font-size: 18px;
         margin: 0;
@@ -363,4 +349,24 @@ body {
     h1, h2, h3, h4, h5, h6 {
         font-weight: normal;
     }
+
+    
+    // table vizualisation
+    
+    &.viz-table {
+    
+        .para-ms, label {
+            color: #252525;
+        }
+
+        .para-ms {
+            &:hover, &:active {
+                color: white;
+                label {
+                    color: white;
+                }
+            }
+        }
+    }
+
 }

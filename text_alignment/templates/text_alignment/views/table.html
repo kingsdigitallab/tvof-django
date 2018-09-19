@@ -1,6 +1,6 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
-<table class="alignment-paras">
+<table class="alignment-paras viz viz-table">
   <thead>
     <tr>
       <th>Section</th>
@@ -28,7 +28,14 @@
         {% for ms in params.mss.options %}
           {% if ms.selected %}
             {% with para_ms=para.mss|get_item:ms.name %}
-              <td class="{% if para_ms.verse %} para-ms-verse {% endif %}{% if not para_ms or para_ms.absent %} para-ms-absent {% endif %}"
+              <td class="para-ms
+                {% if para_ms.verse %} para-ms-verse {% endif %}
+                {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse or fields_note and para_ms.note %} expand{% endif%}
+                {% if para_ms %} absent-{{ para_ms.absent|default:'0' }}{% else %} nopara{% endif %}
+                {% if para_ms.location %} location{% endif %}
+                {% if para_ms.rubric %} rubric{% endif %}
+                {% if para_ms.variation %} variation{% endif %}
+                "
                 data-plink="{{forloop.counter0}}/{{para_ms.corresp|default:para.id|short_para_id}}">
                 {% if fields_locus %}{{ para_ms.location }}{% endif %}
                 {% for rubric in para_ms.rubric %}
