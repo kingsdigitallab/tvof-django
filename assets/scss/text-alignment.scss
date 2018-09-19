@@ -255,15 +255,22 @@ $viz-grey: #d8d8d8;
 
     // Combinations
 
-    // TODO: GN/GS - conditions won't always match partners requirements
+    // TODO: GN/GF - conditions won't always match partners requirements
     // they want colors for ML & PML
     // In practice ML won't have a location and PML won't have a rubric
     // but it might be bext to directly test the ML and PML 
     @include viz-class-color("variation", #d86d0f);
     @include viz-class-color("variation.location", #dd614a);
     @include viz-class-color("variation.location.rubric", #9c89b8);
-    
+
     @include viz-class-color("para-ms-verse", #6fbad3);
+
+    // GN: used only on the bars viz so far, correspond to the color of the 
+    // rubir stacks / layers
+    // Respectively: normal rubric, displaced and additional
+    @include viz-class-color("stack-rubric-undefined", #ffb0b0);
+    @include viz-class-color("stack-rubric-move", #fe8080);
+    @include viz-class-color("stack-rubric-add", #ee4040);
 
     // Fonts
     $body-font-family: 'Archivo Narrow', sans-serif;
