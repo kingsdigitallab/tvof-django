@@ -209,6 +209,9 @@ $viz-grey: #d8d8d8;
     width: 100%;
     
     /* Variables */
+    
+    $viz-text-dark: scale-color(black, $lightness: 20%);
+    $viz-text-light: $white;
 
     @function str-replace($string, $search, $replace: '') {
         $index: str-index($string, $search);
@@ -235,6 +238,14 @@ $viz-grey: #d8d8d8;
     @mixin viz-shared-color($class, $color, $property: background) {
 
         #{$property}: $color;
+
+        &, label {
+            @if (lightness($color) >= 50) {
+                color: $viz-text-dark; // Lighter background, return dark color
+            } @else {
+                color: $viz-text-light; // Darker background, return light color
+            }
+        }
 
         // Declare that variable in html:root so it can be shared with
         // visualisations written in JS only (e.g. canvas).
@@ -306,7 +317,7 @@ $viz-grey: #d8d8d8;
     }
 
     .connect {
-        color: scale-color(black, $lightness: 20%);
+        // color: scale-color(black, $lightness: 20%);
         margin-bottom: 0;
 
         &:hover {
@@ -371,18 +382,18 @@ $viz-grey: #d8d8d8;
     
     &.viz-table {
     
-        .para-ms, label {
-            color: #252525;
-        }
-
-        .para-ms {
-            &:hover, &:active {
-                color: white;
-                label {
-                    color: white;
-                }
-            }
-        }
+//         .para-ms, label {
+//             color: #252525;
+//         }
+// 
+//         .para-ms {
+//             &:hover, &:active {
+//                 color: white;
+//                 label {
+//                     color: white;
+//                 }
+//             }
+//         }
     }
 
 }
