@@ -195,7 +195,9 @@ $viz-primary-color: #1c2434;
 $viz-secondary-color: #4e2626;
 $viz-tertiary-color: #4b4d25;
 
-$viz-neutral: #c7cb00;
+// $viz-neutral: #c7cb00;
+// $viz-neutral: rgba(199, 203, 0, .5);
+$viz-neutral: rgba(227, 229, 190, 1);
 
 $viz-grey: #d8d8d8;
 
@@ -259,18 +261,24 @@ $viz-grey: #d8d8d8;
     // they want colors for ML & PML
     // In practice ML won't have a location and PML won't have a rubric
     // but it might be bext to directly test the ML and PML 
-    @include viz-class-color("variation", #d86d0f);
-    @include viz-class-color("variation.location", #dd614a);
-    @include viz-class-color("variation.location.rubric", #9c89b8);
+    // @include viz-class-color("variation", #d86d0f);
+    // @include viz-class-color("variation.location", #dd614a);
+    // @include viz-class-color("variation.location.rubric", #9c89b8);
+    @include viz-class-color("variation", #ffbb00, 10%);
+    @include viz-class-color("variation.location", #757eff);
+    @include viz-class-color("variation.location.rubric", #4e8738, 10%);
 
     @include viz-class-color("para-ms-verse", #6fbad3);
 
     // GN: used only on the bars viz so far, correspond to the color of the 
     // rubir stacks / layers
     // Respectively: normal rubric, displaced and additional
-    @include viz-class-color("stack-rubric-undefined", #ffb0b0);
-    @include viz-class-color("stack-rubric-move", #fe8080);
-    @include viz-class-color("stack-rubric-add", #ee4040);
+    // @include viz-class-color("stack-rubric-undefined", #ffb0b0);
+    // @include viz-class-color("stack-rubric-move", #fe8080);
+    // @include viz-class-color("stack-rubric-add", #ee4040);
+    @include viz-class-color("stack-rubric-undefined", #a7827f);
+    @include viz-class-color("stack-rubric-move", #8e5e5b);
+    @include viz-class-color("stack-rubric-add", #753b37);
 
     // Fonts
     $body-font-family: 'Archivo Narrow', sans-serif;
@@ -297,7 +305,7 @@ $viz-grey: #d8d8d8;
     }
 
     .connect {
-        color: white;
+        color: scale-color(black, $lightness: 20%);
         margin-bottom: 0;
 
         &:hover {
