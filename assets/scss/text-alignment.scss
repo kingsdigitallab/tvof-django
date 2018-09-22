@@ -377,6 +377,14 @@ $viz-grey: #d8d8d8;
         font-weight: normal;
     }
 
+    // column vizualisation
+    &.viz-column {
+        .column > ul {
+            padding-left: 0;
+            margin-left: 0;
+            list-style: none;
+        }
+    }
     
     // table vizualisation
     

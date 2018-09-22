@@ -1,6 +1,6 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
-<div id="alignemnt-view-bars">
+<div id="alignment-view-bars" class="viz-bars">
     <div id="vis-info-box">
         
     </div>
@@ -13,6 +13,8 @@
         var alignment_data = {{ alignment_data|json }};
         var config = {{ params|json }};
         var canvas = $('canvas')[0];
+        var ALIGNMENT_SHOW_INTERNAL_NOTES = {{ALIGNMENT_SHOW_INTERNAL_NOTES|json}};
+        var ALIGNMENT_FEATURE_LABELS = {{ALIGNMENT_FEATURE_LABELS|json}};
         
         update_bars_2_view(canvas, alignment_data, config);
         
@@ -349,8 +351,12 @@
                             }
                             if (config_fields.note && para_ms.note) {
                                 $.each(para_ms.note, function(note_idx, note) {
-                                    info += '<br/>';
-                                    info += '<b>Note</b>: ' + note.t;
+                                    if (ALIGNMENT_SHOW_INTERNAL_NOTES || note.feat) {
+                                        var note_type = 'internal';
+                                        if (note.feat) note_type = ALIGNMENT_FEATURE_LABELS[note.feat];
+                                        info += '<br/>';
+                                        info += '<b>Note ('+note_type+')</b>: ' + note.t;
+                                    }
                                 });
                             }
                         } else {

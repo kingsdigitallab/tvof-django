@@ -88,7 +88,11 @@ class Alignment(object):
         context = {
             'config': config,
             'params': config.get_dict(),
-            'alignment_data': alignment_data
+            'alignment_data': alignment_data,
+            'ALIGNMENT_SHOW_INTERNAL_NOTES':
+                settings.ALIGNMENT_SHOW_INTERNAL_NOTES,
+            'ALIGNMENT_FEATURE_LABELS':
+                settings.ALIGNMENT_FEATURE_LABELS,
         }
 
         selected_view = config.get('view', True)
@@ -170,7 +174,7 @@ class Alignment(object):
             raise Exception('Could not fetch alignment XML from Kiln')
 
         # extract data from XML
-        ret = self.get_dict_from_alignemnt_xml(res)
+        ret = self.get_dict_from_alignment_xml(res)
 
         # save in cache
         cache.set('alignment_data', ret)
@@ -267,7 +271,7 @@ class Alignment(object):
 
         return ret
 
-    def get_dict_from_alignemnt_xml(self, xml_string):
+    def get_dict_from_alignment_xml(self, xml_string):
         '''
         Convert the XML alignment file into a python dictionary.
 

@@ -463,4 +463,15 @@ TV_NOT_FOUND_ERRORS = [
 ]
 
 # tells which MSS can be linked from the visualisation to the Text Editor
+# Override the value in local.py
 ALIGNMENT_LINKABLE_MSS = ['fr20125', 'royal20d1']
+
+# Override the value in local.py
+ALIGNMENT_SHOW_INTERNAL_NOTES = True
+
+#
+ALIGNMENT_FEATURE_LABELS = {
+    'loc': 'location',
+    'var': 'variation',
+    'rub': 'rubric',
+}

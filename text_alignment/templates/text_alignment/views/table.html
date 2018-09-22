@@ -54,12 +54,17 @@
                     <label>Variation:</label> {{ var.t }}
                   {% endfor %}
                 {% endif %}
-                {% if fields_note %}
-                  {% for note in para_ms.note %}
-                    <br/>
-                    <label>Note:</label> {{ note.t }}
-                  {% endfor %}
+                
+                {% if fields_note and para_ms.note %}
+                    {% for note in para_ms.note %}
+                        {% if ALIGNMENT_SHOW_INTERNAL_NOTES or note.feat %}
+                            <br/>
+                            <label>Note ({% if note.feat %}{{ ALIGNMENT_FEATURE_LABELS|get_item:note.feat }}{% else %}internal{% endif %}):</label>
+                            {{ note.t }}
+                        {% endif %}
+                    {% endfor %}
                 {% endif %}
+                
               </td>
             {% endwith %}
           {% endif %}
