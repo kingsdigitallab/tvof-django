@@ -334,6 +334,12 @@ ul.sticky {
     .tei-l {
         background-color: #ebe6ff;
     }
+    .text-conventions {
+        .tei-l {
+            background-color: #d6ccff;
+        }
+    }
+
 
     // Text viewer - TEI
 
@@ -522,7 +528,7 @@ ul.sticky {
         }
     }
 
-    .tv-viewer-pane {
+    .tv-viewer-pane, .text-conventions {
         .tei-note.tei-type-note {
             @include tooltip-and-icon('\f075');
             
@@ -565,6 +571,12 @@ ul.sticky {
             
             .note-text {
                 display: none;
+            }
+        }
+    
+        .notation {
+            > *:hover {
+                background: inherit;
             }
         }
     }

@@ -179,7 +179,7 @@ a vue directive:
                             <ul class="text-left">
                                 <li>
                                     <h3>Notations</h3>
-                                    <div v-html="conventions">
+                                    <div v-html="conventions" v-bind:class="'tv-view-' + view.slug">
                                     </div>
                                 </li>
                             </ul>
@@ -386,6 +386,9 @@ window.set_relative_view_bounds("19,26,42,41")
             
             function attach_tooltip(anchors, tooltip_fields_fct) {
                 $('body').on('mouseenter mouseleave', anchors, function(ev) {
+                    if ($(this).parents('.text-conventions').size() > 0) {
+                        return false;
+                    }
                     destroy_tooltip();
                     if (ev.type == 'mouseenter') {
                         var tootlip_fields = tooltip_fields_fct($(this));
