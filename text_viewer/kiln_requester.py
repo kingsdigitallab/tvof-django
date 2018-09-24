@@ -17,7 +17,7 @@ class CachedRequesterKiln(object):
     * if the response is in memory, returns it
     * if not, read from disk and get response length from remote server
     * if lengths are different, stream the whole response to disk
-    * convert response to unicode and it in memory
+    * convert response to unicode and load it in memory
     * return the response
 
     If the connection to Kiln fails we fall back to the disk cache.

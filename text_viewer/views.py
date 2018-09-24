@@ -1,5 +1,6 @@
 from django.shortcuts import render
 from text_viewer_tvof import TextViewerAPITvof
+from django.urls import reverse
 
 
 def view_text_viewer(request, path):
@@ -19,7 +20,7 @@ def view_text_viewer_api(request, path):
 
 def view_text_print(request, path):
     viewer = TextViewerAPITvof()
-    viewer.process_request(request, path)
+    viewer.process_request(request, path, is_print=True)
     res = viewer.get_response()
 
     title = path.split('/')
@@ -28,6 +29,7 @@ def view_text_print(request, path):
     context = {
         'res': res,
         'title': title,
+        'link_text_viewer': reverse('text_viewer', args=['']) + '?p1=' + path,
     }
     # print(context)
     return render(request, 'text_viewer/text_print.html', context)

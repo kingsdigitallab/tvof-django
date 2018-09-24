@@ -130,7 +130,25 @@ class TextViewerAPIXML(TextViewerAPI):
         return ret
 
     def compress_html(self, html_str):
-        return re.sub(ur'(\s)+', ur'\1', html_str)
+        # TODO: should be applied before the content is cached
+        # otherwise we redo it each time a chunk is requested
+
+        # remove empty class attributes
+        ret = re.sub(ur'''class\s*=\s*("\s*"|'\s*')''', ur'', html_str)
+        # compress multiple spaces
+        ret = re.sub(ur'(\s)+', ur'\1', ret)
+
+        # remove empty spans (invalid HTML)
+        empty_spans = re.findall(ur'<span[^>]*/>', ret)
+        if (empty_spans):
+            print('WARNING: empty <span/>')
+            print(empty_spans)
+            ret = re.sub(ur'<span[^>]*/>', '', ret)
+
+        # remove spans without attributes (saves a lot of space!)
+        ret = re.sub(ur'(?musi)<span>([^<]*)</span>', r'\1', ret)
+
+        return ret
 
     def request_chunk(self, address_parts=None, synced_with=None):
         '''
@@ -141,7 +159,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
         TODO: generalise this. But very difficult as the information for
         address resolution can require the document and vice versa depending on
-        the document backend and the document format. Both of wich can vary
+        the document backend and the document format. Both of which can vary
         from one project to another.
         '''
 
@@ -176,6 +194,9 @@ class TextViewerAPIXML(TextViewerAPI):
             xpaths = [xpaths]
 
         chunks = []
+        notes_info = {
+            'notes': []
+        }
         address = ''
         for xpath in xpaths:
             chunk_list = xml.findall(xpath)
@@ -192,16 +213,15 @@ class TextViewerAPIXML(TextViewerAPI):
 
             # build response from chunk and address
             if chunk is None:
-                self.add_error(
-                    'notfound', 'Chunk not found: {}'.format(
-                        self.get_requested_address()),
-                    'XPATH = {}'.format(xpath)
-                )
+                self.set_chunk_not_found_error(xpath)
             else:
                 location_from_chunk = location_type.get(
                     'location_from_chunk')
                 if location_from_chunk:
                     location = location_from_chunk(chunk)
+
+                if self.is_print:
+                    self.extract_notes_from_chunk(chunk, notes_info)
 
                 chunks.append(ET.tostring(chunk))
 
@@ -209,30 +229,39 @@ class TextViewerAPIXML(TextViewerAPI):
                                     location_type_slug, location])
 
         if not xpaths:
-            self.add_error(
-                'notfound', 'Text not found ({})'.format(
-                    self.get_requested_address()),
-                ''
-            )
+            self.set_chunk_not_found_error()
 
         if chunks:
-            # TVOF 146: move all the reveals to the end otherwise they disrupt
-            # the html rendering, e.g. <div> within <span>
-            reveals = []
+            chunk = '\n'.join(chunks)
 
-            def extract_reveal(match):
-                reveals.append(match.group(0))
-            chunk = re.sub(ur'(?musi)<div[^<>]+reveal.*?</button>\s*</div>',
-                           extract_reveal, u'\n'.join(chunks))
+            if notes_info['notes']:
+                chunk = '{}<div class="notes-all"><h3>Notes</h3>{}</div>'.\
+                    format(
+                        chunk,
+                        '\n'.join(notes_info['notes'])
+                    )
+
+            chunk = self.compress_html(chunk)
+
+            classes = ['tv-view-{}'.format(view)]
+            if self.is_print:
+                classes.append('tv-viewer-proofreader')
+            else:
+                classes.append('tv-viewer-pane')
+
             self.response = {
-                'chunk': ur'<div>{}<div class="reveals">{}</div></div>'.
-                format(chunk, u'\n'.join(reveals)),
+                'chunk':
+                    ur'<div class="{}">{}</div>'.
+                    format(' '.join(classes), chunk),
                 'address': address,
                 'generated': self.generated_date
             }
             ret = True
 
         return ret
+
+    def extract_notes_from_chunk(self, chunk, notes_info):
+        pass
 
     def get_notational_conventions(self, xml, view_slug):
         conventions = ''
@@ -248,6 +277,9 @@ class TextViewerAPIXML(TextViewerAPI):
         response = self.request_backend(url)
 
         # Create a new XML tree from the response.
+        # TODO: this is very slow, we should move that to kiln_requester
+        # and cache it there. The catch though is that callers modify
+        # the tree... so we'd need to clone it.
         root = ET.fromstring(response)
 
         ret = root.find('.//text[@name="{}"]'.format(kilnid))

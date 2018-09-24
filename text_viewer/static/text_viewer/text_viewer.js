@@ -42,7 +42,7 @@
     
     Viewer.prototype.onQueryStringUpdated = function() {
         this.createPanesFromQueryString();
-    }
+    };
     
     Viewer.prototype.onPaneAddressChanged = function(pane) {
         for (var k in this.panes) {
@@ -52,12 +52,12 @@
                 }
             }
         }
-    }
+    };
     
     Viewer.prototype.updateQueryString = function() {
         // update the title and the browsing history
         var title = '';
-        var query_string = ''
+        var query_string = '';
             
         for (var k in this.panes) {
             if (this.panes.hasOwnProperty(k)) {
@@ -70,7 +70,7 @@
         }
         
         change_broswer_query_string(query_string, title);
-    }
+    };
 
     Viewer.prototype.createPanesFromQueryString = function() {
         var self = this;
@@ -79,8 +79,8 @@
         var qs = get_query_string();
         
         if ($.isEmptyObject(qs)) {
-            qs = {'p1': 'default/default/default/default'}
-        } 
+            qs = {'p1': 'default/default/default/default'};
+        }
         
         $.each(qs, function(pane_slug, value) {
             if (pane_slug && typeof self.panes !== 'undefined') {
@@ -97,7 +97,7 @@
                 break;
             }
         }
-    }
+    };
     
     Viewer.prototype.createPaneFromAddress = function(address, pane_slug) {
         var self = this;
@@ -109,7 +109,7 @@
         if (self.panes[pane_slug]) {
             self.panes[pane_slug].requestAddress(address);
         } else {
-            var pane = self.panes[pane_slug] = new Pane(self, pane_slug, {'query_string': address})
+            var pane = self.panes[pane_slug] = new Pane(self, pane_slug, {'query_string': address});
             if (self.options.on_create_pane) {
                 self.options.on_create_pane(pane);
             }
@@ -118,7 +118,7 @@
     };
     
     Viewer.prototype.getSyncedWithAddress = function(pane) {
-        ret = '';
+        var ret = '';
         
         for (var k in this.panes) {
             if (this.panes.hasOwnProperty(k)) {
@@ -132,7 +132,7 @@
         }
         
         return ret;
-    }
+    };
     
     Viewer.prototype.closePane = function(apane) {
         for (var i = 0; i < this.uimodel.panes.length; i++) {
@@ -143,29 +143,31 @@
                 break;
             }
         }
-    }
+    };
 
     Viewer.prototype.getPane = function(slug) {
         return this.panes[slug];
-    }
+    };
     
     Viewer.prototype.getPaneCount = function() {
         return this.uimodel.panes.length;
-    }
+    };
 
     // Returns true if <pane> can be synced.
     // That is, if there is at least one other non-synced pane in the text viewer 
     Viewer.prototype.canPaneBeSynced = function(pane) {
         var cnt = 0;
 
-        for (var k in this.panes) {
-            if (this.panes.hasOwnProperty(k) && !this.panes[k].isSynced() && (this.panes[k] !== pane)) {
+        var first_pane = null;
+        $.each(this.panes, function(idx, apane) {
+            first_pane = first_pane || apane;
+            if (!apane.isSynced() && apane != pane) {
                 cnt += 1;
             }
-        }
+        });
         
-        return (cnt > 0);
-    }
+        return ((first_pane != pane) && (cnt > 0));
+    };
 
     // Request the list of documents from the API and pass it to the callback
     Viewer.prototype.copyDocumentList = function(callback) {
@@ -185,7 +187,7 @@
                 });
             }
         }
-    }
+    };
 
     
     /*****************************************************
@@ -240,22 +242,22 @@
     
     Pane.prototype.canClosePane = function() {
         return this.panes.getPaneCount() > 1;
-    }
+    };
     
     Pane.prototype.closePane = function() {
         this.panes.closePane(this);
-    }
+    };
     
     Pane.prototype.isSynced = function() {
         //return (~this.address_requested.indexOf('synced'));
         //return (this.view.location_type.slug == 'synced');
         return this.uimodel.is_synced;
-    }
+    };
 
     Pane.prototype.canBeSynced = function(part_name, value) {
         // make sure we don't end up with all panes synced
         return this.panes.canPaneBeSynced(this);
-    }
+    };
     
     Pane.prototype.syncWith = function(address) {
         if (this.isSynced()) {
@@ -263,14 +265,14 @@
             //this.changeAddressPart('location_type', 'synced');
             this.requestAddress(this.address);
         }
-    }
+    };
     
     Pane.prototype.openViewInNewPane = function(view_slug) {
         var parts = this.getAddressParts();
-        parts['view'] = view_slug;
+        parts.view = view_slug;
         var address = this.getAddressFromParts(parts);
         this.panes.createPaneFromAddress(address);
-    }
+    };
     
     Pane.prototype.getTitleFromAddress = function() {
         var ret = '';
@@ -279,43 +281,43 @@
         ret = parts.document + ', ' + parts.location + ' (' + parts.view + ')';
         
         return ret;
-    }
+    };
 
     Pane.prototype.getAddressParts = function(address) {
         address = address || this.address || '';
         address = address.replace(/\/?(.*)\/?/, '$1');
         var parts = address.split('/');
-        ret = {
+        var ret = {
             'document': parts.shift() || 'default',
             'view': parts.shift() || 'default',
             'location_type': parts.shift() || 'default',
             'location': parts.shift() || 'default',
-        }
+        };
         return ret;
-    }
+    };
 
     Pane.prototype.getAddressFromParts = function(parts) {
         var ret = parts.document + '/' + parts.view + '/' + parts.location_type + '/' + parts.location;
         return ret;
-    }
+    };
     
     Pane.prototype.getUIAddress = function() {
         return [this.uimodel.document.slug, this.uimodel.view.slug, this.uimodel.location_type.slug, this.uimodel.location.slug].join('/');
-    }
+    };
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
         //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
         var parts = this.getAddressParts(this.address);
         parts[part_name] = value;
         return this.requestAddress(this.getAddressFromParts(parts));
-    }
+    };
     
     Pane.prototype.changeAddressParts = function(aparts) {
         //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
         var parts = this.getAddressParts(this.address);
         $.extend(parts, aparts);
         return this.requestAddress(this.getAddressFromParts(parts));
-    }
+    };
 
     Pane.prototype.requestAddress = function(address) {
         // api call
@@ -339,7 +341,7 @@
             // TVOF 133: force location_type = master.location_type
             // because at the moment the UI hides the location_type dropdown.
             // So if we starts with Whole we are stuck with it.
-            parts['location_type'] = this.getAddressParts(data['sw'])['location_type'];
+            parts.location_type = this.getAddressParts(data.sw).location_type;
         }
 
         // 2 get initial chunk
@@ -355,22 +357,23 @@
         
         $('#text-viewer-glass').stop().css({'opacity': 0}).show().animate({'opacity': 0.5}, 1000);
         
-        req = call_api(url, on_success, on_complete, data, false, [this.requested_chunk_hash]);
+        var req = call_api(url, on_success, on_complete, data, false, [this.requested_chunk_hash]);
         if (this.requested_chunk_hash === req.request_hash) {
             this.onReceivedAddress(address);
         }
         this.requested_chunk_hash = req.request_hash;
-    }
+    };
 
     Pane.prototype.onRequestSuccessful = function(response, textStatus, jqXHR) {
         if (!response.errors) {
             this.uimodel.chunk = response.chunk;
             this.onReceivedAddress(response.address);
+            this.uimodel.errors = [];
         } else {
             this.uimodel.errors = response.errors;
             this.uimodel.chunk = response.errors[0].message; 
         }
-    }
+    };
 
     Pane.prototype.getPartMeta = function(dict) {
         var ret = {
@@ -402,7 +405,7 @@
                 });
             }
         }
-    }
+    };
     
     // set all the views, location types and locations for this document
     // make a request if necessary and set up temporary values
@@ -446,12 +449,12 @@
         
         // TODO: why is it needed here? even if branch not executed?
         self.renderAddresses();
-    }
+    };
     
     Pane.prototype.setAddresses = function(addresses) {
         this.addresses = addresses;
         $(document).trigger(this.uimodel.pane_slug+'.'+'addresses.updated', addresses);
-    }
+    };
 
     // Update the address of the loaded chunk in self.view
     // Based on self.address and self.addresses
@@ -510,7 +513,7 @@
                 });
             }
         });
-    }
+    };
 
     // update the chunk address in self.view
     Pane.prototype.onReceivedAddress = function(address) {
@@ -530,13 +533,13 @@
         if (has_address_changed && !this.isSynced()) {
             this.panes.onPaneAddressChanged(this);
         }
-    }
+    };
 
     Pane.prototype.onRequestComplete = function(textStatus, jqXHR) {
         //$('#text-viewer-glass').hide();
         $('#text-viewer-glass').stop().animate({'opacity': 0.0}, 100).hide();
         // TODO
-    }
+    };
 
     /*****************************************************
     *     Helpers 
@@ -577,16 +580,16 @@
             delete requestData.method;
         }
         
-        var request_hash = JSON.stringify({url: getData.url, data: getData.data})
+        var request_hash = JSON.stringify({url: getData.url, data: getData.data});
         
         var ret = {};
         if (!inhibiters || inhibiters.indexOf(request_hash) == -1) {
-            var ret = $.ajax(getData);
+            ret = $.ajax(getData);
         }
         ret.request_hash = request_hash;
 
         return ret;
-    };
+    }
     
     /*
      * Change the browser URL, push it to the history
@@ -620,7 +623,7 @@
         $template.removeAttr('id');
         var template = $template.prop('outerHTML');
         
-        Vue.component('text-pane', {
+        window.Vue.component('text-pane', {
             template: template,
             // this.apane: the attribute when creating/updating the html element
             // this.pane: the initial pane when creating the html element
@@ -669,20 +672,15 @@
                             link = '/k/bibliography/#' + link;
                             $(this).attr('href', link);
                         });
-                        // we remove all reveals initialised by foundation
-                        // to avoid endless accumulation and duplicates
-                        $('.reveal[data-panel="'+this.pane_slug+'"]').remove();
-                        // we init Foundation on all the new reveals
-                        $(this.$el).find('.reveal').each(function() {
-                            var $reveal = $(this);
-                            $reveal.attr('data-panel', self.pane_slug);
-                            new Foundation.Reveal($reveal);
-                        });
+                                                
                         // recalc stickies...
                         var $stickies = $('.sticky:visible');
                         if ($stickies.length > 0) {
                             $stickies.foundation('_calc', true);
                         }
+                        
+                        // scroll to top
+                        $(this.$el).find('.text-chunk').scrollTop(0);
                     });
                 },
                 'is_synced': function(val) {
@@ -720,13 +718,28 @@
                 getPrintUrl: function() {
                     return 'print/' + this.pane.address;
                 },
-                filterLocations: function(location_type) {
+                filterLocations: function(location_type, event) {
                     var filter = this.location_type_filters[location_type.slug] || '';
                     filter = filter.trim().toLowerCase();
                     location_type.locations.map(function(location) {
-                        Vue.set(location, 'hidden', location.label_long.toLowerCase().indexOf(filter) === -1);
+                        window.Vue.set(location, 'hidden', location.label_long.toLowerCase().indexOf(filter) === -1);
                     });
                     
+                    if (event) {
+                        var target = event.srcElement || event.originalTarget;
+                        var key = event.key || event.keyCode;
+                        var is_enter = (key === 'Enter' || key === 13);
+                        if (is_enter || key === 'ArrowDown' || key === 40) {
+                            // focus on the first item in the filtered list
+                            var $first_option = $(target).parents('.is-dropdown-submenu-parent').find('.submenu li').not('.hidden').first().find('a');
+                            if ($first_option.length) {
+                                $first_option.focus();
+                                if (is_enter) {
+                                    $first_option[0].click();
+                                }
+                            }
+                        }
+                    }
                 },
                 getFAIcon: function(location_type) {
                     var ltypes_icon = {
@@ -784,6 +797,14 @@
                         });
                     }
                     
+                    var errors = this.pane.uimodel.errors;
+                    if (errors && errors.length) {
+                        ret += ' tv-error';
+                        $.each(errors, function(idx, error) {
+                            ret += ' tv-error-' + error.code;
+                        });
+                    }
+                                        
                     return ret;
                 },
                 canClosePane: function() {
@@ -793,7 +814,7 @@
                     return this.pane.closePane();
                 },
                 areLocationsHidden: function() {
-                    return (this.locations.length < 2 || this.is_synced) 
+                    return (this.locations.length < 2 || this.is_synced); 
                 },
             },
         });
@@ -806,9 +827,9 @@
     // TODO: move this out
 
     $(function() {
-        Vue.directive('f-sticky', {
+        window.Vue.directive('f-sticky', {
             bind: function(el) {
-                Vue.nextTick(function () {
+                window.Vue.nextTick(function () {
                     // http://foundation.zurb.com/sites/docs/sticky.html
                     var $el = $(el);
                     $el.attr('data-sticky', '');
@@ -817,8 +838,8 @@
                     var $container = $el.parent().first();
                     $container.attr('data-sticky-container', '');
                     
-                    new Foundation.Sticky($el);
-                })
+                    new window.Foundation.Sticky($el);
+                });
             },
             unbind: function(el) {
                 // TODO: check that it actually works...
@@ -828,7 +849,7 @@
         });
         
         function bindZFDropdownMenu($el) {
-            Vue.nextTick(function () {
+            window.Vue.nextTick(function () {
                 var $opened_element = $el.find('.js-dropdown-active');
                 //var $focused_filter = $el.find('.list-filter input:focus');
 
@@ -852,21 +873,22 @@
                 };
                 
                 // let Foundation manage the bahaviour and appearance of the DD
-                new Foundation.DropdownMenu($el, options);
+                new window.Foundation.DropdownMenu($el, options);
 
                 // Leave DD open if it was already open (e.g. reinitialised)
                 //$opened_element.addClass('js-dropdown-active');
                 $opened_element.trigger('mouseover');
                 // restore focus on filter input
                 //$focused_filter.focus();
-            })
-        };
+            });
+        }
+        
         function unbindZFDropdownMenu($el) {
             //console.log('UNBIND');
             //console.log($el);
             $el.off('mouseleave.text_viewer');
             $el.foundation('destroy');
-        };
+        }
 
         // When a scrollable dropdown opens, we scroll to the first active item.
         // If no active element, we scroll to top (e.g. autocomplete).
@@ -883,7 +905,7 @@
             }
         });
         
-        Vue.directive('f-dropdown', {
+        window.Vue.directive('f-dropdown', {
             componentUpdated: function(el) {
                 // Foundation won't behave well with controls modified by Vue.js
                 // E.g. vue adds <li> item, dropdown won't close when clicking them
@@ -896,7 +918,7 @@
                 // Without this Vue.js loses track of the DOM because of 
                 // Foundation's excessive manipulations.
                 // TODO: implement the dropdown with Vue.js
-                if ($el.find('li:not([role])').length || ($el.find('.is-dropdown-submenu-parent').length == 0)) {
+                if ($el.find('li:not([role])').length || ($el.find('.is-dropdown-submenu-parent').length === 0)) {
                 //if (1) {
                     //console.log('componentUpdated');
                     //console.log($el.find('a:first').text());
@@ -918,12 +940,12 @@
         };
         var viewer = window.text_viewer = new Viewer(options);
         
-        var layout = new Vue({
+        var layout = new window.Vue({
             el: '#text-viewer',
             data: viewer.uimodel,
             methods: {
                 getPane: function(slug) {
-                    return viewer.getPane(slug)
+                    return viewer.getPane(slug);
                 }
             }
         });

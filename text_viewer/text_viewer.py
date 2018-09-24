@@ -7,6 +7,11 @@ TODO: instead of inheritence we should use a strategy pattern for:
 '''
 
 
+def lt(msg=''):
+    from datetime import datetime
+    print(datetime.now(), msg)
+
+
 class TextViewerAPI(object):
     '''
     Text Viewer Web API Skeleton
@@ -31,12 +36,20 @@ class TextViewerAPI(object):
     def clear_errors(self):
         self.errors = []
 
-    def process_request(self, request, path):
+    def process_request(self, request, path, is_print=False):
+        '''
+        is_print = True will remove interactive features from output
+        and replace them with explicit text.
+        E.g. notes will be at the end of the text rather than clickable
+        icons.
+        '''
 
         self.response = {}
         self.errors = []
 
+        self.is_print = is_print
         self.request = request
+        self.synced_with = None
         self.requested_address = path.strip('/')
         self.client = None
         if request:
@@ -50,15 +63,15 @@ class TextViewerAPI(object):
         elif level == 'document':
             self.request_document(parts['document'])
         elif level == 'location':
-            synced_with = None
             best_match = False
             if request:
-                synced_with = request.GET.get('sw', None)
+                self.synced_with = request.GET.get('sw', None)
                 best_match = request.GET.get('bm', False)
-            if synced_with:
-                synced_with = self.get_address_parts(synced_with)
+            if self.synced_with:
+                self.synced_with = self.get_address_parts(self.synced_with)
             self.request_chunk_best_match(
-                parts, synced_with=synced_with, best_match=best_match)
+                parts, synced_with=self.synced_with, best_match=best_match
+            )
         else:
             self.add_error('invalid_call', 'Invalid API call')
 
@@ -68,6 +81,7 @@ class TextViewerAPI(object):
         # error
         # Otherwise we try our best to return something close to the requested
         # address.
+
         parts = parts.copy()
         ret = False
         while True:
@@ -92,6 +106,16 @@ class TextViewerAPI(object):
         return self.requested_address
 
     def get_address_parts(self, address=None):
+        '''Returns the requested address as a dictionary
+        {
+            'document': ...
+            'view': ...
+            'location_type': ...
+            'location': ...
+            'level': 'document|view|location_type|location'
+        }
+        '''
+
         parts = (address or self.requested_address).split('/')[::-1]
         ret = {'level': 'root'}
         for level in self.part_levels:
@@ -205,11 +229,13 @@ def get_unicode_from_xml(xmltree, encoding='utf-8', text_only=False,
 
 
 def remove_xml_elements(xml, xpath):
+    # TODO: !! will cause loss of tails!
     ret = 0
     '''Remove all the elements matching xpath (and all their content)'''
     items = xml.findall(xpath)
     parents = xml.findall(xpath + '/..')
     for i, item in enumerate(items):
         ret += 1
+        assert not (item.tail or '').strip(), item.tail
         parents[i].remove(item)
     return ret

@@ -1,8 +1,8 @@
 {% load staticfiles compress require cms_tags wagtailcore_tags %}
 
-<div id="alignemnt-view-bars">
-    <div id="vis-info-box" style="position: fixed; display: block; background: white; border: 1px solid green; color: #101010;">
-        TEST
+<div id="alignment-view-bars" class="viz-bars">
+    <div id="vis-info-box">
+        
     </div>
 
     <canvas class="canvas-bars" height="1000" width="1000">
@@ -13,6 +13,8 @@
         var alignment_data = {{ alignment_data|json }};
         var config = {{ params|json }};
         var canvas = $('canvas')[0];
+        var ALIGNMENT_SHOW_INTERNAL_NOTES = {{ALIGNMENT_SHOW_INTERNAL_NOTES|json}};
+        var ALIGNMENT_FEATURE_LABELS = {{ALIGNMENT_FEATURE_LABELS|json}};
         
         update_bars_2_view(canvas, alignment_data, config);
         
@@ -52,21 +54,23 @@
             
             // adapt bar widths
             var labels_max_width = 100;
-            var bw = 2;
 
             var cah = $(canvas).height();
             var caw = $(canvas).width();
             
+            var bw_min = 2;
             //     chose a bar width that tries to fit into screen width
             //     then round down to avoid aliasing
-            bw = (caw - labels_max_width) / align.paras.length;
-            var is_compressed = (bw < 1);
+            var bw = (caw - labels_max_width) / align.paras.length;
+            // is_compressed = true if the bar width are smaller than a pixel
+            // in that case, give up compression and stretch beyond viewport
+            var is_compressed = (bw < bw_min);
             bw = Math.floor(bw);
             if (is_compressed) {
-                bw = 1;
+                bw = bw_min;
                 // we stretch the canvas horizontally beyond the screen
                 // need to scroll
-                caw = labels_max_width + align.paras.length;
+                caw = labels_max_width + align.paras.length * bw;
                 // adapt width
                 $(canvas).width(caw);
                 $('body').width(caw + 2);
@@ -80,21 +84,37 @@
             var labels_padding = 2;
             var font_size = 12;
             var font = '' + font_size + 'px Arial';
+            
+            function get_viz_css_var(var_name) {
+                var html_styles = getComputedStyle($('html')[0]);
+                return html_styles.getPropertyValue('--viz-'+var_name);                
+            }
+
             var colors = {
                 'text': 'black',
                 'separator': 'black',
-                'even': '#f4f4f4',
-                'odd': '#e8e8e8',
-                'absent.2': '#202020', // location = "" - NO LONGER USED 
-                'absent.3': '#804040', // no location element in the para
-                'absent.1': '#707070', // location = "absent"
-                'nodata': '#808080',  // no para element for that MS - frequent 
-                'verse': 'lightblue',
-                'rubric.undefined': '#ff8080',
-                'rubric.add': '#ff6060',
-                'rubric.move': '#ff4040',
+                'even': get_viz_css_var('absent-0'),
+                'odd': get_viz_css_var('absent-0-alt'),
+                'absent.2': get_viz_css_var('absent-2'), 
+                'absent.3': get_viz_css_var('absent-3'),
+                'absent.1': get_viz_css_var('absent-1'),
+                'nodata': get_viz_css_var('nopara'), 
+                'verse': get_viz_css_var('para-ms-verse'),
+                // TODO: not accurate
+                'var': get_viz_css_var('variation-location'),
+                'var.ml': get_viz_css_var('variation'),
+                'var.pml': get_viz_css_var('variation-location-rubric'),
+                'rubric.undefined': get_viz_css_var('stack-rubric-undefined'),
+                'rubric.add': get_viz_css_var('stack-rubric-add'),
+                'rubric.move': get_viz_css_var('stack-rubric-move'),
             }
-            var band_height = (bh / 3);
+
+            // we split the bar vertically into bands to show variations of
+            // features such as rubrication.
+            // At the moment only used for rubrics, so maximise it 1.5
+            // If we want to show more, we d need to reduce to 2 or lower
+            var features_per_bar = 1.5;
+            var band_height = (bh / features_per_bar);
             if (band_height < 1) {
                 band_height = 1;
             }
@@ -106,7 +126,7 @@
             $.each(ms_names, function(idx, name) {
                 ctx.font = font;
                 ctx.fillStyle = colors.text;
-                ctx.fillText(name, labels_padding, head_height + (idx + 1) * bh - labels_padding);
+                ctx.fillText(name, labels_padding, head_height + (idx + 0.5) * bh - labels_padding);
                 idx_from_ms_name[name] = idx;
             });
             
@@ -137,6 +157,17 @@
                         color = colors['absent.'+para_ms.absent];
                     }
                     
+                    if (para_ms.variation) {
+                        color = colors['var'];
+                        var variation = para_ms.variation.toLowerCase();
+                        if (variation.indexOf('ml') > -1) {
+                            color = colors['var.ml'];
+                            if (variation.indexOf('pml') > -1) {
+                                color = colors['var.pml'];
+                            }
+                        }
+                    }
+                    
                     if (color) {
                         ctx.fillStyle = color;
                         ctx.fillRect(labels_max_width + idx * bw, ms_top, bw, bh);
@@ -144,9 +175,14 @@
                         ctx.clearRect(labels_max_width + idx * bw, ms_top, bw, bh);
                     }
                     
-                    // rubric
+                    // RUBRIC
+                    // We have one vertical band of a bar for showing the rubrics.
+                    // we split that band into 3 sub-bands for one rubric and 
+                    // up to 2 additional rubrics.
                     if (config_fields.rubric && para_ms.rubric && para_ms.rubric.length > 0) {
-                        subband_height = band_height * 1.0 / para_ms.rubric.length;
+                        var subband_count = 3;
+                        //subband_height = band_height * 1.0 / para_ms.rubric.length;
+                        subband_height = band_height * 1.0 / subband_count;
                         for (var j = 0; j < para_ms.rubric.length; j++) {
                             var rubric = para_ms.rubric[j];
                             ctx.fillStyle = colors['rubric.' + rubric.diff];
@@ -195,20 +231,57 @@
             ctx.fillStyle = is_compressed ? 'red' : 'green';
             var info = 'Res:' + (caw - labels_max_width) + ' x ' + cah;
             info += ' | Paras: ' + align.paras.length;
-            ctx.fillText(info, labels_padding, cah - font_size);
+            //ctx.fillText(info, labels_padding, cah - font_size);
+
+            // EVENTS
             
             // reset hover event
+            $(canvas).off('click');
+            $(canvas).on('click', function(ev) {
+                update_info_box(ev, 1);
+            });
+
+            $(canvas).off('mouseleave');
+            $(canvas).on('mouseleave', function() {
+               $('#vis-info-box').hide(); 
+            });
             $(canvas).off('mousemove');
             $(canvas).on('mousemove', update_info_box);
             $('#vis-info-box').off('mouseenter mousemove');
             $('#vis-info-box').on('mouseenter mousemove', update_info_box);
-            function update_info_box(ev) {
+            
+            function get_info_box_position(mouse_pos) {
+                // returns position for the info box, closest to mouse_pos.
+                // but without truncating the box.
+                // so it might align it left or right accordingly.
+                // default pos = top right corner where the mouse is
+                // pos are relative to viewport, not body/document
+                var min_width = 200;
+
+                var window_width = $(window).width();
+                
+                var ret = {
+                    left: mouse_pos[0] + 5 - $(document).scrollLeft(),
+                    top: mouse_pos[1] + 5 - $(document).scrollTop(),
+                    right: 'auto'
+                }
+                
+                // align right                
+                if ((ret.left +  min_width) > window_width) {
+                    ret.right = window_width - ret.left + 10;
+                    ret.left = 'auto';
+                }
+                
+                return ret;
+            }
+            
+            function update_info_box(ev, clicked) {
                 // convert mouse position into indices [para_idx, ms_idx]
                 var mouse_pos = [ev.pageX, ev.pageY];
-                $('#vis-info-box').css({
-                    left: mouse_pos[0] + 5 - $(document).scrollLeft(),
-                    top: mouse_pos[1] + 5 - $(document).scrollTop()
-                });
+                
+                var pos = get_info_box_position(mouse_pos);
+                
+                $('#vis-info-box').css(pos);
                 var data_pos = [
                     Math.floor((mouse_pos[0] - canvas_left - labels_max_width) / bw),
                     Math.floor((mouse_pos[1] - canvas_top - head_height) / bh), 
@@ -221,12 +294,38 @@
                     info += para.id;
                     if (data_pos[1] > -1 && data_pos[1] < ms_names.length) {
                         var ms_name = ms_names[data_pos[1]];
+                        para_ms = para.mss[ms_name];
+                        
+                        if (para_ms && para_ms.corresp) {
+                            info += ', ' + para_ms.corresp;
+                        }
+                        
                         info += '<br/>';
                         info += ' ' + ms_name;
-                        para_ms = para.mss[ms_name];
                         info += '<br/>';
+                        
                         if (para_ms) {
-                            info += '<b>Location</b>: ' + (para_ms.location === null ? 'Unspecified' : para_ms.location);
+                            if (clicked) {
+                                // link to text viewer
+                                // we need to pass the ms name
+                                // and the para number
+                                // For Royal, the para number = para_ms.corresp
+                                // for all other MSs, it is para.id
+                                var ms_para_number = parseInt((para_ms.corresp || para.id).split('_')[1]);
+                                var href = get_text_href(ms_name, ms_para_number);
+                                if (href) {
+                                    window.open(href, '_blank');
+                                }
+                            }
+                            
+                            if (typeof para_ms.location === 'undefined') {
+                                // GN: as requested by MT, 19/09/2018
+                                info += 'Absent paragraph';
+                            } else {
+                                info += '<b>Location</b>: ' + 
+                                    (para_ms.location === null ? 'Unspecified' : para_ms.location);
+                            }
+                            
                             if (config_fields.verse && para_ms.verse) {
                                 info += '<br/>';
                                 info += '<b>Verse</b>: ' + para_ms.verse;
@@ -234,12 +333,31 @@
                             if (config_fields.rubric && para_ms.rubric) {
                                 $.each(para_ms.rubric, function(i, rubric) {
                                     info += '<br/>';
-                                    info += '<b>Rubric</b>: ' + rubric.t;
+                                    info += '<b>'+(rubric.diff_label || 'Rubric');
+                                    info += '</b>: ';
+                                    if (rubric.dest_label) {
+                                        info += '<i>' + rubric.dest_label + '</i><br/>'
+                                    }
+                                    info += rubric.t;
+                                });
+                            }
+                            if (config_fields.variation && para_ms.vars) {
+                                $.each(para_ms.vars, function(note_idx, avar) {
+                                    if (avar.t) { 
+                                        info += '<br/>';
+                                        info += '<b>Variation</b>: ' + avar.t;
+                                    }
                                 });
                             }
                             if (config_fields.note && para_ms.note) {
-                                info += '<br/>';
-                                info += '<b>Note</b>: ' + para_ms.note;
+                                $.each(para_ms.note, function(note_idx, note) {
+                                    if (ALIGNMENT_SHOW_INTERNAL_NOTES || note.feat) {
+                                        var note_type = 'internal';
+                                        if (note.feat) note_type = ALIGNMENT_FEATURE_LABELS[note.feat];
+                                        info += '<br/>';
+                                        info += '<b>Note ('+note_type+')</b>: ' + note.t;
+                                    }
+                                });
                             }
                         } else {
                             info += '[No para]';

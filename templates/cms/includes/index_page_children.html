@@ -1,19 +1,21 @@
 {% load wagtailcore_tags cms_tags %}
 
-{% if section.get_descendants %}
-    {% if request.path == section.get_url %}
-      {% if title %}
-          <h3>{{ title }}</h3>
-      {% endif %}
-    {% else %}
-        <h3><a href="{% pageurl section %}">{% page_title section %}</a></h3>
+{% with section.get_children.live.in_menu.specific as children %}
+    {% if children %}
+        {% if request.path == section.get_url %}
+          {% if title %}
+              <h3>{{ title }}</h3>
+          {% endif %}
+        {% else %}
+            <h3><a href="{% pageurl section %}">{% page_title section %}</a></h3>
+        {% endif %}
+    
+        <ul class="menu vertical side-menu">
+            {% for page in children %}
+                <li {% if page|in_path:request %}class="active"{% endif %}>
+                    <a href="{% pageurl page %}">{% page_title page %}</a>
+                </li>
+            {% endfor %}
+        </ul>
     {% endif %}
-
-    <ul class="menu vertical side-menu">
-        {% for page in section.get_descendants %}
-            <li {% if page|in_path:request %}class="active"{% endif %}>
-                <a href="{% pageurl page %}">{% page_title page %}</a>
-            </li>
-        {% endfor %}
-    </ul>
-{% endif %}
+{% endwith %}

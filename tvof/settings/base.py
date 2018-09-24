@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 """
 Django settings for tvof project.
 
@@ -378,15 +379,6 @@ WAGTAIL_APPEND_SLASH = False
 # TVOF
 # -----------------------------------------------------------------------------
 
-TVOF_URL_TEXT = 'histoire-ancienne'
-# The relative web path to some dynamic pages (i.e. not served by wagtail)
-TVOF_WEBPATH_TO_KILN = {
-    '{}/edition2'.format(TVOF_URL_TEXT):
-        'texts/Fr20125/semi-diplomatic/',
-    '{}/bibliography'.format(TVOF_URL_TEXT):
-        'bibliography/',
-}
-
 #
 CMS_LANGUAGES = [
     {
@@ -432,3 +424,54 @@ ALIGNEMENT_MSS = []
 #         },
 #     }
 # }
+
+'''
+List of pairs (path, message).
+When the text viewer cannot find a chunk of text to sync with a given
+path, the message is shown to the user on in the panel.
+
+Each path is a Python regular expression pattern.
+See AC-184.
+'''
+TV_NOT_FOUND_ERRORS = [
+    # 3. Specific explanation for Troy (5) Fr20125 + Prose 5 (5bis) Roy20
+    # (display in parallel viewer when consulting either Fr20 Troy(5)
+    # or Roy20 P5 (5bis))
+    [r'Fr20125/.*/section/5\b|Royal/.*/section/5bis\b',
+     '''Les récits de la guerre de Troie dans Fr20125 et dans Royal 20 D 1 ne
+    correspondent pas. Alors que Fr20125 (manuscrit de la première rédaction)
+    contient une traduction de l’Historia de Troiae excidio de Dares Phrygius,
+    le manuscrit Royal 20 D 1 inclut une version beaucoup plus longue,
+    reproduisant
+    la cinquième mise en prose du Roman de Troie de Benoît de Sainte-Maure.
+    Cette version, dite Prose 5 (voir Jung (1996), pp. 505-562), mélange des
+    matériaux procédant pour la plupart de la première et de la troisième mise
+    en prose de l’œuvre de Benoît (Prose 1 et Prose 3), et, bien que dans une
+    moindre mesure, de la version transmise par la première rédaction de
+    l’Histoire ancienne (notamment, des sections Genèse et Troie). Prose 5
+    contient, en outre, treize des Héroïdes d’Ovide traduites en français et
+    enchâssées à l’intérieur de la narration.'''
+     ],
+    [r'/paragraph/',
+     '''Royal 20 D 1 ne contient pas ce paragraphe.'''
+     ],
+    # Absent sections in Roy20 : Genesis (1), Orient I (2), Alexander (9),
+    # Conquest of France by Caesar (11)
+    [r'/section/',
+     '''Royal 20 D 1 n’inclut pas cette section de l’Histoire ancienne.'''
+     ],
+]
+
+# tells which MSS can be linked from the visualisation to the Text Editor
+# Override the value in local.py
+ALIGNMENT_LINKABLE_MSS = ['fr20125', 'royal20d1']
+
+# Override the value in local.py
+ALIGNMENT_SHOW_INTERNAL_NOTES = True
+
+#
+ALIGNMENT_FEATURE_LABELS = {
+    'loc': 'location',
+    'var': 'variation',
+    'rub': 'rubric',
+}

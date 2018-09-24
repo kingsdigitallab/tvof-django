@@ -8,7 +8,6 @@ from wagtail.wagtailcore import urls as wagtail_urls
 from wagtail.wagtailsearch.signal_handlers import \
     register_signal_handlers as wagtailsearch_register_signal_handlers
 from wagtail.wagtailsearch.urls import frontend as wagtailsearch_frontend_urls
-from django.views.generic import RedirectView
 from text_viewer import urls as text_viewer_urls
 from text_patterns import urls as text_patterns_urls
 from text_alignment import urls as text_alignment_urls
@@ -39,31 +38,16 @@ if 0:
     except ImportError:
         pass
 
-# GN: redirects to texts from menu.
-# we do it here because Wagtail doesn't allow menu items to link to arbitrary
-# url this is a temporary setting.
-# TODO: use a more general mapping in the future
 urlpatterns += [
-    url(r'^{}/?$'.format(wagtail_path),
-        RedirectView.as_view(
-            url='/{}{}'.format(
-                kiln_root, kiln_path),
-            permanent=False
-    )
-    )
-    for wagtail_path, kiln_path in settings.TVOF_WEBPATH_TO_KILN.iteritems()
+    url(r'^textviewer/', include(text_viewer_urls), name='textviewer'),
 ]
 
 urlpatterns += [
-    url(r'^textviewer/', include(text_viewer_urls)),
+    url(r'^lab/alignment/', include(text_alignment_urls), name='textviewer'),
 ]
 
 urlpatterns += [
-    url(r'^lab/alignment/', include(text_alignment_urls)),
-]
-
-urlpatterns += [
-    url(r'^lab/patterns/', include(text_patterns_urls)),
+    url(r'^lab/patterns/', include(text_patterns_urls), name='patterns'),
 ]
 
 urlpatterns += [
