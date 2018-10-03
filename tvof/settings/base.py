@@ -102,6 +102,7 @@ INSTALLED_APPS = (
 
 INSTALLED_APPS += (
     # your project apps here
+    'activecollab_digger',
     'kiln',
     'text_viewer',
     'text_patterns',
@@ -206,6 +207,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.template.context_processors.static',
                 'django.contrib.messages.context_processors.messages',
+                'activecollab_digger.context_processors.activecollab_digger',
                 'cms.context_processor.cms_lang',
             ],
         },
