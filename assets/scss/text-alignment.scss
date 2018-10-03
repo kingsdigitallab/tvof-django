@@ -1,3 +1,5 @@
+@import 'settings';
+
 /* Text Visualisations Aligment Styles */
 
 .alignment-paras {
@@ -15,11 +17,17 @@
             background-color: white;
         }
     }
+
+    label {
+        font-weight: bold;
+        display: inline;
+    }
 }
 
 .fixed-tr {
     display: none;
     position: absolute;
+    z-index: 1;
 }
 
 .para-ms-absent {
@@ -28,6 +36,48 @@
 
 .para-ms-verse {
     background-color: lightblue;
+}
+
+/* GN */
+.rubric-dest {
+    display: block;
+    font-style: italic;
+}
+
+/* Botched attempt at making a modifier to the rubric
+add: a small plus on top of the rubric icon
+move: a > on top the rubric icon*/
+.rubric-diff:after {
+    content: '?';
+    position: relative;
+    top: -0.2rem;
+    right: 0.2rem;
+    font-weight: bolder;
+    font-size: x-large;
+}
+.rubric-diff-add:after {
+    content: '+';
+}
+.rubric-diff-move:after {
+    content: '>';
+    font-size: larger;
+}
+
+[data-plink] {
+    position: relative;
+}
+
+#plink {
+    position: absolute; 
+    top: 0; 
+    right: 0; 
+    display: none;
+    padding: 0.3em;
+
+    &:hover {
+        color: scale-color($primary-color, $lightness: 80%);
+        background: scale-color($primary-color, $lightness: 20%);
+    }
 }
 
 /* Settings modal */
@@ -127,96 +177,120 @@ body {
     width: 96vw;
 }
 
+#vis-info-box {
+    position: fixed; 
+    display: none;
+    background: white; 
+    border: 2px solid #101010; 
+    color: #101010;
+    padding: 0.5em;
+    opacity: 0.8;
+    box-shadow: 10px 10px 5px #404040;
+    max-width: 16rem;
+}
+
 /* Viztest specific */
+
+// Viz Colours
+$viz-primary-color: #1c2434;
+$viz-secondary-color: #4e2626;
+$viz-tertiary-color: #4b4d25;
+
+// $viz-neutral: #c7cb00;
+// $viz-neutral: rgba(199, 203, 0, .5);
+$viz-neutral: rgba(227, 229, 190, 1);
+
+$viz-grey: #d8d8d8;
+
 
 .viz {
     margin: 0;
     padding: 0;
-    widht: 100%;
+    width: 100%;
+    
     /* Variables */
+    
+    $viz-text-dark: scale-color(black, $lightness: 20%);
+    $viz-text-light: $white;
 
-    // Colours
-    $primary-color: #1c2434;
-    $secondary-color: #4e2626;
-    $tertiary-color: #4b4d25;
-
-    $neutral: #c7cb00;
-
-    $grey: #d8d8d8;
-
-    .absent-0 {
-        background: $neutral;
-
-        &:hover,
-        &.active {
-            background: darken($neutral, 20%);
+    @function str-replace($string, $search, $replace: '') {
+        $index: str-index($string, $search);
+        
+        @if $index {
+          @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
         }
+        
+        @return $string;
     }
-
-    .absent-1 {
-        background: $secondary-color;
-
-        &:hover,
-        &.active {
-            background: darken($secondary-color, 10%);
-        }
-    }
-
-    .absent-2 {
-        background: $tertiary-color;
-
-        &:hover,
-        &.active {
-            background: darken($tertiary-color, 10%);
-        }
-    }
-
-    .absent-3 {
-        background: white;
-
-        &:hover,
-        &.active {
-            background: darken(white, 10%);
-        }
-    }
-
-    .nopara {
-        background: darken($grey, 20%);
-
-        &:hover,
-        &.active {
-            background: darken($grey, 40%);
-        }
-    }
-
-    // Combinations
-
-    .variation {
-        background: #d86d0f;
-
-        &:hover,
-        &.active {
-            background: darken(#d86d0f, 20%);
-        }
-
-        &.location {
-            background: #dd614a;
+    
+    @mixin viz-class-color($class, $color, $darkenpc: 20%) {
+        .#{$class} {
+            // background: $color;
+            @include viz-shared-color($class, $color);
 
             &:hover,
             &.active {
-                background: darken(#dd614a, 20%);
-            }
-
-            &.rubric {
-                background: #9c89b8;
-
-                &:hover,
-                &.active {
-                    background: darken(#9c89b8, 20%);
-                }
+                @include viz-shared-color(#{$class}-active, darken($color, $darkenpc));
             }
         }
     }
+
+    @mixin viz-shared-color($class, $color, $property: background) {
+
+        #{$property}: $color;
+
+        &, label {
+            @if (lightness($color) >= 50) {
+                color: $viz-text-dark; // Lighter background, return dark color
+            } @else {
+                color: $viz-text-light; // Darker background, return light color
+            }
+        }
+
+        // Declare that variable in html:root so it can be shared with
+        // visualisations written in JS only (e.g. canvas).
+        // e.g. 
+        // --viz-variation-location-rubric-active: #685289;
+        @at-root html {
+            --viz-#{str-replace($class, ".", "-")}: $color;
+        }
+    }
+
+    @include viz-class-color("absent-0", $viz-neutral);
+    @include viz-class-color("absent-0-alt", darken($viz-neutral, 5%));
+
+    @include viz-class-color("absent-1", $viz-secondary-color, 10%);
+
+    @include viz-class-color("absent-2", $viz-tertiary-color, 10%);
+
+    @include viz-class-color("absent-3", white, 10%);
+
+    @include viz-class-color("nopara", darken($viz-grey, 20%));
+
+    // Combinations
+
+    // TODO: GN/GF - conditions won't always match partners requirements
+    // they want colors for ML & PML
+    // In practice ML won't have a location and PML won't have a rubric
+    // but it might be bext to directly test the ML and PML 
+    // @include viz-class-color("variation", #d86d0f);
+    // @include viz-class-color("variation.location", #dd614a);
+    // @include viz-class-color("variation.location.rubric", #9c89b8);
+    @include viz-class-color("variation", #ffaa00, 10%); // ML
+    @include viz-class-color("variation.location", #757eff); // 
+    @include viz-class-color("variation.location.rubric", #6742b5, 10%); // PML
+
+    @include viz-class-color("para-ms-verse", #6fbad3);
+
+    // GN: used only on the bars viz so far, correspond to the color of the 
+    // rubir stacks / layers
+    // Respectively: normal rubric, displaced and additional
+    // @include viz-class-color("stack-rubric-undefined", #ffb0b0);
+    // @include viz-class-color("stack-rubric-move", #fe8080);
+    // @include viz-class-color("stack-rubric-add", #ee4040);
+    @include viz-class-color("stack-rubric-undefined", #a7827f);
+    @include viz-class-color("stack-rubric-move", #8e5e5b);
+    @include viz-class-color("stack-rubric-add", #753b37);
 
     // Fonts
     $body-font-family: 'Archivo Narrow', sans-serif;
@@ -233,7 +307,7 @@ body {
         border-right: 5px solid #f2f2f2;
 
         &.first {
-            border-top: 2px solid $grey;
+            border-top: 2px solid $viz-grey;
         }
 
         svg {
@@ -243,7 +317,7 @@ body {
     }
 
     .connect {
-        color: white;
+        // color: scale-color(black, $lightness: 20%);
         margin-bottom: 0;
 
         &:hover {
@@ -256,6 +330,7 @@ body {
         display: block;
         position: fixed;
         width: 100%;
+        z-index: 2;
     }
 
     .hide {
@@ -264,7 +339,7 @@ body {
 
     .section {
         background: #cff0ff;
-        border-bottom: 3px solid $neutral;
+        border-bottom: 3px solid $viz-neutral;
         font-size: 18px;
         margin: 0;
         padding-left: 15px;
@@ -281,7 +356,7 @@ body {
     }
 
     .title {
-        background: $primary-color;
+        background: $viz-primary-color;
         color: white;
         font-size: 18px;
         margin: 0;
@@ -301,4 +376,32 @@ body {
     h1, h2, h3, h4, h5, h6 {
         font-weight: normal;
     }
+
+    // column vizualisation
+    &.viz-column {
+        .column > ul {
+            padding-left: 0;
+            margin-left: 0;
+            list-style: none;
+        }
+    }
+    
+    // table vizualisation
+    
+    &.viz-table {
+    
+//         .para-ms, label {
+//             color: #252525;
+//         }
+// 
+//         .para-ms {
+//             &:hover, &:active {
+//                 color: white;
+//                 label {
+//                     color: white;
+//                 }
+//             }
+//         }
+    }
+
 }

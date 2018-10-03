@@ -21,6 +21,7 @@ Main content area
     Notes
     Quick tips or Disclaimer
     Text viewer - TEI
+    Reveal/Modal & Tooltip
 Footer
     Cookie consent
 Media queries
@@ -167,6 +168,43 @@ ul.sticky {
     right: 0;
 }
 
+@mixin inline-icon {
+    color: $tertiary-color;
+    font-family: "FontAwesome";
+    line-height: 0;
+    // GN: no longer a pointer as we show info in a tooltip
+    // cursor: pointer;
+}
+
+@mixin tooltip {
+    padding: 0.5em 0em;
+
+    &:hover {
+        // GN: TODO: change color
+        // background color to indicate which characters are unclear
+        background-color: scale-color($primary-color, $lightness: 80%);
+    }
+}
+
+@mixin tooltip-and-icon($content) {
+    @include tooltip;
+
+    &:after {
+        @include inline-icon;
+        font-size: 0.80em;
+        vertical-align: super;
+        content: $content;
+    }
+}
+
+@mixin tooltip-and-icon-full($content) {
+    @include tooltip;
+
+    &:after {
+        @include inline-icon;
+        content: $content;
+    }
+}
 
 /* Main content area */
 
@@ -307,6 +345,16 @@ ul.sticky {
         background-color: #ece4b7;
     }
 
+    .tei-l {
+        background-color: #ebe6ff;
+    }
+    .text-conventions {
+        .tei-l {
+            background-color: #d6ccff;
+        }
+    }
+
+
     // Text viewer - TEI
 
     #manuscripts-content,
@@ -389,41 +437,6 @@ ul.sticky {
         font-weight: 700;
     }
 
-    sup {
-        &.tei-note,
-        &.tei-gen,
-        &.tei-source,
-        &.tei-trad {
-            &:after {
-                content: "\f075";
-                font-family: "FontAwesome";
-            }
-        }
-
-        &.tei-gen {
-            &:after {
-                color: scale-color($success-color, $lightness: 30%);
-            }
-        }
-
-        &.tei-note {
-            &:after {
-                color: scale-color($secondary-color, $lightness: 30%);
-            }
-        }
-
-        &.tei-source {
-            &:after {
-                color: scale-color($primary-color, $lightness: 40%);
-            }
-        }
-
-        &.tei-trad {
-            &:after {
-                color: scale-color($tertiary-color, $lightness: 50%);
-            }
-        }
-    }
 
     // GN: two types of verses: 
     // .cont (flows continuously within a p/div) 
@@ -446,36 +459,283 @@ ul.sticky {
     }
     //-----
 
-    span.add[data-teia-type=annotation] {
+    .tei-unclear {
+        // GN: icon even if superscripted, 
+        // without this hover on top of icon doesn't do anything
+        @include tooltip-and-icon("\f128");  
+        padding: 0.5em 0em;
+    }
+
+    .tv-view-semi-diplomatic .tei-mod, 
+    .tv-view-semi-diplomatic .tei-add, 
+    .tei-corr, 
+    .tv-view-semi-diplomatic .tei-pc-rend-6 
+    {
+        @include tooltip;
+    }
+
+    .tv-view-semi-diplomatic .tei-supplied,
+    .tv-view-semi-diplomatic .tei-mod .tei-del
+    {
         display: none;
     }
 
-    .tei-unclear {
+    .tv-view-semi-diplomatic .tei-pc-rend-6 {
+        padding: 0.5em 0.2em;
+    }
+
+    .tv-view-semi-diplomatic .tei-add, 
+    .tv-view-interpretive .tei-corr, 
+    .tv-view-interpretive .tei-supplied, {
         &:before {
-            color: $tertiary-color;
-            content: "\f128";
-            font-family: "FontAwesome";
+            content: '<';   
         }
+        &:after {
+            content: '>';   
+        }
+    }
+
+    /* NOTES */
+
+    .note-ref,
+    .note-anchor {
+        &:before {
+            content: '[';   
+        }
+        &:after {
+            content: '] ';   
+        }
+    
+        &:focus {
+            background-color: #ffff80;
+        }
+
+        /*
+        &.tei-subtype-gen {
+            background-color: scale-color($success-color, $lightness: 30%);
+        }
+
+        &.tei-subtype-note {
+            background-color: scale-color($secondary-color, $lightness: 30%);
+        }
+
+        &.tei-subtype-source {
+            background-color: scale-color($primary-color, $lightness: 40%);
+        }
+
+        &.tei-subtype-trad {
+            background-color: scale-color($tertiary-color, $lightness: 50%);
+        }
+        */
+
+    }
+    .note-ref {
+        font-size: 0.80em;
+        vertical-align: super;
+        
+    }
+
+    .tv-viewer-proofreader {
+        .tei-note {
+            margin-bottom: 0.5rem;
+            display: block;            
+        }
+    }
+
+    .tv-viewer-pane, .text-conventions {
+        .tei-note.tei-type-note {
+            @include tooltip-and-icon('\f075');
+            
+            &.tei-subtype-gen {
+                &:after {
+                    color: scale-color($success-color, $lightness: 30%);
+                }
+            }
+    
+            &.tei-subtype-note {
+                &:after {
+                    color: scale-color($secondary-color, $lightness: 30%);
+                }
+            }
+    
+            &.tei-subtype-source {
+                &:after {
+                    color: scale-color($primary-color, $lightness: 40%);
+                }
+            }
+    
+            &.tei-subtype-trad {
+                &:after {
+                    color: scale-color($tertiary-color, $lightness: 50%);
+                }
+            }
+        }
+    
+        .tei-note.tei-type-gloss {
+            @include tooltip-and-icon('\f14b');
+        }
+    
+        .tei-note.tei-type-note,
+        .tei-note.tei-type-gloss {
+            // GN: icon even if superscripted, 
+            // without this hover on top of icon doesn't do anything  
+            padding: 0.5em 0.2em;
+            display: inline;
+            cursor: pointer;
+            
+            .note-text {
+                display: none;
+            }
+        }
+    
+        .notation {
+            > *:hover {
+                background: inherit;
+            }
+        }
+    }
+
+    figure {
+        // GN: icon even if superscripted, 
+        // without this hover on top of icon doesn't do anything  
+        @include tooltip-and-icon-full('\f030');
+        display: inline-block;
+        line-height: 0;
+        padding: 0.8em 0.3em;
+        cursor: pointer;
+        
+        img, figcaption {
+            display: none;
+        }
+    }
+
+    .tei-type-explicit {
+        display: block;
+    }
+
+    .verse-number {
+        padding: 0.3em;
     }
 
     // See TVOF-146
     .paragraph {
         margin-bottom: 1rem;
     }
+    
 }
 
-// GN: nothing preventing default Foundation modal to have a close icon
-// overlapping the modal text => difficult to read, don't know how to close
-// Were increase padding and move the icon closer to the boder 
-// See TVOF-146
-.reveal {
-    padding-right: 1.7rem;
-    padding-left: 1.7rem;
+
+/* Reveal/Modal & Tooltip */
+
+// TODO: make the tooltip and reveal look more consistent
+// TODO: use variables for colors
+.tv-tooltip, .tv-reveal {
+    padding: 0;
+    
+    h3 {
+        white-space: nowrap;
+        font-size: 1.1rem;
+        padding: 0.2rem 0.5rem;
+        margin: 0;
+        background-color: scale-color($primary-color, $lightness: 20%);
+    }
+
+    .body {
+        padding: 0.5rem;
+        
+        a {
+            color: scale-color($primary-color, $lightness: 70%);
+            font-weight: bolder;
+            &:hover {
+                text-decoration: underline;
+            }
+        }    
+    }
 }
+
+.tv-reveal {
+    background-color: #1c2434;
+    border-color: scale-color($primary-color, $lightness: 20%);
+    color: #e0e0e0;
+    box-shadow: 7px 7px 10px #666;
+    
+    &:focus {
+        border-color: scale-color($primary-color, $lightness: 20%);
+    }
+    
+    .close-button {
+        color: #e0e0e0;
+        top: 0;
+        right: 0;
+        padding: 0rem 0.3rem;
+        
+        &:hover {
+            background-color: scale-color($primary-color, $lightness: 50%);
+        }
+    }
+}
+
+.tv-tooltip {
+    // GN: foundation max-width is too narrow for long titles
+    // e.g.Fr 68 (note de lecteur medieval)
+    max-width: 20rem;
+}
+
+// Image modal
+
 .close-button {
     right: 0.5rem;
     color: $primary-color;
 }
+
+#image-viewer-modal {
+    overflow: hidden;
+    padding: 0;
+    display: none;
+    flex-direction: column;
+    
+    @include breakpoint(medium) {
+        // Foundation set full screen in mobile, otherwise we need
+        // to force width for image-viewer
+        width: 90vw;
+        height: 90vh;
+    }
+
+    #image-viewer {
+        // leaflet container
+        flex: 1;
+        width: 100%;
+        background-color: black;
+    }
+
+    .image-viewer-caption {
+        // caption at the bottom
+        
+        max-height: 4em;
+        overflow-y: auto;
+        overflow-x: hidden;
+        padding: 0 0.5em;
+        
+        // GN: Artificially add shaded areas on top and bottom of text div
+        // reason is that scrolling requires overflow-y which in turn 
+        // cancels the padding-top and padding-bottom on scrolling text
+        // Without this the text is abruptly cut off on the edge of the
+        // div which is inelegant.
+        // TODO: try input type="text" in read-only mode           
+        &:before, &:after {
+            background-color: rgba(0,0,0,0.3);
+            content: '';
+            display: block;
+            height: 0.3em;
+            position: sticky;
+            top: 0;            
+        }
+        &:after {
+            bottom: 0;            
+        }
+    }
+}
+
 
 /* Footer */
 
@@ -647,3 +907,4 @@ footer {
         }
     }
 }
+

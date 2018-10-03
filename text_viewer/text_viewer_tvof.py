@@ -151,7 +151,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
     def compute_section_mappings(self):
         '''
-        Build a mapping among the units from all documents
+        Build a mapping among the units from Royal and its corresp(s)
         e.g.
         ret = {
             'Royal_Fr20125': {
@@ -197,8 +197,31 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
         return ret
 
+    def set_chunk_not_found_error(self, xpath=None):
+        message = 'Chunk not found: {}'.format(
+            self.get_requested_address()
+        )
+
+        if self.synced_with:
+            address = '/'.join(
+                self.get_list_from_address_parts(self.synced_with)
+            )
+            tv_errors = getattr(settings, 'TV_NOT_FOUND_ERRORS', [])
+            for anerror in tv_errors:
+                if re.search(anerror[0], address):
+                    message = anerror[1]
+                    break
+
+        self.add_error(
+            'notfound',
+            message,
+            'XPATH = {}'.format(xpath)
+        )
+
     def is_location_visible(self, location_xml, doc_slug, view_slug,
                             location_type_slug):
+        '''Returns True if the location can be shown on the site
+        according to the filters set in settings.py:TEXT_VIEWER_DOC_FILTERS'''
         ret = True
         filters = getattr(
             settings,
@@ -297,3 +320,70 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 }
 
         return ret
+
+    def extract_notes_from_chunk(self, chunk, notes_info):
+        # TODO: move that to TVoF class
+        '''
+            <div class="tei-note tei-type-note tei-subtype-source"
+                data-tei-subtype="source" id="edfr20125_0590_peach">
+                <div class="note-text">
+                    [...]HTML
+                </div>
+            </div>
+        '''
+        # nested loop is b/c ET needs parent to remove child but
+        # there is no .parent() function
+        for parent in chunk.findall('.//*[@class="note-text"]/../..'):
+            for note in parent.findall('.//*[@class="note-text"]/..'):
+                note_tail = note.tail
+                note.tail = ''
+
+                # create a unique note handle
+                note_number = len(notes_info['notes']) + 1
+
+                note_cat_from_subtype = {
+                    '': '?',
+                    'source': 'S',
+                    'trad': 'T',
+                    'gen': 'G',
+                }
+                note_subtype = note.attrib.get('data-tei-subtype', '')
+                note_cat = note_cat_from_subtype.get(note_subtype, '')
+
+                if note.attrib.get('data-tei-type', '') == 'gloss':
+                    note_cat = 'A'  # as in annotation
+
+                note_handle = '{}:{}'.format(note_number, note_cat)
+
+                # add a unique number at the beginning of the note
+                note_text = note.find('*[@class="note-text"]')
+                note_anchor = ET.fromstring(
+                    '<a class="note-anchor" id="note-{}" '
+                    ' href="#ref-{}">{}</a>'.
+                    format(
+                        note_number,
+                        note_number,
+                        note_handle,
+                    )
+                )
+                note_anchor.tail = note_text.text or ''
+                note_text.text = ''
+                note_text.insert(0, note_anchor)
+
+                # print(ET.tostring(note_text))
+
+                # add note to the notes_info
+                notes_info['notes'].append(ET.tostring(note))
+
+                # replace note with an inline reference
+                note.clear()
+                note_ref = note
+                note_ref.tail = note_tail
+                note_ref.tag = 'a'
+                note_ref.attrib['class'] = 'note-ref tei-subtype-{}'\
+                    .format(note_subtype)
+                note_ref.attrib['href'] = '#note-{}'.format(note_number)
+                note_ref.attrib['id'] = 'ref-{}'.format(note_number)
+                note_ref.text = note_handle
+                # print(note.tail)
+                # parent.remove(note)

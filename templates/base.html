@@ -4,7 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <title>{% block meta_title %}{% page_title %}{% endblock %} | The Values of French</title>
+  <title>{% block meta_title %}{{ self.title }}{% endblock %} | The Values of French</title>
   <meta name="description" content="">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -31,8 +31,8 @@
   {% block main_wrapper %}
   <section class="main">
     <div class="row">
-      <div class="small-12 columns">
-        {% block title %}{% if self.title %}<h1>{% page_title %}</h1>{% endif %}{% endblock %}
+      <div class="large-12 columns">
+        {% block title %}{% if self.title %}<h1>{{ self.title }}</h1>{% endif %}{% endblock %}
         {% block main %}
         {% endblock %}
       </div>

@@ -16,7 +16,7 @@
 {% block header_top_bar %}
     <ul class="horizontal menu float-right" data-sticky>
         <li>
-            <a id="toggle-settings" href="#settings">Settings <i class="fa fa-cog"></i></a>
+            <a id="toggle-settings" href="#settings" class="toggle-settings">Settings <i class="fa fa-cog"></i></a>
         </li>
     </ul>
 {% endblock %}
@@ -31,6 +31,8 @@
 <section id="alignment-fragment" class="main">
     
 </section>
+
+<a href="#" target="_blank" id="plink" class="button">Read</a>
 
 {% include 'text_alignment/settings.html' %}
 
@@ -55,7 +57,59 @@
             var $fragment = $('#alignment-fragment');
             var config = {{config|json}};
             var vue_config = new_vue_config(config);
+            var $plink = $('#plink').detach();
+            window.ALIGNMENT_LINKABLE_MSS = {{ ALIGNMENT_LINKABLE_MSS|json }};
             
+            // returns a URL to the textviewer opened
+            // at a specific paragraph for a given manuscript.
+            // ms_name is a manuscript name.
+            // para_number is an integer paragraph number.
+            // Note that apart from Royal, all other MS will be
+            // redirected to Fr20125.
+            function get_text_href(ms_name, para_number) {
+                var ms_name_normalised = ms_name.replace(/\W+/gi, '').toLowerCase();
+                // MS is not viewable in the Text Viewer we don't return a link.
+                if (window.ALIGNMENT_LINKABLE_MSS.join(',').indexOf(ms_name_normalised) <= -1) {
+                    return null;
+                }
+                var doc = 'Fr20125';
+                if (/royal.*20.*d.*1/i.test(ms_name)) {
+                    doc = 'Royal';
+                }
+                ret = '/textviewer/?p1='+doc+'/semi-diplomatic/paragraph/'+para_number;
+
+                return ret;
+            };
+            
+            window.get_text_href = get_text_href;
+            
+            // https://tvof-stg.kdl.kcl.ac.uk/textviewer/?p1=Royal/semi-diplomatic/section/3
+            // User click Link on a para to go the text viewer
+            $('body').on('mouseleave', '[data-plink]', function(e) {
+                $plink.detach();
+            });
+            $('body').on('mouseenter', '[data-plink]', function(e) {
+                var $para_div = $(this);
+                var plink_data = $para_div.data('plink');
+                var parts = plink_data.split('/');
+                var ms_idx = parseInt(parts[0]);
+                var href = null;
+                // TODO: shouldn't be hard-coded
+                $.each(config, function(idx, field) {
+                    if (field.key == 'mss') {
+                        var ms_key = field.options[ms_idx].key;
+                        href = get_text_href(ms_key, parts[1]);
+                    }
+                });
+                
+                if (href) {
+                    $plink.attr('href', href);
+                    $para_div.prepend($plink.detach());
+                    $plink.show();
+                }
+            });
+            
+            // Visualisation Settings modal
             function new_vue_config(config) {
                 var ret = new Vue({
                     el: '#settings .settings-body',
@@ -92,7 +146,7 @@
                                     ret[avar.key] = values.join(',');
                                 }
                             });
-                            console.log(ret);
+                            //console.log(ret);
                             return ret;
                         }
                     }
@@ -100,7 +154,7 @@
                 return ret;
             }
             
-            $('#toggle-settings').on('click', function(e) {
+            $('.toggle-settings').on('click', function(e) {
                 toggle_settings();
                 return false;
             });
@@ -211,103 +265,5 @@
             };
         });
         
-        // Bars view / visualisation
-        function update_bars_view(canvas, align, config) {
-            var ctx = canvas.getContext('2d');
-
-            var bh_min = 15;
-            var ms_names = [];
-            $.each(config.mss.options, function(idx, ms) {
-                if (ms.selected) ms_names.push(ms.name);
-            });
-            var rows = ms_names.length + 1;
-            
-            var bh = ($('body').height() - 200) / rows;
-            if (bh < bh_min) {
-                bh = bh_min;
-            }
-            var bw = 2;
-
-            $(canvas).height(bh * rows);
-            
-            var mxh = canvas.height;
-            var mxw = canvas.width;
-            var cah = $(canvas).height();
-            var caw = $(canvas).width();
-            var labels_padding = 2;
-            canvas.height = cah;
-            canvas.width = caw;
-                
-            var text_color = 'black';
-            ctx.fillStyle = '#ff0000';
-            var labels_max_width = 100;
-
-            // Test
-            // Create a pattern
-           // for (var i=0;i<7;i++){
-              
-           //    for (var j=0;j<7;j++){   
-           //       ctx.fillStyle='rgb(' + Math.floor(255-20.5*i)+ ','+ Math.floor(255 - 42.5*j) + ',255)';
-           //       ctx.fillRect( j*25, i* 25, 55, 55 );
-           //    }
-           // }
-           // End Test
-            
-            bw = (caw - labels_max_width) / align.paras.length;
-            
-            var idx_from_ms_name = {};
-            
-            // write MS labels
-            $.each(ms_names, function(idx, name) {
-                ctx.font = '12px Arial';
-                ctx.fillStyle = text_color;
-                ctx.fillText(name, labels_padding, (idx + 2) * bh - 1);
-                idx_from_ms_name[name] = idx;
-            });
-            
-            // draw the paras
-            var section = null; 
-            var last_section_x = -10000;
-            $.each(align.paras, function(idx, para) {
-                $.each(para.mss, function(ms_name, para_ms) {
-                    if (!para_ms.absent) {
-                        ctx.fillStyle = 'darkgrey';
-                        ctx.lineWidth = 3;
-                        ctx.strokeStyle = 'white';
-                        if (para_ms.verse) ctx.fillStyle = 'lightblue';
-                        ctx.fillRect(labels_max_width + idx * bw, (idx_from_ms_name[ms_name] + 1) * bh, bw, bh);
-                        ctx.strokeRect(labels_max_width + idx * bw, (idx_from_ms_name[ms_name] + 1) * bh, bw, bh);
-                    }
-                });
-                if (section != para.section) {
-                    section = para.section;
-                    ctx.fillStyle = 'black';
-                    
-                    var x0 = labels_max_width + idx * bw;
-                        
-                    ctx.fillRect(x0, 0, 1, cah)
-                    
-                    if ((x0 - last_section_x) < 12) {
-                        x0 += 12;
-                    }
-
-                    //ctx.save();
-                    ctx.fillStyle = text_color;
-                    ctx.fillText(section, x0, 1 * bh - 1);
-                    //ctx.translate(x0, 1 * bh);
-                    //ctx.rotate(-Math.PI/2);
-                    //ctx.fillText(section, 0, 0);
-                    //ctx.restore();
-                    last_section_x = x0;
-                }
-            });
-
-            // draw MS separators
-            $.each(ms_names, function(idx, ms) {
-                ctx.fillStyle = 'grey';
-                ctx.fillRect(0, (idx + 2) * bh, caw, 1);
-            });
-            ctx.fillRect(0, 1 * bh, caw, 1);
-        }
     </script>
 {% endblock %}

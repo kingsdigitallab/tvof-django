@@ -12,7 +12,7 @@ from \
 from wagtail.wagtailcore.models import Page
 from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
 
-from ..models import BlogPost, HomePage, get_field_lang
+from ..models import BlogPost, get_field_lang
 from cms.models import IndexPage
 
 logger = logging.getLogger(__name__)
@@ -67,25 +67,9 @@ def get_site_root(context):
     return context['request'].site.root_page
 
 
-@register.assignment_tag(takes_context=True)
-def has_local_menu(context, current_page):
-    """Returns True if the current page has a local menu, False otherwise. A
-    page has a local menu, if it is not the site root, and if it is not a leaf
-    page."""
-    site_root = get_site_root(context)
-
-    try:
-        current_page.id
-    except AttributeError:
-        return False
-
-    if current_page.id != site_root.id:
-        if current_page.depth <= 4 and not current_page.is_leaf():
-            return True
-        elif current_page.depth > 4:
-            return True
-
-    return False
+@register.filter
+def short_para_id(para_id):
+    return int(para_id.split('_')[-1])
 
 
 @register.filter
@@ -163,39 +147,27 @@ def get_page_field_lang(context, field_name, page=None):
     return get_field_lang(page, field_name)
 
 
-@register.inclusion_tag('cms/tags/local_menu.html', takes_context=True)
-def local_menu(context, current_page=None):
-    """Retrieves the secondary links for the 'also in this section' links -
-    either the children or siblings of the current page."""
-    menu_pages = []
-    label = current_page.title
-
-    if current_page:
-        menu_pages = current_page.get_children().filter(
-            live=True, show_in_menus=True)
-
-        # if no children, get siblings instead
-        if len(menu_pages) == 0:
-            menu_pages = current_page.get_siblings().filter(
-                live=True, show_in_menus=True)
-
-        if current_page.get_children_count() == 0:
-            if not isinstance(current_page.get_parent().specific, HomePage):
-                label = current_page.get_parent().title
-
-    # required by the pageurl tag that we want to use within this template
-    return {'request': context['request'], 'current_page': current_page,
-            'menu_pages': menu_pages, 'menu_label': label}
-
-
 @register.inclusion_tag('cms/tags/main_menu.html', takes_context=True)
 def main_menu(context, root, current_page=None):
     """Returns the main menu items, the children of the root page. Only live
     pages that have the show_in_menus setting on are returned."""
-    menu_pages = root.get_children().filter(live=True, show_in_menus=True)
+    menu_pages = root.get_children().live().in_menu()
 
     return {'request': context['request'], 'root': root,
             'current_page': current_page, 'menu_pages': menu_pages}
+
+
+@register.filter
+def get_section_page(page):
+    '''Returns the highest IndexPage above <page> in the sitemap.
+    None if not found.
+    '''
+    ret = None
+    for p in page.get_ancestors(inclusive=True):
+        if p.specific_class in [IndexPage]:
+            ret = p
+            break
+    return ret
 
 
 @register.simple_tag(takes_context=True)
@@ -260,16 +232,6 @@ def get_item(dictionary, key, default=None):
 @register.filter
 def in_path(page, request):
     return page.get_url(request) in request.path
-
-
-@register.filter
-def get_section_page(page):
-    ret = None
-    for p in page.get_ancestors(inclusive=True):
-        if p.specific_class in [IndexPage]:
-            ret = p
-            break
-    return ret
 
 
 @register.filter
