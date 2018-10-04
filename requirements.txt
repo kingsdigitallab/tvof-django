@@ -1,12 +1,11 @@
+pyopenssl<18
 django<2
 django-compressor
 django-grappelli
 django-libsass
 django-model-utils
-django-modelcluster==4.0
 django-redis
 django-require
-django-taggit
 elasticsearch
 libsass==0.10.0
 pillow

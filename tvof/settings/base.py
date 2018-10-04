@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 PROJECT_NAME = 'tvof'
-PROJECT_TITLE = 'Change the title in the settings'
+PROJECT_TITLE = 'The Values of French'
 
 # -----------------------------------------------------------------------------
 # Core Settings
@@ -227,10 +227,12 @@ WSGI_APPLICATION = PROJECT_NAME + '.wsgi.application'
 # -----------------------------------------------------------------------------
 # Authentication
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth
-# https://scm.cch.kcl.ac.uk/hg/ddhldap-django
 # -----------------------------------------------------------------------------
 
-# AUTH_LDAP_REQUIRE_GROUP = 'cn=GROUP_NAME,' + LDAP_BASE_OU
+if 'wagtail.core' in INSTALLED_APPS:
+    LOGIN_URL = '/wagtail/login/'
+else:
+    LOGIN_URL = '/admin/login/'
 
 
 # -----------------------------------------------------------------------------
