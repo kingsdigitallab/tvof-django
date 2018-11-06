@@ -259,6 +259,14 @@ ul.sticky {
         line-height: 1.125;
     }
 
+    .thumbnail {
+        width: 100%;
+
+        img {
+            width: 100%;
+        }
+    }
+
     // Splash image - homepage
     .splash-image {
         margin: 1rem 0;
