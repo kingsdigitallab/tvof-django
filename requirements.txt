@@ -1,3 +1,4 @@
+# Django 2 supports only python 3, our VM is sill in python 2
 django<2
 django-compressor
 django-grappelli
@@ -7,11 +8,21 @@ django-modelcluster==4.0
 django-redis
 django-require
 django-taggit
-elasticsearch
+
 libsass==0.10.0
 pillow
 psycopg2-binary
 requests[security]
+
+# Keep wagtail at 1.x because we also cap Djano to 1.x (see above)
 wagtail<2
+
 html5lib==0.9999999
+
 regex
+
+django-haystack-drf
+
+# needed for haystack to work with ES, caped version b/c we have ES 2
+# ES ON VM WILL HAVE TO BE UPGRADED TO VERSION 2
+elasticsearch>=2.0.0,<3.0.0

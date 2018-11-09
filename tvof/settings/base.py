@@ -98,6 +98,7 @@ INSTALLED_APPS = (
     'compressor',
     'require',
     'cms',
+    'haystack',
 )
 
 INSTALLED_APPS += (
