@@ -901,6 +901,14 @@ footer {
 #tvof-search {
     .search-facets {
         float: left;
+        
+        .search-option a:hover {
+            text-decoration: underline;
+        }
+        
+        .selected {
+            font-weight: bold;
+        }
     }
     .search-results {
         float: right;

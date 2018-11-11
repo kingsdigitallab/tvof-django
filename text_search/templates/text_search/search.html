@@ -10,7 +10,7 @@
     {% verbatim %}
     <div id="tvof-search">
         <div class="search-query">
-            <input class="search-text" type="text" v-model="query.text" v-on:change="on_submit">
+            <input class="search-text" type="text" v-model="query.text" v-on:change="on_change_search_text">
         </div>
         <div class="search-results">
             <div class="search-pagination">
@@ -67,7 +67,10 @@
                 <div class="card-section">
                     <ul class="search-facet undecorated-list">
                         <li class="search-option" v-for="option in options">
-                            {{ option.text }} ({{ option.count }})
+                            <a href="#" v-on:click.prevent="on_click_option(facet, option)" :class="{'selected': is_option_selected(facet, option)}">
+                                {{ option.text }} ({{ option.count }})
+                                <template v-if="is_option_selected(facet, option)">X</template>
+                            </a>
                         </li>
                     </ul>
                 </div>
@@ -108,6 +111,7 @@
                 query: {
                     text: 'dire',
                     page: 1,
+                    facets: {}
                 },
             },
             computed: {
@@ -119,7 +123,19 @@
                 this.call_api();
             },
             methods: {
-                on_click_token(hit) {
+                is_option_selected: function(facet, option) {
+                    return (this.query.facets[facet+'__'+option.text]);
+                },
+                on_click_option: function(facet, option) {
+                    if (this.is_option_selected(facet, option)) {
+                        delete (this.query.facets)[facet+'__'+option.text];
+                    } else {
+                        this.query.facets[facet+'__'+option.text] = [facet, option.text];
+                    }
+                    this.query.page = 1;
+                    this.call_api()
+                },
+                on_click_token: function(hit) {
                     // edfr20125_00598_08
                     // => http://localhost:8000/textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
                     var parts = hit.location.split('_');
@@ -135,17 +151,34 @@
                     this.query.page += 1;
                     this.call_api();
                 },
-                on_submit: function() {
-                    this.call_api({page: 1});
+                on_change_search_text: function() {
+                    this.query.page = 1;
+                    this.query.facets = {};
+                    this.call_api();
                 },
-                call_api: function(query) {
+                call_api: function() {
                     var self = this;
-                    query = $.extend(self.query, query);
-                    var req = $.getJSON(api_url, query);
+                    // query = $.extend(self.query, query);
+                    // var req = $.getJSON(url || api_url, url ? null : query);
+                    var query = {
+                        page: self.query.page,
+                        text: self.query.text,
+                        selected_facets: self.get_selected_facets()
+                    };
+                    
+                    var req = $.getJSON(api_url, $.param(query, true));
                     req.done(function(response) {
                         self.$set(self, 'response', response);
                     });
                 },
+                get_selected_facets: function() {
+                    ret = []
+                    $.each(this.query.facets, function(k, v) {
+                        // lemma_exact%3AEneas
+                        ret.push(v[0]+'_exact:'+v[1]);
+                    });
+                    return ret;
+                }
             }            
         })        
         
