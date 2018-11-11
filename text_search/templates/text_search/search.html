@@ -1,10 +1,154 @@
 {% extends "cms/rich_text_page.html" %}
 {% load wagtailcore_tags cms_tags %}
 
-{% block title %}{% endblock %}
+{% block meta_title %}Search{% endblock %}
+
+{% block title %}<h1>Search</h1>{% endblock %}
 
 {% block main %}
 
-    TEST
+    {% verbatim %}
+    <div id="tvof-search">
+        <div class="search-query">
+            <input class="search-text" type="text" v-model="query.text" v-on:change="on_submit">
+        </div>
+        <div class="search-results">
+            <div class="search-pagination">
+                {{ response.objects.count }} tokens 
+                - 
+                <a v-if="response.objects.previous" href="#" class="button tiny" v-on:click.prevent="on_click_prev">&lt; Previous</a>
+                Page {{ query.page }} / {{ last_page_index }}
+                <a v-if="response.objects.next" href="#" class="button tiny" v-on:click.prevent="on_click_next">Next &gt;</a>
+            </div>
+            <table class="search-hits">
+                <thead>
+                    <tr>
+                        <th>Location</th>
+                        <th>Lemma</th>
+                        <th>Preceding</th>
+                        <th>Token</th>
+                        <th>Following</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="hit in response.objects.results">
+                        <td>
+                            <a href="#" v-on:click.prevent="on_click_token(hit)">
+                                {{ hit.location }}:
+                            </a>
+                        </td>
+                        <td>
+                            {{ hit.lemma }}                        
+                        </td>
+                        <td class="token-preceding">
+                            <a href="#" v-on:click.prevent="on_click_token(hit)">
+                            {{ hit.preceding }}
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" v-on:click.prevent="on_click_token(hit)">
+                            {{ hit.token }}                      
+                            </a>
+                        </td>
+                        <td>
+                            <a href="#" v-on:click.prevent="on_click_token(hit)">
+                            {{ hit.following }}
+                            </a>
+                            </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="search-facets">
+            <div class="card" v-for="(options, facet) in response.fields">
+                <div class="card-divider">
+                    <h4>{{ facet }}</h4>
+                </div>
+                <div class="card-section">
+                    <ul class="search-facet undecorated-list">
+                        <li class="search-option" v-for="option in options">
+                            {{ option.text }} ({{ option.count }})
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endverbatim %}
 
 {% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
+
+    <script>
+        
+        var api_url = '/api/v1/tokens/search/facets/?format=json';
+        var text_viewer_url = 'http://localhost:8000/textviewer/?p1=';
+        var id_to_ms = {
+            'edfr20125': 'Fr20125',
+            'edRoyal20D1': 'Royal',
+        };
+        
+        // /api/v1/tokens/search/?format=json&page=2&lemma=dire
+        var app = new Vue({
+            el: '#tvof-search',
+            data: {
+                response: {
+                    fields: {},
+                    count: 0,
+                    objects: {
+                        count: 0,
+                        next: '',
+                        previous: '',
+                        results: [],
+                    },
+                },
+                query: {
+                    text: 'dire',
+                    page: 1,
+                },
+            },
+            computed: {
+                last_page_index: function() {
+                    return Math.ceil(this.response.objects.count / 10.0);  
+                },
+            },
+            mounted: function() {
+                this.call_api();
+            },
+            methods: {
+                on_click_token(hit) {
+                    // edfr20125_00598_08
+                    // => http://localhost:8000/textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
+                    var parts = hit.location.split('_');
+                    var url = text_viewer_url + id_to_ms[parts[0]] + '/interpretive/paragraph/' + parseInt(parts[1], 10);
+                    var win = window.open(url, '_blank');
+                    win.focus();
+                },
+                on_click_prev: function() {
+                    this.query.page -= 1;
+                    this.call_api();
+                },
+                on_click_next: function() {
+                    this.query.page += 1;
+                    this.call_api();
+                },
+                on_submit: function() {
+                    this.call_api({page: 1});
+                },
+                call_api: function(query) {
+                    var self = this;
+                    query = $.extend(self.query, query);
+                    var req = $.getJSON(api_url, query);
+                    req.done(function(response) {
+                        self.$set(self, 'response', response);
+                    });
+                },
+            }            
+        })        
+        
+    </script>
+{% endblock %}
+

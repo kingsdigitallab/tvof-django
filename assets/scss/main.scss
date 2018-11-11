@@ -26,6 +26,7 @@ Footer
     Cookie consent
 Media queries
     Navigation
+Search
 
 ****/
 
@@ -894,3 +895,24 @@ footer {
     }
 }
 
+
+// Search Page
+
+#tvof-search {
+    .search-facets {
+        float: left;
+    }
+    .search-results {
+        float: right;
+        
+        .token-preceding {
+            text-align: right;
+        }
+    }
+}
+
+.undecorated-list {
+    list-style-type: none;
+    margin: 0;
+    padding: 0;
+}

@@ -3,14 +3,14 @@ from .models import AnnotatedToken
 
 
 class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
-    text = indexes.CharField(document=True)  # , use_template=True
-    token = indexes.CharField(model_attr='token')
+    text = indexes.CharField(document=True, use_template=True)
+    token = indexes.CharField(model_attr='token', faceted=True)
     preceding = indexes.CharField(model_attr='preceding')
     following = indexes.CharField(model_attr='following')
-    lemma = indexes.CharField(model_attr='lemma')
+    lemma = indexes.CharField(model_attr='lemma', faceted=True)
     location = indexes.CharField(model_attr='location')
     token_number = indexes.IntegerField(model_attr='token_number')
-    pos = indexes.CharField(model_attr='pos')
+    pos = indexes.CharField(model_attr='pos', faceted=True)
 
     def get_model(self):
         return AnnotatedToken
