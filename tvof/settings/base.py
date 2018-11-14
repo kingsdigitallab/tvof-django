@@ -494,3 +494,12 @@ ALIGNMENT_FEATURE_LABELS = {
     'var': 'variation',
     'rub': 'rubric',
 }
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE':
+        'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
+        'URL': 'http://localhost:9200/',
+        'INDEX_NAME': 'haystack_base',
+    }
+}
