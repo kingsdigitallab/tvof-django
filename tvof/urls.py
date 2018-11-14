@@ -23,6 +23,7 @@ kiln_root = settings.KILN_CONTEXT_PATH
 urlpatterns = [
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^digger/', include('activecollab_digger.urls')),
     url('^{path}'.format(path=kiln_root),
         include('kiln.urls')),
 ]

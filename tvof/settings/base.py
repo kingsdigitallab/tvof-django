@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 PROJECT_NAME = 'tvof'
-PROJECT_TITLE = 'Change the title in the settings'
+PROJECT_TITLE = 'The Values of French'
 
 # -----------------------------------------------------------------------------
 # Core Settings
@@ -104,6 +104,7 @@ INSTALLED_APPS = (
 
 INSTALLED_APPS += (
     # your project apps here
+    'activecollab_digger',
     'kiln',
     'text_viewer',
     'text_patterns',
@@ -209,6 +210,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.template.context_processors.static',
                 'django.contrib.messages.context_processors.messages',
+                'activecollab_digger.context_processors.activecollab_digger',
                 'cms.context_processor.cms_lang',
             ],
         },
@@ -228,10 +230,12 @@ WSGI_APPLICATION = PROJECT_NAME + '.wsgi.application'
 # -----------------------------------------------------------------------------
 # Authentication
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth
-# https://scm.cch.kcl.ac.uk/hg/ddhldap-django
 # -----------------------------------------------------------------------------
 
-# AUTH_LDAP_REQUIRE_GROUP = 'cn=GROUP_NAME,' + LDAP_BASE_OU
+if 'wagtail.core' in INSTALLED_APPS:
+    LOGIN_URL = '/wagtail/login/'
+else:
+    LOGIN_URL = '/admin/login/'
 
 
 # -----------------------------------------------------------------------------
@@ -364,7 +368,6 @@ REQUIRE_ENVIRONMENT = 'node'
 # FABRIC
 # -----------------------------------------------------------------------------
 
-
 FABRIC_USER = getpass.getuser()
 
 # -----------------------------------------------------------------------------
@@ -377,6 +380,19 @@ GA_ID = ''
 WAGTAIL_SITE_NAME = 'TVOF'
 
 WAGTAIL_APPEND_SLASH = False
+
+# -----------------------------------------------------------------------------
+# ACTIVE COLLAB DIGGER
+# -----------------------------------------------------------------------------
+
+AC_BASE_URL = ''
+AC_API_URL = AC_BASE_URL + '/api/v1/'
+AC_PROJECT_ID = 0
+AC_USER = 0
+AC_TOKEN = ''
+
+WAGTAIL_SITE_NAME = PROJECT_TITLE
+ITEMS_PER_PAGE = 10
 
 # -----------------------------------------------------------------------------
 # TVOF

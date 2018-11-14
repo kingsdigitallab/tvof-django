@@ -8,6 +8,8 @@ django-model-utils
 django-redis
 django-require
 
+pyopenssl<18
+
 libsass==0.10.0
 pillow
 psycopg2-binary
@@ -40,3 +42,5 @@ djangorestframework<4
 # needed for haystack to work with ES, caped version b/c we have ES 2
 # ES ON VM WILL HAVE TO BE UPGRADED TO VERSION 2
 elasticsearch>=2.0.0,<3.0.0
+
+django-activecollab-digger
