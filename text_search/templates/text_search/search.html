@@ -9,70 +9,79 @@
 
     {% verbatim %}
     <div id="tvof-search">
-        <div class="search-query">
-            <input class="search-text" type="text" v-model="query.text" v-on:change="on_change_search_text">
+        <div class="search-query hide-for-large">
+            <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
+            <button class="close-icon" type="reset" v-on:click="on_reset_search_text"></button>
         </div>
-        <div class="search-results">
-            <div class="search-pagination">
-                {{ response.objects.count }} tokens 
-                - 
-                <a v-if="response.objects.previous" href="#" class="button tiny" v-on:click.prevent="on_click_prev">&lt; Previous</a>
-                Page {{ query.page }} / {{ last_page_index }}
-                <a v-if="response.objects.next" href="#" class="button tiny" v-on:click.prevent="on_click_next">Next &gt;</a>
-            </div>
-            <table class="search-hits">
-                <thead>
-                    <tr>
-                        <th>Location</th>
-                        <th>Lemma</th>
-                        <th>Preceding</th>
-                        <th>Token</th>
-                        <th>Following</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    <tr v-for="hit in response.objects.results">
-                        <td>
-                            <a href="#" v-on:click.prevent="on_click_token(hit)">
-                                {{ hit.location }}:
-                            </a>
-                        </td>
-                        <td>
-                            {{ hit.lemma }}                        
-                        </td>
-                        <td class="token-preceding">
-                            <a href="#" v-on:click.prevent="on_click_token(hit)">
-                            {{ hit.preceding }}
-                            </a>
-                        </td>
-                        <td>
-                            <a href="#" v-on:click.prevent="on_click_token(hit)">
-                            {{ hit.token }}                      
-                            </a>
-                        </td>
-                        <td>
-                            <a href="#" v-on:click.prevent="on_click_token(hit)">
-                            {{ hit.following }}
-                            </a>
-                            </td>
-                    </tr>
-                </tbody>
-            </table>
-        </div>
-        <div class="search-facets">
-            <div class="card" v-for="(options, facet) in response.fields">
-                <div class="card-divider">
-                    <h4>{{ facet }}</h4>
+        <div class="row">
+            <div class="search-results columns large-9 large-push-3">
+                <div class="search-pagination">
+                    {{ response.objects.count }} tokens
+                    - 
+                    <a v-if="response.objects.previous" href="#" class="button tiny" v-on:click.prevent="on_click_prev">&lt; Previous</a>
+                    Page {{ query.page }} / {{ last_page_index }}
+                    <a v-if="response.objects.next" href="#" class="button tiny" v-on:click.prevent="on_click_next">Next &gt;</a>
                 </div>
-                <div class="card-section">
-                    <ul class="search-facet undecorated-list">
-                        <li class="search-option" v-for="option in options">
-                            <a href="#" v-on:click.prevent="on_click_option(facet, option)" :class="{'selected': is_option_selected(facet, option)}">
-                                {{ option.text }} ({{ option.count }})
-                                <template v-if="is_option_selected(facet, option)">X</template>
-                            </a>
-                        </li>
-                    </ul>
+                <table class="search-hits">
+                    <thead>
+                        <tr>
+                            <th>Location</th>
+                            <th>Preceding</th>
+                            <th>Token<br>(Lemma)</th>
+                            <th>Following</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="hit in response.objects.results">
+                            <td>
+                                <a href="#" v-on:click.prevent="on_click_token(hit)">
+                                    {{ hit.location }}:
+                                </a>
+                            </td>
+                            <td class="token-preceding">
+                                <a href="#" v-on:click.prevent="on_click_token(hit)">
+                                {{ hit.preceding }}
+                                </a>
+                            </td>
+                            <td>
+                                <a href="#" v-on:click.prevent="on_click_token(hit)">
+                                {{ hit.token }}                      
+                                </a><br>
+                                ({{ hit.lemma }})
+                            </td>
+                            <td>
+                                <a href="#" v-on:click.prevent="on_click_token(hit)">
+                                {{ hit.following }}
+                                </a>
+                                </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="search-facets columns large-3 large-pull-9">
+                <div class="card show-for-large">
+                    <div class="card-divider">
+                        <h4>Lemma or Token</h4>
+                    </div>
+                    <div class="search-query">
+                        <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
+                        <button class="close-icon" type="reset" v-on:click="on_reset_search_text"></button>
+                    </div>
+                </div>
+                <div class="card" v-for="(options, facet) in response.fields">
+                    <div class="card-divider">
+                        <h4>{{ facet }}</h4>
+                    </div>
+                    <div class="card-section">
+                        <ul class="search-facet undecorated-list">
+                            <li class="search-option" v-for="option in options">
+                                <a href="#" v-on:click.prevent="on_click_option(facet, option)" :class="{'selected': is_option_selected(facet, option)}">
+                                    {{ option.text }} ({{ option.count }})
+                                    <template v-if="is_option_selected(facet, option)">X</template>
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
                 </div>
             </div>
         </div>
@@ -123,6 +132,10 @@
                 this.call_api();
             },
             methods: {
+                on_reset_search_text: function() {
+                    this.query.text = '';
+                    this.on_change_search_text();
+                },
                 is_option_selected: function(facet, option) {
                     return (this.query.facets[facet+'__'+option.text]);
                 },

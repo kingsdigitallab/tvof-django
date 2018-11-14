@@ -900,10 +900,12 @@ footer {
 
 #tvof-search {
     .search-facets {
-        float: left;
         
         .search-option a:hover {
             text-decoration: underline;
+        }
+        .search-option a.selected:hover {
+            text-decoration: line-through;
         }
         
         .selected {
@@ -911,11 +913,14 @@ footer {
         }
     }
     .search-results {
-        float: right;
         
         .token-preceding {
             text-align: right;
         }
+    }
+    .button:focus, .button:hover {
+        color: #c7d0e1;
+        background: #3a4b6c;        
     }
 }
 
@@ -923,4 +928,46 @@ footer {
     list-style-type: none;
     margin: 0;
     padding: 0;
+}
+
+.close-icon {
+    border:1px solid transparent;
+    background-color: transparent;
+    display: inline-block;
+    vertical-align: middle;
+    outline: 0;
+    cursor: pointer;
+}
+.close-icon:after {
+    content: "X";
+    display: block;
+    width: 15px;
+    height: 15px;
+    position: absolute;
+    background-color: rgb(180, 180, 180);
+    z-index:1;
+    right: 20px;
+    top: 0;
+    bottom: 0;
+    margin: auto;
+    padding: 2px;
+    border-radius: 50%;
+    text-align: center;
+    color: white;
+    font-weight: normal;
+    font-size: 12px;
+    box-shadow: 0 0 2px rgb(150, 150, 150);
+    cursor: pointer;
+}
+.search-text {
+    width: 90%;
+    display: inline;
+    margin: 0.4rem;
+    
+    &:hover, &:focus {
+        border-color: hsl(221, 30%, 37%);
+    }
+}
+.search-text,.close-icon,.search-query {
+    position: relative;
 }
