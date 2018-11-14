@@ -98,6 +98,8 @@ INSTALLED_APPS = (
     'compressor',
     'require',
     'cms',
+    'rest_framework',
+    'haystack',
 )
 
 INSTALLED_APPS += (
@@ -106,6 +108,7 @@ INSTALLED_APPS += (
     'text_viewer',
     'text_patterns',
     'text_alignment',
+    'text_search',
     'tvof',
 )
 

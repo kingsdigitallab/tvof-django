@@ -1,0 +1,1 @@
+{{ object.lemma }} {{ object.token }}
