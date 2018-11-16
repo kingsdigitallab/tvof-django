@@ -235,6 +235,10 @@ class BlogPost(AbstractMultilingualContentPage):
     search_name = "Blog post"
     content = get_advanced_streamfield()
 
+    @property
+    def thumbnail(self):
+        return 'thumb'
+
 
 class BlogIndexPage(RoutablePageMixin, Page):
     """Blog post index page."""
@@ -245,7 +249,10 @@ class BlogIndexPage(RoutablePageMixin, Page):
 
     @property
     def posts(self):
-        return BlogPost.objects.all().order_by('-latest_revision_created_at')
+        ret = self.get_children().live().order_by(
+            '-latest_revision_created_at'
+        )
+        return ret
 
     @property
     def active_months(self):
@@ -281,7 +288,7 @@ class BlogIndexPage(RoutablePageMixin, Page):
             self.get_template(request),
             {
                 'self': self,
-                'posts': self._paginate(request, posts)
+                'page_of_posts': self._paginate(request, posts)
             }
         )
 
@@ -293,8 +300,10 @@ class BlogIndexPage(RoutablePageMixin, Page):
             raise Http404('Invalid Author')
 
         posts = self.posts.filter(
-            models.Q(owner__username=author) |
-            models.Q(owner__username=unslugify(author)))
+            models.Q(owner__username=author) | models.Q(
+                owner__username=unslugify(author)
+            )
+        )
 
         return render(request,
                       self.get_template(request),
@@ -311,8 +320,7 @@ class BlogIndexPage(RoutablePageMixin, Page):
             raise Http404('Invalid Tag')
 
         posts = self.posts.filter(
-            models.Q(tags__name=tag) |
-            models.Q(tags__name=unslugify(tag)))
+            models.Q(tags__name=tag) | models.Q(tags__name=unslugify(tag)))
 
         return render(request,
                       self.get_template(request),

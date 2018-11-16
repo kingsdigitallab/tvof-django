@@ -1,45 +1,49 @@
 {% load staticfiles wagtailcore_tags %}
 
-<ul class="{{ class }} no-bullet">
-    {% for post in self.get_descendants.live|dictsortreversed:"first_published_at" %}
-    <li class="item">
-        <div class="row">
-            {# if feed image exists, display thumbnail and render the grid with two columns #}
-            <div class="medium-3 large-2 columns">
-                {# the feed image should display here instead of the placeholder #}
-                <div class="thumbnail">
-                    <img src="{% static 'images/placeholder-190x110.png' %}" alt="{# replace with title from image #}">
-                </div>
-            </div>
-            {# endif #}
-            <div class="{# if feed image exists #}medium-9 large-10{# else #}{# small-12#}{# endif #} columns">
-                {% block blog_post_title %}
-                <h2 class="posttitle">
-                    <a href="{{ post.url }}">{{ post.title }}</a>
-                </h2>
-                <p class="bydate">by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at|date:"j M Y" }}</p>
-                <section class="postcontent">
-                    {% for child in post.blogpost.content %} 
-                    <p>
-                        {% if child.block_type == 'paragraph' %}
-                            {% if forloop.first %}
-                            {{ child.value|richtext|truncatewords:15 }}
-                            <a href="{{ post.url }}"><strong>Read more &raquo;</strong></a>
-                            {% endif %}
-                        {% endif %}
-                    </p>
-                    {% endfor %}
-                </section>
-                {% endblock %}
-            </div>
-        </div>
-    </li>
+{% include "cms/includes/pagination.html" with page=page_of_posts %}
 
+<ul class="{{ class }} no-bullet">
+    {% for apost in page_of_posts %}
+        {% with apost.specific as post %}
+            <li class="item">
+                <div class="row">
+                    {# if feed image exists, display thumbnail and render the grid with two columns #}
+                        <div class="medium-3 large-2 columns">
+                            {# the feed image should display here instead of the placeholder #}
+                            <div class="thumbnail">
+                                [{{ post.thumbnail }}]
+                                <img src="{% static 'images/placeholder-190x110.png' %}" alt="{# replace with title from image #}">
+                            </div>
+                        </div>
+                    {# endif #}
+                    <div class="{# if feed image exists #}medium-9 large-10{# else #}{# small-12#}{# endif #} columns">
+                        {% block blog_post_title %}
+                            <h2 class="posttitle">
+                                <a href="{{ post.url }}">{{ post.title }}</a>
+                            </h2>
+                            <p class="bydate">by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at|date:"j M Y" }}</p>
+                            <section class="postcontent">
+                                {% for child in post.blogpost.content %} 
+                                    <p>
+                                        {% if child.block_type == 'paragraph' %}
+                                            {% if forloop.first %}
+                                            {{ child.value|richtext|truncatewords:15 }}
+                                            <a href="{{ post.url }}"><strong>Read more &raquo;</strong></a>
+                                            {% endif %}
+                                        {% endif %}
+                                    </p>
+                                {% endfor %}
+                            </section>
+                        {% endblock %}
+                    </div>
+                </div>
+            </li>
+        {% endwith %}
+    
     {% empty %}
-    <li>Sorry, nothing to show here.</li>
+        <li>Sorry, nothing to show here.</li>
     {% endfor %}
     
 </ul>
 
-{% include "cms/includes/pagination.html" with pages=posts %}
-
+{% include "cms/includes/pagination.html" with page=page_of_posts %}
