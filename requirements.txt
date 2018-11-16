@@ -6,6 +6,11 @@ django-grappelli
 django-libsass
 django-model-utils
 django-redis
+# Without this we get DataError "Invalid input of type: 'CacheKey'. 
+# Convert to a byte, string or number first."
+# See https://stackoverflow.com/a/53336728/3748764
+redis<3
+
 django-require
 
 pyopenssl<18
