@@ -18,6 +18,7 @@ from django.urls.base import translate_url
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel
+from wagtail.wagtailimages.models import Image
 
 
 def get_field_lang(obj, field_name):
@@ -237,7 +238,22 @@ class BlogPost(AbstractMultilingualContentPage):
 
     @property
     def thumbnail(self):
-        return 'thumb'
+        ret = None
+
+        # get first image from streamfield
+        image = None
+
+        for block_data in self.content.stream_data:
+            value = block_data['value']
+            if isinstance(value, dict):
+                image = value.get('image', None) or value.get('images', None)
+                if image:
+                    break
+
+        if image:
+            ret = Image.objects.get(id=image)
+
+        return ret
 
 
 class BlogIndexPage(RoutablePageMixin, Page):
