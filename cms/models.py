@@ -19,6 +19,8 @@ from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel
 from wagtail.wagtailimages.models import Image
+from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+from wagtail.wagtailimages.fields import WagtailImageField
 
 
 def get_field_lang(obj, field_name):
@@ -133,7 +135,7 @@ class AbstractMultilingualContentPage(Page):
     # TODO: move that to a function...
     # Problem is that changes to the panels in the subclasses
     # will be ignored.
-    edit_handler = TabbedInterface([
+    edit_handler2 = TabbedInterface([
         ObjectList(content_panels, heading='Content'),
         ObjectList(content_panels_fr, heading='Content (French)'),
         ObjectList(promote_panels, heading='Promote'),
@@ -231,27 +233,51 @@ class RichTextPage(AbstractMultilingualContentPage):
 
 
 class BlogPost(AbstractMultilingualContentPage):
-    """Blog post."""
+    """Blog post / News Item."""
 
     search_name = "Blog post"
     content = get_advanced_streamfield()
 
+    thumbnail_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+'
+    )
+
+#     def __init__(self, *args, **kwargs):
+#         super(AbstractMultilingualContentPage, self).__init__(*args, **kwargs)
+#         self.edit_handler.children[2] = ObjectList(
+#             self.promote_panels, heading='Promote')
+
+    promote_panels = AbstractMultilingualContentPage.promote_panels + [
+        MultiFieldPanel([
+            ImageChooserPanel('thumbnail_image'),
+        ], 'Thumbnail'),
+    ]
+
     @property
     def thumbnail(self):
-        ret = None
+        ''' returns self.thumbnail_image or
+        the first image from streamfield
+        '''
 
-        # get first image from streamfield
-        image = None
+        ret = self.thumbnail_image
 
-        for block_data in self.content.stream_data:
-            value = block_data['value']
-            if isinstance(value, dict):
-                image = value.get('image', None) or value.get('images', None)
-                if image:
-                    break
+        if ret is None:
+            image = None
 
-        if image:
-            ret = Image.objects.get(id=image)
+            for block_data in self.content.stream_data:
+                value = block_data['value']
+                if isinstance(value, dict):
+                    image = value.get('image', None) or value.get(
+                        'images', None)
+                    if image:
+                        break
+
+            if image:
+                ret = Image.objects.get(id=image)
 
         return ret
 
