@@ -20,7 +20,6 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel
 from wagtail.wagtailimages.models import Image
 from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
-from wagtail.wagtailimages.fields import WagtailImageField
 
 
 def get_field_lang(obj, field_name):
@@ -135,7 +134,7 @@ class AbstractMultilingualContentPage(Page):
     # TODO: move that to a function...
     # Problem is that changes to the panels in the subclasses
     # will be ignored.
-    edit_handler2 = TabbedInterface([
+    edit_handler = TabbedInterface([
         ObjectList(content_panels, heading='Content'),
         ObjectList(content_panels_fr, heading='Content (French)'),
         ObjectList(promote_panels, heading='Promote'),
@@ -246,16 +245,25 @@ class BlogPost(AbstractMultilingualContentPage):
         related_name='+'
     )
 
-#     def __init__(self, *args, **kwargs):
-#         super(AbstractMultilingualContentPage, self).__init__(*args, **kwargs)
-#         self.edit_handler.children[2] = ObjectList(
-#             self.promote_panels, heading='Promote')
-
     promote_panels = AbstractMultilingualContentPage.promote_panels + [
         MultiFieldPanel([
             ImageChooserPanel('thumbnail_image'),
         ], 'Thumbnail'),
     ]
+
+    # TODO: move that to a function...
+    # Problem is that changes to the panels in the subclasses
+    # will be ignored.
+    parent_class = AbstractMultilingualContentPage
+    edit_handler = TabbedInterface([
+        ObjectList(parent_class.content_panels, heading='Content'),
+        ObjectList(parent_class.content_panels_fr, heading='Content (French)'),
+        ObjectList(promote_panels, heading='Promote'),
+        ObjectList(
+            parent_class.settings_panels, heading='Settings',
+            classname="settings"
+        ),
+    ])
 
     @property
     def thumbnail(self):
@@ -277,7 +285,9 @@ class BlogPost(AbstractMultilingualContentPage):
                         break
 
             if image:
-                ret = Image.objects.get(id=image)
+                ret = Image.objects.filter(id=image).first()
+                if ret is None:
+                    print('Image not found #%s' % image)
 
         return ret
 
@@ -292,7 +302,7 @@ class BlogIndexPage(RoutablePageMixin, Page):
     @property
     def posts(self):
         ret = self.get_children().live().order_by(
-            '-latest_revision_created_at'
+            '-first_published_at'
         )
         return ret
 
