@@ -33,8 +33,36 @@ class AnnotatedToken(models.Model):
     preceding = models.CharField(max_length=200)
     following = models.CharField(max_length=200)
     lemma = models.CharField(max_length=30)
-    location = models.CharField(max_length=20)
+    location = models.CharField(
+        max_length=20,
+        help_text='location id for the seg comprising this token'
+    )
     token_number = models.IntegerField(
         help_text='The sequential index of the token relative to the seg'
     )
-    pos = models.CharField(max_length=30)
+    pos = models.CharField(max_length=30, help_text='part of speech')
+
+    # these fields are derived from .location
+    manuscript = models.CharField(max_length=30, default='unspecified')
+    section_name = models.CharField(max_length=100, default='unspecified')
+    is_rubric = models.BooleanField(default=False)
+
+    @classmethod
+    def from_kwik_item(cls, item, token):
+        data = {
+            k: (v or 'unspecified')
+            for k, v
+            in item.attrib.items()
+            if k not in ['type', 'n']
+        }
+        location_parts = data['location'].split('_')
+        ret = AnnotatedToken(
+            token=token,
+            token_number=item.attrib['n'],
+            manuscript=location_parts[0],
+            section_name='section X',
+            is_rubric=(len(location_parts) < 3),
+            ** data
+        )
+
+        return ret

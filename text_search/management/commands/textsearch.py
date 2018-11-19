@@ -64,11 +64,5 @@ class Command(BaseCommand):
             token = sublist.attrib.get('key')
             print(token)
             for item in sublist.iter('item'):
-                data = {k: v for k, v in item.attrib.items() if k not in [
-                    'type', 'n']}
-                annotated_token = AnnotatedToken(
-                    token=token,
-                    token_number=item.attrib['n'],
-                    **data
-                )
+                annotated_token = AnnotatedToken.from_kwik_item(item, token)
                 annotated_token.save()

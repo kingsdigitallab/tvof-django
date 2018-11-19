@@ -12,8 +12,19 @@ class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
     token_number = indexes.IntegerField(model_attr='token_number')
     pos = indexes.CharField(model_attr='pos', faceted=True)
 
+    # these fields are derived from .location
+    manuscript = indexes.CharField(model_attr='manuscript', faceted=True)
+    section_name = indexes.CharField(model_attr='section_name', faceted=True)
+    is_rubric = indexes.BooleanField(model_attr='is_rubric', faceted=True)
+
     def get_model(self):
         return AnnotatedToken
 
     def index_queryset(self, using=None):
+        return self._index_queryset_models(using=using)
+
+    def _index_queryset_xml(self):
+        pass
+
+    def _index_queryset_models(self, using=None):
         return self.get_model().objects.all()

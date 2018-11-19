@@ -66,11 +66,15 @@ if 1:
 
             fields = [
                 'token', 'lemma', 'pos',
+                'manuscript', 'section_name', 'is_rubric'
             ]
             field_options = {
                 'token': {},
                 'lemma': {},
                 'pos': {},
+                'manuscript': {},
+                'section_name': {},
+                'is_rubric': {},
             }
 
     class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):

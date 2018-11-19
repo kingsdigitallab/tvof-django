@@ -320,6 +320,13 @@ GRAPPELLI_ADMIN_TITLE = PROJECT_TITLE
 # -----------------------------------------------------------------------------
 
 KILN_CONTEXT_PATH = 'k/'
+# IF you are using vagrant, this address will not work.
+# you'll need to change it in your local.py (NOT HERE).
+# From your VM, run the following:
+# netstat -rn
+# Take the first value in the Gateway column which is not 0.0.0.0
+# (e.g. 10.0.2.2) and replace localhost with it.
+# e.g. 'http://10.0.2.2:8180'
 KILN_BASE_URL = 'http://localhost:8180'
 
 # -----------------------------------------------------------------------------
