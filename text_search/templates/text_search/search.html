@@ -98,7 +98,7 @@
     <script>
         
         var api_url = '/api/v1/tokens/search/facets/?format=json';
-        var text_viewer_url = 'http://localhost:8000/textviewer/?p1=';
+        var text_viewer_url = '/textviewer/?p1=';
         var id_to_ms = {
             'edfr20125': 'Fr20125',
             'edRoyal20D1': 'Royal',
@@ -149,7 +149,7 @@
                     },
                 },
                 query: {
-                    text: 'dire',
+                    text: '',
                     page: 1,
                     facets: {}
                 },
@@ -201,7 +201,7 @@
                 },
                 on_click_token: function(hit) {
                     // edfr20125_00598_08
-                    // => http://localhost:8000/textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
+                    // => /textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
                     var parts = hit.location.split('_');
                     var url = text_viewer_url + id_to_ms[parts[0]] + '/interpretive/paragraph/' + parseInt(parts[1], 10);
                     var win = window.open(url, '_blank');
