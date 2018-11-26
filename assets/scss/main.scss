@@ -948,14 +948,14 @@ footer {
 }
 .close-icon:after {
     content: "X";
-    display: block;
+    display: inline-block;
     width: 15px;
     height: 15px;
     position: absolute;
     background-color: rgb(180, 180, 180);
     z-index:1;
     right: 20px;
-    top: 0;
+    top: -3px;
     bottom: 0;
     margin: auto;
     padding: 2px;
@@ -964,6 +964,7 @@ footer {
     color: white;
     font-weight: normal;
     font-size: 12px;
+    line-height: 1em;
     box-shadow: 0 0 2px rgb(150, 150, 150);
     cursor: pointer;
 }

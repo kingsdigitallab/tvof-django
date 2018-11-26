@@ -11,7 +11,7 @@
     <div id="tvof-search">
         <div class="search-query hide-for-large">
             <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
-            <button class="close-icon" type="reset" v-on:click="on_reset_search_text"></button>
+            <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
         </div>
         <div class="row">
             <div class="search-results columns large-9 large-push-3">
@@ -65,7 +65,7 @@
                     </div>
                     <div class="search-query">
                         <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
-                        <button class="close-icon" type="reset" v-on:click="on_reset_search_text"></button>
+                        <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
                     </div>
                 </div>
                 <div class="card" v-for="ui_facet in ui_facets">
