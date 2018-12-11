@@ -16,7 +16,7 @@ import os
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
 PROJECT_NAME = 'tvof'
-PROJECT_TITLE = 'Change the title in the settings'
+PROJECT_TITLE = 'The Values of French'
 
 # -----------------------------------------------------------------------------
 # Core Settings
@@ -98,14 +98,18 @@ INSTALLED_APPS = (
     'compressor',
     'require',
     'cms',
+    'rest_framework',
+    'haystack',
 )
 
 INSTALLED_APPS += (
     # your project apps here
+    'activecollab_digger',
     'kiln',
     'text_viewer',
     'text_patterns',
     'text_alignment',
+    'text_search',
     'tvof',
 )
 
@@ -206,6 +210,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.template.context_processors.static',
                 'django.contrib.messages.context_processors.messages',
+                'activecollab_digger.context_processors.activecollab_digger',
                 'cms.context_processor.cms_lang',
             ],
         },
@@ -225,10 +230,12 @@ WSGI_APPLICATION = PROJECT_NAME + '.wsgi.application'
 # -----------------------------------------------------------------------------
 # Authentication
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth
-# https://scm.cch.kcl.ac.uk/hg/ddhldap-django
 # -----------------------------------------------------------------------------
 
-# AUTH_LDAP_REQUIRE_GROUP = 'cn=GROUP_NAME,' + LDAP_BASE_OU
+if 'wagtail.core' in INSTALLED_APPS:
+    LOGIN_URL = '/wagtail/login/'
+else:
+    LOGIN_URL = '/admin/login/'
 
 
 # -----------------------------------------------------------------------------
@@ -313,6 +320,13 @@ GRAPPELLI_ADMIN_TITLE = PROJECT_TITLE
 # -----------------------------------------------------------------------------
 
 KILN_CONTEXT_PATH = 'k/'
+# IF you are using vagrant, this address will not work.
+# you'll need to change it in your local.py (NOT HERE).
+# From your VM, run the following:
+# netstat -rn
+# Take the first value in the Gateway column which is not 0.0.0.0
+# (e.g. 10.0.2.2) and replace localhost with it.
+# e.g. 'http://10.0.2.2:8180'
 KILN_BASE_URL = 'http://localhost:8180'
 
 # -----------------------------------------------------------------------------
@@ -361,7 +375,6 @@ REQUIRE_ENVIRONMENT = 'node'
 # FABRIC
 # -----------------------------------------------------------------------------
 
-
 FABRIC_USER = getpass.getuser()
 
 # -----------------------------------------------------------------------------
@@ -374,6 +387,19 @@ GA_ID = ''
 WAGTAIL_SITE_NAME = 'TVOF'
 
 WAGTAIL_APPEND_SLASH = False
+
+# -----------------------------------------------------------------------------
+# ACTIVE COLLAB DIGGER
+# -----------------------------------------------------------------------------
+
+AC_BASE_URL = ''
+AC_API_URL = AC_BASE_URL + '/api/v1/'
+AC_PROJECT_ID = 0
+AC_USER = 0
+AC_TOKEN = ''
+
+WAGTAIL_SITE_NAME = PROJECT_TITLE
+ITEMS_PER_PAGE = 10
 
 # -----------------------------------------------------------------------------
 # TVOF
@@ -474,4 +500,13 @@ ALIGNMENT_FEATURE_LABELS = {
     'loc': 'location',
     'var': 'variation',
     'rub': 'rubric',
+}
+
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE':
+        'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
+        'URL': 'http://localhost:9200/',
+        'INDEX_NAME': 'haystack_base',
+    }
 }

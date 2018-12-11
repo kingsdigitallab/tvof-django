@@ -1,0 +1,2 @@
+{% load  textsearch_tags %}
+{{ object.lemma }} {{ object.token|unicode_to_ascii }}

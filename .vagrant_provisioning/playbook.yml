@@ -83,12 +83,6 @@
     tags:
       - python
 
-  - name: python | install psycopg2
-    become: yes
-    pip: name=psycopg2 state=latest
-    tags:
-      - python
-
   - name: python | setup virtualenv
     file: path={{ python.virtualenv_location }} state=directory
   - command: virtualenv {{ python.virtualenv_location }}
