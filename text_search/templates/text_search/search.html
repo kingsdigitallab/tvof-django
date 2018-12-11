@@ -16,7 +16,7 @@
         <div class="row">
             <div class="search-results columns large-9 large-push-3">
                 <div class="search-pagination">
-                    {{ response.objects.count }} tokens
+                    {{ response.objects.count }} instances
                     - 
                     <a v-if="response.objects.previous" href="#" class="button tiny" v-on:click.prevent="on_click_prev">&lt; Previous</a>
                     Page {{ query.page }} / {{ last_page_index }}
@@ -27,7 +27,7 @@
                         <tr>
                             <th>Location</th>
                             <th>Preceding</th>
-                            <th>Token<br>(Lemma)</th>
+                            <th>Form<br>(Lemma)</th>
                             <th>Following</th>
                         </tr>
                     </thead>
@@ -61,7 +61,7 @@
             <div class="search-facets columns large-3 large-pull-9">
                 <div class="card show-for-large">
                     <div class="card-divider">
-                        <h4>Lemma or Token</h4>
+                        <h4>Lemma or Form</h4>
                     </div>
                     <div class="search-query">
                         <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">

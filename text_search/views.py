@@ -13,6 +13,9 @@ from drf_haystack.mixins import FacetMixin
 from drf_haystack.filters import HaystackFacetFilter
 
 
+ITEMS_PER_PAGE = 10
+
+
 def search_view(request):
     return render(request, 'text_search/search.html', {'title': 'Search'})
 
@@ -31,7 +34,7 @@ class AnnotatedTokenSerializer(HaystackSerializer):
 
 
 class AnnotatedTokenSearchPagination(pagination.PageNumberPagination):
-    page_size = 10
+    page_size = ITEMS_PER_PAGE
 
 
 class AnnotatedTokenSearchView(HaystackViewSet):
@@ -52,9 +55,6 @@ if 1:
     It returns facets and also the objects (hits).
     '''
 
-    class AnnotatedTokenFacetSearchPagination(pagination.PageNumberPagination):
-        page_size = 10
-
     class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
         # True to returns the tokens / hits with the facets
         serialize_objects = True
@@ -64,18 +64,17 @@ if 1:
             # we want to include in the search.
             index_classes = [AnnotatedTokenIndex]
 
-            fields = [
-                'token', 'lemma', 'pos',
-                'manuscript', 'section_name', 'is_rubric'
-            ]
             field_options = {
-                'token': {},
+                'token': {
+                    # 'limit': 3,
+                },
                 'lemma': {},
                 'pos': {},
                 'manuscript': {},
                 'section_name': {},
                 'is_rubric': {},
             }
+            fields = field_options.keys()
 
     class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
         index_models = [AnnotatedToken]
@@ -85,7 +84,7 @@ if 1:
 
         facet_filter_backends = [HaystackFacetFilter]
 
-        pagination_class = AnnotatedTokenFacetSearchPagination
+        pagination_class = AnnotatedTokenSearchPagination
 
         def get_queryset(self, *args, **kwargs):
             '''
@@ -94,5 +93,6 @@ if 1:
             By default FacetMixin disables the normal search.
             '''
             ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
-            ret = self.filter_queryset(ret)
+            ret = self.filter_queryset(
+                ret.order_by('location', 'token_number'))
             return ret

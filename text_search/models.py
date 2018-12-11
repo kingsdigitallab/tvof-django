@@ -48,7 +48,26 @@ class AnnotatedToken(models.Model):
     is_rubric = models.BooleanField(default=False)
 
     @classmethod
-    def from_kwik_item(cls, item, token):
+    def update_or_create_from_kwik_item(cls, item, token):
+        data = cls._get_data_from_kwik_item(item, token)
+
+        ret, _ = cls.objects.update_or_create(
+            location=data['location'],
+            token_number=data['token_number'],
+            defaults=data
+        )
+
+        return ret
+
+    @classmethod
+    def create_from_kwik_item(cls, item, token):
+        ret = AnnotatedToken(**cls._get_data_from_kwik_item(item, token))
+        ret.save()
+
+        return ret
+
+    @classmethod
+    def _get_data_from_kwik_item(cls, item, token):
         data = {
             k: (v or 'unspecified')
             for k, v
@@ -56,7 +75,8 @@ class AnnotatedToken(models.Model):
             if k not in ['type', 'n']
         }
         location_parts = data['location'].split('_')
-        ret = AnnotatedToken(
+
+        ret = dict(
             token=token,
             token_number=item.attrib['n'],
             manuscript=location_parts[0],

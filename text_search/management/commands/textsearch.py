@@ -23,6 +23,10 @@ class Command(BaseCommand):
             known_action = True
             self.action_import()
 
+        if action == 'clear':
+            known_action = True
+            self.action_clear()
+
         if not known_action:
             print 'ERROR: unknown action "%s"' % action
         else:
@@ -30,6 +34,9 @@ class Command(BaseCommand):
 
     def get_args(self):
         return self.args
+
+    def action_clear(self):
+        AnnotatedToken.objects.all().delete()
 
     def action_import(self):
         args = self.get_args()
@@ -64,5 +71,6 @@ class Command(BaseCommand):
             token = sublist.attrib.get('key')
             print(token)
             for item in sublist.iter('item'):
-                annotated_token = AnnotatedToken.from_kwik_item(item, token)
-                annotated_token.save()
+                AnnotatedToken.update_or_create_from_kwik_item(
+                    item, token
+                )
