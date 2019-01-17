@@ -1,14 +1,17 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 
-from django.conf import settings
-from fabric.api import cd, env, prefix, quiet, require, run, sudo, task
+import os.path
+import sys
+from functools import wraps
+
+from django.conf import settings as django_settings
+from django.core.management.utils import get_random_secret_key
+from fabric.api import (cd, env, prefix, prompt, put, quiet, require, run,
+                        settings, sudo, task)
 from fabric.colors import green, yellow
 from fabric.contrib import django
-from functools import wraps
-import sys
-import os.path
-
+from fabric.utils import abort
 
 # put project directory in path
 project_root = os.path.abspath(os.path.dirname(__file__))
@@ -18,7 +21,7 @@ sys.path.append(project_root)
 # SETTINGS VARIABLES
 # Please verify each variable below and edit as necessary to match
 # your project configuration.
-# TODO: externalise to settings to local.py
+# TODO: externalise to settings to base.py
 # so this becomes a generic script without project-specific code.
 
 # The name of the Django app for this project
@@ -27,6 +30,8 @@ PROJECT_NAME = 'tvof'
 # Git repository pointer
 REPOSITORY = 'https://github.com/kingsdigitallab/{}-django.git'.format(
     PROJECT_NAME)
+
+env.gateway = 'ssh.kdl.kcl.ac.uk'
 # Host names used as deployment targets
 env.hosts = ['{}.kdl.kcl.ac.uk'.format(PROJECT_NAME)]
 # Absolute filesystem path to project 'webroot'
@@ -34,24 +39,26 @@ env.root_path = '/vol/{}/webroot/'.format(PROJECT_NAME)
 # Absolute filesystem path to project Django root
 env.django_root_path = '/vol/{}/webroot/'.format(PROJECT_NAME)
 # Absolute filesystem path to Python virtualenv for this project
-env.envs_path = os.path.join(env.root_path, 'envs')
+# TODO: create symlink to .venv within project folder
+# env.envs_path = os.path.join(env.root_path, 'envs')
 # -------------------------------
 
 django.project(PROJECT_NAME)
 
 # Set FABRIC_GATEWAY = 'username@proxy.x' in local.py
 # if you are behind a proxy.
-FABRIC_GATEWAY = getattr(settings, 'FABRIC_GATEWAY', None)
+FABRIC_GATEWAY = getattr(django_settings, 'FABRIC_GATEWAY', None)
 if FABRIC_GATEWAY:
     env.forward_agent = True
     env.gateway = FABRIC_GATEWAY
 
 # Name of linux user who deploys on the remote server
-env.user = settings.FABRIC_USER
+env.user = django_settings.FABRIC_USER
 
 
 def server(func):
     """Wraps functions that set environment variables for servers"""
+
     @wraps(func)
     def decorated(*args, **kwargs):
         try:
@@ -60,6 +67,7 @@ def server(func):
             env.servers = [func]
 
         return func(*args, **kwargs)
+
     return decorated
 
 
@@ -96,8 +104,8 @@ def set_srvr_vars():
 @task
 def setup_environment(version=None):
     require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
-    create_virtualenv()
     clone_repo()
+    create_virtualenv()
     update(version)
     install_requirements()
 
@@ -105,23 +113,25 @@ def setup_environment(version=None):
 @task
 def create_virtualenv():
     require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+    env_vpath = get_virtual_env_path()
     with quiet():
-        env_vpath = get_virtual_env_path()
         if run('ls {}'.format(env_vpath)).succeeded:
             print(
                 green('virtual environment at [{}] exists'.format(env_vpath)))
             return
 
+    # All we need is a .venv dir in the project folder;
+    # 'pipenv install' will set it up first time
     print(yellow('setting up virtual environment in [{}]'.format(env_vpath)))
-    run('virtualenv {}'.format(env_vpath))
+    run('mkdir {}'.format(env_vpath))
 
 
 def get_virtual_env_path():
     '''Returns the absolute path to the python virtualenv for the server
     (dev, stg, live) we are working on.
-    E.g. /vol/tvof/webroot/envs/dev
+    E.g. /vol/tvof/webroot/.../.venv
     '''
-    return os.path.join(env.envs_path, env.srvr)
+    return os.path.join(env.path, '.venv')
 
 
 @task
@@ -139,40 +149,43 @@ def clone_repo():
 
 @task
 def install_requirements():
-    '''runs 'pip install requirements-SRV.txt'
-        where SRV is dev|stg|liv
-        If file not found, runs 'pip install requirements.txt'
-    '''
+
+    require('srvr', 'path', provided_by=env.servers)
+
+    create_virtualenv()
 
     fix_permissions('virtualenv')
 
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+    with cd(env.path):
+        check_pipenv()
+        run('pipenv sync')
+        run('pipenv clean')
 
-    reqs = 'requirements-{}.txt'.format(env.srvr)
 
-    try:
-        assert os.path.exists(reqs)
-    except AssertionError:
-        reqs = 'requirements.txt'
-
-    with cd(env.path), prefix(env.within_virtualenv):
-        # GN: | cat to prevent shard-shaped progress bar polluting the output
-        # Until --no-progress-bar option appears in new pip version
-        run('pip install -q --no-cache -U -r {} | cat'.format(reqs))
+@task
+def check_pipenv():
+    with quiet():
+        if run('which pipenv').failed:
+            abort('pipenv is missing, '
+                  'please install it as root with "pip install pipenv"')
 
 
 @task
 def reinstall_requirement(which):
     require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
 
-    with cd(env.path), prefix(env.within_virtualenv):
-        run('pip uninstall {0} && pip install --no-deps {0}'.format(which))
+    with cd(env.path):
+        check_pipenv()
+        run('pipenv uninstall --all --clear')
+
+    install_requirements()
 
 
 @task
 def deploy(version=None):
     update(version)
     install_requirements()
+    upload_local_settings()
     own_django_log()
     fix_permissions()
     migrate()
@@ -180,11 +193,12 @@ def deploy(version=None):
     # update_index()
     # clear_cache()
     touch_wsgi()
+    check_deploy()
 
 
 @task
 def update(version=None):
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+    require('srvr', 'path', provided_by=env.servers)
 
     if version:
         # try specified version first
@@ -196,21 +210,47 @@ def update(version=None):
         # else deploy to master branch
         to_version = 'master'
 
-    with cd(env.path), prefix(env.within_virtualenv):
+    with cd(env.path):
         run('git pull')
         run('git checkout {}'.format(to_version))
 
 
 @task
+def upload_local_settings():
+    require('srvr', 'path', provided_by=env.servers)
+
+    with cd(env.path):
+        with settings(warn_only=True):
+            if run('ls {}/settings/local.py'.format(PROJECT_NAME)).failed:
+                db_host = prompt('Database host: ')
+                db_pwd = prompt('Database password: ')
+
+                put('{}/settings/local_{}.py'.format(PROJECT_NAME, env.srvr),
+                    '{}/settings/local.py'.format(PROJECT_NAME), mode='0664')
+
+                run('echo >> {}/settings/local.py'.format(PROJECT_NAME))
+                run('echo '
+                    '"DATABASES[\'default\'][\'PASSWORD\'] = \'{}\'" >>'
+                    '{}/settings/local.py'.format(db_pwd, PROJECT_NAME))
+                run('echo '
+                    '"DATABASES[\'default\'][\'HOST\'] = \'{}\'" >>'
+                    '{}/settings/local.py'.format(db_host, PROJECT_NAME))
+                run('echo '
+                    '"SECRET_KEY = \'{}\'" >>'
+                    '{}/settings/local.py'.format(
+                        get_random_secret_key(), PROJECT_NAME))
+
+
+@task
 def own_django_log():
     """ make sure logs/django.log is owned by www-data"""
-    # GN: why do we need VE?
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+    require('srvr', 'path', provided_by=env.servers)
 
     with quiet():
         log_path = os.path.join(env.path, 'logs', 'django.log')
         if run('ls {}'.format(log_path)).succeeded:
             sudo('chown www-data:www-data {}'.format(log_path))
+            sudo('chmod g+rw {}'.format(log_path))
 
 
 @task
@@ -221,8 +261,7 @@ def fix_permissions(category='static'):
         'static' (default): django static path + general project path
         'virtualenv': fix the virtualenv permissions
     '''
-    # GN: why do we need VE?
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+    require('srvr', 'path', provided_by=env.servers)
 
     processed = False
 
@@ -266,6 +305,9 @@ def migrate(app=None):
 def collect_static(process=False):
     require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
 
+    with cd(env.path):
+        run('npm i')
+
     if env.srvr in ['local', 'vagrant']:
         print(yellow('Do not run collect_static on local servers'))
         return
@@ -295,6 +337,15 @@ def clear_cache():
 def touch_wsgi():
     require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
 
-    with cd(os.path.join(env.path, '{}'.format(PROJECT_NAME))), \
+    with cd(os.path.join(env.path, PROJECT_NAME)), \
             prefix(env.within_virtualenv):
         run('touch wsgi.py')
+
+
+@task
+def check_deploy():
+    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+
+    if env.srvr in ['stg', 'liv']:
+        with cd(env.path), prefix(env.within_virtualenv):
+            run('./manage.py check --deploy')
