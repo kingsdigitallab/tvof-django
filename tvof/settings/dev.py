@@ -1,8 +1,8 @@
-from base import *  # noqa
+from .base import *  # noqa
 
 DEBUG = True
 
-INTERNAL_IPS = INTERNAL_IPS + ('', )
+INTERNAL_IPS = INTERNAL_IPS + ('',)
 
 DATABASES = {
     'default': {
@@ -58,7 +58,7 @@ except ImportError:
 # -----------------------------------------------------------------------------
 
 try:
-    from local import *  # noqa
+    from .local import *  # noqa
 except ImportError:
     print('failed to import local settings')
 
