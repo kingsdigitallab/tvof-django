@@ -12,5 +12,5 @@ def serve_wagtail_doc(request, document_id, document_filename):
     We'll bounce back to the URL and let the media server serve it.
     """
     doc = get_object_or_404(Document, id=document_id)
-    print doc.file.url
+    print(doc.file.url)
     return HttpResponseRedirect(doc.file.url)

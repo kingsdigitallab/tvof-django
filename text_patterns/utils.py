@@ -37,11 +37,11 @@ def generate_csv_lines_from_rows(rows, encoding=None, headings=None):
         # Normal csv.writer does return the buffer.
         writer = csv.writer(pseudo_buffer)
 
-        headings = headings or rows.keys()
+        headings = headings or list(rows.keys())
 
         yield writer.writerow(headings)
         for row in rows:
-            row_encoded = [unicode(row.get(k, '')).encode(
+            row_encoded = [str(row.get(k, '')).encode(
                 encoding, 'replace') for k in headings]
             yield writer.writerow(row_encoded)
 
@@ -77,20 +77,20 @@ def json_loads(data):
     def convert_dates(dic):
         if isinstance(dic, list):
             for i in range(0, len(dic)):
-                if isinstance(dic[i], basestring):
+                if isinstance(dic[i], str):
                     # 2016-10-28T13:27:38.944298+00:00
                     v = dic[i]
-                    if re.match(ur'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', v):
-                        v = re.sub('(\+\d{2}):(\d{2})$', ur'\1\2', v)
+                    if re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', v):
+                        v = re.sub('(\+\d{2}):(\d{2})$', r'\1\2', v)
                         dic[i] = parse_datetime(v)
                 elif isinstance(dic[i], dict) or isinstance(dic[i], list):
                     convert_dates(dic[i])
         if isinstance(dic, dict):
-            for k, v in dic.iteritems():
-                if isinstance(v, basestring):
+            for k, v in dic.items():
+                if isinstance(v, str):
                     # 2016-10-28T13:27:38.944298+00:00
-                    if re.match(ur'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', v):
-                        v = re.sub('(\+\d{2}):(\d{2})$', ur'\1\2', v)
+                    if re.match(r'\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}.*', v):
+                        v = re.sub('(\+\d{2}):(\d{2})$', r'\1\2', v)
                         dic[k] = parse_datetime(v)
                 elif isinstance(v, dict) or isinstance(v, list):
                     convert_dates(v)
@@ -151,7 +151,7 @@ def get_short_uid(adatetime=None):
     ret = adatetime or datetime.utcnow()
     ret = '%s%s%s%s%s%s' % (b64[ret.month], b64[ret.day], b64[ret.hour],
                             b64[ret.minute], b64[ret.second],
-                            num_encode(long('%s%s' % (ret.year - 2000,
+                            num_encode(int('%s%s' % (ret.year - 2000,
                                                       ret.microsecond))))
     # ret = ret.isoformat()
     # ret = long(re.sub(ur'\D', '', ret))
@@ -203,7 +203,7 @@ def get_int_from_roman_number(input):
     ...
     ValueError: input is not a valid roman numeral: IL
     """
-    if not isinstance(input, basestring):
+    if not isinstance(input, str):
         return None
     input = input.upper()
     nums = ['M', 'D', 'C', 'L', 'X', 'V', 'I']
@@ -232,9 +232,9 @@ def get_int_from_roman_number(input):
 
 
 # _nsre = re.compile(ur'(?iu)([0-9]+|(?:\b[mdclxvi]+\b))')
-REGEXP_ROMAN_NUMBER = re.compile(ur'(?iu)\b[ivxlcdm]+\b')
-_nsre_romans = re.compile(ur'(?iu)(?:\.\s*)([ivxlcdm]+\b)')
-_nsre = re.compile(ur'(?iu)([0-9]+)')
+REGEXP_ROMAN_NUMBER = re.compile(r'(?iu)\b[ivxlcdm]+\b')
+_nsre_romans = re.compile(r'(?iu)(?:\.\s*)([ivxlcdm]+\b)')
+_nsre = re.compile(r'(?iu)([0-9]+)')
 
 
 def is_roman_number(astring):
@@ -245,7 +245,7 @@ def sorted_natural(l, roman_numbers=False, is_locus=False):
     '''Sorts l and returns it. Natural sorting is applied.'''
     ret = sorted(l, key=lambda e: natural_sort_key(e, roman_numbers, is_locus))
     # make sure the empty values are at the end
-    for v in [None, u'', '']:
+    for v in [None, '', '']:
         if v in ret:
             ret.remove(v)
             ret.append(v)
@@ -271,10 +271,10 @@ def natural_sort_key(s, roman_numbers=False, is_locus=False):
         s = ''
 
     if is_locus:
-        s = re.sub(ur'(?i)\b(cover)\b', '50', s)
-        s = re.sub(ur'(?i)\b(face|recto)\b', '100', s)
-        s = re.sub(ur'(?i)\b(dorse|verso)\b', '200', s)
-        s = re.sub(ur'(?i)\bseal\b', '300', s)
+        s = re.sub(r'(?i)\b(cover)\b', '50', s)
+        s = re.sub(r'(?i)\b(face|recto)\b', '100', s)
+        s = re.sub(r'(?i)\b(dorse|verso)\b', '200', s)
+        s = re.sub(r'(?i)\bseal\b', '300', s)
 
     if roman_numbers:
         while True:
@@ -327,7 +327,7 @@ def inc_counter(dic, item, count=1):
 def remove_accents(input_str):
     '''Returns the input string without accented character.
         This is useful for accent-insensitive matching (e.g. autocomplete).
-        >> remove_accents(u'c\u0327   \u00c7')
+        >> remove_accents(u'c\\u0327   \\u00c7')
         u'c   c'
     '''
     import unicodedata
@@ -337,15 +337,15 @@ def remove_accents(input_str):
     # return remove_combining_marks(unicodedata.normalize('NFKD',
     # unicode(input_str)))
     return remove_combining_marks(unicodedata.normalize('NFD',
-                                                        unicode(input_str)))
+                                                        str(input_str)))
 
 
 def remove_combining_marks(input_str):
     '''Returns the input unicode string without the combining marks found
     as 'individual character'
-        >> remove_combining_marks(u'c\u0327   \u00c7')
-        u'c   \u00c7'
+        >> remove_combining_marks(u'c\\u0327   \\u00c7')
+        u'c   \\u00c7'
     '''
     import unicodedata
-    return u"".join([c for c in unicode(input_str)
+    return "".join([c for c in str(input_str)
                      if not unicodedata.combining(c)])

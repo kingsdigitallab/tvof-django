@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.shortcuts import render
 from drf_haystack.serializers import (
@@ -74,7 +74,7 @@ if 1:
                 'section_name': {},
                 'is_rubric': {},
             }
-            fields = field_options.keys()
+            fields = list(field_options.keys())
 
     class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
         index_models = [AnnotatedToken]

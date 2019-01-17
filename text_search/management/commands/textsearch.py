@@ -28,9 +28,9 @@ class Command(BaseCommand):
             self.action_clear()
 
         if not known_action:
-            print 'ERROR: unknown action "%s"' % action
+            print('ERROR: unknown action "%s"' % action)
         else:
-            print 'done'
+            print('done')
 
     def get_args(self):
         return self.args

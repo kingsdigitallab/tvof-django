@@ -116,13 +116,13 @@ def create_virtualenv():
     env_vpath = get_virtual_env_path()
     with quiet():
         if run('ls {}'.format(env_vpath)).succeeded:
-            print(
-                green('virtual environment at [{}] exists'.format(env_vpath)))
+            print((
+                green('virtual environment at [{}] exists'.format(env_vpath))))
             return
 
     # All we need is a .venv dir in the project folder;
     # 'pipenv install' will set it up first time
-    print(yellow('setting up virtual environment in [{}]'.format(env_vpath)))
+    print((yellow('setting up virtual environment in [{}]'.format(env_vpath))))
     run('mkdir {}'.format(env_vpath))
 
 
@@ -139,11 +139,11 @@ def clone_repo():
     require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
     with quiet():
         if run('ls {}'.format(os.path.join(env.path, '.git'))).succeeded:
-            print(green(('repository at'
-                         ' [{}] exists').format(env.path)))
+            print((green(('repository at'
+                         ' [{}] exists').format(env.path))))
             return
 
-    print(yellow('cloneing repository to [{}]'.format(env.path)))
+    print((yellow('cloneing repository to [{}]'.format(env.path))))
     run('git clone {} {}'.format(REPOSITORY, env.path))
 
 
@@ -309,7 +309,7 @@ def collect_static(process=False):
         run('npm i')
 
     if env.srvr in ['local', 'vagrant']:
-        print(yellow('Do not run collect_static on local servers'))
+        print((yellow('Do not run collect_static on local servers')))
         return
 
     with cd(env.path), prefix(env.within_virtualenv):

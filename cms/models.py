@@ -287,7 +287,7 @@ class BlogPost(AbstractMultilingualContentPage):
             if image:
                 ret = Image.objects.filter(id=image).first()
                 if ret is None:
-                    print('Image not found #%s' % image)
+                    print(('Image not found #%s' % image))
 
         return ret
 

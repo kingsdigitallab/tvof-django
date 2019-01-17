@@ -153,7 +153,7 @@ def get_processed_content(xml):
 
     # translate the hyperlinks to the biblio entries
     for link in xml.findall('.//a[@href]'):
-        link.attrib['href'] = ur'/{}/bibliography/#{}'.format(
+        link.attrib['href'] = r'/{}/bibliography/#{}'.format(
             settings.KILN_CONTEXT_PATH.strip('/'),
             link.attrib['href']
         )

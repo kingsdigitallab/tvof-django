@@ -1,5 +1,5 @@
-from text_viewer_xml import (TextViewerAPIXML)
-from text_viewer import (get_unicode_from_xml,)
+from .text_viewer_xml import (TextViewerAPIXML)
+from .text_viewer import (get_unicode_from_xml,)
 import xml.etree.ElementTree as ET
 from django.conf import settings
 import re
@@ -67,7 +67,7 @@ def _get_xpath_from_location(slug, view, location_type, location,
             location = [location]
         for loc in location:
             ret.append('.//div[@id="ed{}_{}"]'.format(
-                docids['kiln_ref'], unicode(loc).rjust(5, '0')))
+                docids['kiln_ref'], str(loc).rjust(5, '0')))
 
     return ret
 
@@ -85,7 +85,7 @@ def _get_xpath_from_location_section(slug, view, location_type, location,
         if not isinstance(location, list):
             location = [location]
         for loc in location:
-            ret.append('.//div[@id="section-{}"]'.format(unicode(loc)))
+            ret.append('.//div[@id="section-{}"]'.format(str(loc)))
 
     return ret
 
@@ -129,7 +129,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
             # used to locate a chunk from a location
             'xpath_from_location': _get_xpath_from_location_section,
             # used to get location of a default chunk
-            'location_from_chunk': lambda c: unicode(c.attrib['data-n'])
+            'location_from_chunk': lambda c: str(c.attrib['data-n'])
         },
         {
             'slug': 'paragraph',
@@ -140,7 +140,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
             # used to locate a chunk from a location
             'xpath_from_location': _get_xpath_from_location,
             # used to get location of a default chunk
-            'location_from_chunk': lambda c: unicode(int(c.attrib['id'][-5:]))
+            'location_from_chunk': lambda c: str(int(c.attrib['id'][-5:]))
         },
         {
             'slug': 'whole',
@@ -172,7 +172,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
             # pair = [edRoyal20D1_00544_01, #edfr20125_00621]
             pair = []
             for attrib in ['id', 'data-corresp']:
-                m = re.search(ur'ed([^_]+)_(\d+)',
+                m = re.search(r'ed([^_]+)_(\d+)',
                               correpondance.attrib.get(attrib, ''))
                 if m:
                     pair.append([m.group(1), str(int(m.group(2)))])
@@ -257,7 +257,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
         conventions_xml = xml.find('.//div[@id="text-conventions"]')
         if conventions_xml is not None:
             conventions = get_unicode_from_xml(conventions_xml)
-            conventions = re.sub(ur'id="([^"]+)"', ur'class="\1"', conventions)
+            conventions = re.sub(r'id="([^"]+)"', r'class="\1"', conventions)
 
         return conventions
 
@@ -292,7 +292,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
             # id="edfr20125_00588"
             number = xml.attrib.get('id', '')
-            number = re.sub(ur'^.*_0*(\d+)$', ur'\1', number)
+            number = re.sub(r'^.*_0*(\d+)$', r'\1', number)
 
             rubric = xml.find('.//*[@class="tei-rubric"]')
             if rubric is not None:
@@ -309,7 +309,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     ret = match.group(1).title()
                     return ret
                 label_long = re.sub(
-                    ur'<span class="tei-critToUpper">([^<]+)</span>',
+                    r'<span class="tei-critToUpper">([^<]+)</span>',
                     rep,
                     label_long)
 

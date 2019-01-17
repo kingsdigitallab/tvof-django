@@ -1,4 +1,4 @@
-import thread
+import _thread
 from django.core.cache import caches
 from requests.exceptions import ConnectionError
 from django.conf import settings
@@ -45,8 +45,8 @@ class CachedRequesterKiln(object):
         if ret is not None:
             d = time.time() - t0
             size_mb = len(ret) / 1024.0 / 1024
-            print 'Request: %s from %s (%0.4f MB, %0.2f s.)' %\
-                (url, self.last_request_origin, size_mb, d)
+            print('Request: %s from %s (%0.4f MB, %0.2f s.)' %\
+                (url, self.last_request_origin, size_mb, d))
 
         return ret
 
@@ -76,7 +76,7 @@ class CachedRequesterKiln(object):
             stream = self.session.get(url, stream=True)
             stream_len = stream.headers.get('content-length')
         except ConnectionError as e:
-            print 'ERROR (%s): %s' % (self.__class__.__name__, e)
+            print('ERROR (%s): %s' % (self.__class__.__name__, e))
             pass
 
         # if length response from disk is != from response headers
@@ -96,7 +96,7 @@ class CachedRequesterKiln(object):
                         # Some very weird bug when download got stuck in
                         # vagrant, I had to print something to make it
                         # work consistently.
-                        print '.'
+                        print('.')
                     parts.append(data)
                 self.dmsg('WRITE to disk cache')
 
@@ -115,9 +115,9 @@ class CachedRequesterKiln(object):
 
     def dmsg(self, message):
         if settings.DEBUG:
-            print '%s' % message
+            print('%s' % message)
             if 0:
-                print '%s %s' % (thread.get_ident(), message)
+                print('%s %s' % (_thread.get_ident(), message))
 
     def clear_disk_cache(self):
         self.cache.clear()

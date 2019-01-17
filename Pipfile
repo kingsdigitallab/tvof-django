@@ -4,26 +4,17 @@ url = "https://pypi.org/simple"
 verify_ssl = true
 
 [dev-packages]
-django-debug-toolbar = "*"
-fabric3 = "*"
-flake8 = "*"
-ipython = "*"
-tox = "*"
 
 [packages]
-django-extensions = "*"
-django-libsass = "*"
-django-model-utils = "*"
-django-redis = "*"
-psycopg2-binary = "*"
-redis = "*"
-elasticsearch = ">=5.0.0,<6.0.0"
-django-activecollab-digger = "*"
-django-kdl-ldap = "*"
+django = "<2"
 wagtail = "<2"
+django-kdl-ldap = "*"
+django-compressor = "*"
 django-haystack = "*"
-Django = "<2"
-django_compressor = "*"
+django-activecollab-digger = "*"
+psycopg2-binary = "*"
+regex = "*"
+drf-haystack = "*"
 
 [requires]
 python_version = "3.5"

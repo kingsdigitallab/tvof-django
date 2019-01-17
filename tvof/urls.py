@@ -12,7 +12,7 @@ from text_viewer import urls as text_viewer_urls
 from text_patterns import urls as text_patterns_urls
 from text_alignment import urls as text_alignment_urls
 from text_search import urls as text_search_urls
-import views as tvof_views
+from . import views as tvof_views
 from django.conf.urls.i18n import i18n_patterns
 
 admin.autodiscover()

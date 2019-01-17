@@ -3,7 +3,7 @@ from django.conf import settings
 from django.shortcuts import render
 from text_viewer.kiln_requester import CachedRequesterKiln
 from django.core.cache import caches
-from api_vars import API_Vars
+from .api_vars import API_Vars
 from text_alignment.api_vars import get_key_from_name
 from cms.templatetags.cms_tags import json
 import re
@@ -23,7 +23,7 @@ def get_nat_parts(astring):
 
     '''
     ret = []
-    for p in re.findall(ur'(\d+|\D+)', astring):
+    for p in re.findall(r'(\d+|\D+)', astring):
         try:
             p = int(p)
         except Exception:
@@ -114,9 +114,9 @@ class Alignment(object):
         template = get_template(template_path)
         ret = template.render(context)
         # compress spaces (divide size by 10!)
-        ret = re.sub(ur'\n+', r'\n', ret)
-        ret = re.sub(ur' +', ' ', ret)
-        ret = re.sub(ur'(\n )+', r'\n', ret)
+        ret = re.sub(r'\n+', r'\n', ret)
+        ret = re.sub(r' +', ' ', ret)
+        ret = re.sub(r'(\n )+', r'\n', ret)
         return ret
 
     def set_context_base(self, context):
@@ -265,7 +265,7 @@ class Alignment(object):
                 continue
             # remove unwanted manuscripts
             if mss:
-                for ms_name in ret['paras'][i]['mss'].keys():
+                for ms_name in list(ret['paras'][i]['mss'].keys()):
                     if ms_name not in mss:
                         del ret['paras'][i]['mss'][ms_name]
 
@@ -377,11 +377,11 @@ class Alignment(object):
 
         ret = {
             'paras': paras,
-            'mss': sorted(mss.values(), key=lambda ms: ms['name'].lower()),
+            'mss': sorted(list(mss.values()), key=lambda ms: ms['name'].lower()),
             'sections': sections,
         }
 
-        print len(json(paras))
+        print(len(json(paras)))
 
         return ret
 
@@ -411,10 +411,10 @@ class Alignment(object):
             location = para_ms.get('location')
 
             if 0 and not re.match(r'^\d+[rv][ab]?$', location):
-                print u'FORMAT: {}, {} : \'{}\''.format(
+                print('FORMAT: {}, {} : \'{}\''.format(
                     ms_name, para['id'], re.sub(
-                        ur'(?musi)\s+', ' ', location)
-                )
+                        r'(?musi)\s+', ' ', location)
+                ))
 
             last_location = mss[ms_name].get('location', None)
             if last_location and\
@@ -422,12 +422,12 @@ class Alignment(object):
                  get_nat_parts(location)) and\
                     (last_location.strip('ab') != location):
 
-                s = u'{0:5s} {1:15s} {2:20.20s} {3:20.20s}'
+                s = '{0:5s} {1:15s} {2:20.20s} {3:20.20s}'
                 if 0:
-                    print s.format(
+                    print(s.format(
                         para['id'], ms_name,
                         last_location, location
-                    )
+                    ))
 
             mss[ms_name]['location'] = location
 
@@ -460,7 +460,7 @@ class Alignment(object):
         # => 'corresp': Royal20D1_00001
         corresps = para_manuscript.attrib.get('corresp', None)
         if corresps:
-            corresps = re.findall(ur'#ed(\S*_(?:\d{5,5}))', corresps)
+            corresps = re.findall(r'#ed(\S*_(?:\d{5,5}))', corresps)
             if corresps and corresps[0] != para['id']\
                     and 'fr20125' not in corresps[0]:
                 ret['corresp'] = corresps[0]
@@ -485,7 +485,7 @@ class Alignment(object):
                 val = {
                     re.sub(r'\{.*\}', r'', k): v
                     for k, v
-                    in seg.attrib.items()
+                    in list(seg.attrib.items())
                 }
                 val['t'] = text
                 del val['type']
@@ -581,7 +581,7 @@ class Alignment(object):
                 # Hence the '1 or' bit
                 if 1 or dest[0] == '-':
                     modifier = 'Before '
-                    dest = re.sub(ur'^[- ]+', '', dest)
+                    dest = re.sub(r'^[- ]+', '', dest)
                 dest = base_seg[:len(base_seg) - len(dest)] + dest
                 rubric['dest_label'] = modifier + dest
 
@@ -609,13 +609,13 @@ class Alignment(object):
                 ' ').replace(
                 '_',
                 ' ').lower().strip()
-            normalised = re.sub(ur'(?i)([a-z])(\d)', ur'\1 \2', normalised)
+            normalised = re.sub(r'(?i)([a-z])(\d)', r'\1 \2', normalised)
             normalised = normalised.title()
             ms_names[name] = normalised
 
         # merge
         # e.g. Dijon -> Dijon 562
-        for name, normalised in ms_names.items():
+        for name, normalised in list(ms_names.items()):
             if ' ' not in normalised:
                 candidates = [
                     v
@@ -627,10 +627,10 @@ class Alignment(object):
                 if c == 1:
                     ms_names[name] = candidates[0]
                 elif c > 2:
-                    print 'WARNING: ambiguous MS name: %s (%s ?)' %\
-                        (name, ', '.join(candidates))
+                    print('WARNING: ambiguous MS name: %s (%s ?)' %\
+                        (name, ', '.join(candidates)))
                 elif c == 0:
-                    print 'INFO: MS name without number: %s' % name
+                    print('INFO: MS name without number: %s' % name)
 
         # print '\n'.join(['%s | %s' % (k, v) for k, v in ms_names.items()])
 

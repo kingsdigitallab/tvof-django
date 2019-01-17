@@ -1,5 +1,5 @@
 from django.conf import settings
-from text_viewer import (TextViewerAPI, get_unicode_from_xml,
+from .text_viewer import (TextViewerAPI, get_unicode_from_xml,
                          remove_xml_elements)
 import xml.etree.ElementTree as ET
 import re
@@ -134,19 +134,19 @@ class TextViewerAPIXML(TextViewerAPI):
         # otherwise we redo it each time a chunk is requested
 
         # remove empty class attributes
-        ret = re.sub(ur'''class\s*=\s*("\s*"|'\s*')''', ur'', html_str)
+        ret = re.sub(r'''class\s*=\s*("\s*"|'\s*')''', r'', html_str)
         # compress multiple spaces
-        ret = re.sub(ur'(\s)+', ur'\1', ret)
+        ret = re.sub(r'(\s)+', r'\1', ret)
 
         # remove empty spans (invalid HTML)
-        empty_spans = re.findall(ur'<span[^>]*/>', ret)
+        empty_spans = re.findall(r'<span[^>]*/>', ret)
         if (empty_spans):
             print('WARNING: empty <span/>')
             print(empty_spans)
-            ret = re.sub(ur'<span[^>]*/>', '', ret)
+            ret = re.sub(r'<span[^>]*/>', '', ret)
 
         # remove spans without attributes (saves a lot of space!)
-        ret = re.sub(ur'(?musi)<span>([^<]*)</span>', r'\1', ret)
+        ret = re.sub(r'(?musi)<span>([^<]*)</span>', r'\1', ret)
 
         return ret
 
@@ -251,7 +251,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
             self.response = {
                 'chunk':
-                    ur'<div class="{}">{}</div>'.
+                    r'<div class="{}">{}</div>'.
                     format(' '.join(classes), chunk),
                 'address': address,
                 'generated': self.generated_date
