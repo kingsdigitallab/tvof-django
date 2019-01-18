@@ -1,4 +1,4 @@
-{% load staticfiles compress require cms_tags %}
+{% load staticfiles compress cms_tags %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,7 +10,7 @@
 
   {% compress css %}
   <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/main.scss' %}">
-  <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/font-awesome.scss' %}">
+  <link rel="stylesheet" type="text/x-scss" href="{% static 'font-awesome/scss/font-awesome.scss' %}">
   {% endcompress %}
 
   {% block extra_head %}
@@ -51,11 +51,11 @@
     </div>
   </footer>
 
-  <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
-  <script src="{% static 'vendor/foundation-sites/dist/js/foundation.min.js' %}"></script>
+  <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'foundation-sites/dist/js/foundation.min.js' %}"></script>
 
   {% compress js %}
-  <script src="{% static 'vendor/js-cookie/src/js.cookie.js' %}"></script>
+  <script src="{% static 'js-cookie/src/js.cookie.js' %}"></script>
   <script src="{% static 'js/app.js' %}"></script>
   {% block footer_scripts %}{% endblock %}
   {% endcompress %}
@@ -71,7 +71,7 @@
     ga('send', 'pageview');
   </script>
   {% endif %}
-  
+
   <script>
     $(document).foundation();
   </script>

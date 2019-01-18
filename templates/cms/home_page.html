@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load staticfiles compress require %}
+{% load staticfiles compress %}
 
 {% block extra_head %}
 {% endblock %}
@@ -11,12 +11,12 @@
 {% block main %}
   <div class="splash-image">
     <img src="{% static 'images/header.jpg' %}" alt="Noah's Ark">
-    
+
     <span class="richtext-caption">
         <div class="rich-text"><p>Miniature of Noah and the ark, from London, British Library, Add. 15268, f. 7v. Reproduced with the permission of the British Library Board.</p></div>
     </span>
   </div>
-  
+
   <div class="row">
     <div class="large-12 columns">
       {% block streamfield %}
@@ -24,7 +24,7 @@
       {% endblock %}
     </div>
   </div>
-  
+
   {{ block.super }}
 {% endblock %}
 

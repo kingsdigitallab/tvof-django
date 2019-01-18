@@ -1,7 +1,7 @@
 @import 'settings';
-@import '../vendor/foundation-sites/scss/foundation';
+@import 'foundation-sites/scss/foundation';
 @import 'text-viewer';
-@import '../vendor/motion-ui/motion-ui';
+@import 'motion-ui/motion-ui';
 @import 'typography';
 
 @include foundation-everything;
@@ -226,7 +226,7 @@ ul.sticky {
         line-height: 1;
         margin: 0;
     }
-    
+
     .item {
         border-bottom: 1px solid scale-color($almost-black, $lightness: 65%);
         margin-bottom: 1rem;
@@ -353,7 +353,7 @@ ul.sticky {
     // Text viewer - TEI
 
     #manuscripts-content,
-    #manuscripts-title, 
+    #manuscripts-title,
     .text-pane {
         h1, h2 {
             padding-top: rem-calc(24);
@@ -433,11 +433,11 @@ ul.sticky {
     }
 
 
-    // GN: two types of verses: 
-    // .cont (flows continuously within a p/div) 
+    // GN: two types of verses:
+    // .cont (flows continuously within a p/div)
     // .lineated (line break after each verse line)
     // TODO: works but html & css need improvement
-    
+
     .lineated > span {
         display: block;
     }
@@ -455,16 +455,16 @@ ul.sticky {
     //-----
 
     .tei-unclear {
-        // GN: icon even if superscripted, 
+        // GN: icon even if superscripted,
         // without this hover on top of icon doesn't do anything
-        @include tooltip-and-icon("\f128");  
+        @include tooltip-and-icon("\f128");
         padding: 0.5em 0em;
     }
 
-    .tv-view-semi-diplomatic .tei-mod, 
-    .tv-view-semi-diplomatic .tei-add, 
-    .tei-corr, 
-    .tv-view-semi-diplomatic .tei-pc-rend-6 
+    .tv-view-semi-diplomatic .tei-mod,
+    .tv-view-semi-diplomatic .tei-add,
+    .tei-corr,
+    .tv-view-semi-diplomatic .tei-pc-rend-6
     {
         @include tooltip;
     }
@@ -479,14 +479,14 @@ ul.sticky {
         padding: 0.5em 0.2em;
     }
 
-    .tv-view-semi-diplomatic .tei-add, 
-    .tv-view-interpretive .tei-corr, 
+    .tv-view-semi-diplomatic .tei-add,
+    .tv-view-interpretive .tei-corr,
     .tv-view-interpretive .tei-supplied, {
         &:before {
-            content: '<';   
+            content: '<';
         }
         &:after {
-            content: '>';   
+            content: '>';
         }
     }
 
@@ -495,12 +495,12 @@ ul.sticky {
     .note-ref,
     .note-anchor {
         &:before {
-            content: '[';   
+            content: '[';
         }
         &:after {
-            content: '] ';   
+            content: '] ';
         }
-    
+
         &:focus {
             background-color: #ffff80;
         }
@@ -527,62 +527,62 @@ ul.sticky {
     .note-ref {
         font-size: 0.80em;
         vertical-align: super;
-        
+
     }
 
     .tv-viewer-proofreader {
         .tei-note {
             margin-bottom: 0.5rem;
-            display: block;            
+            display: block;
         }
     }
 
     .tv-viewer-pane, .text-conventions {
         .tei-note.tei-type-note {
             @include tooltip-and-icon('\f075');
-            
+
             &.tei-subtype-gen {
                 &:after {
                     color: scale-color($success-color, $lightness: 30%);
                 }
             }
-    
+
             &.tei-subtype-note {
                 &:after {
                     color: scale-color($secondary-color, $lightness: 30%);
                 }
             }
-    
+
             &.tei-subtype-source {
                 &:after {
                     color: scale-color($primary-color, $lightness: 40%);
                 }
             }
-    
+
             &.tei-subtype-trad {
                 &:after {
                     color: scale-color($tertiary-color, $lightness: 50%);
                 }
             }
         }
-    
+
         .tei-note.tei-type-gloss {
             @include tooltip-and-icon('\f14b');
         }
-    
+
         .tei-note.tei-type-note,
         .tei-note.tei-type-gloss {
-            // GN: icon even if superscripted, 
-            // without this hover on top of icon doesn't do anything  
+            // GN: icon even if superscripted,
+            // without this hover on top of icon doesn't do anything
             padding: 0.5em 0.2em;
             display: inline;
             cursor: pointer;
-            
+
             .note-text {
                 display: none;
             }
         }
-    
+
         .notation {
             > *:hover {
                 background: inherit;
@@ -591,14 +591,14 @@ ul.sticky {
     }
 
     figure {
-        // GN: icon even if superscripted, 
-        // without this hover on top of icon doesn't do anything  
+        // GN: icon even if superscripted,
+        // without this hover on top of icon doesn't do anything
         @include tooltip-and-icon-full('\f030');
         display: inline-block;
         line-height: 0;
         padding: 0.8em 0.3em;
         cursor: pointer;
-        
+
         img, figcaption {
             display: none;
         }
@@ -616,7 +616,7 @@ ul.sticky {
     .paragraph {
         margin-bottom: 1rem;
     }
-    
+
 }
 
 
@@ -626,7 +626,7 @@ ul.sticky {
 // TODO: use variables for colors
 .tv-tooltip, .tv-reveal {
     padding: 0;
-    
+
     h3 {
         white-space: nowrap;
         font-size: 1.1rem;
@@ -637,14 +637,14 @@ ul.sticky {
 
     .body {
         padding: 0.5rem;
-        
+
         a {
             color: scale-color($primary-color, $lightness: 70%);
             font-weight: bolder;
             &:hover {
                 text-decoration: underline;
             }
-        }    
+        }
     }
 }
 
@@ -653,17 +653,17 @@ ul.sticky {
     border-color: scale-color($primary-color, $lightness: 20%);
     color: #e0e0e0;
     box-shadow: 7px 7px 10px #666;
-    
+
     &:focus {
         border-color: scale-color($primary-color, $lightness: 20%);
     }
-    
+
     .close-button {
         color: #e0e0e0;
         top: 0;
         right: 0;
         padding: 0rem 0.3rem;
-        
+
         &:hover {
             background-color: scale-color($primary-color, $lightness: 50%);
         }
@@ -688,7 +688,7 @@ ul.sticky {
     padding: 0;
     display: none;
     flex-direction: column;
-    
+
     @include breakpoint(medium) {
         // Foundation set full screen in mobile, otherwise we need
         // to force width for image-viewer
@@ -705,28 +705,28 @@ ul.sticky {
 
     .image-viewer-caption {
         // caption at the bottom
-        
+
         max-height: 4em;
         overflow-y: auto;
         overflow-x: hidden;
         padding: 0 0.5em;
-        
+
         // GN: Artificially add shaded areas on top and bottom of text div
-        // reason is that scrolling requires overflow-y which in turn 
+        // reason is that scrolling requires overflow-y which in turn
         // cancels the padding-top and padding-bottom on scrolling text
         // Without this the text is abruptly cut off on the edge of the
         // div which is inelegant.
-        // TODO: try input type="text" in read-only mode           
+        // TODO: try input type="text" in read-only mode
         &:before, &:after {
             background-color: rgba(0,0,0,0.3);
             content: '';
             display: block;
             height: 0.3em;
             position: sticky;
-            top: 0;            
+            top: 0;
         }
         &:after {
-            bottom: 0;            
+            bottom: 0;
         }
     }
 }
@@ -786,7 +786,7 @@ footer {
 @media screen and (max-width: 575px) {
     nav {
         background-color: #1c2434;
-        
+
         a {
             color: $white;
             &:hover {
@@ -825,7 +825,7 @@ footer {
         // of the toolbar.
         // We should really control the heights of the toolbar elements rather
         // than leave it dynamic
-        
+
         height: calc(100vh - 230px);
     }
 
@@ -908,27 +908,27 @@ footer {
 
 #tvof-search {
     .search-facets {
-        
+
         .search-option a:hover {
             text-decoration: underline;
         }
         .search-option a.selected:hover {
             text-decoration: line-through;
         }
-        
+
         .selected {
             font-weight: bold;
         }
     }
     .search-results {
-        
+
         .token-preceding {
             text-align: right;
         }
     }
     .button:focus, .button:hover {
         color: #c7d0e1;
-        background: #3a4b6c;        
+        background: #3a4b6c;
     }
 }
 
@@ -972,7 +972,7 @@ footer {
     width: 90%;
     display: inline;
     margin: 0.4rem;
-    
+
     &:hover, &:focus {
         border-color: hsl(221, 30%, 37%);
     }
