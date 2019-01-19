@@ -26,7 +26,7 @@
         </li>
         <li>
             {# <a href=""><i class="fa fa-columns"></i></a> #}
-    
+
             <a id="btn-open-panel" href="#" title="Open a new panel">
                 <i class="fa fa-columns"></i>
             </a>
@@ -49,7 +49,7 @@
 
 <!-- #text-viewer height is adjusted automatically with JS  -->
 <section id="alignment-fragment" class="main">
-    
+
 </section>
 
 <a href="#" target="_blank" id="plink" class="button">Read</a>
@@ -58,16 +58,11 @@
 
 {% endblock %}
 
-{% block footer_scripts %}
-    {{ block.super }}
-    {# TODO: load this with require.js or webpack ? #}
-    <script src="{% static 'vendor/vue/vue.js' %}"></script>
-    <script src="{% static 'text_alignment/alignment.js' %}"></script>
-{% endblock %}
-
 {% block extra_js %}
-    <script src="{% static 'vendor/vue/vue.js' %}"></script>
-    
+    {{ block.super }}
+    <script src="{% static 'vue/dist/vue.min.js' %}"></script>
+    <script src="{% static 'text_alignment/alignment.js' %}"></script>
+
     {# TODO: move this to external file #}
     <script type="text/javascript">
         $(function() {
@@ -79,7 +74,7 @@
             var vue_config = new_vue_config(config);
             var $plink = $('#plink').detach();
             window.ALIGNMENT_LINKABLE_MSS = {{ ALIGNMENT_LINKABLE_MSS|json }};
-            
+
             // returns a URL to the textviewer opened
             // at a specific paragraph for a given manuscript.
             // ms_name is a manuscript name.
@@ -100,9 +95,9 @@
 
                 return ret;
             };
-            
+
             window.get_text_href = get_text_href;
-            
+
             // https://tvof-stg.kdl.kcl.ac.uk/textviewer/?p1=Royal/semi-diplomatic/section/3
             // User click Link on a para to go the text viewer
             $('body').on('mouseleave', '[data-plink]', function(e) {
@@ -121,14 +116,14 @@
                         href = get_text_href(ms_key, parts[1]);
                     }
                 });
-                
+
                 if (href) {
                     $plink.attr('href', href);
                     $para_div.prepend($plink.detach());
                     $plink.show();
                 }
             });
-            
+
             // Visualisation Settings modal
             function new_vue_config(config) {
                 var ret = new Vue({
@@ -148,7 +143,7 @@
                             });
                         },
                         'get_request_data': function() {
-                            // We convert the config vars into a 
+                            // We convert the config vars into a
                             // dictionary: {field: [values]}
                             var ret = {};
                             $.each(this.vars, function(idx, avar) {
@@ -173,7 +168,7 @@
                 });
                 return ret;
             }
-            
+
             $('.toggle-settings').on('click', function(e) {
                 toggle_settings();
                 return false;
@@ -186,24 +181,24 @@
                     open_settings();
                 }
             }
-            
+
             function open_settings() {
                 $body.addClass('settings-visible');
             }
 
             function close_settings() {
                 $body.removeClass('settings-visible');
-                
+
                 // update results
                 request_fragment();
             }
 
             function request_fragment() {
                 $fragment.stop(true, true).fadeTo('slow', 0.2);
-                
+
                 var url = document.location.href;
                 var params = {}
-                
+
                 if (0) {
                     var argjs = (url.indexOf('?') > -1) ? '&' : '?';
                     argjs += 'js=1';
@@ -218,7 +213,7 @@
                     url: url,
                     data: params,
                 })
-                
+
                 req.done(function(data, textStatus, jqXHR) {
                     Vue.set(vue_config, 'vars', data.config);
                     replace_fragment(data);
@@ -229,7 +224,7 @@
             }
             request_fragment();
             //open_settings();
-            
+
             function replace_fragment(data) {
                 $fragment.html(data.html);
                 if (history.pushState) {
@@ -238,7 +233,7 @@
                 }
                 fix_thead();
             }
-            
+
             var row_top = 0;
             function fix_width_row($row) {
                 $row.children().each(function(index, th) {
@@ -248,20 +243,20 @@
             }
             function fix_thead() {
                 $('.fixed-tr').remove();
-                
+
                 $row = $('.alignment-paras thead tr:first');
-                
+
                 if ($row.length == 0) return;
-                
+
                 fix_width_row($row);
-                
+
                 $row_fixed = $row.clone();
                 $row.parent().append($row_fixed);
-                
+
                 $row_fixed.addClass('fixed-tr');
-                
+
                 $row_fixed.data('threshold', $row.offset().top);
-                
+
                 update_table_heads();
             }
 
@@ -271,11 +266,11 @@
                     return false;
                 }
             });
-            
+
             $win.on('scroll', function() {
                 update_table_heads();
             });
-            
+
             function update_table_heads() {
                 var top = $win.scrollTop();
                 $('.fixed-tr').each(function(index, row) {
@@ -284,6 +279,6 @@
                 });
             };
         });
-        
+
     </script>
 {% endblock %}

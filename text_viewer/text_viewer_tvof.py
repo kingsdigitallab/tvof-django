@@ -279,7 +279,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
         if location_type['slug'] == 'section':
             ret = {
                 'slug': xml.attrib.get('data-n', '0'),
-                'label_long': xml.attrib.get('data-n', '') + '. ' +
+                'label_long': xml.attrib.get('data-n', '') + '. ' + 
                 xml.attrib.get('data-type', 'untitled').replace('_', ' '),
             }
             ret['label'] = ret['label_long']
@@ -299,7 +299,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 label_long = rubric.text
                 for e in rubric:
                     if e.tag not in ['a', 'div']:
-                        label_long += ET.tostring(e)
+                        label_long += get_unicode_from_xml(e)
                 label_long = self.compress_html(label_long)
 
                 # TODO: move this to TVOF
@@ -308,6 +308,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 def rep(match):
                     ret = match.group(1).title()
                     return ret
+
                 label_long = re.sub(
                     r'<span class="tei-critToUpper">([^<]+)</span>',
                     rep,
@@ -373,7 +374,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 # print(ET.tostring(note_text))
 
                 # add note to the notes_info
-                notes_info['notes'].append(ET.tostring(note))
+                notes_info['notes'].append(get_unicode_from_xml(note))
 
                 # replace note with an inline reference
                 note.clear()

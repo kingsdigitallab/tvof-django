@@ -1,5 +1,5 @@
 {% extends "base_minimal.html" %}
-{% load staticfiles compress require cms_tags wagtailcore_tags %}
+{% load staticfiles compress cms_tags wagtailcore_tags %}
 
 {% block meta_title %}{{ title }} | Proof Reader{% endblock %}
 
@@ -22,7 +22,7 @@
 
 {% block main %}
   {{ res.chunk|safe }}
-  
+
   <div>
     {{ res.generated }}
   </div>

@@ -1,45 +1,13 @@
 {% extends "base_minimal.html" %}
-{% load staticfiles compress require cms_tags wagtailcore_tags %}
+{% load staticfiles compress cms_tags wagtailcore_tags %}
 
 {% block extra_head %}
-    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.2.0/dist/leaflet.css"
-        integrity="sha512-M2wvCLH6DSRazYeZRIm1JnYyh22purTM+FDB5CsyxtQJYeKq83arPe5wgbNmcFXGqiSH2XR8dT/fJISVA1r/zQ=="
-        crossorigin=""/>
+    <link rel="stylesheet" href="{% static 'leaflet/dist/leaflet.css' %}" />
 {% endblock %}
 
-{% block title %}
-Textviewer
-{% endblock %}
+{% block title %}Textviewer{% endblock %}
 
 {% block body_classes %}body-text-viewer{% endblock %}
-
-{% block header_top_bar %}
-    {# TODO: REMOVE top toolbar is no longer used. #}
-    <ul class="horizontal menu float-right mini-header">
-        {% comment %}
-        <li>
-            <a href=""><i class="fa fa-key"></i></a>
-        </li>
-        {% endcomment %}
-        {% comment %}
-        <li>
-            <a href=""><i class="fa fa-random"></i></a>
-        </li>
-        {% endcomment %}
-        {% comment %}
-        <li>
-            {# <a href=""><i class="fa fa-columns"></i></a> #}
-    
-            <a id="btn-open-panel" href="#" title="Open a new panel">
-                <i class="fa fa-columns"></i>
-            </a>
-        </li>
-        <li>
-            <a href=""><i class="fa fa-expand"></i></a>
-        </li>
-        {% endcomment %}
-    </ul>
-{% endblock %}
 
 {% block minimal_breadcrumb %}
     <small>/ Text Viewer</small>
@@ -107,18 +75,18 @@ a vue directive:
         <div class="row" v-bind:id="'section-menu-'+pane_slug">
             <div class="small-12 columns">
                 <!-- No toggle button in Foundation???
-                    Tried switch but too wide for side bar 
+                    Tried switch but too wide for side bar
                 -->
                 <ul v-f-dropdown>
                     <li v-if="canBeSynced" v-bind:class="{active: is_synced, disabled: !canBeSynced}">
                         <a href="#" v-on:click.prevent="toggleSynced()" class="">
-                            <i v-bind:class="'fa fa-chain'+(!is_synced ? '-broken' : '')" 
+                            <i v-bind:class="'fa fa-chain'+(!is_synced ? '-broken' : '')"
                                 v-bind:title="getSyncTitle"></i>
                         </a>
                     </li>
                     <!-- TODO: implement this menu (slider) -->
                     <template v-if="!is_synced">
-                        <li v-for="alocation_type in location_types" 
+                        <li v-for="alocation_type in location_types"
                             v-bind:class="{active: (alocation_type.slug == location_type.slug), scrollable: 1}">
                             <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">
                                 <i v-bind:class="getFAIcon(alocation_type.slug)"></i>
@@ -132,7 +100,7 @@ a vue directive:
                                 <ul>
                                     <li v-for="alocation in alocation_type.locations"
                                         v-bind:class="{active: (alocation.slug == location.slug), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1, 'hidden': alocation.hidden}">
-                                        <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)" 
+                                        <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)"
                                             href="#" v-html="alocation.label_long">
                                         </a>
                                     </li>
@@ -147,8 +115,8 @@ a vue directive:
             <div class="small-12 columns">
                 <div class="pane-content">
                     <!-- .pane-sidebar height is adjusted automatically with JS  -->
-                    <ul v-f-dropdown class="text-center pane-sidebar vertical" 
-                        data-disable-hover="true" data-click-open="true" 
+                    <ul v-f-dropdown class="text-center pane-sidebar vertical"
+                        data-disable-hover="true" data-click-open="true"
                         data-alignment="right">
                         <!-- TODO: need to fix the view button. By default it should duplicate only -->
                         <!-- <li v-for="aview in views"> -->
@@ -214,29 +182,24 @@ a vue directive:
 </div>
 {% endblock %}
 
-{% block footer_scripts %}
-    {{ block.super }}
-    {# TODO: load this with require.js or webpack ? #}
-    <script src="{% static 'vendor/vue/vue.js' %}"></script>
-    <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
-{% endblock %}
-
 {% block extra_js %}
-    {# TODO: bower those leaflet scripts, externalise the custom code and move script tags to footer_scripts #}
-    <script src="https://unpkg.com/leaflet@1.2.0/dist/leaflet.js"
-        integrity="sha512-lInM/apFSqyy1o6s89K4iQUKg6ppXEgsVxT35HbzUupEVRh2Eu9Wdl4tHj7dZO0s1uvplcYGmt3498TtHq+log=="
-        crossorigin=""></script>
-    <script src="https://cdn.rawgit.com/mejackreed/Leaflet-IIIF/v1.2.1/leaflet-iiif.js"></script>
-    
+    {{ block.super }}
+    <script src="{% static 'vue/dist/vue.min.js' %}"></script>
+    <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
+
+    <script src="{% static 'leaflet/dist/leaflet.js' %}"></script>
+    <script src="{% static 'leaflet-iiif/leaflet-iiif.js' %}"></script>
+
+    {# TODO: externalise the custom code and move script tags to footer_scripts #}
     <script type="text/javascript">
         $(function() {
             // Note that 256 leaves small black lines between tiles.
             var image_viewer_tile_size = 512;
-            
+
             window.image_modal = null;
             window.image_viewer_map = null;
             window.image_viewer_map_layer = null;
-             
+
             $('body').on('click', 'figure', function() {
                 destroy_tooltip();
 
@@ -245,45 +208,45 @@ a vue directive:
                     window.image_viewer_map = null;
                     window.image_viewer_map_layer = null;
                 }
-            
+
                 if (window.image_modal) {
                     window.image_modal.destroy();
                     window.image_modal = null;
                 }
-                
+
                 var modal = window.image_modal = new Foundation.Reveal($('#image-viewer-modal'), {
                     overlay: false,
                 });
-                
+
                 modal.open();
                 var $modal = modal.$element;
                 $modal.css('display', 'flex');
-                
+
                 var map = window.image_viewer_map = L.map('image-viewer', {
                     center: [0, 0],
                     crs: L.CRS.Simple,
                     zoom: 1,
                 });
-                
+
                 var $img = $(this).find('img');
                 var image_url = $img.attr('src');
                 var title = $img.attr('title') || 'Image Viewer';
                 var caption = $(this).find('figcaption').html() || '';
                 // caption = "The temple lies in the center of a vast sanctuary, whose extent and complexity was revealed by excavations conducted from 2013 to 2016, on a site whose history goes back to Neolithic times, and which experienced an important phase of monumental constructions in the 1st Century CE. The temple was abandoned at the onset of the Early Middle Ages, and its structures were later reused in the fashioning of a Medieval defensive work. The temple has retained two sides of its square cella, at a height of over 20 meters, as well as vestiges of its ambulatory and side structure foundations. The temple's supposed dedication to the Roman god Janus is not based on any archaeological or historic fact, and the deity that was venerated in the temple is unknown.";
-                
+
                 $modal.find('h3').html(title);
                 $modal.find('.image-viewer-caption').toggle(!!caption).html(caption);
-                
+
                 window.image_viewer_map_layer = L.tileLayer.iiif(
                     '//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
                         tileSize: image_viewer_tile_size,
                         setMaxBounds: true,
                     }
                 ).addTo(map);
-                
+
             });
-            
-            
+
+
             // Returns [xmin,ymin,xmax,ymax]
             // e.g, "19,26,42,42"
             // They represent the coordinates of the currently selected view
@@ -326,10 +289,10 @@ window.set_relative_view_bounds("19,26,42,41")
                 ret = ret.reduce(function(str, abs) {
                     return (str ? str + ',' : '')+Math.round(abs*100);
                 });
-                
+
                 return ret;
             }
-            
+
             // opposite of get_ function, it takes something like
             // "19,26,42,42"
             // and returns LatLong bounds
@@ -347,13 +310,13 @@ window.set_relative_view_bounds("19,26,42,41")
                 window.image_viewer_map.fitBounds(ret);
                 return ret;
             }
-            
+
             window.get_relative_view_bounds = get_relative_view_bounds;
             window.set_relative_view_bounds = set_relative_view_bounds;
-            
+
             // note type="gloss"
             // .tei-note.tei-type-gloss > .note-text
-            // See Dropbox 15_conversion of XML for the TExt viewer.docx 
+            // See Dropbox 15_conversion of XML for the TExt viewer.docx
             var short_hands = {
                 'S':  'copiste',
                 'E':  'rédacteur médiéval',
@@ -365,25 +328,25 @@ window.set_relative_view_bounds("19,26,42,41")
                 'U':  'inconnu',
                 '':   'indeterminée',
             };
-            
+
             function get_hand_label(hand_acronym) {
                 var ret = '';
                 ret = short_hands[hand_acronym || ''] || hand_acronym;
                 return ret;
             }
-            
+
 
             // TOOLTIPS
             // unclear
             window.tv_tooltip = null;
-            
+
             function destroy_tooltip() {
                 if (window.tv_tooltip) {
                     window.tv_tooltip.destroy();
                     window.tv_tooltip = null;
                 }
             }
-            
+
             function attach_tooltip(anchors, tooltip_fields_fct) {
                 $('body').on('mouseenter mouseleave', anchors, function(ev) {
                     if ($(this).parents('.text-conventions').size() > 0) {
@@ -392,13 +355,13 @@ window.set_relative_view_bounds("19,26,42,41")
                     destroy_tooltip();
                     if (ev.type == 'mouseenter') {
                         var tootlip_fields = tooltip_fields_fct($(this));
-                        
+
                         var content = '';
                         content = '<h3>'+tootlip_fields.title+'</h3>';
                         content += '<div class="body">'+tootlip_fields.body+'</div>';
-                    
+
                         window.tv_tooltip = new Foundation.Tooltip($(this), {
-                            tipText: content, 
+                            tipText: content,
                             triggerClass: 'has-tip-tv',
                             tooltipClass: 'tooltip tv-tooltip',
                             positionClass: 'top',
@@ -414,52 +377,52 @@ window.set_relative_view_bounds("19,26,42,41")
                 return jQuery(a).parents(m[3]).length < 1;
             };
 
-            
+
             attach_tooltip('figure', function($el) {
                 return {
                     'title': 'Image (click to view)',
                     'body': $el.find('img').attr('title'),
-                }; 
+                };
             });
             attach_tooltip('.tv-view-semi-diplomatic .tei-pc-rend-6', function() {
                 return {
                     'title': 'Deux barres obliques',
                     'body': 'probablement pour designer la position d’un pied-de-mouche',
-                }; 
+                };
             });
             attach_tooltip('.tei-unclear', function() {
                 return {
                     'title': 'Texte illisible',
-                }; 
+                };
             });
-            attach_tooltip('.tei-corr', function($el) { 
+            attach_tooltip('.tei-corr', function($el) {
                 return {
                     'title': 'Correction',
                     'body': 'ms. ' + $el.attr('data-sic'),
-                }; 
+                };
             });
-            attach_tooltip('.tei-add:notchildof(".tei-mod")', function($el) { 
+            attach_tooltip('.tei-add:notchildof(".tei-mod")', function($el) {
                 return {
                     'title': 'Addition',
                     'body': 'Main: ' + get_hand_label($el.data('tei-hand')),
-                }; 
+                };
             });
-            attach_tooltip('.tv-view-semi-diplomatic .tei-mod', function($el) { 
+            attach_tooltip('.tv-view-semi-diplomatic .tei-mod', function($el) {
                 return {
                     'title': 'Modification',
-                    'body': 
-                        'Contenu originel: ' + 
+                    'body':
+                        'Contenu originel: ' +
                         $el.find('.tei-del').html() +
-                        '<br/>Main: ' + 
+                        '<br/>Main: ' +
                         get_hand_label($el.data('tei-hand')),
-                }; 
+                };
             });
             attach_tooltip('.tei-note.tei-type-gloss', function($el) {
                 return {
                     'title': 'Note de lecteur médiéval',
-                    'body': $el.find('.note-text').html() + '<br>' 
+                    'body': $el.find('.note-text').html() + '<br>'
                             + 'Main: ' + get_hand_label($el.data('tei-resp')),
-                }; 
+                };
             });
 
             var reveal = null;
@@ -470,7 +433,7 @@ window.set_relative_view_bounds("19,26,42,41")
                 if (ev.type == 'click') {
                     $reveal = $('#shared-reveal');
                     $reveal.find('.body').html($(this).find('.note-text').html());
-                    
+
                     var subtype_to_title = {
                         'source': 'Sources',
                         'trad':   'Tradition',
@@ -487,7 +450,7 @@ window.set_relative_view_bounds("19,26,42,41")
                 }
                 return false;
             });
-            
+
         })
     </script>
 {% endblock %}

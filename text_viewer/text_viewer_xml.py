@@ -130,6 +130,10 @@ class TextViewerAPIXML(TextViewerAPI):
         return ret
 
     def compress_html(self, html_str):
+        '''
+        Returns html_str but without unnecessary spaces,
+        empty classes and elements.
+        '''
         # TODO: should be applied before the content is cached
         # otherwise we redo it each time a chunk is requested
 
@@ -223,7 +227,7 @@ class TextViewerAPIXML(TextViewerAPI):
                 if self.is_print:
                     self.extract_notes_from_chunk(chunk, notes_info)
 
-                chunks.append(ET.tostring(chunk))
+                chunks.append(get_unicode_from_xml(chunk))
 
                 address = '/'.join([document, view,
                                     location_type_slug, location])

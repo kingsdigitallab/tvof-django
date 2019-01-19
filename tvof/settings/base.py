@@ -116,6 +116,7 @@ INSTALLED_APPS = (
 INSTALLED_APPS += (
     # your project apps here
     'activecollab_digger',
+    'kdl_ldap',
     'kiln',
     'text_viewer',
     'text_patterns',
@@ -192,7 +193,6 @@ LOGGING = {
         },
     }
 }
-
 
 MIDDLEWARE_CLASSES = [
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -323,7 +323,6 @@ db_engine = 'django.db.backends.postgresql_psycopg2'
 if 'django.contrib.gis' in INSTALLED_APPS:
     db_engine = 'django.contrib.gis.db.backends.postgis'
 
-
 WAGTAIL_APPEND_SLASH = False
 
 # -----------------------------------------------------------------------------
@@ -337,7 +336,7 @@ AC_USER = 0
 AC_TOKEN = ''
 AUTH_LDAP_REQUIRE_GROUP = (
     (
-        LDAPGroupQuery('cn=kdl-staff,' + LDAP_BASE_OU) |
+        LDAPGroupQuery('cn=kdl-staff,' + LDAP_BASE_OU) | 
         LDAPGroupQuery('cn=tvof,' + LDAP_BASE_OU)
     )
 )
@@ -361,7 +360,6 @@ HAYSTACK_CONNECTIONS = {
         'INDEX_NAME': 'tvof_haystack',
     }
 }
-
 
 # -----------------------------------------------------------------------------
 # TVOF
@@ -461,7 +459,6 @@ ALIGNMENT_FEATURE_LABELS = {
     'var': 'variation',
     'rub': 'rubric',
 }
-
 
 # -----------------------------------------------------------------------------
 # Kiln
