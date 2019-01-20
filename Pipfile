@@ -15,7 +15,7 @@ django-activecollab-digger = "*"
 psycopg2-binary = "*"
 regex = "*"
 drf-haystack = "*"
-elasticsearch = "<3"
+elasticsearch = "==2.4.1"
 django-redis = "*"
 django-libsass = "*"
 

@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
-
 from django.shortcuts import render
 from drf_haystack.serializers import (
     HaystackSerializer, HaystackFacetSerializer
@@ -12,7 +11,6 @@ from rest_framework import pagination
 from drf_haystack.mixins import FacetMixin
 from drf_haystack.filters import HaystackFacetFilter
 
-
 ITEMS_PER_PAGE = 10
 
 
@@ -21,6 +19,7 @@ def search_view(request):
 
 
 class AnnotatedTokenSerializer(HaystackSerializer):
+
     class Meta:
         # The `index_classes` attribute is a list of which search indexes
         # we want to include in the search.
