@@ -18,6 +18,7 @@ elasticsearch = "<6"
 django-redis = "*"
 django-libsass = "*"
 drf-haystack = "*"
+django-haystack-es = "*"
 
 [requires]
 python_version = "3.5"

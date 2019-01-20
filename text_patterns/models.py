@@ -34,7 +34,7 @@ class TextPatternSet(models.Model):
         self.patterns = dputils.json_dumps(dicts)
 
     def get_absolute_url(self):
-        from django.core.urlresolvers import reverse
+        from django.urls import reverse
         return reverse('pattern_set', kwargs={'slug': self.slug})
 
 # TODO: move this TVOF custom code to subclass

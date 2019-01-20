@@ -1,4 +1,5 @@
-from haystack import indexes
+# from haystack import indexes
+from haystack_es import indexes
 from .models import AnnotatedToken
 
 

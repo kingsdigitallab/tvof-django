@@ -1,7 +1,7 @@
 {
     "_meta": {
         "hash": {
-            "sha256": "8da2610a55a78d99df0b415b49043e29b37f31fd82cc235adef49ecdaaaa1820"
+            "sha256": "7be4064378e49195a5319760102fb9deb4c260511453d2f4a514ccc695fbe390"
         },
         "pipfile-spec": 6,
         "requires": {
@@ -150,6 +150,13 @@
             ],
             "index": "pypi",
             "version": "==2.8.1"
+        },
+        "django-haystack-es": {
+            "hashes": [
+                "sha256:90671dafe6244ddb53dbfc655217e62d431af11c505b38900b02a3d6b5bd9992"
+            ],
+            "index": "pypi",
+            "version": "==0.2.7"
         },
         "django-kdl-ldap": {
             "hashes": [

@@ -18,24 +18,19 @@ kiln_root = settings.KILN_CONTEXT_PATH
 
 urlpatterns = [
     path(r'admin/', admin.site.urls),
+
     path(r'digger/', include('activecollab_digger.urls')),
     path(r'{path}'.format(path=kiln_root), include('kiln.urls')),
-]
 
-urlpatterns += [
     path(r'textviewer/', include('text_viewer.urls'), name='textviewer'),
     path(r'lab/alignment/', include('text_alignment.urls'),
         name='textalignment'),
     path(r'lab/patterns/', include('text_patterns.urls'), name='patterns'),
 
-    path(r'', include('text_search.urls')),
-]
-
-urlpatterns += [
-    # url(r'^documents/', include(wagtaildocs_urls)),
-    # TVOF
     re_path(r'^documents/(\d+)/(.*)$',
         tvof_views.serve_wagtail_doc, name='wagtaildocs_serve'),
+
+    path(r'', include('text_search.urls')),
 ]
 
 urlpatterns += i18n_patterns(

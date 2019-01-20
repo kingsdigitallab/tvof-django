@@ -194,16 +194,17 @@ LOGGING = {
     }
 }
 
-MIDDLEWARE_CLASSES = [
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+
     'wagtail.core.middleware.SiteMiddleware',
+
     'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     'django.middleware.locale.LocaleMiddleware',
 ]
@@ -355,7 +356,8 @@ WAGTAILSEARCH_BACKENDS = {
 HAYSTACK_CONNECTIONS = {
     'default': {
         'ENGINE':
-        'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
+        # 'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
+        'haystack_es.backends.Elasticsearch5SearchEngine',
         'URL': 'http://localhost:9200/',
         'INDEX_NAME': 'tvof_haystack',
     }
