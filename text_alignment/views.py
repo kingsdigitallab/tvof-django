@@ -417,17 +417,19 @@ class Alignment(object):
                 ))
 
             last_location = mss[ms_name].get('location', None)
-            if last_location and\
-                (get_nat_parts(last_location) >
-                 get_nat_parts(location)) and\
-                    (last_location.strip('ab') != location):
 
-                s = '{0:5s} {1:15s} {2:20.20s} {3:20.20s}'
-                if 0:
-                    print(s.format(
-                        para['id'], ms_name,
-                        last_location, location
-                    ))
+            if 0:
+                if last_location and\
+                    (get_nat_parts(last_location) > 
+                     get_nat_parts(location)) and\
+                        (last_location.strip('ab') != location):
+
+                    s = '{0:5s} {1:15s} {2:20.20s} {3:20.20s}'
+                    if 0:
+                        print(s.format(
+                            para['id'], ms_name,
+                            last_location, location
+                        ))
 
             mss[ms_name]['location'] = location
 
@@ -499,7 +501,6 @@ class Alignment(object):
                     ret[typ] = [val]
             else:
                 ret[typ] = val
-
 
 #             if seg.text is not None:
 #                 fields[seg.attrib.get('type')] = seg.text
@@ -627,7 +628,7 @@ class Alignment(object):
                 if c == 1:
                     ms_names[name] = candidates[0]
                 elif c > 2:
-                    print('WARNING: ambiguous MS name: %s (%s ?)' %\
+                    print('WARNING: ambiguous MS name: %s (%s ?)' % \
                         (name, ', '.join(candidates)))
                 elif c == 0:
                     print('INFO: MS name without number: %s' % name)
@@ -635,7 +636,6 @@ class Alignment(object):
         # print '\n'.join(['%s | %s' % (k, v) for k, v in ms_names.items()])
 
         return ms_names
-
 
 '''
 http://localhost:9999/backend/preprocess/alists/TVOF_para_alignment.xml

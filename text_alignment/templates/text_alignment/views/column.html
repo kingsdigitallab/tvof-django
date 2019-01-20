@@ -1,4 +1,4 @@
-{% load staticfiles compress require cms_tags wagtailcore_tags %}
+{% load staticfiles compress cms_tags wagtailcore_tags %}
 
 {# TODO: move this to external file (main.js?) #}
 <script>
@@ -80,7 +80,7 @@ $(function() {
             {% if fields_locus and para_ms.location %}
             <li><strong><i class="fa fa-map-marker"></i> Location:</strong> {{ para_ms.location }}</li>
             {% endif %}
-            
+
             {% if fields_rubric and para_ms.rubric %}
             {% for rubric in para_ms.rubric %}
             <li>
@@ -93,17 +93,17 @@ $(function() {
             </li>
             {% endfor %}
             {% endif %}
-            
+
             {% if fields_variation and para_ms.vars %}
             {% for var in para_ms.vars %}
             <li><strong><i class="fa fa-edit"></i> Variation:</strong> {{ var.t }}</li>
             {% endfor %}
             {% endif %}
-            
+
             {% if fields_verse and para_ms.verse %}
             <li><strong><i class="fa fa-pencil"></i> Verse:</strong> {{ para_ms.verse }}</li>
             {% endif %}
-            
+
             {% if fields_note and para_ms.note %}
             {% for note in para_ms.note %}
             {% if ALIGNMENT_SHOW_INTERNAL_NOTES or note.feat %}
