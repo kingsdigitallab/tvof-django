@@ -86,17 +86,17 @@ EMAIL_USE_TLS = False
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 INSTALLED_APPS = (
-    'wagtail.wagtailforms',
-    'wagtail.wagtailredirects',
-    'wagtail.wagtailembeds',
-    'wagtail.wagtailsites',
-    'wagtail.wagtailusers',
-    'wagtail.wagtailsnippets',
-    'wagtail.wagtaildocs',
-    'wagtail.wagtailimages',
-    'wagtail.wagtailsearch',
-    'wagtail.wagtailadmin',
-    'wagtail.wagtailcore',
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail.core',
 
     'taggit',
     'modelcluster',
@@ -203,8 +203,8 @@ MIDDLEWARE_CLASSES = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'wagtail.wagtailcore.middleware.SiteMiddleware',
-    'wagtail.wagtailredirects.middleware.RedirectMiddleware',
+    'wagtail.core.middleware.SiteMiddleware',
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     'django.middleware.locale.LocaleMiddleware',
 ]
 
@@ -344,7 +344,7 @@ WAGTAIL_SITE_NAME = PROJECT_TITLE
 ITEMS_PER_PAGE = 10
 WAGTAILSEARCH_BACKENDS = {
     'default': {
-        'BACKEND': 'wagtail.wagtailsearch.backends.elasticsearch5',
+        'BACKEND': 'wagtail.search.backends.elasticsearch5',
         'AUTO_UPDATE': False,
         'URLS': ['http://127.0.0.1:9200'],
         'INDEX': 'tvof_wagtail',

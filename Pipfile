@@ -6,18 +6,18 @@ verify_ssl = true
 [dev-packages]
 
 [packages]
-django = "<2"
-wagtail = "<2"
+django = "*"
+wagtail = "*"
 django-kdl-ldap = "*"
 django-compressor = "*"
 django-haystack = "*"
 django-activecollab-digger = "*"
 psycopg2-binary = "*"
 regex = "*"
-drf-haystack = "*"
-elasticsearch = "==2.4.1"
+elasticsearch = "<6"
 django-redis = "*"
 django-libsass = "*"
+drf-haystack = "*"
 
 [requires]
 python_version = "3.5"

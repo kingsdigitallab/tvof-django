@@ -1,6 +1,6 @@
 from . import utils as dputils
 from datetime import datetime
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.template.defaultfilters import slugify
 import regex as re
 from text_patterns.models import TextPatternSet
@@ -9,6 +9,7 @@ from .models import TextUnitsCached as TextUnits
 
 
 class PatternAnalyser(object):
+
     def __init__(self, slug='default'):
         # If True, plain text unit caching is disabled (for debugging purpose)
         self.nocache = True
@@ -220,7 +221,7 @@ class PatternAnalyser(object):
                 if move[0] is not None and move[1] is not None:
                     copy = self.patterns[move[0]]
                     self.patterns.insert(move[1], copy)
-                    del self.patterns[move[0] +
+                    del self.patterns[move[0] + 
                                       (1 if move[0] > move[1] else 0)]
                     self.auto_correct_pattern_orders_and_numbers()
                     ret = True

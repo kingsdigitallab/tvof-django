@@ -4,9 +4,9 @@ from __future__ import unicode_literals
 
 import cms.models
 from django.db import migrations, models
-import wagtail.wagtailcore.blocks
-import wagtail.wagtailcore.fields
-import wagtail.wagtailimages.blocks
+import wagtail.core.blocks
+import wagtail.core.fields
+import wagtail.images.blocks
 
 
 class Migration(migrations.Migration):
@@ -19,12 +19,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='blogpost',
             name='content',
-            field=wagtail.wagtailcore.fields.StreamField((('heading', wagtail.wagtailcore.blocks.CharBlock(classname='')), ('paragraph', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('image_caption', wagtail.wagtailcore.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.wagtailcore.blocks.StructBlock((('images', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock())))), ('image_and_text', wagtail.wagtailcore.blocks.StructBlock((('text', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock())))))),
+            field=wagtail.core.fields.StreamField((('heading', wagtail.core.blocks.CharBlock(classname='')), ('paragraph', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('image_caption', wagtail.core.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.core.blocks.StructBlock((('images', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock())))), ('image_and_text', wagtail.core.blocks.StructBlock((('text', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock())))))),
         ),
         migrations.AlterField(
             model_name='blogpost',
             name='content_fr',
-            field=wagtail.wagtailcore.fields.StreamField((('heading', wagtail.wagtailcore.blocks.CharBlock(classname='')), ('paragraph', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('image_caption', wagtail.wagtailcore.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.wagtailcore.blocks.StructBlock((('images', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock())))), ('image_and_text', wagtail.wagtailcore.blocks.StructBlock((('text', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock()))))), blank=True),
+            field=wagtail.core.fields.StreamField((('heading', wagtail.core.blocks.CharBlock(classname='')), ('paragraph', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('image_caption', wagtail.core.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.core.blocks.StructBlock((('images', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock())))), ('image_and_text', wagtail.core.blocks.StructBlock((('text', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock()))))), blank=True),
         ),
         migrations.AlterField(
             model_name='blogpost',
@@ -39,12 +39,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='homepage',
             name='content',
-            field=wagtail.wagtailcore.fields.StreamField((('paragraph', wagtail.wagtailcore.blocks.RichTextBlock()), ('image_and_caption', wagtail.wagtailcore.blocks.StructBlock((('images', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock())))))),
+            field=wagtail.core.fields.StreamField((('paragraph', wagtail.core.blocks.RichTextBlock()), ('image_and_caption', wagtail.core.blocks.StructBlock((('images', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock())))))),
         ),
         migrations.AlterField(
             model_name='homepage',
             name='content_fr',
-            field=wagtail.wagtailcore.fields.StreamField((('heading', wagtail.wagtailcore.blocks.CharBlock(classname='')), ('paragraph', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('image_caption', wagtail.wagtailcore.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.wagtailcore.blocks.StructBlock((('images', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock())))), ('image_and_text', wagtail.wagtailcore.blocks.StructBlock((('text', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock()))))), blank=True),
+            field=wagtail.core.fields.StreamField((('heading', wagtail.core.blocks.CharBlock(classname='')), ('paragraph', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('image_caption', wagtail.core.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.core.blocks.StructBlock((('images', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock())))), ('image_and_text', wagtail.core.blocks.StructBlock((('text', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock()))))), blank=True),
         ),
         migrations.AlterField(
             model_name='homepage',
@@ -59,12 +59,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='indexpage',
             name='content',
-            field=wagtail.wagtailcore.fields.StreamField((('heading', wagtail.wagtailcore.blocks.CharBlock(classname='')), ('paragraph', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('image_caption', wagtail.wagtailcore.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.wagtailcore.blocks.StructBlock((('images', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock())))), ('image_and_text', wagtail.wagtailcore.blocks.StructBlock((('text', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock())))))),
+            field=wagtail.core.fields.StreamField((('heading', wagtail.core.blocks.CharBlock(classname='')), ('paragraph', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('image_caption', wagtail.core.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.core.blocks.StructBlock((('images', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock())))), ('image_and_text', wagtail.core.blocks.StructBlock((('text', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock())))))),
         ),
         migrations.AlterField(
             model_name='indexpage',
             name='content_fr',
-            field=wagtail.wagtailcore.fields.StreamField((('heading', wagtail.wagtailcore.blocks.CharBlock(classname='')), ('paragraph', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('image_caption', wagtail.wagtailcore.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.wagtailcore.blocks.StructBlock((('images', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock())))), ('image_and_text', wagtail.wagtailcore.blocks.StructBlock((('text', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock()))))), blank=True),
+            field=wagtail.core.fields.StreamField((('heading', wagtail.core.blocks.CharBlock(classname='')), ('paragraph', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('image_caption', wagtail.core.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.core.blocks.StructBlock((('images', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock())))), ('image_and_text', wagtail.core.blocks.StructBlock((('text', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock()))))), blank=True),
         ),
         migrations.AlterField(
             model_name='indexpage',
@@ -79,12 +79,12 @@ class Migration(migrations.Migration):
         migrations.AlterField(
             model_name='richtextpage',
             name='content',
-            field=wagtail.wagtailcore.fields.StreamField((('heading', wagtail.wagtailcore.blocks.CharBlock(classname='')), ('paragraph', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('image_caption', wagtail.wagtailcore.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.wagtailcore.blocks.StructBlock((('images', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock())))), ('image_and_text', wagtail.wagtailcore.blocks.StructBlock((('text', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock())))))),
+            field=wagtail.core.fields.StreamField((('heading', wagtail.core.blocks.CharBlock(classname='')), ('paragraph', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('image_caption', wagtail.core.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.core.blocks.StructBlock((('images', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock())))), ('image_and_text', wagtail.core.blocks.StructBlock((('text', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock())))))),
         ),
         migrations.AlterField(
             model_name='richtextpage',
             name='content_fr',
-            field=wagtail.wagtailcore.fields.StreamField((('heading', wagtail.wagtailcore.blocks.CharBlock(classname='')), ('paragraph', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('image_caption', wagtail.wagtailcore.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.wagtailcore.blocks.StructBlock((('images', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock())))), ('image_and_text', wagtail.wagtailcore.blocks.StructBlock((('text', wagtail.wagtailcore.blocks.RichTextBlock()), ('image', wagtail.wagtailimages.blocks.ImageChooserBlock()), ('caption', wagtail.wagtailcore.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock()))))), blank=True),
+            field=wagtail.core.fields.StreamField((('heading', wagtail.core.blocks.CharBlock(classname='')), ('paragraph', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('image_caption', wagtail.core.blocks.CharBlock(classname='richtext-caption')), ('image_and_caption', wagtail.core.blocks.StructBlock((('images', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock())))), ('image_and_text', wagtail.core.blocks.StructBlock((('text', wagtail.core.blocks.RichTextBlock()), ('image', wagtail.images.blocks.ImageChooserBlock()), ('caption', wagtail.core.blocks.RichTextBlock()), ('alignment', cms.models.ImageFormatChoiceBlock()))))), blank=True),
         ),
         migrations.AlterField(
             model_name='richtextpage',
