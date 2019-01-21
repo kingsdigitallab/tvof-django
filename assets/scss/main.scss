@@ -96,6 +96,14 @@ a.ext-links {
     }
 }
 
+.mini-header {
+    h1 {
+        a {
+            display: inline-block;
+        }
+    }
+}
+
 /* Navigation */
 
 nav {
@@ -144,6 +152,10 @@ nav {
     [data-toggle] {
         cursor: pointer;
     }
+}
+
+.dropdown.menu > li > a {
+    background: $primary-color;
 }
 
 .menu {
