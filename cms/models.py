@@ -18,6 +18,8 @@ from django.urls.base import translate_url
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel
+from wagtail.wagtailimages.models import Image
+from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
 
 
 def get_field_lang(obj, field_name):
@@ -230,10 +232,64 @@ class RichTextPage(AbstractMultilingualContentPage):
 
 
 class BlogPost(AbstractMultilingualContentPage):
-    """Blog post."""
+    """Blog post / News Item."""
 
     search_name = "Blog post"
     content = get_advanced_streamfield()
+
+    thumbnail_image = models.ForeignKey(
+        'wagtailimages.Image',
+        null=True,
+        blank=True,
+        on_delete=models.SET_NULL,
+        related_name='+'
+    )
+
+    promote_panels = AbstractMultilingualContentPage.promote_panels + [
+        MultiFieldPanel([
+            ImageChooserPanel('thumbnail_image'),
+        ], 'Thumbnail'),
+    ]
+
+    # TODO: move that to a function...
+    # Problem is that changes to the panels in the subclasses
+    # will be ignored.
+    parent_class = AbstractMultilingualContentPage
+    edit_handler = TabbedInterface([
+        ObjectList(parent_class.content_panels, heading='Content'),
+        ObjectList(parent_class.content_panels_fr, heading='Content (French)'),
+        ObjectList(promote_panels, heading='Promote'),
+        ObjectList(
+            parent_class.settings_panels, heading='Settings',
+            classname="settings"
+        ),
+    ])
+
+    @property
+    def thumbnail(self):
+        ''' returns self.thumbnail_image or
+        the first image from streamfield
+        '''
+
+        ret = self.thumbnail_image
+
+        if ret is None:
+            image = None
+
+            for block_data in self.content.stream_data:
+                value = block_data['value']
+                if isinstance(value, dict):
+                    image = value.get('image', None) or value.get(
+                        'images', None)
+                    if image:
+                        break
+
+            if image:
+                ret = Image.objects.filter(id=image).first()
+                if ret is None:
+                    print('Image not found #%s' % image)
+
+        return ret
 
 
 class BlogIndexPage(RoutablePageMixin, Page):
@@ -245,7 +301,10 @@ class BlogIndexPage(RoutablePageMixin, Page):
 
     @property
     def posts(self):
-        return BlogPost.objects.all().order_by('-latest_revision_created_at')
+        ret = self.get_children().live().order_by(
+            '-first_published_at'
+        )
+        return ret
 
     @property
     def active_months(self):
@@ -281,7 +340,7 @@ class BlogIndexPage(RoutablePageMixin, Page):
             self.get_template(request),
             {
                 'self': self,
-                'posts': self._paginate(request, posts)
+                'page_of_posts': self._paginate(request, posts)
             }
         )
 
@@ -293,8 +352,10 @@ class BlogIndexPage(RoutablePageMixin, Page):
             raise Http404('Invalid Author')
 
         posts = self.posts.filter(
-            models.Q(owner__username=author) |
-            models.Q(owner__username=unslugify(author)))
+            models.Q(owner__username=author) | models.Q(
+                owner__username=unslugify(author)
+            )
+        )
 
         return render(request,
                       self.get_template(request),
@@ -311,8 +372,7 @@ class BlogIndexPage(RoutablePageMixin, Page):
             raise Http404('Invalid Tag')
 
         posts = self.posts.filter(
-            models.Q(tags__name=tag) |
-            models.Q(tags__name=unslugify(tag)))
+            models.Q(tags__name=tag) | models.Q(tags__name=unslugify(tag)))
 
         return render(request,
                       self.get_template(request),

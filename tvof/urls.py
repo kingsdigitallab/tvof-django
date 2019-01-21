@@ -11,6 +11,7 @@ from wagtail.wagtailsearch.urls import frontend as wagtailsearch_frontend_urls
 from text_viewer import urls as text_viewer_urls
 from text_patterns import urls as text_patterns_urls
 from text_alignment import urls as text_alignment_urls
+from text_search import urls as text_search_urls
 import views as tvof_views
 from django.conf.urls.i18n import i18n_patterns
 
@@ -22,6 +23,7 @@ kiln_root = settings.KILN_CONTEXT_PATH
 urlpatterns = [
     url(r'^grappelli/', include('grappelli.urls')),
     url(r'^admin/', include(admin.site.urls)),
+    url(r'^digger/', include('activecollab_digger.urls')),
     url('^{path}'.format(path=kiln_root),
         include('kiln.urls')),
 ]
@@ -43,11 +45,16 @@ urlpatterns += [
 ]
 
 urlpatterns += [
-    url(r'^lab/alignment/', include(text_alignment_urls), name='textviewer'),
+    url(r'^lab/alignment/', include(text_alignment_urls),
+        name='textalignment'),
 ]
 
 urlpatterns += [
     url(r'^lab/patterns/', include(text_patterns_urls), name='patterns'),
+]
+
+urlpatterns += [
+    url(r'', include(text_search_urls)),
 ]
 
 urlpatterns += [
