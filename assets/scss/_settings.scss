@@ -380,7 +380,6 @@ $drilldown-arrow-size: 6px;
 
 $dropdown-padding: 1rem;
 $dropdown-background: $body-background;
-// $dropdown-border: 1px solid $medium-gray;
 $dropdown-border: 0;
 $dropdown-font-size: 1rem;
 $dropdown-width: 300px;
@@ -399,12 +398,11 @@ $dropdownmenu-arrow-color: $anchor-color;
 $dropdownmenu-arrow-size: 6px;
 $dropdownmenu-arrow-padding: 1.5rem;
 $dropdownmenu-min-width: 200px;
-$dropdownmenu-background: $white;
+$dropdownmenu-background: null;
 $dropdownmenu-submenu-background: $dropdownmenu-background;
 $dropdownmenu-padding: $global-menu-padding;
 $dropdownmenu-nested-margin: 0;
 $dropdownmenu-submenu-padding: $dropdownmenu-padding;
-// $dropdownmenu-border: 1px solid $medium-gray;
 $dropdownmenu-border: 0;
 $dropdown-menu-item-color-active: get-color(primary);
 $dropdown-menu-item-background-active: transparent;
@@ -485,7 +483,6 @@ $menu-simple-margin: 1rem;
 $menu-item-color-active: $white;
 $menu-item-background-active: get-color(primary);
 $menu-icon-spacing: 0.25rem;
-$menu-item-background-hover: $light-gray;
 $menu-state-back-compat: true;
 $menu-centered-back-compat: true;
 $menu-icons-back-compat: true;
@@ -810,7 +807,6 @@ $tab-active-color: $primary-color;
 $tab-item-font-size: rem-calc(12);
 $tab-item-background-hover: $white;
 $tab-item-padding: 1.25rem 1.5rem;
-$tab-expand-max: 6;
 $tab-content-background: $white;
 $tab-content-border: $light-gray;
 $tab-content-color: $body-font-color;
@@ -855,7 +851,6 @@ $tooltip-radius: $global-radius;
 // 55. Top Bar
 // -----------
 
-// $topbar-padding: 0.5rem;
 $topbar-padding: 0;
 $topbar-background: $primary-color;
 $topbar-submenu-background: $topbar-background;

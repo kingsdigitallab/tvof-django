@@ -12,11 +12,27 @@ $(function() {
         // See AC-265.
         // return false;
     });
+
+    Foundation.reInit('data-sticky');
 });
 </script>
 
-<div class="viz viz-column">
-    <div class="row thead expanded small-up-4 medium-up-6">
+{% comment %}
+    GF: Foundation's sticky plugin seems to be in conflict with Vue.js
+    It doesn't get initialised properly and therefore the row that displays
+    the MS titles above the columns, doesn't stick to the top when scrolling.
+    The data attributes are in place already: data-sticky-container and
+    data-sticky.
+    Attempts: I tried to use the reInit() function (reference: https://foundation.zurb.com/sites/docs/javascript.html#initializing), but it
+    looks like the method is not available for the Sticky plugin.
+    `Foundation.reInit('data-sticky');` and
+    `Foundation.reInit('data-sticky-container');`
+    Both returning the error below:
+    ReferenceError: "We're sorry, '_init' is not an available method for this element."
+{% endcomment %}
+
+<div class="viz viz-column" data-sticky-container>
+    <div class="row thead expanded small-up-4 medium-up-6" data-sticky>
         <div class="column column-block">
             &nbsp;
         </div>
@@ -28,11 +44,10 @@ $(function() {
         {% endif %}
         {% endfor %}
     </div>
-    <div class="top-margin"></div>
     {% for para in alignment_data.paras %}
     {% ifchanged para.section %}
     <div class="row expanded">
-        <div class="large-12">
+        <div class="small-12 columns">
             <p class="section"><strong>{{ para.section }}</strong></p>
         </div>
     </div>
