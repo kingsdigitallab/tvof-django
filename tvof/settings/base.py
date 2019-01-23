@@ -40,6 +40,11 @@ ALLOWED_HOSTS = []
 # http://niwibe.github.io/django-redis/
 CACHE_REDIS_DATABASE = '0'
 
+DJANGO_CACHE_ROOT = os.path.join(BASE_DIR, 'django_cache')
+
+if not os.path.exists(DJANGO_CACHE_ROOT):
+    os.makedirs(DJANGO_CACHE_ROOT)
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -51,13 +56,13 @@ CACHES = {
     },
     'text_patterns': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'django_cache/text_patterns/'),
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'text_patterns'),
         'TIMEOUT': 30 * 60 * 60 * 24,
         # 'MAX_ENTRIES': 600,
     },
     'kiln': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'django_cache/kiln/'),
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'kiln'),
         'TIMEOUT': 30 * 60 * 60 * 24,
         # 'TIMEOUT': 1,
         # 'MAX_ENTRIES': 600,
