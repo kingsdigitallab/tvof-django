@@ -93,5 +93,6 @@ if 1:
             '''
             ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
             ret = self.filter_queryset(
-                ret.order_by('location', 'token_number'))
+                ret.order_by('location', 'token_number')
+            )
             return ret

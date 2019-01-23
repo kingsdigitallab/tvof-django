@@ -1,5 +1,5 @@
 """This is the URLS."""
-from django.urls import path, include
+from django.urls import path, include, re_path
 from django.conf import settings
 from django.contrib import admin
 from wagtail.admin import urls as wagtailadmin_urls
@@ -9,7 +9,6 @@ from wagtail.search.signal_handlers import \
     register_signal_handlers as wagtailsearch_register_signal_handlers
 from . import views as tvof_views
 from django.conf.urls.i18n import i18n_patterns
-from django.urls.conf import re_path
 
 admin.autodiscover()
 wagtailsearch_register_signal_handlers()

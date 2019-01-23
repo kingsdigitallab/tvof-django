@@ -352,15 +352,22 @@ WAGTAILSEARCH_BACKENDS = {
         'TIMEOUT': 5,
     }
 }
+
 # Change as required
+# https://django-haystack.readthedocs.io/en/stable/settings.html
 HAYSTACK_CONNECTIONS = {
     'default': {
-        'ENGINE':
-        # 'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
-        'haystack_es.backends.Elasticsearch5SearchEngine',
-        'URL': 'http://localhost:9200/',
-        'INDEX_NAME': 'tvof_haystack',
-    }
+        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'URL': 'http://localhost:8983/solr/default',
+        'TIMEOUT': 60 * 5,
+        'INCLUDE_SPELLING': True,
+        'BATCH_SIZE': 100,
+    },
+#     'default': {
+#         'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
+#         'URL': 'http://localhost:9200/',
+#         'INDEX_NAME': 'tvof_haystack',
+#     }
 }
 
 # -----------------------------------------------------------------------------

@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-# -*- coding: utf-8 -*-
 
 import os.path
 import sys
@@ -27,17 +26,18 @@ sys.path.append(project_root)
 # The name of the Django app for this project
 # Folder that contains wsgi.py
 PROJECT_NAME = 'tvof'
+SERVER_NAME = 'tvof2'
 # Git repository pointer
 REPOSITORY = 'https://github.com/kingsdigitallab/{}-django.git'.format(
     PROJECT_NAME)
 
 env.gateway = 'ssh.kdl.kcl.ac.uk'
 # Host names used as deployment targets
-env.hosts = ['{}.kdl.kcl.ac.uk'.format(PROJECT_NAME)]
+env.hosts = ['{}.kdl.kcl.ac.uk'.format(SERVER_NAME)]
 # Absolute filesystem path to project 'webroot'
-env.root_path = '/vol/{}/webroot/'.format(PROJECT_NAME)
+env.root_path = '/vol/{}/webroot/'.format(SERVER_NAME)
 # Absolute filesystem path to project Django root
-env.django_root_path = '/vol/{}/webroot/'.format(PROJECT_NAME)
+env.django_root_path = '/vol/{}/webroot/'.format(SERVER_NAME)
 # Absolute filesystem path to Python virtualenv for this project
 # TODO: create symlink to .venv within project folder
 # env.envs_path = os.path.join(env.root_path, 'envs')
