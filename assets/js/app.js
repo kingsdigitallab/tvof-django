@@ -2,59 +2,59 @@
 
 $(function() {
 
-	// Expand / Collapse
+  // Expand / Collapse
 
-	$('.expander').bind("click", function() {
-		$(this).next('.collapsible').slideToggle(400).removeClass("hide");
-		$("i", this).toggleClass("fa-caret-down fa-caret-right");
-		return false;
-	});
+  $('.expander').bind("click", function() {
+    $(this).next('.collapsible').slideToggle(400).removeClass("hide");
+    $("i", this).toggleClass("fa-caret-down fa-caret-right");
+    return false;
+  });
 
-	// Show more/less in long lists
+  // Show more/less in long lists
 
-	// Load the first 10 list items for each list
-	$('.long-list').each(function() {
-		// Count the list items
-		var items = $(this).find('li').length;
+  // Load the first 10 list items for each list
+  $('.long-list').each(function() {
+    // Count the list items
+    var items = $(this).find('li').length;
 
-		// If there are more than ten items, hide the rest
-		if (items > 10) {
-			$('li', this).eq(9).nextAll().hide().addClass('more-items');
-		} else {
-			$(this).next('.show-more').hide();
-		}
-	});
+    // If there are more than ten items, hide the rest
+    if (items > 10) {
+      $('li', this).eq(9).nextAll().hide().addClass('more-items');
+    } else {
+      $(this).next('.show-more').hide();
+    }
+  });
 
-	$('.show-more').on('click', function(){
-		$this = $(this);
-		var text = ($this.text() == 'Show less') ? 'Show more' : 'Show less';
-		$this.text(text).toggleClass('secondary darker'); 
-		$(this).prev('.long-list').children('li.more-items').slideToggle();
-	});
+  $('.show-more').on('click', function(){
+    var $this = $(this);
+    var text = ($this.text() == 'Show less') ? 'Show more' : 'Show less';
+    $this.text(text).toggleClass('secondary darker');
+    $(this).prev('.long-list').children('li.more-items').slideToggle();
+  });
 
     // Cookie consent
     // To be removed if switching to requirejs
 
     $(document).ready(function() {
-        if (!Cookies.get('tvof-cookie')) {
+        if (!window.Cookies.get('tvof-cookie')) {
             $("#cookie-disclaimer").removeClass('hide');
         }
         // Set cookie
         $('#cookie-disclaimer .closeme').on("click", function() {
-            Cookies.set('tvof-cookie', 'tvof-cookie-set', { expires: 30 });
+            window.Cookies.set('tvof-cookie', 'tvof-cookie-set', { expires: 30 });
         });
     });
-	
-	// TVOF 131: click on PDF open the document in new tab instead of 
-	// downloading it
+
+  // TVOF 131: click on PDF open the document in new tab instead of
+  // downloading it
     $('a[href]').on('click', function() {
         var href = this.href;
         if (/.*\.pdf$/.test(href)) {
             window.open(href);
-            return false; 
+            return false;
         }
     });
-    
+
     /*
     Returns the height $element should have to fill the remaining
     space in the viewport.
@@ -63,17 +63,17 @@ $(function() {
     */
     function get_elastic_height($element, min, margin, noscrollbar) {
         var height = 0;
-    
+
         // This is a hack for OL - we force 100% height when it is in
         // full screen mode. See zoom view of images on the faceted search.
         if ($element.find('.ol-full-screen-true').length > 0) {
             return '100%';
         }
-    
+
         min = min || 0;
         margin = margin || 0;
         noscrollbar = noscrollbar || 0;
-    
+
         var current_height = $element.outerHeight();
         if (noscrollbar) {
             // ! only works if body height is NOT 100% !
@@ -88,10 +88,10 @@ $(function() {
             height = (height <= min) ? min : height;
             height = (height > window_height) ? window_height : height;
         }
-    
+
         return Math.floor(height);
-    };
-    
+    }
+
     /*
         Make $target height elastic. It will take the rest of the
         viewport space. This is automatically updated when the user
@@ -108,5 +108,5 @@ $(function() {
         $(document).on('webkitfullscreenchange mozfullscreenchange fullscreenchange MSFullscreenChange', function(e) {on_resize(e);});
         on_resize();
     };
-    
+
 });
