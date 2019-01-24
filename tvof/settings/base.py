@@ -91,6 +91,8 @@ EMAIL_USE_TLS = False
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 INSTALLED_APPS = (
+    'wagtail.contrib.postgres_search',
+
     'wagtail.contrib.forms',
     'wagtail.contrib.redirects',
     'wagtail.embeds',
@@ -350,11 +352,7 @@ WAGTAIL_SITE_NAME = PROJECT_TITLE
 ITEMS_PER_PAGE = 10
 WAGTAILSEARCH_BACKENDS = {
     'default': {
-        'BACKEND': 'wagtail.search.backends.elasticsearch5',
-        'AUTO_UPDATE': False,
-        'URLS': ['http://127.0.0.1:9200'],
-        'INDEX': 'tvof_wagtail',
-        'TIMEOUT': 5,
+        'BACKEND': 'wagtail.contrib.postgres_search.backend',
     }
 }
 
