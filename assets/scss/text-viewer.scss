@@ -22,13 +22,13 @@
 
 .text-viewer-header {
     display: block;
-    height: 50px;
+    // height: 50px;
     position: relative;
 
     h1 {
         font-size: rem-calc(20);
         line-height: 1.25;
-        margin: rem-calc(12 0 0 0);
+        margin: 0;
     }
 }
 

@@ -96,10 +96,19 @@ a.ext-links {
     }
 }
 
+.mini-header {
+    h1 {
+        a {
+            display: inline-block;
+        }
+    }
+}
+
 /* Navigation */
 
 nav {
     background-color: #1c2434;
+
     a {
         color: $white;
 
@@ -112,13 +121,14 @@ nav {
             border-color: transparent $white transparent transparent !important;
         }
 
+        &:active,
         &:focus,
         &:visited {
-            color: $white;
+            color: $white !important;
         }
 
         &:hover {
-            color: scale-color($primary-color, $lightness: 80%);
+            color: scale-color($primary-color, $lightness: 80%) !important;
             background: scale-color($primary-color, $lightness: 20%);
         }
     }
@@ -133,7 +143,7 @@ nav {
 
     .menu,
     .menu > * {
-        z-index: 9;
+        // z-index: 9;
         // GN: active menu item wasn't highlighted (AC-234, 17 May 2018)
         .active > a {
             background: scale-color($primary-color, $lightness: 20%);
@@ -145,8 +155,21 @@ nav {
     }
 }
 
-.menu.submenu.is-dropdown-submenu {
-    background: $primary-color;
+.menu {
+    &.submenu {
+        &.is-dropdown-submenu {
+            background: $primary-color;
+        }
+    }
+
+    &.dropdown {
+        .is-dropdown-submenu-parent {
+            &:hover {
+                background: scale-color($primary-color, $lightness: 20%);
+                color: $white !important;
+            }
+        }
+    }
 }
 
 ul.sticky {
@@ -829,10 +852,10 @@ footer {
         height: calc(100vh - 230px);
     }
 
-    footer {
-        display: none;
-        height: 1px;
-    }
+    // footer {
+    //     display: none;
+    //     height: 1px;
+    // }
 }
 
 @media screen and (min-width: 769px) {

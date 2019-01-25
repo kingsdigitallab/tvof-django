@@ -5,13 +5,13 @@
   <div class="row">
       {% with page|get_section_page as section_page %}
         {% if section_page %}
-          <div class="large-3 columns">
+          <div class="small-12 large-3 columns">
               {% block index_page_children %}
                   {% include "cms/includes/index_page_children.html" with title="In this section" section=section_page %}
               {% endblock %}
           </div>
         {% endif %}
-        <div class="large-{% if section_page %}9{% else %}12{% endif %} columns">
+        <div class="small-12 large-{% if section_page %}9{% else %}12{% endif %} columns">
             {% block streamfield %}
                   {% include "cms/includes/streamfield.html" with content=self.content_lang %}
             {% endblock %}

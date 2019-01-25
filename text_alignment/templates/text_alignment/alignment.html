@@ -13,16 +13,16 @@
 
 {% block body_classes %}body-alignment{% endblock %}
 
+{% block minimal_breadcrumb %}
+    <small>/ <a href=".">Alignment</a></small>
+{% endblock %}
+
 {% block header_top_bar %}
-    <ul class="horizontal menu float-right mini-header" data-sticky>
+    <ul class="horizontal menu float-right" data-sticky>
         <li>
             <a id="toggle-settings" href="#settings" class="toggle-settings">Settings <i class="fa fa-cog"></i></a>
         </li>
     </ul>
-{% endblock %}
-
-{% block minimal_breadcrumb %}
-    <small>/ <a href=".">Alignment</a></small>
 {% endblock %}
 
 {% block main_wrapper %}
