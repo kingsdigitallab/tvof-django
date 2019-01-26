@@ -14,10 +14,10 @@
             <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
         </div>
         <div class="row">
-            <div class="search-results columns large-9 large-push-3">
+            <div class="search-results columns small-12 large-9 large-order-2">
                 <div class="search-pagination">
                     {{ response.objects.count }} instances
-                    - 
+                    -
                     <a v-if="response.objects.previous" href="#" class="button tiny" v-on:click.prevent="on_click_prev">&lt; Previous</a>
                     Page {{ query.page }} / {{ last_page_index }}
                     <a v-if="response.objects.next" href="#" class="button tiny" v-on:click.prevent="on_click_next">Next &gt;</a>
@@ -45,7 +45,7 @@
                             </td>
                             <td>
                                 <a href="#" v-on:click.prevent="on_click_token(hit)">
-                                {{ hit.token }}                      
+                                {{ hit.token }}
                                 </a><br>
                                 ({{ hit.lemma }})
                             </td>
@@ -58,7 +58,7 @@
                     </tbody>
                 </table>
             </div>
-            <div class="search-facets columns large-3 large-pull-9">
+            <div class="search-facets columns small-12 large-3 large-order-1">
                 <div class="card show-for-large">
                     <div class="card-divider">
                         <h4>Lemma or Form</h4>
@@ -75,7 +75,7 @@
                     <div class="card-section">
                         <ul class="search-facet undecorated-list">
                             <li class="search-option" v-for="option in get_options(ui_facet)">
-                                <a href="#" v-on:click.prevent="on_click_option(ui_facet.key, option)" 
+                                <a href="#" v-on:click.prevent="on_click_option(ui_facet.key, option)"
                                     :class="{'selected': is_option_selected(ui_facet.key, option)}">
                                     {{ get_option_label_from_text(option.text, ui_facet.key) }} ({{ option.count }})
                                     <template v-if="is_option_selected(ui_facet.key, option)">X</template>
@@ -96,14 +96,14 @@
     <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
 
     <script>
-        
+
         var api_url = '/api/v1/tokens/search/facets/?format=json';
         var text_viewer_url = '/textviewer/?p1=';
         var id_to_ms = {
             'edfr20125': 'Fr20125',
             'edRoyal20D1': 'Royal',
         };
-        
+
         // This is a list of a facets to show on the front end
         // the order is important and it contains a mapping
         // between facet keys and display labels.
@@ -133,7 +133,7 @@
                 label: 'Rubrication',
             },
         ];
-        
+
         // /api/v1/tokens/search/?format=json&page=2&lemma=dire
         var app = new Vue({
             el: '#tvof-search',
@@ -157,7 +157,7 @@
             },
             computed: {
                 last_page_index: function() {
-                    return Math.ceil(this.response.objects.count / 10.0);  
+                    return Math.ceil(this.response.objects.count / 10.0);
                 },
             },
             mounted: function() {
@@ -166,21 +166,21 @@
             methods: {
                 get_option_label_from_text: function(text, facet_key) {
                     ret = text;
-                    
+
                     if (ret == 'edfr20125') ret = 'Fr 20125';
                     if (ret == 'edRoyal20D1') ret = 'Royal 20 D1';
                     if (facet_key == 'is_rubric') {
                         if (ret == '0') ret = 'not rubricated';
                         if (ret == '1') ret = 'rubricated';
-                    } 
-                    
+                    }
+
                     return ret;
                 },
                 get_options: function(ui_facet) {
                     var ret = [];
-                    
+
                     ret = this.response.fields[ui_facet.key];
-                    
+
                     return ret;
                 },
                 on_reset_search_text: function() {
@@ -229,7 +229,7 @@
                         text: self.query.text,
                         selected_facets: self.get_selected_facets()
                     };
-                    
+
                     var req = $.getJSON(api_url, $.param(query, true));
                     req.done(function(response) {
                         self.$set(self, 'response', response);
@@ -243,9 +243,9 @@
                     });
                     return ret;
                 }
-            }            
-        })        
-        
+            }
+        })
+
     </script>
 {% endblock %}
 

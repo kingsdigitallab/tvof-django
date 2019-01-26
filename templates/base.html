@@ -9,9 +9,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   {% compress css %}
-  <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/main.scss' %}">
-  <link rel="stylesheet" type="text/x-scss" href="{% static 'font-awesome/scss/font-awesome.scss' %}">
+    <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/main.scss' %}">
   {% endcompress %}
+
+  {% comment %}
+    GN: django-compress doesn't deal well with font imported from scss or css.
+    and js version of fontawesome does convert to verbose svg on the fly.
+    So we stick to css outside compress as we don't really need to change any parameter.
+  {% endcomment %}
+  <link rel="stylesheet" type="text/css" href="{% static 'font-awesome/css/font-awesome.css' %}">
 
   {% block extra_head %}
   {% endblock %}
