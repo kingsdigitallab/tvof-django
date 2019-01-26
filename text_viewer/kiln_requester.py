@@ -1,4 +1,4 @@
-import thread
+import _thread
 from django.core.cache import caches
 from requests.exceptions import ConnectionError
 from django.conf import settings
@@ -45,8 +45,8 @@ class CachedRequesterKiln(object):
         if ret is not None:
             d = time.time() - t0
             size_mb = len(ret) / 1024.0 / 1024
-            print 'Request: %s from %s (%0.4f MB, %0.2f s.)' %\
-                (url, self.last_request_origin, size_mb, d)
+            print('Request: %s from %s (%0.4f MB, %0.2f s.)' % \
+                (url, self.last_request_origin, size_mb, d))
 
         return ret
 
@@ -76,7 +76,7 @@ class CachedRequesterKiln(object):
             stream = self.session.get(url, stream=True)
             stream_len = stream.headers.get('content-length')
         except ConnectionError as e:
-            print 'ERROR (%s): %s' % (self.__class__.__name__, e)
+            print('ERROR (%s): %s' % (self.__class__.__name__, e))
             pass
 
         # if length response from disk is != from response headers
@@ -88,15 +88,7 @@ class CachedRequesterKiln(object):
                 # request
                 self.dmsg('DOWNLOAD response')
                 parts = []
-                apply_vagrant_fix = 0 and (
-                    '10.0.2.2' in url and self.chunk_size > 100
-                )
-                for data in stream.iter_content(chunk_size=self.chunk_size):
-                    if apply_vagrant_fix:
-                        # Some very weird bug when download got stuck in
-                        # vagrant, I had to print something to make it
-                        # work consistently.
-                        print '.'
+                for data in stream.iter_content(chunk_size=self.chunk_size, decode_unicode=True):
                     parts.append(data)
                 self.dmsg('WRITE to disk cache')
 
@@ -105,19 +97,16 @@ class CachedRequesterKiln(object):
 
             stream.close()
 
-        # convert from utf-8 to Unicode string
-        if ret and self.encoding:
-            # self.dmsg('DECODE')
-            # ret = ret.decode(self.encoding)
+        if ret:
             self.cache_mem[urlid] = ret
 
         return ret
 
     def dmsg(self, message):
         if settings.DEBUG:
-            print '%s' % message
+            print('%s' % message)
             if 0:
-                print '%s %s' % (thread.get_ident(), message)
+                print('%s %s' % (_thread.get_ident(), message))
 
     def clear_disk_cache(self):
         self.cache.clear()

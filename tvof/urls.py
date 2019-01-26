@@ -1,18 +1,13 @@
 """This is the URLS."""
+from django.urls import path, include, re_path
 from django.conf import settings
-from django.conf.urls import include, url
 from django.contrib import admin
-from wagtail.wagtailadmin import urls as wagtailadmin_urls
-# from wagtail.wagtaildocs import urls as wagtaildocs_urls
-from wagtail.wagtailcore import urls as wagtail_urls
-from wagtail.wagtailsearch.signal_handlers import \
+from wagtail.admin import urls as wagtailadmin_urls
+# from wagtail.documents import urls as wagtaildocs_urls
+from wagtail.core import urls as wagtail_urls
+from wagtail.search.signal_handlers import \
     register_signal_handlers as wagtailsearch_register_signal_handlers
-from wagtail.wagtailsearch.urls import frontend as wagtailsearch_frontend_urls
-from text_viewer import urls as text_viewer_urls
-from text_patterns import urls as text_patterns_urls
-from text_alignment import urls as text_alignment_urls
-from text_search import urls as text_search_urls
-import views as tvof_views
+from . import views as tvof_views
 from django.conf.urls.i18n import i18n_patterns
 
 admin.autodiscover()
@@ -21,53 +16,25 @@ wagtailsearch_register_signal_handlers()
 kiln_root = settings.KILN_CONTEXT_PATH
 
 urlpatterns = [
-    url(r'^grappelli/', include('grappelli.urls')),
-    url(r'^admin/', include(admin.site.urls)),
-    url(r'^digger/', include('activecollab_digger.urls')),
-    url('^{path}'.format(path=kiln_root),
-        include('kiln.urls')),
-]
+    path(r'admin/', admin.site.urls),
 
-if 0:
-    try:
-        if settings.DEBUG:
-            import debug_toolbar
-            urlpatterns += [
-                url(r'^__debug__/',
-                    include(debug_toolbar.urls)),
-            ]
+    path(r'digger/', include('activecollab_digger.urls')),
+    path(r'{path}'.format(path=kiln_root), include('kiln.urls')),
 
-    except ImportError:
-        pass
-
-urlpatterns += [
-    url(r'^textviewer/', include(text_viewer_urls), name='textviewer'),
-]
-
-urlpatterns += [
-    url(r'^lab/alignment/', include(text_alignment_urls),
+    path(r'textviewer/', include('text_viewer.urls'), name='textviewer'),
+    path(r'lab/alignment/', include('text_alignment.urls'),
         name='textalignment'),
-]
+    path(r'lab/patterns/', include('text_patterns.urls'), name='patterns'),
 
-urlpatterns += [
-    url(r'^lab/patterns/', include(text_patterns_urls), name='patterns'),
-]
-
-urlpatterns += [
-    url(r'', include(text_search_urls)),
-]
-
-urlpatterns += [
-    # url(r'^documents/', include(wagtaildocs_urls)),
-    # TVOF
-    url(r'^documents/(\d+)/(.*)$',
+    re_path(r'^documents/(\d+)/(.*)$',
         tvof_views.serve_wagtail_doc, name='wagtaildocs_serve'),
+
+    path(r'', include('text_search.urls')),
 ]
 
 urlpatterns += i18n_patterns(
-    url(r'^search/', include(wagtailsearch_frontend_urls)),
-    url(r'^wagtail/', include(wagtailadmin_urls)),
-    url(r'', include(wagtail_urls)),
+    path(r'wagtail/', include(wagtailadmin_urls)),
+    path(r'', include(wagtail_urls)),
     prefix_default_language=False
 )
 

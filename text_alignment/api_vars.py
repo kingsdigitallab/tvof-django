@@ -50,7 +50,7 @@ class API_Vars(object):
         # Help vue.js to manage radio button
         # by placing a single selected value directly under the var.
         # Also helps javascript to quickly access selected values.
-        for var in self.vars.values():
+        for var in list(self.vars.values()):
             var['selected'] = self.get(var['key'], var['type'] == 'single')
 
     def get_dict(self):
@@ -59,7 +59,7 @@ class API_Vars(object):
 
     def get_list(self):
         self._set_selected()
-        ret = [var for var in self.vars.values()]
+        ret = [var for var in list(self.vars.values())]
         return ret
 
     def set_vars(self, keys_values):
@@ -67,7 +67,7 @@ class API_Vars(object):
             self.set(name, values)
 
     def reset_vars_from_request(self, request):
-        for var in self.vars.values():
+        for var in list(self.vars.values()):
             values = request.GET.get(var['key'], None)
 
             self.set(var['key'], values)
@@ -112,11 +112,11 @@ class API_Vars(object):
         return ret
 
     def get_query_string(self):
-        import urllib
+        import urllib.request, urllib.parse, urllib.error
         ret = '&'.join([
             ('%s=%s' % (
-                urllib.quote(akey, ','),
-                urllib.quote(self.get_str(akey), ',')
+                urllib.parse.quote(akey, ','),
+                urllib.parse.quote(self.get_str(akey), ',')
             ))
             for akey
             in self.vars
@@ -126,9 +126,9 @@ class API_Vars(object):
 
 def get_key_from_name(name):
     import re
-    return re.sub(ur'[^\w_]+', r'-', name.lower()).strip()
+    return re.sub(r'[^\w_]+', r'-', name.lower()).strip()
 
 
 def get_name_from_key(akey):
     import re
-    return re.sub(ur'[_]', r' ', akey.title()).strip()
+    return re.sub(r'[_]', r' ', akey.title()).strip()

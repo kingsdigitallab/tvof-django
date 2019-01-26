@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
 
 from django.shortcuts import render
 from drf_haystack.serializers import (
@@ -12,7 +11,6 @@ from rest_framework import pagination
 from drf_haystack.mixins import FacetMixin
 from drf_haystack.filters import HaystackFacetFilter
 
-
 ITEMS_PER_PAGE = 10
 
 
@@ -21,6 +19,7 @@ def search_view(request):
 
 
 class AnnotatedTokenSerializer(HaystackSerializer):
+
     class Meta:
         # The `index_classes` attribute is a list of which search indexes
         # we want to include in the search.
@@ -74,7 +73,7 @@ if 1:
                 'section_name': {},
                 'is_rubric': {},
             }
-            fields = field_options.keys()
+            fields = list(field_options.keys())
 
     class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
         index_models = [AnnotatedToken]
@@ -94,5 +93,6 @@ if 1:
             '''
             ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
             ret = self.filter_queryset(
-                ret.order_by('location', 'token_number'))
+                ret.order_by('location', 'token_number')
+            )
             return ret

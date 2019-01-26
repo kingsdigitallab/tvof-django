@@ -1,4 +1,4 @@
-from kiln_requester import CachedRequesterKiln
+from .kiln_requester import CachedRequesterKiln
 
 '''
 TODO: instead of inheritence we should use a strategy pattern for:
@@ -9,7 +9,7 @@ TODO: instead of inheritence we should use a strategy pattern for:
 
 def lt(msg=''):
     from datetime import datetime
-    print(datetime.now(), msg)
+    print((datetime.now(), msg))
 
 
 class TextViewerAPI(object):
@@ -162,7 +162,7 @@ class TextViewerAPI(object):
         # here we do a default one, mixing both addresses
         parts_synced = self.get_address_parts(synced_with)
 
-        parts = {k: v for k, v in address_parts.iteritems()}
+        parts = {k: v for k, v in address_parts.items()}
         if address_parts['document'] == parts_synced['document']:
             # same doc, we simply copy the location type and location
             for k in ['location_type', 'location']:
@@ -207,6 +207,10 @@ def get_xml_element_text(element):
 
 def get_unicode_from_xml(xmltree, encoding='utf-8', text_only=False,
                          remove_root=False):
+    '''
+    Returns the xmltree (EL subtree) as a unicode string.
+    If text_only == True => element text only, no tags
+    '''
     import xml.etree.ElementTree as ET
 
     # if text_only = True => strip all XML tags
@@ -216,11 +220,11 @@ def get_unicode_from_xml(xmltree, encoding='utf-8', text_only=False,
     else:
         if hasattr(xmltree, 'getroot'):
             xmltree = xmltree.getroot()
-        ret = ET.tostring(xmltree, encoding=encoding).decode('utf-8')
+        ret = ET.tostring(xmltree, encoding=encoding).decode()
         if xmltree.tail is not None and ret[0] == '<':
             # remove the tail
             import re
-            ret = re.sub(ur'[^>]+$', '', ret)
+            ret = re.sub(r'[^>]+$', '', ret)
 
         if remove_root:
             ret = ret.replace('<root>', '').replace('</root>', '')

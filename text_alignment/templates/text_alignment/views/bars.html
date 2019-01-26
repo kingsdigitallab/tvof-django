@@ -1,13 +1,13 @@
-{% load staticfiles compress require cms_tags wagtailcore_tags %}
+{% load staticfiles compress cms_tags wagtailcore_tags %}
 
 <div id="alignment-view-bars" class="viz-bars">
     <div id="vis-info-box">
-        
+
     </div>
 
     <canvas class="canvas-bars" height="1000" width="1000">
     </canvas>
-    
+
     <script>
     $(function() {
         var alignment_data = {{ alignment_data|json }};
@@ -15,9 +15,9 @@
         var canvas = $('canvas')[0];
         var ALIGNMENT_SHOW_INTERNAL_NOTES = {{ALIGNMENT_SHOW_INTERNAL_NOTES|json}};
         var ALIGNMENT_FEATURE_LABELS = {{ALIGNMENT_FEATURE_LABELS|json}};
-        
+
         update_bars_2_view(canvas, alignment_data, config);
-        
+
         // Bars view / visualisation
         function update_bars_2_view(canvas, align, config) {
             // extract info from config
@@ -28,7 +28,7 @@
             var config_fields = {};
             $.each(config.fields.selected, function(idx, field_key) {
                 config_fields[field_key] = 1;
-            });            
+            });
             var idx_from_ms_name = {};
 
             // reset widths
@@ -36,11 +36,11 @@
             $(canvas).width('96vw');
             //
             var ctx = canvas.getContext('2d');
-            
+
             // adapt canvas height to fit all on remaining space
             var bh_min = 15;
             var rows = ms_names.length;
-            
+
             var canvas_top = $(canvas).offset().top;
             var canvas_left = $(canvas).offset().left;
             var head_height = 20;
@@ -51,13 +51,13 @@
             bh = Math.floor(bh);
 
             $(canvas).height(bh * rows + head_height);
-            
+
             // adapt bar widths
             var labels_max_width = 100;
 
             var cah = $(canvas).height();
             var caw = $(canvas).width();
-            
+
             var bw_min = 2;
             //     chose a bar width that tries to fit into screen width
             //     then round down to avoid aliasing
@@ -75,19 +75,19 @@
                 $(canvas).width(caw);
                 $('body').width(caw + 2);
             }
-            
+
             // force internal canvas dims to match external ones
             canvas.height = cah;
             canvas.width = caw;
-            
+
             // other settings
             var labels_padding = 2;
             var font_size = 12;
             var font = '' + font_size + 'px Arial';
-            
+
             function get_viz_css_var(var_name) {
                 var html_styles = getComputedStyle($('html')[0]);
-                return html_styles.getPropertyValue('--viz-'+var_name);                
+                return html_styles.getPropertyValue('--viz-'+var_name);
             }
 
             var colors = {
@@ -95,10 +95,10 @@
                 'separator': 'black',
                 'even': get_viz_css_var('absent-0'),
                 'odd': get_viz_css_var('absent-0-alt'),
-                'absent.2': get_viz_css_var('absent-2'), 
+                'absent.2': get_viz_css_var('absent-2'),
                 'absent.3': get_viz_css_var('absent-3'),
                 'absent.1': get_viz_css_var('absent-1'),
-                'nodata': get_viz_css_var('nopara'), 
+                'nodata': get_viz_css_var('nopara'),
                 'verse': get_viz_css_var('para-ms-verse'),
                 // TODO: not accurate
                 'var': get_viz_css_var('variation-location'),
@@ -119,9 +119,9 @@
                 band_height = 1;
             }
             band_height = Math.floor(band_height);
-            
+
             // DRAWING
-            
+
             // write MS labels
             $.each(ms_names, function(idx, name) {
                 ctx.font = font;
@@ -129,12 +129,12 @@
                 ctx.fillText(name, labels_padding, head_height + (idx + 0.5) * bh - labels_padding);
                 idx_from_ms_name[name] = idx;
             });
-            
+
             // draw the paras
             ctx.fillStyle = colors.nodata;
             ctx.fillRect(labels_max_width, head_height, caw, caw);
 
-            var section = null; 
+            var section = null;
             var last_section_x = -10000;
             var is_odd = false;
             $.each(align.paras, function(idx, para) {
@@ -152,11 +152,11 @@
                     if (para_ms.verse && config_fields.verse) {
                         color = colors.verse;
                     }
-                    
+
                     if (para_ms.absent) {
                         color = colors['absent.'+para_ms.absent];
                     }
-                    
+
                     if (para_ms.variation) {
                         color = colors['var'];
                         var variation = para_ms.variation.toLowerCase();
@@ -167,17 +167,17 @@
                             }
                         }
                     }
-                    
+
                     if (color) {
                         ctx.fillStyle = color;
                         ctx.fillRect(labels_max_width + idx * bw, ms_top, bw, bh);
                     } else {
                         ctx.clearRect(labels_max_width + idx * bw, ms_top, bw, bh);
                     }
-                    
+
                     // RUBRIC
                     // We have one vertical band of a bar for showing the rubrics.
-                    // we split that band into 3 sub-bands for one rubric and 
+                    // we split that band into 3 sub-bands for one rubric and
                     // up to 2 additional rubrics.
                     if (config_fields.rubric && para_ms.rubric && para_ms.rubric.length > 0) {
                         var subband_count = 3;
@@ -196,11 +196,11 @@
 
                     // draw section label background (to erase overrunning label)
                     ctx.clearRect(x0, 0, caw, head_height);
-                    
+
                     // draw section separator
                     ctx.fillStyle = colors.separator;
                     ctx.fillRect(x0, 0, 1, cah);
-                    
+
                     // draw the section label
                     if ((x0 - last_section_x) < font_size) {
                         x0 += font_size;
@@ -221,10 +221,10 @@
                 ctx.fillRect(0, head_height + (idx + 1) * bh, caw, 1);
             });
             ctx.fillRect(0, head_height, caw, 1);
-            
+
             // clear the right hand side after bar area
             ctx.clearRect(labels_max_width + align.paras.length * bw + 1, 0, caw, cah)
-            
+
             // draw some info
             ctx.font = font;
             var width_avail = (caw - labels_max_width);
@@ -234,7 +234,7 @@
             //ctx.fillText(info, labels_padding, cah - font_size);
 
             // EVENTS
-            
+
             // reset hover event
             $(canvas).off('click');
             $(canvas).on('click', function(ev) {
@@ -243,13 +243,13 @@
 
             $(canvas).off('mouseleave');
             $(canvas).on('mouseleave', function() {
-               $('#vis-info-box').hide(); 
+               $('#vis-info-box').hide();
             });
             $(canvas).off('mousemove');
             $(canvas).on('mousemove', update_info_box);
             $('#vis-info-box').off('mouseenter mousemove');
             $('#vis-info-box').on('mouseenter mousemove', update_info_box);
-            
+
             function get_info_box_position(mouse_pos) {
                 // returns position for the info box, closest to mouse_pos.
                 // but without truncating the box.
@@ -259,34 +259,34 @@
                 var min_width = 200;
 
                 var window_width = $(window).width();
-                
+
                 var ret = {
                     left: mouse_pos[0] + 5 - $(document).scrollLeft(),
                     top: mouse_pos[1] + 5 - $(document).scrollTop(),
                     right: 'auto'
                 }
-                
-                // align right                
+
+                // align right
                 if ((ret.left +  min_width) > window_width) {
                     ret.right = window_width - ret.left + 10;
                     ret.left = 'auto';
                 }
-                
+
                 return ret;
             }
-            
+
             function update_info_box(ev, clicked) {
                 // convert mouse position into indices [para_idx, ms_idx]
                 var mouse_pos = [ev.pageX, ev.pageY];
-                
+
                 var pos = get_info_box_position(mouse_pos);
-                
+
                 $('#vis-info-box').css(pos);
                 var data_pos = [
                     Math.floor((mouse_pos[0] - canvas_left - labels_max_width) / bw),
-                    Math.floor((mouse_pos[1] - canvas_top - head_height) / bh), 
+                    Math.floor((mouse_pos[1] - canvas_top - head_height) / bh),
                 ];
-                
+
                 // get the alignment data at that position
                 var info = '';
                 if (data_pos[0] > -1 && data_pos[0] < align.paras.length) {
@@ -295,15 +295,15 @@
                     if (data_pos[1] > -1 && data_pos[1] < ms_names.length) {
                         var ms_name = ms_names[data_pos[1]];
                         para_ms = para.mss[ms_name];
-                        
+
                         if (para_ms && para_ms.corresp) {
                             info += ', ' + para_ms.corresp;
                         }
-                        
+
                         info += '<br/>';
                         info += ' ' + ms_name;
                         info += '<br/>';
-                        
+
                         if (para_ms) {
                             if (clicked) {
                                 // link to text viewer
@@ -317,15 +317,15 @@
                                     window.open(href, '_blank');
                                 }
                             }
-                            
+
                             if (typeof para_ms.location === 'undefined') {
                                 // GN: as requested by MT, 19/09/2018
                                 info += 'Absent paragraph';
                             } else {
-                                info += '<b>Location</b>: ' + 
+                                info += '<b>Location</b>: ' +
                                     (para_ms.location === null ? 'Unspecified' : para_ms.location);
                             }
-                            
+
                             if (config_fields.verse && para_ms.verse) {
                                 info += '<br/>';
                                 info += '<b>Verse</b>: ' + para_ms.verse;
@@ -343,7 +343,7 @@
                             }
                             if (config_fields.variation && para_ms.vars) {
                                 $.each(para_ms.vars, function(note_idx, avar) {
-                                    if (avar.t) { 
+                                    if (avar.t) {
                                         info += '<br/>';
                                         info += '<b>Variation</b>: ' + avar.t;
                                     }

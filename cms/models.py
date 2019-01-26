@@ -2,14 +2,14 @@
 
 # from __future__ import unicode_literals
 
-from wagtail.wagtailcore.models import Page
-from wagtail.wagtailcore.fields import StreamField
-from wagtail.wagtailcore.blocks import *  # noqa
-from wagtail.wagtailimages.blocks import ImageChooserBlock
-from wagtail.contrib.wagtailroutablepage.models import (
+from wagtail.core.models import Page
+from wagtail.core.fields import StreamField
+from wagtail.core.blocks import *  # noqa
+from wagtail.images.blocks import ImageChooserBlock
+from wagtail.contrib.routable_page.models import (
     route, RoutablePageMixin)
 from django.db import models
-from wagtail.wagtailadmin.edit_handlers import StreamFieldPanel, FieldPanel,\
+from wagtail.admin.edit_handlers import StreamFieldPanel, FieldPanel,\
     TabbedInterface, ObjectList
 from django import forms
 from django.utils.translation import ugettext_lazy as _
@@ -17,9 +17,9 @@ from django.conf import settings
 from django.urls.base import translate_url
 from django.shortcuts import render
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
-from wagtail.wagtailadmin.edit_handlers import MultiFieldPanel
-from wagtail.wagtailimages.models import Image
-from wagtail.wagtailimages.edit_handlers import ImageChooserPanel
+from wagtail.admin.edit_handlers import MultiFieldPanel
+from wagtail.images.models import Image
+from wagtail.images.edit_handlers import ImageChooserPanel
 
 
 def get_field_lang(obj, field_name):
@@ -287,7 +287,7 @@ class BlogPost(AbstractMultilingualContentPage):
             if image:
                 ret = Image.objects.filter(id=image).first()
                 if ret is None:
-                    print('Image not found #%s' % image)
+                    print(('Image not found #%s' % image))
 
         return ret
 

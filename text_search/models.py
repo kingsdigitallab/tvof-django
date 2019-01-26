@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from __future__ import unicode_literals
+
 
 from django.db import models
 
@@ -71,7 +71,7 @@ class AnnotatedToken(models.Model):
         data = {
             k: (v or 'unspecified')
             for k, v
-            in item.attrib.items()
+            in list(item.attrib.items())
             if k not in ['type', 'n']
         }
         location_parts = data['location'].split('_')
