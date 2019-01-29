@@ -1,12 +1,12 @@
 {% load wagtailcore_tags cms_tags %}
 
 <ul class="vertical medium-horizontal menu dropdown" data-responsive-menu="drilldown medium-dropdown">
-    <li {% if current_page and current_page.pk == root.pk %}class="active"{% endif %}>
+    <li{% if current_page and current_page.pk == root.pk %} class="active"{% endif %}>
         <a href="{% pageurl root %}">{{ root.title }}</a>
     </li>
 
     {% for page in menu_pages %}
-        <li {% if page|in_path:request %}class="active"{% endif %}>
+        <li{% if page|in_path:request %} class="active"{% endif %}{% if page.url == "/conference" %} class="conference"{% endif %}>
             <a href="{% pageurl page %}">{% page_title page %}</a>
     
             {# sub-pages, note: we don't show children of blog index #}
@@ -14,7 +14,7 @@
                 {% if children %}
                     <ul class="vertical menu">
                         {% for child in children %}
-                            <li {% if child|in_path:request %}class="active"{% endif %}>
+                            <li{% if child|in_path:request %} class="active"{% endif %}>
                                 <a href="{% pageurl child %}">{% page_title child %}</a>
                             </li>
                         {% endfor %}

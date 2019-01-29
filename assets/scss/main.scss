@@ -36,6 +36,12 @@ Search
     vertical-align: text-top;
 }
 
+.conference {
+    // background: $dark-orange;
+    background: scale-color($dark-orange, $lightness: -10%);
+    // background: scale-color($alert-color, $lightness: -20%);
+}
+
 // Colours
 
 .red {
