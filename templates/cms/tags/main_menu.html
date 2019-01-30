@@ -6,9 +6,9 @@
     </li>
 
     {% for page in menu_pages %}
-        <li{% if page|in_path:request %} class="active"{% endif %}{% if page.url == "/conference" %} class="conference"{% endif %}>
+        <li{% if page|in_path:request %} class="active"{% endif %}{% if 'conference' in page.slug %} class="conference"{% endif %}>
             <a href="{% pageurl page %}">{% page_title page %}</a>
-    
+
             {# sub-pages, note: we don't show children of blog index #}
             {% with page.get_children.live.in_menu.specific as children %}
                 {% if children %}

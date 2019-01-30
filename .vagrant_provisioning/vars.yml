@@ -15,7 +15,7 @@ system_packages: [ack-grep, adminer, aptitude, binutils, elasticsearch, gdal-bin
   vim-nox, zsh,
   # wget is needed for upgrading node & npm to latest version (https://www.npmjs.com/package/n)
   wget, npm,
-  redis-server
+  # redis-server
 ]
 user_home: /home/vagrant
 zsh: {oh_my_zsh: 'https://github.com/robbyrussell/oh-my-zsh.git', zshrc: zshrc}
