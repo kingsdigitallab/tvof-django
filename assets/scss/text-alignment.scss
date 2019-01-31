@@ -256,16 +256,25 @@ $viz-grey: #d8d8d8;
         }
     }
 
-    @include viz-class-color("absent-0", $viz-neutral);
-    @include viz-class-color("absent-0-alt", darken($viz-neutral, 5%));
-
+    // An absent para (unconfirmed format)
     @include viz-class-color("absent-1", $viz-secondary-color, 10%);
 
-    @include viz-class-color("absent-2", $viz-tertiary-color, 10%);
-
+    // An absent para
     @include viz-class-color("absent-3", white, 10%);
 
+    // Unspecified para location (see AC-335)
+    @include viz-class-color("absent-4", #ebcfa4, 10%);
+
+    // no para because no section in that MS
     @include viz-class-color("nopara", darken($viz-grey, 20%));
+
+    // para has a location
+    @include viz-class-color("absent-0", $viz-neutral);
+    // ???
+    @include viz-class-color("absent-0-alt", darken($viz-neutral, 5%));
+
+    // no longer used
+    @include viz-class-color("absent-2", $viz-tertiary-color, 10%);
 
     // Combinations
 
