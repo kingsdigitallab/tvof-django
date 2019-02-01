@@ -386,7 +386,7 @@ CMS_LANGUAGES = [
     },
     {
         'code': 'fr',
-        'label': 'Francais',
+        'label': 'Français',
         'label_en': 'French',
     }
 ]
