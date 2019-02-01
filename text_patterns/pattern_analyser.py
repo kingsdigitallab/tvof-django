@@ -1,14 +1,15 @@
-import utils as dputils
+from . import utils as dputils
 from datetime import datetime
-from django.core.urlresolvers import reverse
+from django.urls import reverse
 from django.template.defaultfilters import slugify
 import regex as re
 from text_patterns.models import TextPatternSet
 # from django.core.cache.backends.base import InvalidCacheBackendError
-from models import TextUnitsCached as TextUnits
+from .models import TextUnitsCached as TextUnits
 
 
 class PatternAnalyser(object):
+
     def __init__(self, slug='default'):
         # If True, plain text unit caching is disabled (for debugging purpose)
         self.nocache = True
@@ -79,8 +80,8 @@ class PatternAnalyser(object):
                 del patterns[request_patterni]
                 modified = True
             else:
-                slug = slugify(unicode(self.namespace))
-                print 'DELETE SET %s' % slug
+                slug = slugify(str(self.namespace))
+                print('DELETE SET %s' % slug)
                 TextPatternSet.objects.filter(slug=slug).delete()
 
         if request.method == 'PUT':
@@ -107,10 +108,10 @@ class PatternAnalyser(object):
         if 1:
             title_new = 'New Pattern'
             if not patterns or patterns[-1]['title'] != title_new:
-                print 'ADD new pattern'
+                print('ADD new pattern')
                 patterns.append({
                     'id': dputils.get_short_uid(),
-                    'key': slugify(unicode(title_new)),
+                    'key': slugify(str(title_new)),
                     'title': title_new,
                     'updated': dputils.now(),
                     'pattern': '',
@@ -188,15 +189,15 @@ class PatternAnalyser(object):
 
     def get_variant_from_segment(self, segment):
         variant = segment
-        for k, rgx in self.variant_patterns.iteritems():
-            variant = rgx.sub(ur'<%s>' % k, variant)
+        for k, rgx in self.variant_patterns.items():
+            variant = rgx.sub(r'<%s>' % k, variant)
         return variant
 
     def auto_correct_pattern(self, pattern):
         pattern['key'] = pattern.get('key', '').strip()
         pattern['title'] = pattern.get('title', '').strip()
         # if no key, slugify the title
-        pattern['key'] = pattern['key'] or slugify(unicode(pattern['title']))
+        pattern['key'] = pattern['key'] or slugify(str(pattern['title']))
         # if no title, unslugify the key
         pattern['title'] = pattern['title'] or pattern['key'].replace(
             '_', ' > ').replace('-', '').title()
@@ -220,7 +221,7 @@ class PatternAnalyser(object):
                 if move[0] is not None and move[1] is not None:
                     copy = self.patterns[move[0]]
                     self.patterns.insert(move[1], copy)
-                    del self.patterns[move[0] +
+                    del self.patterns[move[0] + 
                                       (1 if move[0] > move[1] else 0)]
                     self.auto_correct_pattern_orders_and_numbers()
                     ret = True
@@ -326,7 +327,7 @@ class PatternAnalyser(object):
         ''' Get (if patterns is None) or Set the patterns in the database
             in & out = [{}, ]
         '''
-        slug = slugify(unicode(self.namespace))
+        slug = slugify(str(self.namespace))
         rec = TextPatternSet.objects.filter(slug=slug).first()
         if rec is None:
             rec = TextPatternSet(slug=slug)
@@ -343,7 +344,7 @@ class PatternAnalyser(object):
 
     def init_variant_patterns(self):
         self.variant_patterns = {
-            'name': ur'[A-Z]\w+(( et)? [A-Z]\w*)*',
+            'name': r'[A-Z]\w+(( et)? [A-Z]\w*)*',
         }
         for k in 'number'.split(','):
             p = self.get_pattern_from_key('helper_%s' % k)
@@ -352,7 +353,7 @@ class PatternAnalyser(object):
             else:
                 p = k.upper()
             self.variant_patterns[k] = p
-        for k, p in self.variant_patterns.iteritems():
+        for k, p in self.variant_patterns.items():
             self.variant_patterns[k] = re.compile(p)
 
     def segment_units(self):
@@ -386,7 +387,7 @@ class PatternAnalyser(object):
         self.stats = stats = {'duration_segmentation': 0,
                               'range_size': 0, 'patterns': {}, 'groups': {}}
         for pattern in self.get_patterns():
-            group = re.sub(ur'-\d+$', '', pattern['key'])
+            group = re.sub(r'-\d+$', '', pattern['key'])
             self.stats['groups'][group] = 0
 
         # for unit in
@@ -442,7 +443,7 @@ class PatternAnalyser(object):
         unit.patterns = []
         found_groups = {}
 
-        rgx_matched = re.compile(ur'[_<>]')
+        rgx_matched = re.compile(r'[_<>]')
 
         unit.match_conditions = True
 
@@ -466,7 +467,7 @@ class PatternAnalyser(object):
                 # mark it up
                 span = '<span class="m ms">' if hilited else '<span class="m">'
                 unit.patterns.append([patternid, segment])
-                rep = ur'%s%s</span>' % (span, segment.replace(' ', '_'))
+                rep = r'%s%s</span>' % (span, segment.replace(' ', '_'))
 
                 # add variant
                 if hilited and ('variants' in self.toreturn):
@@ -484,7 +485,7 @@ class PatternAnalyser(object):
                         (condition == 'exclude' and found):
                     unit.match_conditions = False
                 if found:
-                    found_groups[re.sub(ur'-\d+$', '', pattern['key'])] = 1
+                    found_groups[re.sub(r'-\d+$', '', pattern['key'])] = 1
                     dputils.inc_counter(
                         self.stats['patterns'], pattern['id'], found)
                 else:
@@ -576,7 +577,7 @@ class PatternAnalyser(object):
                     while 'error' not in pattern:
                         i += 1
                         before = ret
-                        ret = re.sub(ur'<([^>]+)>', replace_reference, ret)
+                        ret = re.sub(r'<([^>]+)>', replace_reference, ret)
                         if i > 100:
                             pattern['error'] = 'Detected circular references'\
                                 ' in the pattern. E.g. p1 = <p2>; p2 = <p1>.'
@@ -590,25 +591,25 @@ class PatternAnalyser(object):
                         while True:
                             ret2 = ret
                             ret = re.sub(
-                                ur'( |^)(\([^)]+\))\?( |$)', ur'(\1\2)?\3',
+                                r'( |^)(\([^)]+\))\?( |$)', r'(\1\2)?\3',
                                 ret2)
                             if ret == ret2:
                                 break
                         # <person> habet <number> mansionem
-                        ret = ret.replace(ur'%', ur'\w*')
+                        ret = ret.replace(r'%', r'\w*')
                         # aliam = another
                         # unam = one
                         # dimidia = half
                         # duabus = two
-                        ret = ret.replace(ur'7', ur'et')
-                        if ret[0] not in [ur'\b', '^']:
-                            ret = ur'\b' + ret
-                        if not ret.endswith(ur'\b'):
-                            ret = ret + ur'\b'
+                        ret = ret.replace(r'7', r'et')
+                        if ret[0] not in [r'\b', '^']:
+                            ret = r'\b' + ret
+                        if not ret.endswith(r'\b'):
+                            ret = ret + r'\b'
                         try:
                             ret = re.Regex(ret)
                         except Exception as e:
-                            pattern['error'] = unicode(e)
+                            pattern['error'] = str(e)
                         finally:
                             self.regexs[patternid] = ret
 

@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.shortcuts import render
-import utils as dputils
+from . import utils as dputils
 from datetime import datetime
-from pattern_analyser import PatternAnalyser
+from .pattern_analyser import PatternAnalyser
 from django.views.decorators.csrf import csrf_exempt
 from text_patterns.models import TextPatternSet
 

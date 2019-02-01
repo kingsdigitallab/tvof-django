@@ -1,4 +1,4 @@
-@import 'settings';
+@import 'tvof-foundation-settings';
 
 /* Text Visualisations Aligment Styles */
 
@@ -68,9 +68,9 @@ move: a > on top the rubric icon*/
 }
 
 #plink {
-    position: absolute; 
-    top: 0; 
-    right: 0; 
+    position: absolute;
+    top: 0;
+    right: 0;
     display: none;
     padding: 0.3em;
 
@@ -96,7 +96,7 @@ move: a > on top the rubric icon*/
     top: 2em;
     width: 90vw;
     z-index: 10000;
-    
+
     display: none;
 
     background-color: white;
@@ -113,11 +113,11 @@ body {
 
     &.settings-visible {
         /* html body no longer scrollable when settings model is open*/
-        overflow: hidden;    
+        overflow: hidden;
 
         #settings {
             display: flex;
-        } 
+        }
     }
 }
 
@@ -178,10 +178,10 @@ body {
 }
 
 #vis-info-box {
-    position: fixed; 
+    position: fixed;
     display: none;
-    background: white; 
-    border: 2px solid #101010; 
+    background: white;
+    border: 2px solid #101010;
     color: #101010;
     padding: 0.5em;
     opacity: 0.8;
@@ -207,22 +207,22 @@ $viz-grey: #d8d8d8;
     margin: 0;
     padding: 0;
     width: 100%;
-    
+
     /* Variables */
-    
+
     $viz-text-dark: scale-color(black, $lightness: 20%);
     $viz-text-light: $white;
 
     @function str-replace($string, $search, $replace: '') {
         $index: str-index($string, $search);
-        
+
         @if $index {
           @return str-slice($string, 1, $index - 1) + $replace + str-replace(str-slice($string, $index + str-length($search)), $search, $replace);
         }
-        
+
         @return $string;
     }
-    
+
     @mixin viz-class-color($class, $color, $darkenpc: 20%) {
         .#{$class} {
             // background: $color;
@@ -249,10 +249,10 @@ $viz-grey: #d8d8d8;
 
         // Declare that variable in html:root so it can be shared with
         // visualisations written in JS only (e.g. canvas).
-        // e.g. 
+        // e.g.
         // --viz-variation-location-rubric-active: #685289;
         @at-root html {
-            --viz-#{str-replace($class, ".", "-")}: $color;
+            --viz-#{str-replace($class, ".", "-")}: #{$color};
         }
     }
 
@@ -272,17 +272,17 @@ $viz-grey: #d8d8d8;
     // TODO: GN/GF - conditions won't always match partners requirements
     // they want colors for ML & PML
     // In practice ML won't have a location and PML won't have a rubric
-    // but it might be bext to directly test the ML and PML 
+    // but it might be bext to directly test the ML and PML
     // @include viz-class-color("variation", #d86d0f);
     // @include viz-class-color("variation.location", #dd614a);
     // @include viz-class-color("variation.location.rubric", #9c89b8);
     @include viz-class-color("variation", #ffaa00, 10%); // ML
-    @include viz-class-color("variation.location", #757eff); // 
+    @include viz-class-color("variation.location", #757eff); //
     @include viz-class-color("variation.location.rubric", #6742b5, 10%); // PML
 
     @include viz-class-color("para-ms-verse", #6fbad3);
 
-    // GN: used only on the bars viz so far, correspond to the color of the 
+    // GN: used only on the bars viz so far, correspond to the color of the
     // rubir stacks / layers
     // Respectively: normal rubric, displaced and additional
     // @include viz-class-color("stack-rubric-undefined", #ffb0b0);
@@ -385,15 +385,15 @@ $viz-grey: #d8d8d8;
             list-style: none;
         }
     }
-    
+
     // table vizualisation
-    
+
     &.viz-table {
-    
+
 //         .para-ms, label {
 //             color: #252525;
 //         }
-// 
+//
 //         .para-ms {
 //             &:hover, &:active {
 //                 color: white;

@@ -1,4 +1,4 @@
-{% load staticfiles compress require cms_tags %}
+{% load staticfiles compress cms_tags %}
 <!DOCTYPE html>
 <html>
 <head>
@@ -9,9 +9,15 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
   {% compress css %}
-  <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/main.scss' %}">
-  <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/font-awesome.scss' %}">
+    <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/main.scss' %}">
   {% endcompress %}
+
+  {% comment %}
+    GN: django-compress doesn't deal well with font imported from scss or css.
+    and js version of fontawesome does convert to verbose svg on the fly.
+    So we stick to css outside compress as we don't really need to change any parameter.
+  {% endcomment %}
+  <link rel="stylesheet" type="text/css" href="{% static 'font-awesome/css/font-awesome.css' %}">
 
   {% block extra_head %}
   {% endblock %}
@@ -51,11 +57,11 @@
     </div>
   </footer>
 
-  <script src="{% static 'vendor/jquery/dist/jquery.min.js' %}"></script>
-  <script src="{% static 'vendor/foundation-sites/dist/js/foundation.min.js' %}"></script>
+  <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
+  <script src="{% static 'foundation-sites/dist/js/foundation.min.js' %}"></script>
 
   {% compress js %}
-  <script src="{% static 'vendor/js-cookie/src/js.cookie.js' %}"></script>
+  <script src="{% static 'js-cookie/src/js.cookie.js' %}"></script>
   <script src="{% static 'js/app.js' %}"></script>
   {% block footer_scripts %}{% endblock %}
   {% endcompress %}
@@ -71,7 +77,7 @@
     ga('send', 'pageview');
   </script>
   {% endif %}
-  
+
   <script>
     $(document).foundation();
   </script>

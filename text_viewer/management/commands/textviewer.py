@@ -26,9 +26,9 @@ class Command(BaseCommand):
             self.test_cache()
 
         if not known_action:
-            print 'ERROR: unknown action "%s"' % action
+            print('ERROR: unknown action "%s"' % action)
         else:
-            print 'done'
+            print('done')
 
     def test_cache(self):
         import os
@@ -60,7 +60,7 @@ class Command(BaseCommand):
             cr = CachedRequesterKiln(chunk_size=chunk_size)
             for i in range(repetition):
                 ret = cr.request(domain + wpath, False)
-                print '%s %s' % (tid, len(ret))
+                print('%s %s' % (tid, len(ret)))
                 rets.append(len(ret))
 
         # task()
@@ -77,5 +77,5 @@ class Command(BaseCommand):
 
         rets = set(rets)
         if len(rets) > 1:
-            print 'TEST FAILED: all responses should have the same length, ' +\
-                'we have %s' % repr(rets)
+            print('TEST FAILED: all responses should have the same length, ' +\
+                'we have %s' % repr(rets))

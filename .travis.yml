@@ -1,14 +1,10 @@
 language: python
-python:
-- 2.7
-install:
-- pip install tox-travis
-script:
-- tox
-notifications:
-  slack:
-    rooms:
-      secure: CsOCnmx38bFJEEIucH19kkFdgHVb2d8eIdRjVgeJRGGh8cVkAjFHnygSedgc96p6UNXJx+ow5u4rNmCt1ayWwqLO/pKUebRy1wKcChKETPRmrrSTktzp6Ev0IQrm5QvnEqt0nuh2OICKIHtlfAkDXWntkecqXlQnyW4LXkIDmNRlLDbhy+R+UQipx2ijGPuaKgT+wQeM54WHSzGvFEnZMiyh/+5tuoiicLnclXZq91PxNXsnr3SKT1aZ3FjEc7rTusBJEWkN8BdUDHTRnAg6SV4E32lrV59kCEfI/SXI2eyNEOCQu0TWVtwLTfDYI1v6MUU8qhXb2hgfBEs5nu19SgF/nD3wisar3sY5JVLUt6DhGSZgwqEAix1xIhiOHShtPUdsX7ZKJyt7pZqcK/732OQ3/j/0Cq5LUVvG2bP9237sfP/0ZxqTE0YDk35BsphtZKILew2uGz6xT05xNrZkTHgQ2LRt0GmpTJnF/K0yscpEbCGE8uUhio6tnowdXopbfGcd7Sf10Y/77BEyYSyDfK30uwoXC08ai9XNgEGIIpFebV+u/yOsIrBtXMOIVFubWg+wUMdP/phqlNNx8fwGvJA73ZnUF/4cFRujK+9OEkhFBmo8g5TxNVrTny3s+ftmIjKUKOLAWNQOEvXrb0BKrMO/6ng3Ajz8+jNnDsrNmfk=
-    on_success: change
-    on_failure: always
 
+python:
+  - 3.5
+
+install:
+  - pip install tox-travis
+
+script:
+  - tox

@@ -1,6 +1,6 @@
 /* NEW Text Viewer */
 
-#text-pane-template { 
+#text-pane-template {
     display: none;
 }
 
@@ -22,13 +22,13 @@
 
 .text-viewer-header {
     display: block;
-    height: 50px;
+    // height: 50px;
     position: relative;
 
     h1 {
         font-size: rem-calc(20);
         line-height: 1.25;
-        margin: rem-calc(12 0 0 0);
+        margin: 0;
     }
 }
 
@@ -157,8 +157,8 @@
         /* height: 100vh; */
     }
 
-    /* GN: temporary, any active item in any dropdown should have a primary 
-    color background. TODO: change to correct sass variable. 
+    /* GN: temporary, any active item in any dropdown should have a primary
+    color background. TODO: change to correct sass variable.
     */
 
     ul.menu li.active > a,
@@ -211,14 +211,15 @@
         min-height: rem-calc(40);
         min-width: rem-calc(200);
         position: absolute;
-        
+
         .clear-filter {
             color: grey;
-            line-height: 2.25rem;
+            line-height: 1.5rem;
             position: absolute;
             right: 0;
             top: 0;
-            margin: 0 0.4rem;
+            margin: 0;
+            padding: 0.5rem;
             &:hover {
                 color: grey;
             }
@@ -236,7 +237,7 @@
         width: 3rem;
         position: absolute;
         right: 0;
-        
+
         // height: calc(100vh - 400px);
         // max-height: rem-calc(800);
         // position: relative;
@@ -268,10 +269,10 @@
             width: 100%;
 
             a {
-                color: $white;                
+                color: $white;
             }
 
-            &.is-dropdown-submenu-parent {                
+            &.is-dropdown-submenu-parent {
                 .menu {
                     position: absolute;
                     bottom: 0;
@@ -292,7 +293,7 @@
     flex-grow: 1;
     margin: rem-calc(5) auto;
     max-width: rem-calc(1440);
-    
+
     .hidden {
         display: none;
     }
@@ -300,24 +301,24 @@
 
 .pane-content-wrapper {
     margin-top: rem-calc(12);
-    
+
     .pane-content {
         position: relative;
     }
 }
 
 .text-chunk {
-    
+
     &.tv-error {
         font-style: italic;
         background-color: #fff0f0;
     }
-    
+
     // GN: move to .pane-content-wrapper so text block and side bar are aligned
     // margin-top: rem-calc(12);
     // max-height: calc(100vh - 250px);
     overflow-y: scroll;
-    
+
     // GN: fixed space allowance for the sidebar
     margin-right: 4rem;
 
@@ -329,8 +330,8 @@
     }
 
     div[data-corresp]:hover {
-        /* 
-        cursor: pointer; 
+        /*
+        cursor: pointer;
         text-decoration-color: scale-color($primary-color, $lightness: 50%);
         */
     }

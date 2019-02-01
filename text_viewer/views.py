@@ -1,5 +1,5 @@
 from django.shortcuts import render
-from text_viewer_tvof import TextViewerAPITvof
+from .text_viewer_tvof import TextViewerAPITvof
 from django.urls import reverse
 
 

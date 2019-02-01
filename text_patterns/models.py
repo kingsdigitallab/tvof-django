@@ -3,16 +3,16 @@ from text_viewer.text_viewer_tvof import TextViewerAPITvof
 from text_viewer.text_viewer import (get_unicode_from_xml)
 from django.contrib.auth.models import User
 from django.db import models
-import utils
+from . import utils
 import xml.etree.ElementTree as ET
-import utils as dputils
+from . import utils as dputils
 
 
 class TextPatternSet(models.Model):
     slug = models.SlugField(max_length=30, blank=False,
                             null=False, unique=True)
-    patterns = models.TextField(blank=True, null=False, default=ur'')
-    text_url = models.URLField(blank=True, null=False, default=ur'')
+    patterns = models.TextField(blank=True, null=False, default=r'')
+    text_url = models.URLField(blank=True, null=False, default=r'')
 
     created = models.DateTimeField(auto_now_add=True, editable=False)
     modified = models.DateTimeField(auto_now=True, editable=False)
@@ -21,7 +21,7 @@ class TextPatternSet(models.Model):
     owner_sessionid = models.CharField(max_length=64, blank=False, null=True)
 
     def __unicode__(self):
-        return ur'{}'.format(self.slug)
+        return r'{}'.format(self.slug)
 
     def get_size(self):
         return len(self.get_dicts_from_patterns())
@@ -34,7 +34,7 @@ class TextPatternSet(models.Model):
         self.patterns = dputils.json_dumps(dicts)
 
     def get_absolute_url(self):
-        from django.core.urlresolvers import reverse
+        from django.urls import reverse
         return reverse('pattern_set', kwargs={'slug': self.slug})
 
 # TODO: move this TVOF custom code to subclass
@@ -63,14 +63,14 @@ class TextUnitsCached(object):
         import json
 
         if not unitids:
-            print 'Generate unitids for %s' % address
+            print('Generate unitids for %s' % address)
             unitids = [
                 unit.unitid
                 for unit in TextUnits().get_units(address)
             ]
             cache.set(address_key, json.dumps(unitids))
         else:
-            print 'Get unitids for %s from cache' % address
+            print('Get unitids for %s from cache' % address)
             unitids = json.loads(unitids)
 
         # get the plain content of the desired units
@@ -81,7 +81,7 @@ class TextUnitsCached(object):
         contents = cache.get(contents_key)
 
         if not contents:
-            print 'Generate contents for %s' % address
+            print('Generate contents for %s' % address)
 
             contents = {
                 u.unitid: u.get_plain_dict()
@@ -91,7 +91,7 @@ class TextUnitsCached(object):
 
             cache.set(contents_key, json.dumps(contents))
         else:
-            print 'Get contents for %s from cache' % address
+            print('Get contents for %s from cache' % address)
             contents = json.loads(contents)
 
         # now spits the desired units
@@ -196,16 +196,16 @@ class TextUnit(object):
 
             # ret = re.sub(ur'(?musi)\[\d*?[vrab]*?\]', '', ret)
             # [...] => nothing
-            ret = re.sub(ur'(?musi)\[[^\]]*?\]', u'', ret)
+            ret = re.sub(r'(?musi)\[[^\]]*?\]', '', ret)
 
             ret = utils.remove_accents(ret)
             ret = ret.lower()
 
-            ret = ret.replace(u'v', u'u')
+            ret = ret.replace('v', 'u')
             # punctuation => ' '
-            ret = re.sub(u'[·؛\u00A7,.;]', u' ', ret)
+            ret = re.sub('[·؛\u00A7,.;]', ' ', ret)
 
-            ret = re.sub(ur'(?musi)\s+', u' ', ret)
+            ret = re.sub(r'(?musi)\s+', ' ', ret)
 
             ret = ret.strip()
             self._plain_content = ret

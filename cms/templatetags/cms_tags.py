@@ -6,11 +6,11 @@ from django.conf import settings
 from django.template.defaultfilters import stringfilter
 from django.utils.text import slugify
 from \
-    wagtail.contrib.wagtailroutablepage.templatetags.wagtailroutablepage_tags \
+    wagtail.contrib.routable_page.templatetags.wagtailroutablepage_tags \
     import routablepageurl
 
-from wagtail.wagtailcore.models import Page
-from wagtail.wagtailcore.templatetags.wagtailcore_tags import pageurl
+from wagtail.core.models import Page
+from wagtail.core.templatetags.wagtailcore_tags import pageurl
 
 from ..models import BlogPost, get_field_lang
 from cms.models import IndexPage
@@ -32,37 +32,37 @@ def breadcrumbs(context, root, current_page, extra=None):
             'current_page': current_page, 'pages': pages, 'extra': extra}
 
 
-@register.assignment_tag(takes_context=False)
+@register.simple_tag(takes_context=False)
 def are_comments_allowed():
     """Returns True if commenting on the site is allowed, False otherwise."""
     return getattr(settings, 'ALLOW_COMMENTS', False)
 
 
-@register.assignment_tag(takes_context=False)
+@register.simple_tag(takes_context=False)
 def get_disqus_shortname():
     """Returns the DISCUS shortname setting for comments."""
     return settings.DISQUS_SHORTNAME
 
 
-@register.assignment_tag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def get_request_parameters(context, exclude=None):
     """Returns a string with all the request parameters except the exclude
     parameter."""
     params = ''
     request = context['request']
 
-    for key, value in request.GET.items():
+    for key, value in list(request.GET.items()):
         if key != exclude:
             params += '&{key}={value}'.format(key=key, value=value)
 
     return params
 
 
-@register.assignment_tag(takes_context=True)
+@register.simple_tag(takes_context=True)
 def get_site_root(context):
     """Returns the site root Page, not the implementation-specific model used.
 
-    :rtype: `wagtail.wagtailcore.models.Page`
+    :rtype: `wagtail.core.models.Page`
     """
     return context['request'].site.root_page
 
@@ -184,7 +184,7 @@ def slugurl(context, slug):
 @register.simple_tag(takes_context=True)
 def archiveurl(context, page, *args):
     """[DEPRECATED] Returns the URL for the page that has the given slug.
-        Use routablepageurl from wagtail.contrib.wagtailroutablepage
+        Use routablepageurl from wagtail.contrib.routable_page
         templatetag
         instead.
 
@@ -197,7 +197,7 @@ def archiveurl(context, page, *args):
 
     logger.warning(
         ('DEPRECATED: cms tag archiveurl is depracated. '
-         'Use routablepageurl from wagtail.contrib.wagtailroutablepage '
+         'Use routablepageurl from wagtail.contrib.routable_page '
          'templatetag instead.'))
 
     try:

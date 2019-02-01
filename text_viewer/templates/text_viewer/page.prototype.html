@@ -1,5 +1,5 @@
 {% extends "base.html" %}
-{% load staticfiles compress require cms_tags %}
+{% load staticfiles compress cms_tags %}
 
 {% block title %}
 Textviewer
@@ -19,8 +19,8 @@ Textviewer
             <div class="small-12 columns">
 
                 <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()" class="close-panel-button float-right">
-                    <i class="fa fa-trash has-tip" aria-hidden="true" 
-                        data-tooltip aria-haspopup="true" data-hover-delay="0" 
+                    <i class="fa fa-trash has-tip" aria-hidden="true"
+                        data-tooltip aria-haspopup="true" data-hover-delay="0"
                         title="Close this panel">
                     </i>
                 </a>
@@ -114,17 +114,17 @@ Textviewer
                 </div>
             </div>
             <div class="small-2 medium-1 columns" data-sticky-container>
-                <div class="sticky" data-sticky data-stick-to="bottom" 
-                    data-top-anchor="section-menu:bottom" 
+                <div class="sticky" data-sticky data-stick-to="bottom"
+                    data-top-anchor="section-menu:bottom"
                     data-btm-anchor="footer:top">
-                    <ul class="text-center pane-sidebar vertical dropdown menu" data-dropdown-menu 
-                        data-disable-hover="true" data-click-open="true" 
+                    <ul class="text-center pane-sidebar vertical dropdown menu" data-dropdown-menu
+                        data-disable-hover="true" data-click-open="true"
                         data-alignment="right">
                         <!-- TODO: need to fix the view button. By default it should duplicate only -->
                         <!-- <li v-for="aview in views"> -->
                         <li>
                             <a href="#" v-on:click.stop.prevent="onClickViewExternal(views.slug)"
-                                data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false" 
+                                data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false"
                                 data-hover-delay="0" title="Open a new panel">
                                 <i class="fa fa-columns"></i>
                             </a>
@@ -161,7 +161,6 @@ Textviewer
 
 {% block footer_scripts %}
     {{ block.super }}
-    {# TODO: load this with require.js or webpack ? #}
     <script src="{% static 'vendor/vue/vue.js' %}"></script>
     <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
 {% endblock %}

@@ -8,10 +8,14 @@ https://docs.djangoproject.com/en/dev/ref/settings/
 For production settings see
 https://docs.djangoproject.com/en/dev/howto/deployment/checklist/
 """
-# from ddhldap.settings import *
+
 import getpass
 import logging
 import os
+
+from django_auth_ldap.config import LDAPGroupQuery
+from kdl_ldap.settings import *  # noqa
+
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
 
@@ -24,7 +28,6 @@ PROJECT_TITLE = 'The Values of French'
 # -----------------------------------------------------------------------------
 
 ADMINS = (
-    # ('Miguel Vieira', 'jose.m.vieira@kcl.ac.uk'),
     ('Geoffroy Noel', 'geoffroy.noel@kcl.ac.uk'),
 )
 MANAGERS = ADMINS
@@ -37,6 +40,11 @@ ALLOWED_HOSTS = []
 # http://niwibe.github.io/django-redis/
 CACHE_REDIS_DATABASE = '0'
 
+DJANGO_CACHE_ROOT = os.path.join(BASE_DIR, 'django_cache')
+
+if not os.path.exists(DJANGO_CACHE_ROOT):
+    os.makedirs(DJANGO_CACHE_ROOT)
+
 CACHES = {
     'default': {
         'BACKEND': 'django_redis.cache.RedisCache',
@@ -48,13 +56,13 @@ CACHES = {
     },
     'text_patterns': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'django_cache/text_patterns/'),
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'text_patterns'),
         'TIMEOUT': 30 * 60 * 60 * 24,
         # 'MAX_ENTRIES': 600,
     },
     'kiln': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(BASE_DIR, 'django_cache/kiln/'),
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'kiln'),
         'TIMEOUT': 30 * 60 * 60 * 24,
         # 'TIMEOUT': 1,
         # 'MAX_ENTRIES': 600,
@@ -64,27 +72,38 @@ CACHES = {
 CSRF_COOKIE_SECURE = True
 CSRF_COOKIE_HTTPONLY = True
 
-# https://docs.djangoproject.com/en/dev/ref/settings/#databases
-DATABASES = {
-}
-
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 TEMPLATE_DEBUG = False
 
-INSTALLED_APPS = (
+# -----------------------------------------------------------------------------
+# EMAIL SETTINGS
+# -----------------------------------------------------------------------------
 
-    'wagtail.wagtailforms',
-    'wagtail.wagtailredirects',
-    'wagtail.wagtailembeds',
-    'wagtail.wagtailsites',
-    'wagtail.wagtailusers',
-    'wagtail.wagtailsnippets',
-    'wagtail.wagtaildocs',
-    'wagtail.wagtailimages',
-    'wagtail.wagtailsearch',
-    'wagtail.wagtailadmin',
-    'wagtail.wagtailcore',
+DEFAULT_FROM_EMAIL = 'noreply@kcl.ac.uk'
+EMAIL_HOST = 'smtp.cch.kcl.ac.uk'
+EMAIL_PORT = 25
+EMAIL_HOST_USER = ''
+EMAIL_HOST_PASSWORD = ''
+EMAIL_SUBJECT_PREFIX = '[Django {}] '.format(PROJECT_NAME)
+EMAIL_USE_TLS = False
+# Sender of error messages to ADMINS and MANAGERS
+SERVER_EMAIL = DEFAULT_FROM_EMAIL
+
+INSTALLED_APPS = (
+    'wagtail.contrib.postgres_search',
+
+    'wagtail.contrib.forms',
+    'wagtail.contrib.redirects',
+    'wagtail.embeds',
+    'wagtail.sites',
+    'wagtail.users',
+    'wagtail.snippets',
+    'wagtail.documents',
+    'wagtail.images',
+    'wagtail.search',
+    'wagtail.admin',
+    'wagtail.core',
 
     'taggit',
     'modelcluster',
@@ -96,7 +115,6 @@ INSTALLED_APPS = (
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'compressor',
-    'require',
     'cms',
     'rest_framework',
     'haystack',
@@ -105,6 +123,7 @@ INSTALLED_APPS = (
 INSTALLED_APPS += (
     # your project apps here
     'activecollab_digger',
+    'kdl_ldap',
     'kiln',
     'text_viewer',
     'text_patterns',
@@ -113,11 +132,16 @@ INSTALLED_APPS += (
     'tvof',
 )
 
-INTERNAL_IPS = ('127.0.0.1', )
+INTERNAL_IPS = ['127.0.0.1']
+
+# https://docs.djangoproject.com/en/dev/topics/i18n/
+LANGUAGE_CODE = 'en'
+TIME_ZONE = 'Europe/London'
+USE_I18N = True
+USE_L10N = False
+USE_TZ = True
 
 # https://docs.djangoproject.com/en/dev/topics/logging/
-
-
 LOGGING_ROOT = os.path.join(BASE_DIR, 'logs')
 LOGGING_LEVEL = logging.WARN
 
@@ -177,20 +201,20 @@ LOGGING = {
     }
 }
 
-
-MIDDLEWARE_CLASSES = (
+MIDDLEWARE = [
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
-    'django.contrib.auth.middleware.SessionAuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
-    'django.middleware.security.SecurityMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'wagtail.wagtailcore.middleware.SiteMiddleware',
-    'wagtail.wagtailredirects.middleware.RedirectMiddleware',
+    'django.middleware.security.SecurityMiddleware',
+
+    'wagtail.core.middleware.SiteMiddleware',
+
+    'wagtail.contrib.redirects.middleware.RedirectMiddleware',
     'django.middleware.locale.LocaleMiddleware',
-)
+]
 
 ROOT_URLCONF = PROJECT_NAME + '.urls'
 
@@ -217,15 +241,7 @@ TEMPLATES = [
     },
 ]
 
-# https://docs.djangoproject.com/en/dev/topics/i18n/
-LANGUAGE_CODE = 'en'
-TIME_ZONE = 'Europe/London'
-USE_I18N = True
-USE_L10N = False
-USE_TZ = True
-
 WSGI_APPLICATION = PROJECT_NAME + '.wsgi.application'
-
 
 # -----------------------------------------------------------------------------
 # Authentication
@@ -237,6 +253,12 @@ if 'wagtail.core' in INSTALLED_APPS:
 else:
     LOGIN_URL = '/admin/login/'
 
+# -----------------------------------------------------------------------------
+# Sessions
+# https://docs.djangoproject.com/en/dev/ref/settings/#sessions
+# -----------------------------------------------------------------------------
+
+SESSION_COOKIE_SECURE = True
 
 # -----------------------------------------------------------------------------
 # Static files (CSS, JavaScript, Images)
@@ -250,7 +272,10 @@ STATIC_ROOT = os.path.join(BASE_DIR, STATIC_URL.strip('/'))
 if not os.path.exists(STATIC_ROOT):
     os.makedirs(STATIC_ROOT)
 
-STATICFILES_DIRS = (os.path.join(BASE_DIR, 'assets'),)
+STATICFILES_DIRS = (
+    os.path.join(BASE_DIR, 'assets'),
+    os.path.join(BASE_DIR, 'node_modules'),
+)
 
 STATICFILES_FINDERS = (
     'django.contrib.staticfiles.finders.FileSystemFinder',
@@ -258,34 +283,11 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-STATICFILES_STORAGE = 'require.storage.OptimizedStaticFilesStorage'
-
 MEDIA_URL = STATIC_URL + 'media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL.strip('/'))
 
 if not os.path.exists(MEDIA_ROOT):
     os.makedirs(MEDIA_ROOT)
-
-# -----------------------------------------------------------------------------
-# EMAIL SETTINGS
-# -----------------------------------------------------------------------------
-
-EMAIL_HOST = 'smtp.kcl.ac.uk'
-EMAIL_PORT = 25
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
-EMAIL_USE_TLS = False
-DEFAULT_FROM_EMAIL = 'noreply@kcl.ac.uk'
-# Sender of error messages to ADMINS and MANAGERS
-SERVER_EMAIL = DEFAULT_FROM_EMAIL
-EMAIL_SUBJECT_PREFIX = '[Django {}] '.format(PROJECT_NAME)
-
-# -----------------------------------------------------------------------------
-# Sessions
-# https://docs.djangoproject.com/en/1.8/ref/settings/#sessions
-# -----------------------------------------------------------------------------
-
-SESSION_COOKIE_SECURE = True
 
 # -----------------------------------------------------------------------------
 # Installed Applications Settings
@@ -308,70 +310,6 @@ COMPRESS_PRECOMPILERS = (
 )
 
 # -----------------------------------------------------------------------------
-# Django Grappelli
-# http://django-grappelli.readthedocs.org/en/latest/
-# -----------------------------------------------------------------------------
-
-GRAPPELLI_ADMIN_TITLE = PROJECT_TITLE
-
-# -----------------------------------------------------------------------------
-# Kiln
-# https://github.com/kcl-ddh/django-kiln
-# -----------------------------------------------------------------------------
-
-KILN_CONTEXT_PATH = 'k/'
-# IF you are using vagrant, this address will not work.
-# you'll need to change it in your local.py (NOT HERE).
-# From your VM, run the following:
-# netstat -rn
-# Take the first value in the Gateway column which is not 0.0.0.0
-# (e.g. 10.0.2.2) and replace localhost with it.
-# e.g. 'http://10.0.2.2:8180'
-KILN_BASE_URL = 'http://localhost:8180'
-
-# -----------------------------------------------------------------------------
-# Django-Require
-# https://github.com/etianen/django-require
-# -----------------------------------------------------------------------------
-
-# The baseUrl to pass to the r.js optimizer, relative to STATIC_ROOT.
-REQUIRE_BASE_URL = 'js'
-
-# The name of a build profile to use for your project, relative to
-# REQUIRE_BASE_URL. A sensible value would be 'app.build.js'.
-# Leave blank to use the built-in default build profile. Set to False to
-# disable running the default profile (e.g. if only using it to build
-# Standalone Modules)
-REQUIRE_BUILD_PROFILE = False
-
-# The name of the require.js script used by your project, relative to
-# REQUIRE_BASE_URL.
-REQUIRE_JS = '../vendor/requirejs/require.js'
-
-# A dictionary of standalone modules to build with almond.js.
-# See the section on Standalone Modules, below.
-REQUIRE_STANDALONE_MODULES = {
-    'config': {
-        # Where to output the built module, relative to REQUIRE_BASE_URL.
-        'out': 'config-built.js',
-
-        # Optional: A build profile used to build this standalone module.
-        'build_profile': 'config.build.js',
-    }
-}
-
-# Whether to run django-require in debug mode.
-REQUIRE_DEBUG = DEBUG
-
-# A tuple of files to exclude from the compilation result of r.js.
-REQUIRE_EXCLUDE = ('build.txt', )
-
-# The execution environment in which to run r.js: auto, node or rhino.
-# auto will autodetect the environment and make use of node if available and
-# rhino if not.
-REQUIRE_ENVIRONMENT = 'node'
-
-# -----------------------------------------------------------------------------
 # FABRIC
 # -----------------------------------------------------------------------------
 
@@ -384,7 +322,14 @@ FABRIC_USER = getpass.getuser()
 # Google Analytics ID
 GA_ID = ''
 
-WAGTAIL_SITE_NAME = 'TVOF'
+# -----------------------------------------------------------------------------
+# Automatically generated settings
+# -----------------------------------------------------------------------------
+
+# Check which db engine to use:
+db_engine = 'django.db.backends.postgresql_psycopg2'
+if 'django.contrib.gis' in INSTALLED_APPS:
+    db_engine = 'django.contrib.gis.db.backends.postgis'
 
 WAGTAIL_APPEND_SLASH = False
 
@@ -397,9 +342,36 @@ AC_API_URL = AC_BASE_URL + '/api/v1/'
 AC_PROJECT_ID = 0
 AC_USER = 0
 AC_TOKEN = ''
-
+AUTH_LDAP_REQUIRE_GROUP = (
+    (
+        LDAPGroupQuery('cn=kdl-staff,' + LDAP_BASE_OU) | 
+        LDAPGroupQuery('cn=tvof,' + LDAP_BASE_OU)
+    )
+)
 WAGTAIL_SITE_NAME = PROJECT_TITLE
 ITEMS_PER_PAGE = 10
+WAGTAILSEARCH_BACKENDS = {
+    'default': {
+        'BACKEND': 'wagtail.contrib.postgres_search.backend',
+    }
+}
+
+# Change as required
+# https://django-haystack.readthedocs.io/en/stable/settings.html
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'URL': 'http://localhost:8983/solr/default',
+        'TIMEOUT': 60 * 5,
+        'INCLUDE_SPELLING': True,
+        'BATCH_SIZE': 100,
+    },
+#     'default': {
+#         'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
+#         'URL': 'http://localhost:9200/',
+#         'INDEX_NAME': 'tvof_haystack',
+#     }
+}
 
 # -----------------------------------------------------------------------------
 # TVOF
@@ -414,12 +386,10 @@ CMS_LANGUAGES = [
     },
     {
         'code': 'fr',
-        'label': 'Francais',
+        'label': 'Français',
         'label_en': 'French',
     }
 ]
-
-ITEMS_PER_PAGE = 10
 
 # The list of MSS which will be on the public website
 # Go to http://localhost:8000/lab/alignment/
@@ -502,11 +472,18 @@ ALIGNMENT_FEATURE_LABELS = {
     'rub': 'rubric',
 }
 
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE':
-        'haystack.backends.elasticsearch2_backend.Elasticsearch2SearchEngine',
-        'URL': 'http://localhost:9200/',
-        'INDEX_NAME': 'haystack_base',
-    }
-}
+# -----------------------------------------------------------------------------
+# Kiln
+# https://github.com/kcl-ddh/django-kiln
+# -----------------------------------------------------------------------------
+
+KILN_CONTEXT_PATH = 'k/'
+# IF you are using vagrant, this address will not work.
+# you'll need to change it in your local.py (NOT HERE).
+# From your VM, run the following:
+# netstat -rn
+# Take the first value in the Gateway column which is not 0.0.0.0
+# (e.g. 10.0.2.2) and replace localhost with it.
+# e.g. 'http://10.0.2.2:8180'
+KILN_BASE_URL = 'http://localhost:8180'
+

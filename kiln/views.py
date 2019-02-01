@@ -6,6 +6,7 @@ from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.gzip import gzip_page
 from django.shortcuts import render
+from text_viewer.text_viewer import get_unicode_from_xml
 
 
 @gzip_page
@@ -56,7 +57,7 @@ def _send_to_kiln_and_process_response(request, kiln_url):
         if root.tag == 'data':
             root.tag = 'div'
         params['content'] = root
-        params['content'] = ET.tostring(params['content'])
+        params['content'] = get_unicode_from_xml(params['content'])
         return params
 
     text_els = root.findall('texts/text')
@@ -85,7 +86,7 @@ def _send_to_kiln_and_process_response(request, kiln_url):
             params['texts'][idx]['name'] = name
             params['texts'][idx]['title'] = text_el.find('title').text
             params['texts'][idx]['version'] = text_el.find('version').text
-            params['texts'][idx]['content'] = ET.tostring(
+            params['texts'][idx]['content'] = get_unicode_from_xml(
                 get_processed_content(text_el.find('content'))
             )
 
@@ -93,7 +94,7 @@ def _send_to_kiln_and_process_response(request, kiln_url):
             toc_els = text_el.findall('toc/item')
             for item_el in toc_els:
                 params['texts'][idx]['toc'].append({
-                    'name': ET.tostring(item_el.find('*')),
+                    'name': get_unicode_from_xml(item_el.find('*')),
                     'id': item_el.get('id')
                 })
 
@@ -153,7 +154,7 @@ def get_processed_content(xml):
 
     # translate the hyperlinks to the biblio entries
     for link in xml.findall('.//a[@href]'):
-        link.attrib['href'] = ur'/{}/bibliography/#{}'.format(
+        link.attrib['href'] = r'/{}/bibliography/#{}'.format(
             settings.KILN_CONTEXT_PATH.strip('/'),
             link.attrib['href']
         )

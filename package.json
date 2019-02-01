@@ -1,0 +1,23 @@
+{
+  "name": "vagrant",
+  "version": "1.0.0",
+  "description": "This is the repository for the tvof project at [Kings Digital Lab](https://kdl.kcl.ac.uk)",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "font-awesome": "^4.6.3",
+    "foundation-sites": "^6.5.2",
+    "jquery": "^3.3.1",
+    "js-cookie": "^2.2.0",
+    "leaflet": "^1.4.0",
+    "leaflet-iiif": "^2.0.1",
+    "motion-ui": "^2.0.3",
+    "vue": "^2.5.22",
+    "what-input": "^5.1.3"
+  }
+}

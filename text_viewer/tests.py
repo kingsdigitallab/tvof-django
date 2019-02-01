@@ -45,7 +45,7 @@ if getattr(settings, 'TEST_TEXT_VIEWER', False):
             has_errors = bool(res.get('errors'))
 
             if has_errors:
-                print repr(path)
-                print repr(res.get('errors'))
+                print(repr(path))
+                print(repr(res.get('errors')))
 
             self.assertIs(has_errors, False)
