@@ -3,6 +3,7 @@ from .text_viewer import (get_unicode_from_xml,)
 import xml.etree.ElementTree as ET
 from django.conf import settings
 import re
+from django.utils.html import escape
 
 # TODO: move this to another package, outside of generic text_viewer
 '''
@@ -323,8 +324,20 @@ class TextViewerAPITvof(TextViewerAPIXML):
         return ret
 
     def extract_notes_from_chunk(self, chunk, notes_info):
-        # TODO: move that to TVoF class
         '''
+            Move notes to the end of the document (like footnotes).
+            Insert inline references from the text.
+            Both will link to each other.
+            Each notes receives a unique handle based on a sequential number
+            suffixed with a letter indicating the type of note:
+                S: source
+                T: trad(ition)
+                G: gen(eral)
+                A: gloss / note de lecteur medieval / annotation
+                ?: unspecified / unknown type
+
+            eg. of a note block to extract
+
             <div class="tei-note tei-type-note tei-subtype-source"
                 data-tei-subtype="source" id="edfr20125_0590_peach">
                 <div class="note-text">
@@ -332,6 +345,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 </div>
             </div>
         '''
+
         # nested loop is b/c ET needs parent to remove child but
         # there is no .parent() function
         for parent in chunk.findall('.//*[@class="note-text"]/../..'):
@@ -367,6 +381,16 @@ class TextViewerAPITvof(TextViewerAPIXML):
                         note_handle,
                     )
                 )
+
+                # ac-332.3
+                note_title = ''
+                if note_cat in ['A']:
+                    note_title = 'Note de lecteur médiéval ' + \
+                        '(annotateur {}) : {}'.format(
+                            note.attrib.get('data-tei-resp', '?'),
+                            note_text.text
+                        )
+
                 note_anchor.tail = note_text.text or ''
                 note_text.text = ''
                 note_text.insert(0, note_anchor)
@@ -385,6 +409,8 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     .format(note_subtype)
                 note_ref.attrib['href'] = '#note-{}'.format(note_number)
                 note_ref.attrib['id'] = 'ref-{}'.format(note_number)
+                if note_title:
+                    note_ref.attrib['title'] = note_title
                 note_ref.text = note_handle
                 # print(note.tail)
                 # parent.remove(note)

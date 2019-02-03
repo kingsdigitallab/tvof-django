@@ -563,6 +563,11 @@ ul.sticky {
         .tei-note {
             margin-bottom: 0.5rem;
             display: block;
+
+            // ac-332.3
+            &.tei-type-gloss {
+                display: none;
+            }
         }
     }
 
