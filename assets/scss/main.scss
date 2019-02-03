@@ -521,6 +521,17 @@ ul.sticky {
 
     /* NOTES */
 
+    // see proof-reading page
+    .note-location {
+        margin-right: 0.2rem;
+        &:before {
+            content: '(';
+        }
+        &:after {
+            content: ') ';
+        }
+    }
+
     .note-ref,
     .note-anchor {
         &:before {

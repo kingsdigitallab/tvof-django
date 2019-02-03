@@ -325,26 +325,49 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
     def extract_notes_from_chunk(self, chunk, notes_info):
         '''
-            Move notes to the end of the document (like footnotes).
-            Insert inline references from the text.
-            Both will link to each other.
-            Each notes receives a unique handle based on a sequential number
-            suffixed with a letter indicating the type of note:
-                S: source
-                T: trad(ition)
-                G: gen(eral)
-                A: gloss / note de lecteur medieval / annotation
-                ?: unspecified / unknown type
+        Move notes to the end of the document (like footnotes).
+        Insert inline references from the text.
+        Both will link to each other.
 
-            eg. of a note block to extract
+        Each notes receives a unique handle based on a sequential number
+        suffixed with a letter indicating the type of note:
+            S: source
+            T: trad(ition)
+            G: gen(eral)
+            A: gloss / note de lecteur medieval / annotation
+            ?: unspecified / unknown type
 
-            <div class="tei-note tei-type-note tei-subtype-source"
-                data-tei-subtype="source" id="edfr20125_0590_peach">
-                <div class="note-text">
-                    [...]HTML
-                </div>
+        eg. of a note block to extract
+
+        <div class="tei-note tei-type-note tei-subtype-source"
+            data-tei-subtype="source" id="edfr20125_0590_peach">
+            <div class="note-text">
+                [...]HTML
             </div>
+        </div>
+
+        In the code below:
+            <note_ref> is the inline reference to the footnote;
+            <note> is the html of a footnote;
+            <notes_info> is populated with the list of all <note>s;
         '''
+
+        def get_location_string_from_note(note_xml):
+            '''
+            note_xml: a xml node for a note (see example above)
+            return §590 for id="edfr20125_0590_peach"
+            return §509.14 for id="edfr20125_0590_14_sycamore"
+            '''
+            ret = ''
+            noteid = note_xml.attrib.get('id', '')
+            if noteid:
+                parts = re.findall(
+                    r'_0*(\d+)(?=_)', noteid
+                )
+                if parts:
+                    ret = '§' + '.'.join(parts)
+
+            return ret
 
         # nested loop is b/c ET needs parent to remove child but
         # there is no .parent() function
@@ -368,11 +391,15 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 if note.attrib.get('data-tei-type', '') == 'gloss':
                     note_cat = 'A'  # as in annotation
 
+                # unique handle for that note
                 note_handle = '{}:{}'.format(note_number, note_cat)
 
-                # add a unique number at the beginning of the note
                 note_text = note.find('*[@class="note-text"]')
-                note_anchor = ET.fromstring(
+
+                note_prefixes = []
+
+                # the anchor / handle
+                note_prefixes.append(
                     '<a class="note-anchor" id="note-{}" '
                     ' href="#ref-{}">{}</a>'.
                     format(
@@ -382,7 +409,17 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     )
                 )
 
-                # ac-332.3
+                # ac-332.1: add location at the beginning of footnote
+                # chapter number.seg number, e.g. §526.14
+                note_location = get_location_string_from_note(note)
+                if note_location:
+                    note_prefixes.append(
+                        '<span class="note-location">{}</span>'.format(
+                            note_location
+                        )
+                    )
+
+                # ac-332.3: prepare tooltip/title for some notes
                 note_title = ''
                 if note_cat in ['A']:
                     note_title = 'Note de lecteur médiéval ' + \
@@ -391,16 +428,21 @@ class TextViewerAPITvof(TextViewerAPIXML):
                             note_text.text
                         )
 
-                note_anchor.tail = note_text.text or ''
+                # actually insert the handle and location at the beginning
+                # of the footnote.
+                for i, note_prefix in enumerate(note_prefixes):
+                    note_prefix = ET.fromstring(note_prefix)
+                    note_text.insert(i, note_prefix)
+                # make sure the note text appears after the inserted elements
+                note_prefix.tail = note_text.text or ''
                 note_text.text = ''
-                note_text.insert(0, note_anchor)
 
                 # print(ET.tostring(note_text))
 
                 # add note to the notes_info
                 notes_info['notes'].append(get_unicode_from_xml(note))
 
-                # replace note with an inline reference
+                # replace note in chunk with an inline reference
                 note.clear()
                 note_ref = note
                 note_ref.tail = note_tail
