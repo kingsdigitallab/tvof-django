@@ -1025,3 +1025,9 @@ footer {
 .search-text,.close-icon,.search-query {
     position: relative;
 }
+.search-hits {
+    td, th {
+        vertical-align: text-top;
+    }
+}
+
