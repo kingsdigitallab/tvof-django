@@ -580,6 +580,16 @@ ul.sticky {
                 display: none;
             }
         }
+
+        .corr-sic {
+            margin-left: 0.3rem;
+            &:before {
+                content: '{ms. ';
+            }
+            &:after {
+                content: '}';
+            }
+        }
     }
 
     .tv-viewer-pane, .text-conventions {

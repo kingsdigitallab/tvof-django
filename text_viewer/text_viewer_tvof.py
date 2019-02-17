@@ -114,6 +114,9 @@ def get_location_translated(doc_from, location_from, doc_to):
 
 
 class TextViewerAPITvof(TextViewerAPIXML):
+    '''
+    Implementation of TextViewerXML specific to TVoF project and texts.
+    '''
 
     '''
     <div class="section" id="section-6" data-n="6" data-type="Eneas">
@@ -280,7 +283,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
         if location_type['slug'] == 'section':
             ret = {
                 'slug': xml.attrib.get('data-n', '0'),
-                'label_long': xml.attrib.get('data-n', '') + '. ' + 
+                'label_long': xml.attrib.get('data-n', '') + '. ' +
                 xml.attrib.get('data-type', 'untitled').replace('_', ' '),
             }
             ret['label'] = ret['label_long']
@@ -322,6 +325,28 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 }
 
         return ret
+
+    def prepare_print_version(self, chunk, notes_info):
+        self.transform_to_print_version(chunk)
+        self.extract_notes_from_chunk(chunk, notes_info)
+
+    def transform_to_print_version(self, chunk):
+        '''
+        Minor conversions of the XML for the print version
+        '''
+        # ac-337: make ms reading inline
+        # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
+        # =>
+        # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
+        # <span class="corr-sic">aidier aidier</span>
+        from .utils import findall_in_etree
+        for corr in findall_in_etree(chunk, './/span[@data-sic]'):
+            sic = ET.Element('span')
+            sic.set('class', 'corr-sic')
+            sic.text = corr['el'].attrib.get('data-sic')
+            sic.tail = (corr['el'].tail or '')
+            corr['el'].tail = ''
+            corr['parent'].insert(corr['index'] + 1, sic)
 
     def extract_notes_from_chunk(self, chunk, notes_info):
         '''

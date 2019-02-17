@@ -14,7 +14,9 @@ def lt(msg=''):
 
 class TextViewerAPI(object):
     '''
-    Text Viewer Web API Skeleton
+    Text Viewer Web API Skeleton.
+    Independent from source.
+    Independent from project and text.
 
     To be inherited for specific text backends (e.g. kiln, database)
 
