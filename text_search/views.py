@@ -65,9 +65,11 @@ if 1:
 
             field_options = {
                 'token': {
-                    # 'limit': 3,
+                    'limit': 10,
                 },
-                'lemma': {},
+                'lemma': {
+                    'limit': 10,
+                },
                 'pos': {},
                 'manuscript': {},
                 'section_name': {},
