@@ -33,6 +33,8 @@ class AnnotatedToken(models.Model):
     preceding = models.CharField(max_length=200)
     following = models.CharField(max_length=200)
     lemma = models.CharField(max_length=30)
+    lemmapos = models.CharField(
+        max_length=30, null=False, blank=True, default='')
     location = models.CharField(
         max_length=20,
         help_text='location id for the seg comprising this token'
@@ -69,12 +71,15 @@ class AnnotatedToken(models.Model):
     @classmethod
     def _get_data_from_kwik_item(cls, item, token):
         data = {
-            k: (v or 'unspecified')
+            k.lower(): (v or '')
             for k, v
             in list(item.attrib.items())
             if k not in ['type', 'n']
         }
         location_parts = data['location'].split('_')
+
+        data['lemma'] = data.get('lemma', 'unspecified')[:30]
+        data['lemmapos'] = data.get('lemmapos', 'unspecified')[:30]
 
         ret = dict(
             token=token,

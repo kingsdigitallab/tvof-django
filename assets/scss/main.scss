@@ -165,6 +165,7 @@ nav {
     &.submenu {
         &.is-dropdown-submenu {
             background: $primary-color;
+            z-index: 2;
         }
     }
 

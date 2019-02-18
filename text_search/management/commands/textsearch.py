@@ -1,20 +1,34 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand
 from text_search.models import AnnotatedToken
+from argparse import RawTextHelpFormatter
 
 
 class Command(BaseCommand):
-    help = 'Toolbox for the Text Viewer app'
+    help = '''Toolbox for the Text Viewer app
+
+action:
+  import PATH_TO_KWIC.XML
+    insert / update data from kwic.xml into AnnotatedToken table
+    PATH_TO_KWIC.XML is the output from Lemming lemmatiser
+  clear
+    remove all records in AnnotatedToken table
+    '''
+
+    def create_parser(self, *args, **kwargs):
+        parser = super(Command, self).create_parser(*args, **kwargs)
+        parser.formatter_class = RawTextHelpFormatter
+        return parser
 
     def add_arguments(self, parser):
-        parser.add_argument('actions', nargs=1, type=str)
+        parser.add_argument('action', nargs=1, type=str)
         parser.add_argument('args', nargs='*', type=str)
 
     def handle(self, *args, **options):
 
         self.options = options
         self.args = args
-        actions = options.get('actions', [])
+        actions = options.get('action', [])
         action = actions[0]
 
         known_action = False
@@ -69,8 +83,13 @@ class Command(BaseCommand):
 
         for sublist in root.iter('sublist'):
             token = sublist.attrib.get('key')
-            print(token)
             for item in sublist.iter('item'):
+                string = item.find('string')
+                if string is not None:
+                    string = (string.text or '').strip()
+                if not item.attrib.get('lemma', None):
+                    print('WARNING: missing lemma')
+                    print(item.attrib)
                 AnnotatedToken.update_or_create_from_kwik_item(
-                    item, token
+                    item, string or token
                 )
