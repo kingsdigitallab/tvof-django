@@ -91,6 +91,9 @@ EMAIL_USE_TLS = False
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 INSTALLED_APPS = (
+    # leave this ABOVE wagtail.search to avoid command conflicts (update_index)
+    'haystack',
+
     'wagtail.contrib.postgres_search',
 
     'wagtail.contrib.forms',
@@ -117,7 +120,6 @@ INSTALLED_APPS = (
     'compressor',
     'cms',
     'rest_framework',
-    'haystack',
 )
 
 INSTALLED_APPS += (
@@ -344,7 +346,7 @@ AC_USER = 0
 AC_TOKEN = ''
 AUTH_LDAP_REQUIRE_GROUP = (
     (
-        LDAPGroupQuery('cn=kdl-staff,' + LDAP_BASE_OU) | 
+        LDAPGroupQuery('cn=kdl-staff,' + LDAP_BASE_OU) |
         LDAPGroupQuery('cn=tvof,' + LDAP_BASE_OU)
     )
 )
@@ -366,11 +368,11 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING': True,
         'BATCH_SIZE': 100,
     },
-#     'default': {
-#         'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
-#         'URL': 'http://localhost:9200/',
-#         'INDEX_NAME': 'tvof_haystack',
-#     }
+    #     'default': {
+    #         'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
+    #         'URL': 'http://localhost:9200/',
+    #         'INDEX_NAME': 'tvof_haystack',
+    #     }
 }
 
 # -----------------------------------------------------------------------------
@@ -486,4 +488,3 @@ KILN_CONTEXT_PATH = 'k/'
 # (e.g. 10.0.2.2) and replace localhost with it.
 # e.g. 'http://10.0.2.2:8180'
 KILN_BASE_URL = 'http://localhost:8180'
-
