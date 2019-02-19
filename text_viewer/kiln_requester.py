@@ -10,7 +10,7 @@ class CachedRequesterKiln(object):
 
     This was written to make more efficient request to Kiln's documents.
 
-    Note that the memory cache is per instance and it is recommended not to
+    Note that the memory cache is per request and it is recommended not to
     share instances among threads.
 
     Caching strategy:
@@ -45,8 +45,8 @@ class CachedRequesterKiln(object):
         if ret is not None:
             d = time.time() - t0
             size_mb = len(ret) / 1024.0 / 1024
-            print('Request: %s from %s (%0.4f MB, %0.2f s.)' % \
-                (url, self.last_request_origin, size_mb, d))
+            self.dmsg('Request: %s from %s (%0.4f MB, %0.2f s.)' %
+                      (url, self.last_request_origin, size_mb, d))
 
         return ret
 
@@ -88,16 +88,21 @@ class CachedRequesterKiln(object):
                 # request
                 self.dmsg('DOWNLOAD response')
                 parts = []
-                for data in stream.iter_content(chunk_size=self.chunk_size, decode_unicode=True):
+                # ac-342: ! we don't use decode_unicode=True here.
+                # We want to save exactly what we receive so the
+                # comparison b/w content-length in header and size in cache
+                # is valid.
+                for data in stream.iter_content(chunk_size=self.chunk_size):
                     parts.append(data)
                 self.dmsg('WRITE to disk cache')
 
-                ret = ''.join(parts)
+                ret = b''.join(parts)
                 self.cache.set(urlid, ret)
 
             stream.close()
 
         if ret:
+            ret = ret.decode(self.encoding)
             self.cache_mem[urlid] = ret
 
         return ret
