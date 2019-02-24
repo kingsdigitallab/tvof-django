@@ -468,20 +468,24 @@ ul.sticky {
     // .lineated (line break after each verse line)
     // TODO: works but html & css need improvement
 
+    div.tei.lg, p.tei.lg {
+        display: inline;
+    }
+
+    p.tei.lg.lineated {
+        // https://stackoverflow.com/a/14832019/3748764
+        display: table;
+        position: relative;
+    }
+
     .lineated > span {
         display: block;
+        padding-right: 3rem;
     }
     .cont span {
         display: inline;
     }
 
-    p.tei.lg.lineated {
-        display: block;
-    }
-
-    div.tei.lg, p.tei.lg {
-        display: inline;
-    }
     //-----
 
     .tei-unclear {
@@ -662,6 +666,15 @@ ul.sticky {
 
     .tei-type-explicit {
         display: block;
+    }
+
+    // GN, ugly inherit, we should use span instead of sup in lineated verses
+    .lineated .verse-number {
+        position: absolute;
+        right: 0;
+        font-size: inherit;
+        line-height: 1rem;
+        top: inherit;
     }
 
     .verse-number {

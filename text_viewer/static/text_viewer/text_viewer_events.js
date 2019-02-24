@@ -242,27 +242,31 @@ $(function() {
 
     var reveal = null;
     $('body').on('click', '.tei-note.tei-type-note', function(ev) {
+        var ret = true;
         if (reveal) {
             reveal.close();
         }
         if (ev.type == 'click') {
             var $reveal = $('#shared-reveal');
-            $reveal.find('.body').html($(this).find('.note-text').html());
+            if ($reveal.length) {
+                $reveal.find('.body').html($(this).find('.note-text').html());
 
-            var subtype_to_title = {
-                'source': 'Sources',
-                'trad':   'Tradition',
-                'gen':    'Note',
-                '':       'Note',
-            };
-            $reveal.find('h3').html(subtype_to_title[$(this).data('tei-subtype')] || 'Note');
-            if (!reveal) {
-                reveal = new Foundation.Reveal($reveal, {
-                    overlay: false,
-                });
+                var subtype_to_title = {
+                    'source': 'Sources',
+                    'trad':   'Tradition',
+                    'gen':    'Note',
+                    '':       'Note',
+                };
+                $reveal.find('h3').html(subtype_to_title[$(this).data('tei-subtype')] || 'Note');
+                if (!reveal) {
+                    reveal = new Foundation.Reveal($reveal, {
+                        overlay: false,
+                    });
+                }
+                reveal.open();
+                ret = false;
             }
-            reveal.open();
         }
-        return false;
+        return ret;
     });
 });

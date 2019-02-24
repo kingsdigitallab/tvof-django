@@ -1,16 +1,16 @@
 /*
- * Text Viewer code. 
- * 
+ * Text Viewer code.
+ *
  * Content:
- * 
- * - Viewer: manages the layout, lifecycle and synchronisation of multiple panes 
+ *
+ * - Viewer: manages the layout, lifecycle and synchronisation of multiple panes
  * - Pane: handles the navigation logic and server requests for a text pane
  * - Helper functions
  * - text-pane: a vue.js module for rendering a pane
  * - f-sticky: vue.js directive for a sticky div
  * - f-dropdown: vue.js directive for a Foundation dropdown menu
  * - initialisation of the interface
- * 
+ *
  * TODO: split the different modules/layers into separate source files.
  */
 (function(TextViewer, $, undefined) {
@@ -27,23 +27,23 @@
             'panes': [
             ],
         };
-        
+
         if (options.on_create_viewer) {
             options.on_create_viewer({});
         }
 
         this.createPanesFromQueryString();
-        
+
         var self = this;
         $(window).on('popstate', function() {
             self.onQueryStringUpdated();
         });
     }
-    
+
     Viewer.prototype.onQueryStringUpdated = function() {
         this.createPanesFromQueryString();
     };
-    
+
     Viewer.prototype.onPaneAddressChanged = function(pane) {
         for (var k in this.panes) {
             if (this.panes.hasOwnProperty(k)) {
@@ -53,42 +53,42 @@
             }
         }
     };
-    
+
     Viewer.prototype.updateQueryString = function() {
         // update the title and the browsing history
         var title = '';
         var query_string = '';
-            
+
         for (var k in this.panes) {
             if (this.panes.hasOwnProperty(k)) {
                 if (query_string) query_string += '&';
                 query_string += k + '=' + this.panes[k].address;
-                
+
                 if (title) title += ' | ';
                 title += this.panes[k].getTitleFromAddress();
             }
         }
-        
+
         change_broswer_query_string(query_string, title);
     };
 
     Viewer.prototype.createPanesFromQueryString = function() {
         var self = this;
-        
+
         // create panes from the query string
         var qs = get_query_string();
-        
+
         if ($.isEmptyObject(qs)) {
             qs = {'p1': 'default/default/default/default'};
         }
-        
+
         $.each(qs, function(pane_slug, value) {
             if (pane_slug && typeof self.panes !== 'undefined') {
                 self.createPaneFromAddress(value, pane_slug);
             }
         });
     };
-    
+
     Viewer.prototype.cloneAPane = function() {
         var address = null;
         for (var k in this.panes) {
@@ -98,7 +98,7 @@
             }
         }
     };
-    
+
     Viewer.prototype.createPaneFromAddress = function(address, pane_slug) {
         var self = this;
 
@@ -116,10 +116,10 @@
             self.uimodel.panes.push({slug: pane_slug});
         }
     };
-    
+
     Viewer.prototype.getSyncedWithAddress = function(pane) {
         var ret = '';
-        
+
         for (var k in this.panes) {
             if (this.panes.hasOwnProperty(k)) {
                 if (this.panes[k] !== pane && !this.panes[k].isSynced()) {
@@ -130,10 +130,10 @@
                 }
             }
         }
-        
+
         return ret;
     };
-    
+
     Viewer.prototype.closePane = function(apane) {
         for (var i = 0; i < this.uimodel.panes.length; i++) {
             if (this.uimodel.panes[i].slug == apane.uimodel.pane_slug) {
@@ -148,13 +148,13 @@
     Viewer.prototype.getPane = function(slug) {
         return this.panes[slug];
     };
-    
+
     Viewer.prototype.getPaneCount = function() {
         return this.uimodel.panes.length;
     };
 
     // Returns true if <pane> can be synced.
-    // That is, if there is at least one other non-synced pane in the text viewer 
+    // That is, if there is at least one other non-synced pane in the text viewer
     Viewer.prototype.canPaneBeSynced = function(pane) {
         var cnt = 0;
 
@@ -165,7 +165,7 @@
                 cnt += 1;
             }
         });
-        
+
         return ((first_pane != pane) && (cnt > 0));
     };
 
@@ -178,7 +178,7 @@
             $(document).on('tv.documents.received', function(event, documents) {
                 callback(documents);
             });
-            
+
             if (!this.cache.hasOwnProperty('documents')) {
                 this.cache.documents = [];
                 call_api(this.api_url, function(data) {
@@ -189,7 +189,7 @@
         }
     };
 
-    
+
     /*****************************************************
      * Pane
      */
@@ -202,35 +202,35 @@
                 label: '',
             },
             documents: [],
-            
+
             view: 'critical',
             //views: ['critical'],
-            
+
             location_type: 'location',
             //location_types: ['1', '2'],
 
             location: '1',
             //locations: ['1', '2'],
-            
+
             addresses: {},
-            
+
             conventions: '',
-            
+
             chunk: 'chunk',
-            
+
             is_synced: 0,
 
             display_settings: [],
-            
+
             errors: [],
         };
-        
+
         this.panes = panes;
         this.options = options;
         this.address = null;
         this.addresses = {};
         this.requested_chunk_hash = '';
-        
+
         this.init();
     }
 
@@ -239,15 +239,15 @@
         // self.options.query_string = "Fr_20125/semi-diplomatic/"
         this.requestAddress(this.options.query_string);
     };
-    
+
     Pane.prototype.canClosePane = function() {
         return this.panes.getPaneCount() > 1;
     };
-    
+
     Pane.prototype.closePane = function() {
         this.panes.closePane(this);
     };
-    
+
     Pane.prototype.isSynced = function() {
         //return (~this.address_requested.indexOf('synced'));
         //return (this.view.location_type.slug == 'synced');
@@ -258,7 +258,7 @@
         // make sure we don't end up with all panes synced
         return this.panes.canPaneBeSynced(this);
     };
-    
+
     Pane.prototype.syncWith = function(address) {
         if (this.isSynced()) {
             // todo: sync with that specific address
@@ -266,20 +266,20 @@
             this.requestAddress(this.address);
         }
     };
-    
+
     Pane.prototype.openViewInNewPane = function(view_slug) {
         var parts = this.getAddressParts();
         parts.view = view_slug;
         var address = this.getAddressFromParts(parts);
         this.panes.createPaneFromAddress(address);
     };
-    
+
     Pane.prototype.getTitleFromAddress = function() {
         var ret = '';
         var parts = this.getAddressParts();
-        
+
         ret = parts.document + ', ' + parts.location + ' (' + parts.view + ')';
-        
+
         return ret;
     };
 
@@ -300,7 +300,7 @@
         var ret = parts.document + '/' + parts.view + '/' + parts.location_type + '/' + parts.location;
         return ret;
     };
-    
+
     Pane.prototype.getUIAddress = function() {
         return [this.uimodel.document.slug, this.uimodel.view.slug, this.uimodel.location_type.slug, this.uimodel.location.slug].join('/');
     };
@@ -311,7 +311,7 @@
         parts[part_name] = value;
         return this.requestAddress(this.getAddressFromParts(parts));
     };
-    
+
     Pane.prototype.changeAddressParts = function(aparts) {
         //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
         var parts = this.getAddressParts(this.address);
@@ -329,7 +329,7 @@
             return;
         }
         var self = this;
-        
+
         var parts = this.getAddressParts(address);
 
         // bm: best match, if exact match doesn't work the API will return the
@@ -354,9 +354,9 @@
         };
 
         this.uimodel.errors = [];
-        
+
         $('#text-viewer-glass').stop().css({'opacity': 0}).show().animate({'opacity': 0.5}, 1000);
-        
+
         var req = call_api(url, on_success, on_complete, data, false, [this.requested_chunk_hash]);
         if (this.requested_chunk_hash === req.request_hash) {
             this.onReceivedAddress(address);
@@ -371,7 +371,7 @@
             this.uimodel.errors = [];
         } else {
             this.uimodel.errors = response.errors;
-            this.uimodel.chunk = response.errors[0].message; 
+            this.uimodel.chunk = response.errors[0].message;
         }
     };
 
@@ -383,7 +383,7 @@
         if (dict.label_long) ret.label_long = dict.label_long;
         return ret;
     };
-    
+
     // Copy document_list into this.view.documents
     // document_list is an array of {label:, slug:}
     // If document_list is undefined, retrieve it from this.panels
@@ -406,16 +406,16 @@
             }
         }
     };
-    
+
     // set all the views, location types and locations for this document
     // make a request if necessary and set up temporary values
     Pane.prototype.requestAddresses = function() {
         var self = this;
-        
+
         this.setDocumentList();
-        
+
         var parts = this.getAddressParts();
-        
+
         if (!self.addresses || (parts.document != self.addresses.slug)) {
             // temp values
             self.setAddresses({
@@ -435,7 +435,7 @@
                     }]
                 }]
             });
-            
+
             if (1) {
                 // let's make a new request about this document
                 var url_document = this.panes.api_url + parts.document;
@@ -446,11 +446,11 @@
                 }, null, null, false);
             }
         }
-        
+
         // TODO: why is it needed here? even if branch not executed?
         self.renderAddresses();
     };
-    
+
     Pane.prototype.setAddresses = function(addresses) {
         this.addresses = addresses;
         $(document).trigger(this.uimodel.pane_slug+'.'+'addresses.updated', addresses);
@@ -460,33 +460,33 @@
     // Based on self.address and self.addresses
     Pane.prototype.renderAddresses = function() {
         var self = this;
-        
+
         // document
         self.uimodel.document = self.getPartMeta(self.addresses);
-        
+
         var parts = this.getAddressParts();
-        
+
         // views
         self.uimodel.views = [];
         self.addresses.views.map(function(aview) {
             self.uimodel.views.push(self.getPartMeta(aview));
         });
-        
+
         // Update the lists in self.view
         // by doing simple lookups in the self.views from the address parts.
         this.addresses.views.map(function(aview) {
             if (aview.slug == parts.view) {
                 // view
                 self.uimodel.view = self.getPartMeta(aview);
-                
+
                 // conventions
                 self.uimodel.conventions = aview.conventions || '';
-                
+
                 // display_settings
                 self.uimodel.display_settings = aview.display_settings || [];
-                
+
                 //var user_location_type = self.isSynced() ? 'synced': parts.location_type;
-                
+
                 // location_types
                 //self.view.location_types = [];
                 // locations
@@ -495,12 +495,12 @@
                 aview.location_types.map(function(location_type) {
                     // location_types
                     //self.view.location_types.push(self.getPartMeta(location_type));
-                    
+
                     if (location_type.slug == parts.location_type) {
-                        
+
                         // location_type
                         self.uimodel.location_type = self.getPartMeta(location_type);
-                        
+
                         location_type.locations.map(function(location) {
                             // locations
                             //self.view.locations.push(self.getPartMeta(location));
@@ -522,13 +522,13 @@
         //console.log('received '+address+' had '+this.address)
         var has_address_changed = (this.address !== address);
         this.address = address;
-        
+
         // update address in URL
         this.panes.updateQueryString();
 
         // request and render the addresses
         this.requestAddresses();
-        
+
         // broadcast our address to other panes so they can sync with us
         if (has_address_changed && !this.isSynced()) {
             this.panes.onPaneAddressChanged(this);
@@ -542,10 +542,10 @@
     };
 
     /*****************************************************
-    *     Helpers 
+    *     Helpers
     */
     // TODO: move this to another JS
-    
+
     function get_query_string() {
         var vars = {}, hash;
         var query_string_pos = window.location.href.indexOf('?');
@@ -574,14 +574,14 @@
             complete: onComplete,
             success: onSuccess
         };
-        
+
         if (requestData && requestData.method) {
             getData.type = requestData.method;
             delete requestData.method;
         }
-        
+
         var request_hash = JSON.stringify({url: getData.url, data: getData.data});
-        
+
         var ret = {};
         if (!inhibiters || inhibiters.indexOf(request_hash) == -1) {
             ret = $.ajax(getData);
@@ -590,11 +590,11 @@
 
         return ret;
     }
-    
+
     /*
      * Change the browser URL, push it to the history
      * Also set the document title
-     * 
+     *
     */
     function change_broswer_query_string(query_string, title) {
         var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname;
@@ -611,7 +611,7 @@
     // ===============================================================
     // User Interface
     // ===============================================================
-    
+
     //function on_create_pane(pane) {
     //layout.addPane(pane.view.pane_slug);
 
@@ -622,7 +622,7 @@
         var $template = $('#vue-template-text-pane').detach();
         $template.removeAttr('id');
         var template = $template.prop('outerHTML');
-        
+
         window.Vue.component('text-pane', {
             template: template,
             // this.apane: the attribute when creating/updating the html element
@@ -648,9 +648,9 @@
             watch: {
                 'apane': function(pane) {
                     // This is a trick. Because vue.js has no way of knowing
-                    // which element correspond to which instance when it 
+                    // which element correspond to which instance when it
                     // re-renders the viewer/layout. The only thing that is preserved
-                    // is the order of the pane. 
+                    // is the order of the pane.
                     // If p1, p2, p3. User closes p2. Then vue.js will
                     // keep p1 & p2 components but pass 3rd Pane to p3 component.
                     // We can't replace this.$data so instead we request the
@@ -672,13 +672,13 @@
                             link = '/k/bibliography/#' + link;
                             $(this).attr('href', link);
                         });
-                                                
+
                         // recalc stickies...
                         var $stickies = $('.sticky:visible');
                         if ($stickies.length > 0) {
                             $stickies.foundation('_calc', true);
                         }
-                        
+
                         // scroll to top
                         $(this.$el).find('.text-chunk').scrollTop(0);
                     });
@@ -704,7 +704,7 @@
                     return ret;
                 },
                 canBeSynced: function() {
-                    return this.pane.canBeSynced(); 
+                    return this.pane.canBeSynced();
                 },
                 getSyncTitle: function() {
                     return this.canBeSynced ? (this.is_synced ? 'Click to unsync this pane' : 'Click to synchronise this pane with another') : 'This pane cannot be synced';
@@ -724,7 +724,7 @@
                     location_type.locations.map(function(location) {
                         window.Vue.set(location, 'hidden', location.label_long.toLowerCase().indexOf(filter) === -1);
                     });
-                    
+
                     if (event) {
                         var target = event.srcElement || event.originalTarget;
                         var key = event.key || event.keyCode;
@@ -753,7 +753,7 @@
                 },
                 onClickDocument: function(document) {
                     //this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
-                    // We assume here that all docs support the same location_types, 
+                    // We assume here that all docs support the same location_types,
                     // so we preserve it across doc change.
                     // But we can't make the same assumption about the view
                     //this.pane.changeAddressParts({'document': document, 'view': 'default', 'location': 'default'});
@@ -772,7 +772,7 @@
                     this.pane.changeAddressParts({location: location, location_type: location_type});
                 },
                 // TODO: that logic should move to Panel
-                // TODO: the list of available display settings should be 
+                // TODO: the list of available display settings should be
                 // determined by this class instead of the web api.
                 isDisplaySettingActive: function(setting) {
                     return !!this.display_settings_active[setting.slug];
@@ -796,7 +796,7 @@
                             }
                         });
                     }
-                    
+
                     var errors = this.pane.uimodel.errors;
                     if (errors && errors.length) {
                         ret += ' tv-error';
@@ -804,7 +804,7 @@
                             ret += ' tv-error-' + error.code;
                         });
                     }
-                                        
+
                     return ret;
                 },
                 canClosePane: function() {
@@ -814,14 +814,14 @@
                     return this.pane.closePane();
                 },
                 areLocationsHidden: function() {
-                    return (this.locations.length < 2 || this.is_synced); 
+                    return (this.locations.length < 2 || this.is_synced);
                 },
             },
         });
     }
-    
+
     // customisation
-    
+
     // ===============================================================
     // Initialisation
     // TODO: move this out
@@ -834,10 +834,10 @@
                     var $el = $(el);
                     $el.attr('data-sticky', '');
                     $el.addClass('sticky');
-                    
+
                     var $container = $el.parent().first();
                     $container.attr('data-sticky-container', '');
-                    
+
                     new window.Foundation.Sticky($el);
                 });
             },
@@ -847,7 +847,7 @@
                 $(el).foundation('destroy');
             },
         });
-        
+
         function bindZFDropdownMenu($el) {
             window.Vue.nextTick(function () {
                 var $opened_element = $el.find('.js-dropdown-active');
@@ -863,7 +863,7 @@
                 $el.on('mouseleave.text_viewer', function() {
                     $el.find('.js-dropdown-active li a').click();
                 });
-                
+
                 var options = {
                     closingTime: 50,
                     closeOnClick: true,
@@ -871,7 +871,7 @@
                     autoClose: true,
                     clickOpen: true,
                 };
-                
+
                 // let Foundation manage the bahaviour and appearance of the DD
                 new window.Foundation.DropdownMenu($el, options);
 
@@ -882,12 +882,12 @@
                 //$focused_filter.focus();
             });
         }
-        
+
         function unbindZFDropdownMenu($el) {
-            //console.log('UNBIND');
-            //console.log($el);
+//             console.log('UNBIND');
+//             console.log($el);
             $el.off('mouseleave.text_viewer');
-            $el.foundation('destroy');
+            $el.foundation('_destroy');
         }
 
         // When a scrollable dropdown opens, we scroll to the first active item.
@@ -904,7 +904,7 @@
                 $parent.parent().find('.list-filter input').focus();
             }
         });
-        
+
         window.Vue.directive('f-dropdown', {
             componentUpdated: function(el) {
                 // Foundation won't behave well with controls modified by Vue.js
@@ -915,7 +915,7 @@
                 // VERY Expensive: Foundation changes all other drop downs each time
                 // one selection is made in any other.
                 // So we destroy and reinitialise all the drop downs each time.
-                // Without this Vue.js loses track of the DOM because of 
+                // Without this Vue.js loses track of the DOM because of
                 // Foundation's excessive manipulations.
                 // TODO: implement the dropdown with Vue.js
                 if ($el.find('li:not([role])').length || ($el.find('.is-dropdown-submenu-parent').length === 0)) {
@@ -933,13 +933,13 @@
                 unbindZFDropdownMenu($(el));
             },
         });
-        
+
         var options = {
             //'on_create_pane': on_create_pane,
             //'on_create_viewer': on_create_viewer,
         };
         var viewer = window.text_viewer = new Viewer(options);
-        
+
         var layout = new window.Vue({
             el: '#text-viewer',
             data: viewer.uimodel,
@@ -949,7 +949,7 @@
                 }
             }
         });
-        
+
         // auto resize panes
         function autosize_text_viewer_contents($text_viewer) {
             var margin = 20;
@@ -957,36 +957,36 @@
             $('.text-chunk').css('height', height - margin);
             $('.pane-sidebar').css('height', height - margin);
         }
-        
+
         $(window).on('text_viewer.pane_count_change', function() {
             autosize_text_viewer_contents($('#text-viewer'));
         });
-        
+
         window.elastic_element(
-            $('#text-viewer'), 
+            $('#text-viewer'),
             autosize_text_viewer_contents,
-            300, 
+            300,
             $('footer').outerHeight()
         );
-        
+
         // viewer.load('Fr_20125/critical/section/588/');
-        
+
         // events
-        
+
         $('section.main').on('click', 'div[data-corresp]', function() {
             if (0) {
-                // GN: disabled the yellow highlight to help user find 
+                // GN: disabled the yellow highlight to help user find
                 // corresponding text units in // view.
                 // we don't support this for the moment.
                 $('section.main div[data-corresp]').removeClass('highlight');
                 $(this).addClass('highlight');
             }
         });
-        
+
         $('#btn-open-panel').on('click', function() {
             window.text_viewer.cloneAPane();
             return false;
         });
     });
-    
+
 }( window.TextViewer = window.TextViewer || {}, jQuery ));

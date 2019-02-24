@@ -336,12 +336,16 @@
         */
     }
 
-    &.hide-notes .note {
+    // Those classes are toggled by the display settings
+
+    &.hide-notes .tv-viewer-pane .tei-note.tei-type-note {
         display: none;
     }
 
-    &.hide-sics .tei-corr-popup {
-        display: none;
+    &.hide-sics .tv-viewer-pane .tei-corr {
+        &:before, &:after {
+            display: none;
+        }
     }
 
 }

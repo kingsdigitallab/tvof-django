@@ -197,8 +197,6 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     # now map the other way round
                     pair[0], pair[1] = pair[1], pair[0]
 
-        # print ret
-
         return ret
 
     def set_chunk_not_found_error(self, xpath=None):
@@ -288,22 +286,34 @@ class TextViewerAPITvof(TextViewerAPIXML):
             }
             ret['label'] = ret['label_long']
 
+        '''
+        <h4 class="tei-rubric">958.  Que la <span>a cele</span> dure bataille
+        n'eussent mestier coart chevalier<span class="tei-note tei-type-note
+        tei-subtype-source" data-tei-subtype="source"
+        id="edfr20125_00958_peach"><span class="note-text">Orose, <em>HaP</em>,
+        <a class="bibliography" href="Pavlidès_1989">Pavlidès (1989)</a></span>
+        </span></h4>
+
+        958. Que la a cele dure bataille n'eussent mestier coart chevalier
+        '''
+        rubric_hidden_classes = re.compile(
+            r'\b(bibliography|tei-note|tei-pb|tei-cb)\b'
+        )
         if location_type['slug'] == 'paragraph':
             # TODO: move this to a class?
-
-            #             print '-' * 40
-            #             print get_unicode_from_xml(xml)
-
             # id="edfr20125_00588"
             number = xml.attrib.get('id', '')
             number = re.sub(r'^.*_0*(\d+)$', r'\1', number)
 
             rubric = xml.find('.//*[@class="tei-rubric"]')
             if rubric is not None:
+
                 label_long = rubric.text
                 for e in rubric:
-                    if e.tag not in ['a', 'div']:
+                    if (rubric_hidden_classes.search(e.attrib.get('class', ''))
+                            is None):
                         label_long += get_unicode_from_xml(e)
+                    label_long += (e.tail or '')
                 label_long = self.compress_html(label_long)
 
                 # TODO: move this to TVOF
