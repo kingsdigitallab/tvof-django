@@ -82,9 +82,9 @@
             qs = {'p1': 'default/default/default/default'};
         }
 
-        $.each(qs, function(pane_slug, value) {
+        $.each(qs, function(pane_slug, address) {
             if (pane_slug && typeof self.panes !== 'undefined') {
-                self.createPaneFromAddress(value, pane_slug);
+                self.createPaneFromAddress(address, pane_slug);
             }
         });
     };
