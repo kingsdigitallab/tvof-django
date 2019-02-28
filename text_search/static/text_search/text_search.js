@@ -62,7 +62,13 @@ var app = new window.Vue({
         },
     },
     mounted: function() {
+        var self = this;
         this._call_api(window.location.search);
+        window.addEventListener('popstate', function(event) {
+            if (event.state) {
+                self._call_api(window.location.search, true);
+            }
+        }, false);
     },
     methods: {
         get_option_label_from_text: function(text, facet_key) {
@@ -137,7 +143,7 @@ var app = new window.Vue({
             var qs = $.param(query, true);
             this._call_api(qs);
         },
-        _call_api: function(qs) {
+        _call_api: function(qs, is_state_popped) {
             // send request to search api using querystring qs
 
             // http://localhost:8000/search/?page=1&selected_facets=lemma_exact%3Aa3
@@ -152,11 +158,13 @@ var app = new window.Vue({
             req.done(function(response) {
                 self.$set(self, 'response', response);
 
-                window.history.pushState(
-                    {},
-                    'Search',
-                    '?'+qs
-                );
+                if (!is_state_popped) {
+                    window.history.pushState(
+                        qs,
+                        'Search',
+                        '?'+qs
+                    );
+                }
 
                 self.set_state_from_query_string();
             });
