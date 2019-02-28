@@ -70,6 +70,13 @@ class AnnotatedToken(models.Model):
 
     @classmethod
     def _get_data_from_kwik_item(cls, item, token):
+        '''
+        Returns (dict) representation of item and token,
+            can be used to create an AnnotatedToken
+        Args:
+            item (ElementTree.Element): a kwic.xml item element
+            token (str): content of the string element under <item>
+        '''
         data = {
             k.lower(): (v or '')
             for k, v
@@ -89,5 +96,8 @@ class AnnotatedToken(models.Model):
             is_rubric=(len(location_parts) < 3),
             ** data
         )
+
+#         print(ret)
+#         exit()
 
         return ret

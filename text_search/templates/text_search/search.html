@@ -1,5 +1,5 @@
 {% extends "cms/rich_text_page.html" %}
-{% load wagtailcore_tags cms_tags %}
+{% load staticfiles wagtailcore_tags cms_tags %}
 
 {% block meta_title %}Search{% endblock %}
 
@@ -26,7 +26,7 @@
                     <thead>
                         <tr>
                             <th>Location</th>
-                            <th>Preceding</th>
+                            <th class="token-preceding">Preceding</th>
                             <th>Form<br>(Lemma)</th>
                             <th>Following</th>
                         </tr>
@@ -94,159 +94,6 @@
 
 {% block extra_js %}
     {{ block.super }}
-    <script src="https://cdn.jsdelivr.net/npm/vue@2.5.17/dist/vue.js"></script>
-
-    <script>
-
-        var api_url = '/api/v1/tokens/search/facets/?format=json';
-        var text_viewer_url = '/textviewer/?p1=';
-        var id_to_ms = {
-            'edfr20125': 'Fr20125',
-            'edRoyal20D1': 'Royal',
-        };
-
-        // This is a list of a facets to show on the front end
-        // the order is important and it contains a mapping
-        // between facet keys and display labels.
-        var ui_facets = [
-            {
-                key: 'manuscript',
-                label: 'Manuscript',
-            },
-            {
-                key: 'lemma',
-                label: 'Lemma',
-            },
-            {
-                key: 'token',
-                label: 'Form',
-            },
-            {
-                key: 'section_name',
-                label: 'Section',
-            },
-            {
-                key: 'pos',
-                label: 'Part of speech',
-            },
-            {
-                key: 'is_rubric',
-                label: 'Rubrication',
-            },
-        ];
-
-        // /api/v1/tokens/search/?format=json&page=2&lemma=dire
-        var app = new Vue({
-            el: '#tvof-search',
-            data: {
-                response: {
-                    fields: {},
-                    count: 0,
-                    objects: {
-                        count: 0,
-                        next: '',
-                        previous: '',
-                        results: [],
-                    },
-                },
-                query: {
-                    text: '',
-                    page: 1,
-                    facets: {}
-                },
-                ui_facets: ui_facets,
-            },
-            computed: {
-                last_page_index: function() {
-                    return Math.ceil(this.response.objects.count / 10.0);
-                },
-            },
-            mounted: function() {
-                this.call_api();
-            },
-            methods: {
-                get_option_label_from_text: function(text, facet_key) {
-                    ret = text;
-
-                    if (ret == 'edfr20125') ret = 'Fr 20125';
-                    if (ret == 'edRoyal20D1') ret = 'Royal 20 D1';
-                    if (facet_key == 'is_rubric') {
-                        if (ret == '0') ret = 'not rubricated';
-                        if (ret == '1') ret = 'rubricated';
-                    }
-
-                    return ret;
-                },
-                get_options: function(ui_facet) {
-                    var ret = [];
-
-                    ret = this.response.fields[ui_facet.key];
-
-                    return ret;
-                },
-                on_reset_search_text: function() {
-                    this.query.text = '';
-                    this.on_change_search_text();
-                },
-                is_option_selected: function(facet, option) {
-                    return (this.query.facets[facet+'__'+option.text]);
-                },
-                on_click_option: function(facet, option) {
-                    if (this.is_option_selected(facet, option)) {
-                        delete (this.query.facets)[facet+'__'+option.text];
-                    } else {
-                        this.query.facets[facet+'__'+option.text] = [facet, option.text];
-                    }
-                    this.query.page = 1;
-                    this.call_api()
-                },
-                on_click_token: function(hit) {
-                    // edfr20125_00598_08
-                    // => /textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
-                    var parts = hit.location.split('_');
-                    var url = text_viewer_url + id_to_ms[parts[0]] + '/interpretive/paragraph/' + parseInt(parts[1], 10);
-                    var win = window.open(url, '_blank');
-                    win.focus();
-                },
-                on_click_prev: function() {
-                    this.query.page -= 1;
-                    this.call_api();
-                },
-                on_click_next: function() {
-                    this.query.page += 1;
-                    this.call_api();
-                },
-                on_change_search_text: function() {
-                    this.query.page = 1;
-                    this.query.facets = {};
-                    this.call_api();
-                },
-                call_api: function() {
-                    var self = this;
-                    // query = $.extend(self.query, query);
-                    // var req = $.getJSON(url || api_url, url ? null : query);
-                    var query = {
-                        page: self.query.page,
-                        text: self.query.text,
-                        selected_facets: self.get_selected_facets()
-                    };
-
-                    var req = $.getJSON(api_url, $.param(query, true));
-                    req.done(function(response) {
-                        self.$set(self, 'response', response);
-                    });
-                },
-                get_selected_facets: function() {
-                    ret = []
-                    $.each(this.query.facets, function(k, v) {
-                        // lemma_exact%3AEneas
-                        ret.push(v[0]+'_exact:'+v[1]);
-                    });
-                    return ret;
-                }
-            }
-        })
-
-    </script>
+    <script src="{% static 'vue/dist/vue.js' %}"></script>
+    <script src="{% static 'text_search/text_search.js' %}"></script>
 {% endblock %}
-
