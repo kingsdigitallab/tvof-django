@@ -132,17 +132,7 @@ $(function() {
     // note type="gloss"
     // .tei-note.tei-type-gloss > .note-text
     // See Dropbox 15_conversion of XML for the TExt viewer.docx
-    var short_hands = {
-        'S':  'copiste',
-        'E':  'rédacteur médiéval',
-        'CE': 'rédacteur médiéval en cursive',
-        'R':  'rubricateur',
-        'D':  'annotateur D',
-        'LH': 'annotateur catalan?',
-        'LH2': 'annotateur X',
-        'U':  'inconnu',
-        '':   'indeterminée',
-    };
+    var short_hands = window.SETTINGS_JS.SHORT_HANDS;
 
     function get_hand_label(hand_acronym) {
         var ret = '';
@@ -232,13 +222,15 @@ $(function() {
                 get_hand_label($el.data('tei-hand')),
         };
     });
-    attach_tooltip('.tei-note.tei-type-gloss', function($el) {
-        return {
-            'title': 'Note de lecteur médiéval',
-            'body': $el.find('.note-text').html() + '<br>' +
-                    'Main: ' + get_hand_label($el.data('tei-resp'))
-        };
-    });
+    if ($('.tv-viewer-proofreader').length < 1) {
+        attach_tooltip('.tei-note.tei-type-gloss', function($el) {
+            return {
+                'title': 'Note de lecteur médiéval',
+                'body': $el.find('.note-text').html() + '<br>' +
+                        'Main: ' + get_hand_label($el.data('tei-resp'))
+            };
+        });
+    }
 
     var reveal = null;
     $('body').on('click', '.tei-note.tei-type-note', function(ev) {

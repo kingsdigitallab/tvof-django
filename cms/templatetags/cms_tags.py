@@ -67,6 +67,18 @@ def get_site_root(context):
     return context['request'].site.root_page
 
 
+@register.simple_tag(takes_context=True)
+def settings_js(context):
+    '''Returns a safe json dictionary of the vars in settings.SETTINGS_JS'''
+    ret = {}
+
+    from django.conf import settings
+    for var_name in settings.SETTINGS_JS:
+        ret[var_name] = getattr(settings, var_name, None)
+
+    return json(ret)
+
+
 @register.filter
 def short_para_id(para_id):
     return int(para_id.split('_')[-1])

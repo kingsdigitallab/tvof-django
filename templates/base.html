@@ -60,10 +60,14 @@
   <script src="{% static 'jquery/dist/jquery.min.js' %}"></script>
   <script src="{% static 'foundation-sites/dist/js/foundation.min.js' %}"></script>
 
+  <script>
+    window.SETTINGS_JS = {% settings_js %};
+  </script>
+
   {% compress js %}
-  <script src="{% static 'js-cookie/src/js.cookie.js' %}"></script>
-  <script src="{% static 'js/app.js' %}"></script>
-  {% block footer_scripts %}{% endblock %}
+      <script src="{% static 'js-cookie/src/js.cookie.js' %}"></script>
+      <script src="{% static 'js/app.js' %}"></script>
+      {% block footer_scripts %}{% endblock %}
   {% endcompress %}
 
   {% if not debug %}

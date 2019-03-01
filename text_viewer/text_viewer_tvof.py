@@ -446,7 +446,8 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
                 # ac-332.1: add location at the beginning of footnote
                 # chapter number.seg number, e.g. §526.14
-                note_location = get_location_string_from_note(note)
+                note_location = get_location_string_from_note(note) or\
+                    get_location_string_from_note(parent)
                 if note_location:
                     note_prefixes.append(
                         '<span class="note-location">{}</span>'.format(
@@ -457,11 +458,15 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 # ac-332.3: prepare tooltip/title for some notes
                 note_title = ''
                 if note_cat in ['A']:
+                    hand_code = note.attrib.get('data-tei-resp', '?')
+                    hand_name = settings.SHORT_HANDS.get(hand_code, hand_code)
                     note_title = 'Note de lecteur médiéval ' + \
-                        '(annotateur {}) : {}'.format(
-                            note.attrib.get('data-tei-resp', '?'),
+                        '(main: {}): '.format(
+                            hand_name,
                             note_text.text
                         )
+                    note_prefixes.append('<span>{}</span>'.format(note_title))
+                    note_title += note_text.text
 
                 # actually insert the handle and location at the beginning
                 # of the footnote.

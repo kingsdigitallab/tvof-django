@@ -488,3 +488,21 @@ KILN_CONTEXT_PATH = 'k/'
 # (e.g. 10.0.2.2) and replace localhost with it.
 # e.g. 'http://10.0.2.2:8180'
 KILN_BASE_URL = 'http://localhost:8180'
+
+SHORT_HANDS = {
+    'S':  'copiste',
+    'E':  'rédacteur médiéval',
+    'CE': 'rédacteur médiéval en cursive',
+    'R':  'rubricateur',
+    'D':  'annotateur D',
+    'LH': 'annotateur catalan?',
+    'LH2': 'annotateur X',
+    'U':  'inconnu',
+    '':   'indeterminée',
+}
+
+# List of settings vars exposed on client side as windows.SETTINGS_JS
+# see base.html and cms_tags.py
+SETTINGS_JS = [
+    'SHORT_HANDS',
+]
