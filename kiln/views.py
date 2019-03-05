@@ -1,25 +1,46 @@
 import xml.etree.ElementTree as ET
 
 import requests
-
+import re
 from django.conf import settings
 from django.http import JsonResponse
 from django.views.decorators.gzip import gzip_page
 from django.shortcuts import render
 from text_viewer.text_viewer import get_unicode_from_xml
-
-
-@gzip_page
-def process_to_json(request, kiln_url, template):
-    """Processes a request that needs to be sent to Kiln and returns a JSON
-    response."""
-    params = _send_to_kiln_and_process_response(request, kiln_url)
-
-    return JsonResponse(params)
+from text_viewer.kiln_requester import CachedRequesterKiln
 
 
 @gzip_page
 def process(request, kiln_url, template):
+    """Processes a request that needs to be sent to Kiln."""
+    params = {}
+
+    query_string = request.META.get('QUERY_STRING')
+    query_string = '?' + query_string if query_string else ''
+    url = 'backend/' + kiln_url + query_string
+
+    requester = CachedRequesterKiln()
+
+    res = requester.request(url)
+
+    template = 'kiln_page.html'
+    # TODO: send email / log if not found
+    status = 404
+    if res:
+        status = 200
+        # TODO: use ET instead of regepx
+        res = re.sub(r'(?musi)^.*<data[^>]*>', r'', res)
+        res = re.sub(r'(?musi)</data.*', r'', res)
+    params['content'] = res
+
+    if 'bibliography' in kiln_url.lower():
+        params['title'] = 'Bibliography'
+
+    return render(request, template, params, status=status)
+
+
+@gzip_page
+def __process(request, kiln_url, template):
     """Processes a request that needs to be sent to Kiln."""
     params = _send_to_kiln_and_process_response(request, kiln_url)
 
@@ -31,7 +52,7 @@ def process(request, kiln_url, template):
     return render(request, template, params)
 
 
-def _send_to_kiln_and_process_response(request, kiln_url):
+def __send_to_kiln_and_process_response(request, kiln_url):
     # Construct the URL for the request to the Kiln server.
     query_string = request.META.get('QUERY_STRING')
     query_string = '?' + query_string if query_string else ''
@@ -126,11 +147,11 @@ def _send_to_kiln_and_process_response(request, kiln_url):
     return params
 
 
-def is_manuscript_visible(manuscript_name):
+def __is_manuscript_visible(manuscript_name):
     return manuscript_name in ['Fr20125']
 
 
-def get_url_change_to(kiln_url, idx, manuscript_name, version_name):
+def __get_url_change_to(kiln_url, idx, manuscript_name, version_name):
     '''Produce a 'change-to' URL to switch a view to another version
         idx= 0 for first view, 1 for second view
         E.g. texts/Fr20125/semi-diplomatic/Fr20125/interpretive/, 0, MS1, V1
@@ -144,7 +165,7 @@ def get_url_change_to(kiln_url, idx, manuscript_name, version_name):
     return ret
 
 
-def get_processed_content(xml):
+def __get_processed_content(xml):
     '''translate the hyperlinks to the biblio entries
     <a href="Montorsi_2016a">Montorsi (2016a)</a>
     =>

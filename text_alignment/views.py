@@ -155,7 +155,7 @@ class Alignment(object):
             sections: []
         }
         '''
-        cache = caches['kiln']
+        cache = caches['text_alignment']
 
         # get from cache
         ret = None
@@ -166,9 +166,7 @@ class Alignment(object):
 
         # fetch alignment XML from Kiln
         kiln = CachedRequesterKiln()
-        url = '{}/backend/preprocess/alists/TVOF_para_alignment.xml'.format(
-            settings.KILN_BASE_URL
-        )
+        url = '/backend/preprocess/alists/TVOF_para_alignment.xml'
         res = kiln.request(url)
         if not res:
             raise Exception('Could not fetch alignment XML from Kiln')
@@ -427,7 +425,7 @@ class Alignment(object):
 
             if 0:
                 if last_location and\
-                    (get_nat_parts(last_location) > 
+                    (get_nat_parts(last_location) >
                      get_nat_parts(location)) and\
                         (last_location.strip('ab') != location):
 
@@ -635,14 +633,15 @@ class Alignment(object):
                 if c == 1:
                     ms_names[name] = candidates[0]
                 elif c > 2:
-                    print('WARNING: ambiguous MS name: %s (%s ?)' % \
-                        (name, ', '.join(candidates)))
+                    print('WARNING: ambiguous MS name: %s (%s ?)' %
+                          (name, ', '.join(candidates)))
                 elif c == 0:
                     print('INFO: MS name without number: %s' % name)
 
         # print '\n'.join(['%s | %s' % (k, v) for k, v in ms_names.items()])
 
         return ms_names
+
 
 '''
 http://localhost:9999/backend/preprocess/alists/TVOF_para_alignment.xml

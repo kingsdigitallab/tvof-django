@@ -277,8 +277,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
     def fetch_xml_from_kiln(self, kilnid, view):
         text_path = 'texts/{}/{}/'.format(kilnid, view)
-        kiln_base_url = settings.KILN_BASE_URL.strip('/')
-        url = kiln_base_url + '/backend/' + text_path
+        url = '/backend/' + text_path
 
         # Send the request to Kiln.
         # print url

@@ -60,13 +60,13 @@ CACHES = {
         'TIMEOUT': 30 * 60 * 60 * 24,
         # 'MAX_ENTRIES': 600,
     },
-    'kiln': {
+    'text_alignment': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'kiln'),
-        'TIMEOUT': 30 * 60 * 60 * 24,
-        # 'TIMEOUT': 1,
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'text_alignment'),
+        'TIMEOUT': 1 * 60 * 60,
+        # 'TIMEOUT': 0,
         # 'MAX_ENTRIES': 600,
-    }
+    },
 }
 
 CSRF_COOKIE_SECURE = True
@@ -488,6 +488,10 @@ KILN_CONTEXT_PATH = 'k/'
 # (e.g. 10.0.2.2) and replace localhost with it.
 # e.g. 'http://10.0.2.2:8180'
 KILN_BASE_URL = 'http://localhost:8180'
+
+KILN_STATIC_PATH = os.path.join(BASE_DIR, 'kiln_out')
+if not os.path.exists(KILN_STATIC_PATH):
+    os.makedirs(KILN_STATIC_PATH)
 
 # labels for the codes used in TEI to describe the text "hands"
 SHORT_HANDS = {
