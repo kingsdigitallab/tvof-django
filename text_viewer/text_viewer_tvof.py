@@ -431,6 +431,10 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
                 note_text = note.find('*[@class="note-text"]')
 
+                note_text.text = note_text.text or ''
+                if not note_text.text:
+                    print('WARNING: empty note ({})'.format(note_number))
+
                 note_prefixes = []
 
                 # the anchor / handle
