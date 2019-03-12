@@ -67,4 +67,5 @@ local.py
 logs/
 playbook.retry
 /static/
+kiln_out/
 

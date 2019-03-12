@@ -382,3 +382,19 @@
     }
 }
 
+/* Media queries */
+
+@media screen and (max-width: 640px) {
+    .text-chunk {
+        margin-right: 0;
+    }
+
+    .menu.pane-sidebar {
+        display: none;
+    }
+
+    footer {
+        display: none;
+        height: 0;
+    }
+}

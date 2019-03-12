@@ -179,6 +179,18 @@ nav {
     }
 }
 
+.controls {
+    .dropdown {
+        &.menu {
+            > li {
+                > a {
+                    padding: .5rem 1.5rem .5rem .5rem;
+                }
+            }
+        }
+    }
+}
+
 ul.sticky {
     background: $primary-color;
     margin-top: 0 !important;
