@@ -60,13 +60,13 @@ CACHES = {
         'TIMEOUT': 30 * 60 * 60 * 24,
         # 'MAX_ENTRIES': 600,
     },
-    'kiln': {
+    'text_alignment': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'kiln'),
-        'TIMEOUT': 30 * 60 * 60 * 24,
-        # 'TIMEOUT': 1,
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'text_alignment'),
+        'TIMEOUT': 1 * 60 * 60,
+        # 'TIMEOUT': 0,
         # 'MAX_ENTRIES': 600,
-    }
+    },
 }
 
 CSRF_COOKIE_SECURE = True
@@ -91,6 +91,9 @@ EMAIL_USE_TLS = False
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
 INSTALLED_APPS = (
+    # leave this ABOVE wagtail.search to avoid command conflicts (update_index)
+    'haystack',
+
     'wagtail.contrib.postgres_search',
 
     'wagtail.contrib.forms',
@@ -117,7 +120,6 @@ INSTALLED_APPS = (
     'compressor',
     'cms',
     'rest_framework',
-    'haystack',
 )
 
 INSTALLED_APPS += (
@@ -344,7 +346,7 @@ AC_USER = 0
 AC_TOKEN = ''
 AUTH_LDAP_REQUIRE_GROUP = (
     (
-        LDAPGroupQuery('cn=kdl-staff,' + LDAP_BASE_OU) | 
+        LDAPGroupQuery('cn=kdl-staff,' + LDAP_BASE_OU) |
         LDAPGroupQuery('cn=tvof,' + LDAP_BASE_OU)
     )
 )
@@ -366,11 +368,11 @@ HAYSTACK_CONNECTIONS = {
         'INCLUDE_SPELLING': True,
         'BATCH_SIZE': 100,
     },
-#     'default': {
-#         'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
-#         'URL': 'http://localhost:9200/',
-#         'INDEX_NAME': 'tvof_haystack',
-#     }
+    #     'default': {
+    #         'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
+    #         'URL': 'http://localhost:9200/',
+    #         'INDEX_NAME': 'tvof_haystack',
+    #     }
 }
 
 # -----------------------------------------------------------------------------
@@ -487,3 +489,25 @@ KILN_CONTEXT_PATH = 'k/'
 # e.g. 'http://10.0.2.2:8180'
 KILN_BASE_URL = 'http://localhost:8180'
 
+KILN_STATIC_PATH = os.path.join(BASE_DIR, 'kiln_out')
+if not os.path.exists(KILN_STATIC_PATH):
+    os.makedirs(KILN_STATIC_PATH)
+
+# labels for the codes used in TEI to describe the text "hands"
+SHORT_HANDS = {
+    'S':  'copiste',
+    'E':  'rédacteur médiéval',
+    'CE': 'rédacteur médiéval en cursive',
+    'R':  'rubricateur',
+    'D':  'annotateur D',
+    'LH': 'annotateur catalan?',
+    'LH2': 'annotateur X',
+    'U':  'inconnu',
+    '':   'indeterminée',
+}
+
+# List of settings vars exposed on client side as windows.SETTINGS_JS
+# see base.html and cms_tags.py
+SETTINGS_JS = [
+    'SHORT_HANDS',
+]

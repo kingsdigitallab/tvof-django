@@ -336,12 +336,16 @@
         */
     }
 
-    &.hide-notes .note {
+    // Those classes are toggled by the display settings
+
+    &.hide-notes .tv-viewer-pane .tei-note.tei-type-note {
         display: none;
     }
 
-    &.hide-sics .tei-corr-popup {
-        display: none;
+    &.hide-sics .tv-viewer-pane .tei-corr {
+        &:before, &:after {
+            display: none;
+        }
     }
 
 }
@@ -378,3 +382,19 @@
     }
 }
 
+/* Media queries */
+
+@media screen and (max-width: 640px) {
+    .text-chunk {
+        margin-right: 0;
+    }
+
+    .menu.pane-sidebar {
+        display: none;
+    }
+
+    footer {
+        display: none;
+        height: 0;
+    }
+}

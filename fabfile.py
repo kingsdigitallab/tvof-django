@@ -37,7 +37,7 @@ def find_project_name():
     ret = None
     for name in os.listdir(project_root):
         if os.path.exists(os.path.join(
-            project_root, name, 'settings', 'local.py')):
+                project_root, name, 'settings', 'local.py')):
             if ret is not None:
                 raise Exception('Ambiguous project name')
             ret = name
@@ -330,7 +330,7 @@ def collect_static(process=False):
     require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
 
     with cd(env.path):
-        run('npm i')
+        run('npm ci')
 
     if env.srvr in ['local', 'vagrant']:
         print(yellow('Do not run collect_static on local servers'))

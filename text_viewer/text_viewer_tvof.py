@@ -3,6 +3,7 @@ from .text_viewer import (get_unicode_from_xml,)
 import xml.etree.ElementTree as ET
 from django.conf import settings
 import re
+from django.utils.html import escape
 
 # TODO: move this to another package, outside of generic text_viewer
 '''
@@ -113,6 +114,9 @@ def get_location_translated(doc_from, location_from, doc_to):
 
 
 class TextViewerAPITvof(TextViewerAPIXML):
+    '''
+    Implementation of TextViewerXML specific to TVoF project and texts.
+    '''
 
     '''
     <div class="section" id="section-6" data-n="6" data-type="Eneas">
@@ -192,8 +196,6 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
                     # now map the other way round
                     pair[0], pair[1] = pair[1], pair[0]
-
-        # print ret
 
         return ret
 
@@ -279,27 +281,39 @@ class TextViewerAPITvof(TextViewerAPIXML):
         if location_type['slug'] == 'section':
             ret = {
                 'slug': xml.attrib.get('data-n', '0'),
-                'label_long': xml.attrib.get('data-n', '') + '. ' + 
+                'label_long': xml.attrib.get('data-n', '') + '. ' +
                 xml.attrib.get('data-type', 'untitled').replace('_', ' '),
             }
             ret['label'] = ret['label_long']
 
+        '''
+        <h4 class="tei-rubric">958.  Que la <span>a cele</span> dure bataille
+        n'eussent mestier coart chevalier<span class="tei-note tei-type-note
+        tei-subtype-source" data-tei-subtype="source"
+        id="edfr20125_00958_peach"><span class="note-text">Orose, <em>HaP</em>,
+        <a class="bibliography" href="Pavlidès_1989">Pavlidès (1989)</a></span>
+        </span></h4>
+
+        958. Que la a cele dure bataille n'eussent mestier coart chevalier
+        '''
+        rubric_hidden_classes = re.compile(
+            r'\b(bibliography|tei-note|tei-pb|tei-cb)\b'
+        )
         if location_type['slug'] == 'paragraph':
             # TODO: move this to a class?
-
-            #             print '-' * 40
-            #             print get_unicode_from_xml(xml)
-
             # id="edfr20125_00588"
             number = xml.attrib.get('id', '')
             number = re.sub(r'^.*_0*(\d+)$', r'\1', number)
 
             rubric = xml.find('.//*[@class="tei-rubric"]')
             if rubric is not None:
+
                 label_long = rubric.text
                 for e in rubric:
-                    if e.tag not in ['a', 'div']:
+                    if (rubric_hidden_classes.search(e.attrib.get('class', ''))
+                            is None):
                         label_long += get_unicode_from_xml(e)
+                    label_long += (e.tail or '')
                 label_long = self.compress_html(label_long)
 
                 # TODO: move this to TVOF
@@ -322,16 +336,74 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
         return ret
 
+    def prepare_print_version(self, chunk, notes_info):
+        self.transform_to_print_version(chunk)
+        self.extract_notes_from_chunk(chunk, notes_info)
+
+    def transform_to_print_version(self, chunk):
+        '''
+        Minor conversions of the XML for the print version
+        '''
+        # ac-337: make ms reading inline
+        # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
+        # =>
+        # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
+        # <span class="corr-sic">aidier aidier</span>
+        from .utils import findall_in_etree
+        for corr in findall_in_etree(chunk, './/span[@data-sic]'):
+            sic = ET.Element('span')
+            sic.set('class', 'corr-sic')
+            sic.text = corr['el'].attrib.get('data-sic')
+            sic.tail = (corr['el'].tail or '')
+            corr['el'].tail = ''
+            corr['parent'].insert(corr['index'] + 1, sic)
+
     def extract_notes_from_chunk(self, chunk, notes_info):
-        # TODO: move that to TVoF class
         '''
-            <div class="tei-note tei-type-note tei-subtype-source"
-                data-tei-subtype="source" id="edfr20125_0590_peach">
-                <div class="note-text">
-                    [...]HTML
-                </div>
+        Move notes to the end of the document (like footnotes).
+        Insert inline references from the text.
+        Both will link to each other.
+
+        Each notes receives a unique handle based on a sequential number
+        suffixed with a letter indicating the type of note:
+            S: source
+            T: trad(ition)
+            G: gen(eral)
+            A: gloss / note de lecteur medieval / annotation
+            ?: unspecified / unknown type
+
+        eg. of a note block to extract
+
+        <div class="tei-note tei-type-note tei-subtype-source"
+            data-tei-subtype="source" id="edfr20125_0590_peach">
+            <div class="note-text">
+                [...]HTML
             </div>
+        </div>
+
+        In the code below:
+            <note_ref> is the inline reference to the footnote;
+            <note> is the html of a footnote;
+            <notes_info> is populated with the list of all <note>s;
         '''
+
+        def get_location_string_from_note(note_xml):
+            '''
+            note_xml: a xml node for a note (see example above)
+            return §590 for id="edfr20125_0590_peach"
+            return §509.14 for id="edfr20125_0590_14_sycamore"
+            '''
+            ret = ''
+            noteid = note_xml.attrib.get('id', '')
+            if noteid:
+                parts = re.findall(
+                    r'_0*(\d+)(?=_)', noteid
+                )
+                if parts:
+                    ret = '§' + '.'.join(parts)
+
+            return ret
+
         # nested loop is b/c ET needs parent to remove child but
         # there is no .parent() function
         for parent in chunk.findall('.//*[@class="note-text"]/../..'):
@@ -354,11 +426,19 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 if note.attrib.get('data-tei-type', '') == 'gloss':
                     note_cat = 'A'  # as in annotation
 
+                # unique handle for that note
                 note_handle = '{}:{}'.format(note_number, note_cat)
 
-                # add a unique number at the beginning of the note
                 note_text = note.find('*[@class="note-text"]')
-                note_anchor = ET.fromstring(
+
+                note_text.text = note_text.text or ''
+                if not note_text.text:
+                    print('WARNING: empty note ({})'.format(note_number))
+
+                note_prefixes = []
+
+                # the anchor / handle
+                note_prefixes.append(
                     '<a class="note-anchor" id="note-{}" '
                     ' href="#ref-{}">{}</a>'.
                     format(
@@ -367,16 +447,46 @@ class TextViewerAPITvof(TextViewerAPIXML):
                         note_handle,
                     )
                 )
-                note_anchor.tail = note_text.text or ''
+
+                # ac-332.1: add location at the beginning of footnote
+                # chapter number.seg number, e.g. §526.14
+                note_location = get_location_string_from_note(note) or\
+                    get_location_string_from_note(parent)
+                if note_location:
+                    note_prefixes.append(
+                        '<span class="note-location">{}</span>'.format(
+                            note_location
+                        )
+                    )
+
+                # ac-332.3: prepare tooltip/title for some notes
+                note_title = ''
+                if note_cat in ['A']:
+                    hand_code = note.attrib.get('data-tei-resp', '?')
+                    hand_name = settings.SHORT_HANDS.get(hand_code, hand_code)
+                    note_title = 'Note de lecteur médiéval ' + \
+                        '(main: {}): '.format(
+                            hand_name,
+                            note_text.text
+                        )
+                    note_prefixes.append('<span>{}</span>'.format(note_title))
+                    note_title += note_text.text
+
+                # actually insert the handle and location at the beginning
+                # of the footnote.
+                for i, note_prefix in enumerate(note_prefixes):
+                    note_prefix = ET.fromstring(note_prefix)
+                    note_text.insert(i, note_prefix)
+                # make sure the note text appears after the inserted elements
+                note_prefix.tail = note_text.text or ''
                 note_text.text = ''
-                note_text.insert(0, note_anchor)
 
                 # print(ET.tostring(note_text))
 
                 # add note to the notes_info
                 notes_info['notes'].append(get_unicode_from_xml(note))
 
-                # replace note with an inline reference
+                # replace note in chunk with an inline reference
                 note.clear()
                 note_ref = note
                 note_ref.tail = note_tail
@@ -385,6 +495,8 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     .format(note_subtype)
                 note_ref.attrib['href'] = '#note-{}'.format(note_number)
                 note_ref.attrib['id'] = 'ref-{}'.format(note_number)
+                if note_title:
+                    note_ref.attrib['title'] = note_title
                 note_ref.text = note_handle
                 # print(note.tail)
                 # parent.remove(note)

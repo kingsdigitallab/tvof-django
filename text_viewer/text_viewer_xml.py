@@ -1,11 +1,15 @@
 from django.conf import settings
 from .text_viewer import (TextViewerAPI, get_unicode_from_xml,
-                         remove_xml_elements)
+                          remove_xml_elements)
 import xml.etree.ElementTree as ET
 import re
 
 
 class TextViewerAPIXML(TextViewerAPI):
+    '''
+    Implementation of TextViewerAPI that works with XML sources.
+    Should in principle remain independent from project and text.
+    '''
 
     location_types = [
     ]
@@ -225,7 +229,7 @@ class TextViewerAPIXML(TextViewerAPI):
                     location = location_from_chunk(chunk)
 
                 if self.is_print:
-                    self.extract_notes_from_chunk(chunk, notes_info)
+                    self.prepare_print_version(chunk, notes_info)
 
                 chunks.append(get_unicode_from_xml(chunk))
 
@@ -264,7 +268,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
         return ret
 
-    def extract_notes_from_chunk(self, chunk, notes_info):
+    def prepare_print_version(self, chunk, notes_info):
         pass
 
     def get_notational_conventions(self, xml, view_slug):
@@ -273,8 +277,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
     def fetch_xml_from_kiln(self, kilnid, view):
         text_path = 'texts/{}/{}/'.format(kilnid, view)
-        kiln_base_url = settings.KILN_BASE_URL.strip('/')
-        url = kiln_base_url + '/backend/' + text_path
+        url = '/backend/' + text_path
 
         # Send the request to Kiln.
         # print url

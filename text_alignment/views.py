@@ -155,7 +155,7 @@ class Alignment(object):
             sections: []
         }
         '''
-        cache = caches['kiln']
+        cache = caches['text_alignment']
 
         # get from cache
         ret = None
@@ -166,9 +166,7 @@ class Alignment(object):
 
         # fetch alignment XML from Kiln
         kiln = CachedRequesterKiln()
-        url = '{}/backend/preprocess/alists/TVOF_para_alignment.xml'.format(
-            settings.KILN_BASE_URL
-        )
+        url = '/backend/preprocess/alists/TVOF_para_alignment.xml'
         res = kiln.request(url)
         if not res:
             raise Exception('Could not fetch alignment XML from Kiln')
@@ -383,6 +381,9 @@ class Alignment(object):
 
         print(len(json(paras)))
 
+        # import pprint
+        # print(pprint.pprint(paras[0]))
+
         return ret
 
     def clean_para_ms(self, para_ms, mss, para, ms_name):
@@ -390,10 +391,12 @@ class Alignment(object):
         from encoding conventions and make them more explicit.
 
         Process location & absence information
+
+        see AC-335
         '''
 
         location_clean = (
-            para_ms.get('location') or 'none'
+            para_ms.get('location', 'none') or 'unspecified'
         ).lower().strip()
         if 'absent' in location_clean:
             para_ms['absent'] = 1
@@ -402,6 +405,8 @@ class Alignment(object):
             para_ms['absent'] = 2
         if location_clean == 'none':
             para_ms['absent'] = 3
+        if location_clean == 'unspecified':
+            para_ms['absent'] = 4
 
         if not para_ms.get('absent', False):
             mss[ms_name]['para_count'] += 1
@@ -420,7 +425,7 @@ class Alignment(object):
 
             if 0:
                 if last_location and\
-                    (get_nat_parts(last_location) > 
+                    (get_nat_parts(last_location) >
                      get_nat_parts(location)) and\
                         (last_location.strip('ab') != location):
 
@@ -628,14 +633,15 @@ class Alignment(object):
                 if c == 1:
                     ms_names[name] = candidates[0]
                 elif c > 2:
-                    print('WARNING: ambiguous MS name: %s (%s ?)' % \
-                        (name, ', '.join(candidates)))
+                    print('WARNING: ambiguous MS name: %s (%s ?)' %
+                          (name, ', '.join(candidates)))
                 elif c == 0:
                     print('INFO: MS name without number: %s' % name)
 
         # print '\n'.join(['%s | %s' % (k, v) for k, v in ms_names.items()])
 
         return ms_names
+
 
 '''
 http://localhost:9999/backend/preprocess/alists/TVOF_para_alignment.xml
