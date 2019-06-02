@@ -15,12 +15,6 @@ class Command(BaseCommand):
 
         known_action = False
 
-        if action == 'clear_cache':
-            known_action = True
-            from text_viewer.kiln_requester import CachedRequesterKiln
-            requester = CachedRequesterKiln()
-            requester.clear_disk_cache()
-
         if action == 'test_cache':
             known_action = True
             self.test_cache()
@@ -77,5 +71,5 @@ class Command(BaseCommand):
 
         rets = set(rets)
         if len(rets) > 1:
-            print('TEST FAILED: all responses should have the same length, ' +\
-                'we have %s' % repr(rets))
+            print('TEST FAILED: all responses should have the same length, ' +
+                  'we have %s' % repr(rets))

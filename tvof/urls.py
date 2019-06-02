@@ -22,12 +22,15 @@ urlpatterns = [
     path(r'{path}'.format(path=kiln_root), include('kiln.urls')),
 
     path(r'textviewer/', include('text_viewer.urls'), name='textviewer'),
-    path(r'lab/alignment/', include('text_alignment.urls'),
-        name='textalignment'),
+    path(
+        r'lab/alignment/', include('text_alignment.urls'), name='textalignment'
+    ),
     path(r'lab/patterns/', include('text_patterns.urls'), name='patterns'),
 
-    re_path(r'^documents/(\d+)/(.*)$',
-        tvof_views.serve_wagtail_doc, name='wagtaildocs_serve'),
+    re_path(
+        r'^documents/(\d+)/(.*)$',
+        tvof_views.serve_wagtail_doc, name='wagtaildocs_serve'
+    ),
 
     path(r'', include('text_search.urls')),
 ]

@@ -276,6 +276,7 @@ class TextViewerAPIXML(TextViewerAPI):
         return conventions
 
     def fetch_xml_from_kiln(self, kilnid, view):
+        '''Returns a ElementTree of the given manuscript view'''
         text_path = 'texts/{}/{}/'.format(kilnid, view)
         url = '/backend/' + text_path
 
