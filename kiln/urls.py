@@ -1,11 +1,11 @@
-from django.conf.urls import url
+from django.urls import re_path
 
 from .views import process
-#, process_to_json
 
 urlpatterns = [
-    #     url(r'^json/(?P<kiln_url>[^?]*)$', process_to_json,
-    #         {'template': 'process.html'}, name='kiln_to_json'),
-    url(r'^(?P<kiln_url>[^?]*)$', process,
-        {'template': 'process.html'}, name='kiln'),
+    re_path(
+        r'bibliography/?$', process,
+        {'kiln_url': 'bibliography', 'page_title': 'Bibliography'},
+        name='bibliography'
+    ),
 ]
