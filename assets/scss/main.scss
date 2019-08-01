@@ -476,7 +476,7 @@ ul.sticky {
 
 
     // GN: two types of verses:
-    // .cont (flows continuously within a p/div)
+    // ((.cont (flows continuously within a p/div)))
     // .lineated (line break after each verse line)
     // TODO: works but html & css need improvement
 
@@ -484,19 +484,29 @@ ul.sticky {
         display: inline;
     }
 
-    p.tei.lg.lineated {
+    p.tei.lg.lineated,
+    // ac-358.1 : cont is now dislayed line by line
+    p.tei.lg.cont,
+    {
         // https://stackoverflow.com/a/14832019/3748764
         display: table;
         position: relative;
     }
 
-    .lineated > span {
+    .lineated > span,
+    // ac-358.1 : cont is now displayed line by line
+    .cont > span
+    {
         display: block;
         padding-right: 3rem;
     }
+
+    // ac-358.1 : cont is now dislayed line by line
+    /*
     .cont span {
         display: inline;
     }
+    */
 
     //-----
 
@@ -681,7 +691,9 @@ ul.sticky {
     }
 
     // GN, ugly inherit, we should use span instead of sup in lineated verses
-    .lineated .verse-number {
+    .lineated .verse-number,
+    // ac-358.1 : cont is now dislayed line by line
+    .cont .verse-number {
         position: absolute;
         right: 0;
         font-size: inherit;

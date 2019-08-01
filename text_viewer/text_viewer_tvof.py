@@ -464,10 +464,13 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 if note_cat in ['A']:
                     hand_code = note.attrib.get('data-tei-resp', '?')
                     hand_name = settings.SHORT_HANDS.get(hand_code, hand_code)
+                    if note_text.text:
+                        note_text.text = ' « {} »'.format(
+                            note_text.text.replace('\n', ' ')
+                        )
                     note_title = 'Note de lecteur médiéval ' + \
-                        '(main: {}): '.format(
+                        '(main: {}):'.format(
                             hand_name,
-                            note_text.text
                         )
                     note_prefixes.append('<span>{}</span>'.format(note_title))
                     note_title += note_text.text

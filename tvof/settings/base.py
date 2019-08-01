@@ -505,7 +505,7 @@ SHORT_HANDS = {
     'D':  'annotateur D',
     'LH': 'annotateur catalan?',
     'LH2': 'annotateur X',
-    'U':  'inconnu',
+    'U':  'inconnue',
     '':   'indeterminée',
 }
 
