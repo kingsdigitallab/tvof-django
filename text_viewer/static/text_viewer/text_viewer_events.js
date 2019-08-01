@@ -226,7 +226,7 @@ $(function() {
         attach_tooltip('.tei-note.tei-type-gloss', function($el) {
             return {
                 'title': 'Note de lecteur médiéval',
-                'body': $el.find('.note-text').html() + '<br>' +
+                'body': '« ' + $el.find('.note-text').html() + ' » <br>' +
                         'Main: ' + get_hand_label($el.data('tei-resp'))
             };
         });
