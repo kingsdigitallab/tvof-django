@@ -4,6 +4,10 @@ var id_to_viewer_slug = {
     'edfr20125': 'Fr20125',
     'edRoyal20D1': 'Royal',
 };
+var id_to_label = {
+    'edfr20125': 'Fr20125',
+    'edRoyal20D1': 'Royal 20 D I',
+};
 
 // This is a list of a facets to show on the front end
 // the order is important and it contains a mapping
@@ -62,6 +66,22 @@ var app = new window.Vue({
         last_page_index: function() {
             return Math.ceil(this.response.objects.count / 10.0);
         },
+    },
+    filters: {
+        nice_location: function(location) {
+            var ret = location;
+            var parts = ret.split('_');
+            if (parts.length > 0) {
+                ret = id_to_label[parts[0]];
+                if (parts.length > 1) {
+                    ret += ' §' + parts[1].replace(/^0+/, '');
+                }
+                if (parts.length > 2) {
+                    ret += '.' + parts[2].replace(/^0+/, '');
+                }
+            }
+            return ret;
+        }
     },
     mounted: function() {
         var self = this;

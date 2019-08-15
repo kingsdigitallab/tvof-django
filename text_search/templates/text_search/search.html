@@ -47,7 +47,7 @@
                         <tr v-for="hit in response.objects.results">
                             <td>
                                 <a href="#" v-on:click.prevent="on_click_token(hit)">
-                                    {{ hit.location }}:
+                                    {{ hit.location|nice_location }}
                                 </a>
                             </td>
                             <td class="token-preceding">
