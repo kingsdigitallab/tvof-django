@@ -43,6 +43,7 @@ action:
 
         if not known_action:
             print('ERROR: unknown action "%s"' % action)
+            print(self.help)
         else:
             print('done')
 
@@ -81,15 +82,35 @@ action:
         tree = ET.parse(input_path)
         root = tree.getroot()
 
-        for sublist in root.iter('sublist'):
+        from tqdm import tqdm
+        import logging
+        logger = logging.getLogger('kwic')
+        logger.info('-'*20)
+        logger.info('import {}'.format(input_path))
+
+        stats = {
+            'forms': 0,
+            'tokens': 0,
+            'skipped': 0,
+        }
+        for sublist in tqdm(root.findall('sublist')):
             token = sublist.attrib.get('key')
+            stats['forms'] += 1
             for item in sublist.iter('item'):
                 string = item.find('string')
                 if string is not None:
                     string = (string.text or '').strip()
                 if not item.attrib.get('lemma', None):
-                    print('WARNING: missing lemma')
-                    print(item.attrib)
+                    logger.warning('missing lemma {} {}'.format(string or token, repr(item.attrib)))
+                    stats['skipped'] += 1
+                    continue
                 AnnotatedToken.update_or_create_from_kwik_item(
                     item, string or token
                 )
+                stats['tokens'] += 1
+
+        logger.info('imported {} forms, {} tokens; skipped {} tokens (due to missing lemma).'.format(
+            stats['forms'], stats['tokens'], stats['skipped']
+        ))
+        logger.info('done')
+        print('done. check the logs for details.')

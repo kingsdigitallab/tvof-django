@@ -160,6 +160,9 @@ LOGGING = {
         },
         'simple': {
             'format': '%(levelname)s %(message)s'
+        },
+        'timed': {
+            'format': '%(asctime)s %(levelname)s %(message)s'
         }
     },
     'handlers': {
@@ -168,6 +171,12 @@ LOGGING = {
             'class': 'logging.handlers.TimedRotatingFileHandler',
             'filename': os.path.join(LOGGING_ROOT, 'django.log'),
             'formatter': 'verbose'
+        },
+        'kwic': {
+            'level': 'INFO',
+            'class': 'logging.handlers.TimedRotatingFileHandler',
+            'filename': os.path.join(LOGGING_ROOT, 'kwic.log'),
+            'formatter': 'timed'
         },
         'console': {
             'level': 'DEBUG',
@@ -193,6 +202,11 @@ LOGGING = {
         'tvof': {
             'handlers': ['file'],
             'level': LOGGING_LEVEL,
+            'propagate': True
+        },
+        'kwic': {
+            'handlers': ['kwic'],
+            'level': logging.INFO,
             'propagate': True
         },
         'elasticsearch': {
@@ -285,7 +299,7 @@ STATICFILES_FINDERS = (
     'compressor.finders.CompressorFinder',
 )
 
-MEDIA_URL = STATIC_URL + 'media/'
+MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL.strip('/'))
 
 if not os.path.exists(MEDIA_ROOT):
