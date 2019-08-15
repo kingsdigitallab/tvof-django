@@ -523,8 +523,11 @@ SHORT_HANDS = {
     '':   'indeterminée',
 }
 
+SEARCH_PAGE_SIZES = [10, 20, 50, 100]
+
 # List of settings vars exposed on client side as windows.SETTINGS_JS
 # see base.html and cms_tags.py
 SETTINGS_JS = [
     'SHORT_HANDS',
+    'SEARCH_PAGE_SIZES',
 ]

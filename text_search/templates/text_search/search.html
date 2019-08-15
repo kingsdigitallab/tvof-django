@@ -15,13 +15,25 @@
         </div>
         <div class="row">
             <div class="search-results columns small-12 large-9 large-order-2">
-                <div class="search-pagination">
-                    {{ response.objects.count }} instances
-                    -
-                    <a v-if="response.objects.previous" href="#" class="button tiny" v-on:click.prevent="on_click_prev">&lt; Previous</a>
-                    Page {{ query.page }} / {{ last_page_index }}
-                    <a v-if="response.objects.next" href="#" class="button tiny" v-on:click.prevent="on_click_next">Next &gt;</a>
-                </div>
+                <ul class="pagination">
+                    <li>{{ response.objects.count }} instances</li>
+                    <li :class="{'pagination-previous': 1, 'disabled': !response.objects.previous}">
+                        <a href="#" v-on:click.prevent="on_click_prev" aria-label="Previous page" v-if="response.objects.previous">Previous</a>
+                        <template v-else>Previous</template>
+                    </li>
+                    <li>
+                        Page {{ query.page }} / {{ last_page_index }}
+                    </li>
+                    <li :class="{'pagination-next': 1, 'disabled': !response.objects.next}">
+                        <a href="#" v-on:click.prevent="on_click_next" aria-label="Next page" v-if="response.objects.next">Next</a>
+                        <template v-else>Next</template>
+                    </li>
+                    <li>
+                    <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size">
+                        <option v-for="size in page_sizes" :value="size">{{ size }}</option>
+                    </select>
+                    </li>
+                </ul>
                 <table class="search-hits">
                     <thead>
                         <tr>

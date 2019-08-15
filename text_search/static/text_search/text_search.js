@@ -1,6 +1,6 @@
 var api_url = '/api/v1/tokens/search/facets/?format=json';
 var text_viewer_url = '/textviewer/?p1=';
-var id_to_ms = {
+var id_to_viewer_slug = {
     'edfr20125': 'Fr20125',
     'edRoyal20D1': 'Royal',
 };
@@ -52,9 +52,11 @@ var app = new window.Vue({
         query: {
             text: '',
             page: 1,
-            facets: {}
+            facets: {},
+            page_size: 10,
         },
         ui_facets: ui_facets,
+        page_sizes: window.SETTINGS_JS.SEARCH_PAGE_SIZES,
     },
     computed: {
         last_page_index: function() {
@@ -91,6 +93,10 @@ var app = new window.Vue({
 
             return ret;
         },
+        on_change_page_size: function() {
+            this.query.page = 1;
+            this.call_api();
+        },
         on_reset_search_text: function() {
             this.query.text = '';
             this.on_change_search_text();
@@ -111,7 +117,7 @@ var app = new window.Vue({
             // edfr20125_00598_08
             // => /textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
             var parts = hit.location.split('_');
-            var url = text_viewer_url + id_to_ms[parts[0]] + '/interpretive/paragraph/' + parseInt(parts[1], 10);
+            var url = text_viewer_url + id_to_viewer_slug[parts[0]] + '/interpretive/paragraph/' + parseInt(parts[1], 10);
             var win = window.open(url, '_blank');
             win.focus();
         },
@@ -137,7 +143,8 @@ var app = new window.Vue({
             var query = {
                 page: self.query.page,
                 text: self.query.text,
-                selected_facets: self.get_selected_facets()
+                selected_facets: self.get_selected_facets(),
+                page_size: self.query.page_size,
             };
 
             var qs = $.param(query, true);
@@ -177,6 +184,7 @@ var app = new window.Vue({
             this.query.text = qs_params.get('text') || '';
             // TODO: deal with non-integer in the qs
             this.query.page = parseInt(qs_params.get('page') || 1);
+            this.query.page_size = parseInt(qs_params.get('page_size') || this.page_sizes[0]);
 
             var self = this;
             var facets_options = qs_params.getAll('selected_facets');

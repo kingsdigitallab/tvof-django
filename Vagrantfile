@@ -15,6 +15,8 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
 
   config.vm.network "private_network", ip: "192.168.20.17"
 
+  config.ssh.forward_agent = true
+
   config.vm.provider "virtualbox" do |provider|
     provider.customize ["modifyvm", :id, "--memory", "2048"]
     provider.name = "tvof"

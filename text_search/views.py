@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-
+from django.conf import settings
 from django.shortcuts import render
 from drf_haystack.serializers import (
     HaystackSerializer, HaystackFacetSerializer
@@ -11,7 +11,8 @@ from rest_framework import pagination
 from drf_haystack.mixins import FacetMixin
 from drf_haystack.filters import HaystackFacetFilter
 
-ITEMS_PER_PAGE = 10
+
+ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
 
 
 def search_view(request):
@@ -34,6 +35,8 @@ class AnnotatedTokenSerializer(HaystackSerializer):
 
 class AnnotatedTokenSearchPagination(pagination.PageNumberPagination):
     page_size = ITEMS_PER_PAGE
+    page_size_query_param = 'page_size'
+    max_page_size = settings.SEARCH_PAGE_SIZES[-1]
 
 
 class AnnotatedTokenSearchView(HaystackViewSet):
@@ -47,54 +50,52 @@ class AnnotatedTokenSearchView(HaystackViewSet):
 # ----------------------------
 
 
-if 1:
+'''
+Facet search is on separate /search/facets/ url.
+It returns facets and also the objects (hits).
+'''
 
-    '''
-    Facet search is on separate /search/facets/ url.
-    It returns facets and also the objects (hits).
-    '''
+class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
+    # True to returns the tokens / hits with the facets
+    serialize_objects = True
 
-    class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
-        # True to returns the tokens / hits with the facets
-        serialize_objects = True
+    class Meta:
+        # The `index_classes` attribute is a list of which search indexes
+        # we want to include in the search.
+        index_classes = [AnnotatedTokenIndex]
 
-        class Meta:
-            # The `index_classes` attribute is a list of which search indexes
-            # we want to include in the search.
-            index_classes = [AnnotatedTokenIndex]
+        field_options = {
+            'token': {
+                'limit': 10,
+            },
+            'lemma': {
+                'limit': 10,
+            },
+            'pos': {},
+            'manuscript': {},
+            'section_name': {},
+            'is_rubric': {},
+        }
+        fields = list(field_options.keys())
 
-            field_options = {
-                'token': {
-                    'limit': 10,
-                },
-                'lemma': {
-                    'limit': 10,
-                },
-                'pos': {},
-                'manuscript': {},
-                'section_name': {},
-                'is_rubric': {},
-            }
-            fields = list(field_options.keys())
+class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
+    index_models = [AnnotatedToken]
+    serializer_class = AnnotatedTokenSerializer
 
-    class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
-        index_models = [AnnotatedToken]
-        serializer_class = AnnotatedTokenSerializer
+    facet_serializer_class = AnnotatedTokenFacetSerializer
 
-        facet_serializer_class = AnnotatedTokenFacetSerializer
+    facet_filter_backends = [HaystackFacetFilter]
 
-        facet_filter_backends = [HaystackFacetFilter]
+    pagination_class = AnnotatedTokenSearchPagination
 
-        pagination_class = AnnotatedTokenSearchPagination
-
-        def get_queryset(self, *args, **kwargs):
-            '''
-            See https://github.com/inonit/drf-haystack/issues/114
-            We apply the normal search before faceting.
-            By default FacetMixin disables the normal search.
-            '''
-            ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
-            ret = self.filter_queryset(
-                ret.order_by('location', 'token_number')
-            )
-            return ret
+    def get_queryset(self, *args, **kwargs):
+        '''
+        See https://github.com/inonit/drf-haystack/issues/114
+        We apply the normal search before faceting.
+        By default FacetMixin disables the normal search.
+        '''
+        ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
+        ret = self.filter_queryset(
+            ret.order_by('location', 'token_number')
+        )
+        return ret
