@@ -64,7 +64,7 @@ var app = new window.Vue({
     },
     computed: {
         last_page_index: function() {
-            return Math.ceil(this.response.objects.count / 10.0);
+            return Math.ceil(this.response.objects.count / this.query.page_size);
         },
     },
     filters: {
@@ -138,6 +138,9 @@ var app = new window.Vue({
             // => /textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
             var parts = hit.location.split('_');
             var url = text_viewer_url + id_to_viewer_slug[parts[0]] + '/interpretive/paragraph/' + parseInt(parts[1], 10);
+            if (parts[2]) {
+                url += '/' + parts[2];
+            }
             var win = window.open(url, '_blank');
             win.focus();
         },

@@ -23,7 +23,8 @@ class TextViewerAPI(object):
     API: /document/view/location_type/location
     '''
 
-    part_levels = ['document', 'view', 'location_type', 'location']
+    part_levels = ['document', 'view', 'location_type', 'location',
+                   'sublocation']
 
     def __init__(self):
         # TODO: don't hard-code Kiln here
@@ -64,7 +65,7 @@ class TextViewerAPI(object):
             self.request_documents()
         elif level == 'document':
             self.request_document(parts['document'])
-        elif level == 'location':
+        elif level in ['location', 'sublocation']:
             best_match = False
             if request:
                 self.synced_with = request.GET.get('sw', None)
@@ -118,10 +119,10 @@ class TextViewerAPI(object):
         }
         '''
 
-        parts = (address or self.requested_address).split('/')[::-1]
+        parts = (address or self.requested_address).split('/')
         ret = {'level': 'root'}
         for level in self.part_levels:
-            ret[level] = parts.pop() if parts else ''
+            ret[level] = parts.pop(0) if parts else ''
             if ret[level]:
                 ret['level'] = level
 
