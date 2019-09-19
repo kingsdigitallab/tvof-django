@@ -20,26 +20,32 @@ def search_view(request):
 
 
 class AnnotatedTokenSerializer(HaystackSerializer):
+    '''Description of the structure of a search result (hit)'''
 
     class Meta:
-        # The `index_classes` attribute is a list of which search indexes
-        # we want to include in the search.
+        # list of search indexes to search on
         index_classes = [AnnotatedTokenIndex]
 
+        # fields to return for each hit
         fields = [
             'text',
-            'token', 'preceding', 'following', 'lemma', 'location',
-            'token_number', 'pos'
+            'token', 'lemma', 'pos',
+            'manuscript_number', 'para_number', 'seg_number', 'token_number',
+            'preceding', 'following',
         ]
 
 
 class AnnotatedTokenSearchPagination(pagination.PageNumberPagination):
+    '''Pagination parameters for the searches'''
     page_size = ITEMS_PER_PAGE
     page_size_query_param = 'page_size'
     max_page_size = settings.SEARCH_PAGE_SIZES[-1]
 
 
 class AnnotatedTokenSearchView(HaystackViewSet):
+    '''
+    UNUSED: Web API view for non-faceted search
+    '''
     index_models = [AnnotatedToken]
     serializer_class = AnnotatedTokenSerializer
 
@@ -55,13 +61,16 @@ Facet search is on separate /search/facets/ url.
 It returns facets and also the objects (hits).
 '''
 
+
 class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
+    '''
+    Description of the search facets
+    '''
     # True to returns the tokens / hits with the facets
     serialize_objects = True
 
     class Meta:
-        # The `index_classes` attribute is a list of which search indexes
-        # we want to include in the search.
+        # list of search indexes to search on
         index_classes = [AnnotatedTokenIndex]
 
         field_options = {
@@ -72,14 +81,22 @@ class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
                 'limit': 10,
             },
             'pos': {},
-            'manuscript': {},
-            'section_name': {},
+            'speech_cat': {},
+            'verse_cat': {},
+            'manuscript_number': {},
+            'section_number': {},
             'is_rubric': {},
         }
+        # list of all faceted fields
         fields = list(field_options.keys())
 
+
 class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
+    '''
+    Web API view for Faceted Search
+    '''
     index_models = [AnnotatedToken]
+
     serializer_class = AnnotatedTokenSerializer
 
     facet_serializer_class = AnnotatedTokenFacetSerializer
@@ -94,8 +111,19 @@ class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
         We apply the normal search before faceting.
         By default FacetMixin disables the normal search.
         '''
+        print(args)
+        print(kwargs)
+        print(dir(self))
         ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
-        ret = self.filter_queryset(
-            ret.order_by('location', 'token_number')
-        )
+        print(ret)
+        # ret = self.filter_queryset(
+        #     ret.order_by('location', 'token_number')
+        # )
+#         ret = self.filter_queryset(
+#             ret.order_by('following')
+#         )
+        # https://stackoverflow.com/questions/7399871/django-haystack-sort-results-by-title
+        ret = ret.order_by('id')
+        print(dir(ret))
+        print(ret.query)
         return ret

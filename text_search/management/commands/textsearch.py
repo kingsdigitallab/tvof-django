@@ -2,13 +2,14 @@
 from django.core.management.base import BaseCommand
 from text_search.models import AnnotatedToken
 from argparse import RawTextHelpFormatter
+import os
 
 
 class Command(BaseCommand):
     help = '''Toolbox for the Text Viewer app
 
 action:
-  import PATH_TO_KWIC.XML
+  import PATH_TO_KWIC.XML PATH_TO_TOKENISED.XML
     insert / update data from kwic.xml into AnnotatedToken table
     PATH_TO_KWIC.XML is the output from Lemming lemmatiser
   clear
@@ -58,12 +59,19 @@ action:
         if len(args) < 1:
             print('ERROR: please provide path to kwic.xml file')
             return
-        input_path = args[0]
-
-        import os
-        if not os.path.exists(input_path):
-            print('ERROR: input file not found, please check the path')
+        kwic_path = args[0]
+        if not os.path.exists(kwic_path):
+            print('ERROR: kwic file not found, please check the path')
             return
+
+        argi = 1
+        while len(args) > argi:
+            tokenised_path = args[argi]
+            print(tokenised_path)
+            if not os.path.exists(tokenised_path):
+                print('ERROR: tokenised file not found'
+                      ', please check the path "{}"'.format(tokenised_path))
+                return
 
         '''
         <?xml version="1.0" encoding="UTF-8"?>
@@ -79,14 +87,14 @@ action:
 
         # TODO: avoid reading the whole file at once, use a lot of memory
         import xml.etree.ElementTree as ET
-        tree = ET.parse(input_path)
+        tree = ET.parse(kwic_path)
         root = tree.getroot()
 
         from tqdm import tqdm
         import logging
         logger = logging.getLogger('kwic')
         logger.info('-'*20)
-        logger.info('import {}'.format(input_path))
+        logger.info('import {}'.format(kwic_path))
 
         stats = {
             'forms': 0,

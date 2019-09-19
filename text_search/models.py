@@ -1,23 +1,93 @@
 # -*- coding: utf-8 -*-
 
-
 from django.db import models
+from django.db.models.query import BaseIterable
+from xml.etree import ElementTree as ET
 
-# Create your models here.
+kwic_file_path = 'kwic-out.xml'
+
+
+class KwicQuerySet(models.QuerySet):
+    '''
+    A virtual QuerySet
+    that always returns all the entries
+    read from a kwic XML file (exported from Lemming).
+
+    The purpose is avoid storing all the kwic data in the database.
+
+    To directly move the entries from the kwic file into the search engine:
+
+    ./manage.py rebuild_index --noinput
+
+    Saves time and disk space.
+
+    Support for slicing results.
+    NO support for any filter, exlcude, order_by, etc.
+    '''
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self._count = None
+        self.next_mark = 0
+        self.generator = self.get_generator()
+
+    def _clone(self, *args, **kwargs):
+        ret = super()._clone(*args, **kwargs)
+        ret._count = self._count
+        ret.generator = self.generator
+        return ret
+
+    def get_generator(self):
+        next_mark = 0
+        # print('iterparse', id(self))
+        for event, elem in ET.iterparse(kwic_file_path, events=['start']):
+            if elem.tag == 'item':
+                item = elem
+            if elem.tag == 'string':
+                token = AnnotatedToken.new_from_kwik_item(item, elem)
+                next_mark += 1
+                # print(token.location, next_mark)
+                yield next_mark, token
+
+    def __iter__(self):
+        return self._read_from_kwic()
+
+    def _read_from_kwic(self):
+        # print('-' * 40)
+        # print('here', self.query.low_mark, self.query.high_mark)
+
+        if self.query.low_mark < self.next_mark:
+            # print('NEW', self.query.low_mark, self.next_mark)
+            self.generator = self.get_generator()
+            self.next_mark = 0
+
+        while self.query.high_mark > self.next_mark:
+            g = next(self.generator)
+            # print(g)
+            self.next_mark, token = g
+            # print(token, self.next_mark, self.query.low_mark)
+            if self.query.low_mark < self.next_mark:
+                # print(token.location)
+                yield token
+
+        # print('end', '#' * 40)
+
+    def count(self):
+        if self._count is None:
+            self._count = 0
+            for event, elem in ET.iterparse(kwic_file_path, events=['start']):
+                if elem.tag == 'string':
+                    self._count += 1
+            self._count = 1000
+
+        return self._count
 
 
 class AnnotatedToken(models.Model):
     '''
     Model for an entry in a Kwic received from Lemmings.
-    The only reason to have it in the DB is that it is required by
-    django-haystack.
-    This is however not scalable and a huge waste of resources.
-
-    TODO: we should instead keep the data in the XML and index it directly
-    from there rather than have a duplicated copy in the database.
-
-    TODO: create lemma, token and pos models? only benefit here is
-    space savings.
+    The only reason for this model is to feed django-haystack indexing.
+    Does NOT store anything, see KwicQuerySet.
 
     <kwiclist>
       <sublist key="·c·">
@@ -28,26 +98,19 @@ class AnnotatedToken(models.Model):
           <string>·c·</string>
         </item>
 
+    13MB for 45427 records, 5% of the total.
+    => 260MB for 1M tokens.
     '''
-    token = models.CharField(max_length=30)
-    preceding = models.CharField(max_length=200)
-    following = models.CharField(max_length=200)
-    lemma = models.CharField(max_length=30)
-    lemmapos = models.CharField(
-        max_length=30, null=False, blank=True, default='')
-    location = models.CharField(
-        max_length=20,
-        help_text='location id for the seg comprising this token'
-    )
-    token_number = models.IntegerField(
-        help_text='The sequential index of the token relative to the seg'
-    )
-    pos = models.CharField(max_length=30, help_text='part of speech')
+    from_kwic = KwicQuerySet.as_manager()
 
-    # these fields are derived from .location
-    manuscript = models.CharField(max_length=30, default='unspecified')
-    section_name = models.CharField(max_length=100, default='unspecified')
-    is_rubric = models.BooleanField(default=False)
+    type = models.CharField(max_length=30, default='')
+    string = models.CharField(max_length=30)
+    lemma = models.CharField(max_length=30)
+    pos = models.CharField(max_length=30)
+    location = models.CharField(max_length=30)
+    n = models.SmallIntegerField(default=0)
+    preceding = models.CharField(max_length=300)
+    following = models.CharField(max_length=300)
 
     @classmethod
     def update_or_create_from_kwik_item(cls, item, token):
@@ -62,42 +125,24 @@ class AnnotatedToken(models.Model):
         return ret
 
     @classmethod
-    def create_from_kwik_item(cls, item, token):
-        ret = AnnotatedToken(**cls._get_data_from_kwik_item(item, token))
+    def create_from_kwik_item(cls, item, string):
+        ret = cls.new_from_kwik_item(item, string)
         ret.save()
 
         return ret
 
     @classmethod
-    def _get_data_from_kwik_item(cls, item, token):
-        '''
-        Returns (dict) representation of item and token,
-            can be used to create an AnnotatedToken
-        Args:
-            item (ElementTree.Element): a kwic.xml item element
-            token (str): content of the string element under <item>
-        '''
-        data = {
-            k.lower(): (v or '')
+    def new_from_kwik_item(cls, item, string):
+        return cls(**cls._get_data_from_kwik_item(item, string))
+
+    @classmethod
+    def _get_data_from_kwik_item(cls, item, string):
+        ret = {
+            k.lower().strip(): (v or '').strip()
             for k, v
             in list(item.attrib.items())
-            if k not in ['type', 'n']
+            if hasattr(cls, k)
         }
-        location_parts = data['location'].split('_')
-
-        data['lemma'] = data.get('lemma', 'unspecified')[:30]
-        data['lemmapos'] = data.get('lemmapos', 'unspecified')[:30]
-
-        ret = dict(
-            token=token,
-            token_number=item.attrib['n'],
-            manuscript=location_parts[0],
-            section_name='section X',
-            is_rubric=(len(location_parts) < 3),
-            ** data
-        )
-
-#         print(ret)
-#         exit()
+        ret['string'] = (string.text or '').strip()
 
         return ret

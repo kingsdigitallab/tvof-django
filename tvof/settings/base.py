@@ -531,3 +531,5 @@ SETTINGS_JS = [
     'SHORT_HANDS',
     'SEARCH_PAGE_SIZES',
 ]
+
+HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'

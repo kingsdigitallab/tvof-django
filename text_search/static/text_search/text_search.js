@@ -1,12 +1,12 @@
 var api_url = '/api/v1/tokens/search/facets/?format=json';
 var text_viewer_url = '/textviewer/?p1=';
 var id_to_viewer_slug = {
-    'edfr20125': 'Fr20125',
-    'edRoyal20D1': 'Royal',
+    0: 'Fr20125',
+    1: 'Royal',
 };
 var id_to_label = {
-    'edfr20125': 'Fr20125',
-    'edRoyal20D1': 'Royal 20 D I',
+    0: 'Fr20125',
+    1: 'Royal 20 D I',
 };
 
 // This is a list of a facets to show on the front end
@@ -14,7 +14,7 @@ var id_to_label = {
 // between facet keys and display labels.
 var ui_facets = [
     {
-        key: 'manuscript',
+        key: 'manuscript_number',
         label: 'Manuscript',
     },
     {
@@ -68,17 +68,14 @@ var app = new window.Vue({
         },
     },
     filters: {
-        nice_location: function(location) {
-            var ret = location;
-            var parts = ret.split('_');
-            if (parts.length > 0) {
-                ret = id_to_label[parts[0]];
-                if (parts.length > 1) {
-                    ret += ' §' + parts[1].replace(/^0+/, '');
-                }
-                if (parts.length > 2) {
-                    ret += '.' + parts[2].replace(/^0+/, '');
-                }
+        nice_location: function(hit) {
+            var ret = '';
+            ret = id_to_label[hit.manuscript_number];
+            if (hit.para_number) {
+                ret += ' §' + hit.para_number;
+            }
+            if (hit.seg_number) {
+                ret += '.' + hit.seg_number;
             }
             return ret;
         }
@@ -97,11 +94,11 @@ var app = new window.Vue({
             var ret = text;
 
             // TODO: don't hardcode names here!
-            if (ret == 'edfr20125') ret = 'Fr 20125';
-            if (ret == 'edRoyal20D1') ret = 'Royal 20 D1';
+            if (facet_key == 'manuscript_number') {
+                ret = id_to_label[ret];
+            }
             if (facet_key == 'is_rubric') {
-                if (ret == '0') ret = 'not rubricated';
-                if (ret == '1') ret = 'rubricated';
+                ret = ret == 'true' ? 'rubricated' : 'not rubricated';
             }
 
             return ret;
@@ -136,13 +133,14 @@ var app = new window.Vue({
         on_click_token: function(hit) {
             // edfr20125_00598_08
             // => /textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
-            var parts = hit.location.split('_');
-            var url = text_viewer_url + id_to_viewer_slug[parts[0]] + '/interpretive/paragraph/' + parseInt(parts[1], 10);
-            if (parts[2]) {
-                url += '/' + parts[2];
+            var url = text_viewer_url + id_to_viewer_slug[hit.manuscript_number] + '/interpretive/paragraph/' + parseInt(hit.para_number, 10);
+            if (hit.seg_number) {
+                url += '/' + hit.seg_number;
             }
-            var win = window.open(url, '_blank');
-            win.focus();
+            if (url) {
+              var win = window.open(url, '_blank');
+              win.focus();
+            }
         },
         on_click_prev: function() {
             this.query.page -= 1;
