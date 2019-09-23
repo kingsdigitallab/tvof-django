@@ -7,105 +7,119 @@
 
 {% block main %}
 
-    {% verbatim %}
+  {% verbatim %}
     <div id="tvof-search">
         <div class="search-query hide-for-large">
-            <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
-            <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
+          <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
+          <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
         </div>
         <div class="row">
-            <div class="search-results columns small-12 large-9 large-order-2">
-                <ul class="pagination">
-                    <li>{{ response.objects.count }} instances</li>
-                    <li :class="{'pagination-previous': 1, 'disabled': !response.objects.previous}">
-                        <a href="#" v-on:click.prevent="on_click_prev" aria-label="Previous page" v-if="response.objects.previous">Previous</a>
-                        <template v-else>Previous</template>
-                    </li>
-                    <li>
-                        Page {{ query.page }} / {{ last_page_index }}
-                    </li>
-                    <li :class="{'pagination-next': 1, 'disabled': !response.objects.next}">
-                        <a href="#" v-on:click.prevent="on_click_next" aria-label="Next page" v-if="response.objects.next">Next</a>
-                        <template v-else>Next</template>
-                    </li>
-                    <li>
-                    <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size">
-                        <option v-for="size in page_sizes" :value="size">{{ size }}</option>
-                    </select>
-                    </li>
+          <div class="search-results columns small-12 large-9 large-order-2">
+
+            <ul class="pagination">
+              <li>{{ response.objects.count }} instances</li>
+              <li :class="{'pagination-previous': 1, 'disabled': !response.objects.previous}">
+                <a href="#" v-on:click.prevent="on_click_prev" aria-label="Previous page" v-if="response.objects.previous">Previous</a>
+                <template v-else>Previous</template>
+              </li>
+              <li>
+                Page {{ query.page }} / {{ last_page_index }}
+              </li>
+              <li :class="{'pagination-next': 1, 'disabled': !response.objects.next}">
+                <a href="#" v-on:click.prevent="on_click_next" aria-label="Next page" v-if="response.objects.next">Next</a>
+                <template v-else>Next</template>
+              </li>
+              <li>
+                <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size">
+                  <option v-for="size in page_sizes" :value="size">{{ size }}</option>
+                </select>
+              </li>
+
+            </ul>
+
+            <ul class="search-params undecorated-list">
+              <li>Sort by:
+                <select class="search-orders" v-model="query.order" v-on:change="on_change_order">
+                  <option v-for="order in orders" :value="order.key">{{ order.label }}</option>
+                </select>
+              </li>
+            </ul>
+
+            <table class="search-hits">
+              <thead>
+                <tr>
+                  <th>Location</th>
+                  <th class="token-preceding">Preceding</th>
+                  <th>Form<br>(Lemma)</th>
+                  <th>Following</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="hit in response.objects.results">
+                  <td>
+                    <a href="#" v-on:click.prevent="on_click_token(hit)">
+                      {{ hit|nice_location }}
+                    </a>
+                  </td>
+                  <td class="token-preceding">
+                    <a href="#" v-on:click.prevent="on_click_token(hit)">
+                      {{ hit.preceding }}
+                    </a>
+                  </td>
+                  <td>
+                    <a href="#" v-on:click.prevent="on_click_token(hit)">
+                      {{ hit.token }}
+                    </a><br>
+                    ({{ hit.lemma }})
+                  </td>
+                  <td>
+                    <a href="#" v-on:click.prevent="on_click_token(hit)">
+                      {{ hit.following }}
+                    </a>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <div class="search-facets columns small-12 large-3 large-order-1">
+
+            <div class="card show-for-large">
+              <div class="card-divider">
+                <h4>Lemma or Form</h4>
+              </div>
+              <div class="search-query">
+                <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
+                <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
+              </div>
+            </div>
+
+            <div class="card" v-for="ui_facet in ui_facets">
+              <div class="card-divider">
+                <h4>{{ ui_facet.label }}</h4>
+              </div>
+              <div class="card-section">
+                <ul class="search-facet undecorated-list">
+                  <li class="search-option" v-for="option in get_facet_options(ui_facet)">
+                    <a href="#" v-on:click.prevent="on_click_option(ui_facet.key, option)"
+                      :class="{'selected': is_option_selected(ui_facet.key, option)}"
+                      v-if="option.count > 0">
+                      {{ get_option_label_from_text(option.text, ui_facet.key) }} ({{ option.count }})
+                      <template v-if="is_option_selected(ui_facet.key, option)">X</template>
+                    </a>
+                  </li>
                 </ul>
-                <table class="search-hits">
-                    <thead>
-                        <tr>
-                            <th>Location</th>
-                            <th class="token-preceding">Preceding</th>
-                            <th>Form<br>(Lemma)</th>
-                            <th>Following</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="hit in response.objects.results">
-                            <td>
-                                <a href="#" v-on:click.prevent="on_click_token(hit)">
-                                    {{ hit|nice_location }}
-                                </a>
-                            </td>
-                            <td class="token-preceding">
-                                <a href="#" v-on:click.prevent="on_click_token(hit)">
-                                {{ hit.preceding }}
-                                </a>
-                            </td>
-                            <td>
-                                <a href="#" v-on:click.prevent="on_click_token(hit)">
-                                {{ hit.token }}
-                                </a><br>
-                                ({{ hit.lemma }})
-                            </td>
-                            <td>
-                                <a href="#" v-on:click.prevent="on_click_token(hit)">
-                                {{ hit.following }}
-                                </a>
-                                </td>
-                        </tr>
-                    </tbody>
-                </table>
+              </div>
             </div>
-            <div class="search-facets columns small-12 large-3 large-order-1">
-                <div class="card show-for-large">
-                    <div class="card-divider">
-                        <h4>Lemma or Form</h4>
-                    </div>
-                    <div class="search-query">
-                        <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
-                        <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
-                    </div>
-                </div>
-                <div class="card" v-for="ui_facet in ui_facets">
-                    <div class="card-divider">
-                        <h4>{{ ui_facet.label }}</h4>
-                    </div>
-                    <div class="card-section">
-                        <ul class="search-facet undecorated-list">
-                            <li class="search-option" v-for="option in get_options(ui_facet)">
-                                <a href="#" v-on:click.prevent="on_click_option(ui_facet.key, option)"
-                                    :class="{'selected': is_option_selected(ui_facet.key, option)}"
-                                    v-if="option.count > 0">
-                                    {{ get_option_label_from_text(option.text, ui_facet.key) }} ({{ option.count }})
-                                    <template v-if="is_option_selected(ui_facet.key, option)">X</template>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </div>
-            </div>
+          </div>
         </div>
     </div>
-    {% endverbatim %}
+  {% endverbatim %}
 
 {% endblock %}
 
 {% block extra_js %}
-    {{ block.super }}
-    <script src="{% static 'vue/dist/vue.js' %}"></script>
-    <script src="{% static 'text_search/text_search.js' %}"></script>
+  {{ block.super }}
+  <script src="{% static 'vue/dist/vue.js' %}"></script>
+  <script src="{% static 'text_search/text_search.js' %}"></script>
 {% endblock %}

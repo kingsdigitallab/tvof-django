@@ -1027,6 +1027,10 @@ footer {
         color: #c7d0e1;
         background: #3a4b6c;
     }
+
+    .pagination {
+      margin-bottom: 0;
+    }
 }
 
 .undecorated-list {
@@ -1084,5 +1088,9 @@ footer {
 }
 
 select.page-sizes {
-    width: 6em;
+    width: auto;
 }
+select.search-orders {
+    width: auto;
+}
+

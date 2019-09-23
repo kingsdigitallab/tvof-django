@@ -13,6 +13,7 @@ from drf_haystack.filters import HaystackFacetFilter
 
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
+ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
 
 
 def search_view(request):
@@ -111,19 +112,17 @@ class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
         We apply the normal search before faceting.
         By default FacetMixin disables the normal search.
         '''
-        print(args)
-        print(kwargs)
-        print(dir(self))
         ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
-        print(ret)
-        # ret = self.filter_queryset(
-        #     ret.order_by('location', 'token_number')
-        # )
-#         ret = self.filter_queryset(
-#             ret.order_by('following')
-#         )
-        # https://stackoverflow.com/questions/7399871/django-haystack-sort-results-by-title
-        ret = ret.order_by('id')
-        print(dir(ret))
-        print(ret.query)
+
+        # order by
+
+        order_key = self.request.GET.get(
+            ORDER_BY_QUERY_STRING_PARAMETER_NAME, ''
+        )
+        order_keys = list(settings.SEARCH_PAGE_ORDERS.keys())
+        if order_key not in order_keys:
+            order_key = order_keys[0]
+        order = settings.SEARCH_PAGE_ORDERS[order_key]
+        ret = ret.order_by(*order['fields'])
+
         return ret

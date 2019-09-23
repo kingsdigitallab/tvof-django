@@ -58,6 +58,7 @@ var app = new window.Vue({
             page: 1,
             facets: {},
             page_size: 10,
+            order: '',
         },
         ui_facets: ui_facets,
         page_sizes: window.SETTINGS_JS.SEARCH_PAGE_SIZES,
@@ -66,6 +67,17 @@ var app = new window.Vue({
         last_page_index: function() {
             return Math.ceil(this.response.objects.count / this.query.page_size);
         },
+        orders: function() {
+          // Returns the possible orders as an array
+          // Each item will have a key entry
+          var orders = window.SETTINGS_JS.SEARCH_PAGE_ORDERS;
+
+          return Object.keys(orders).map(function(key) {
+            var e = orders[key];
+            e.key = key;
+            return e;
+          });
+        }
     },
     filters: {
         nice_location: function(hit) {
@@ -103,12 +115,16 @@ var app = new window.Vue({
 
             return ret;
         },
-        get_options: function(ui_facet) {
+        get_facet_options: function(ui_facet) {
             var ret = [];
 
             ret = this.response.fields[ui_facet.key];
 
             return ret;
+        },
+        on_change_order: function() {
+            this.query.page = 1;
+            this.call_api();
         },
         on_change_page_size: function() {
             this.query.page = 1;
@@ -166,6 +182,7 @@ var app = new window.Vue({
                 text: self.query.text,
                 selected_facets: self.get_selected_facets(),
                 page_size: self.query.page_size,
+                order: self.query.order,
             };
 
             var qs = $.param(query, true);
@@ -207,6 +224,14 @@ var app = new window.Vue({
             this.query.page = parseInt(qs_params.get('page') || 1);
             this.query.page_size = parseInt(qs_params.get('page_size') || this.page_sizes[0]);
 
+            // order
+            this.query.order = qs_params.get('order') || '';
+            var orders = window.SETTINGS_JS.SEARCH_PAGE_ORDERS;
+            if (!orders[this.query.order]) {
+              this.query.order = Object.keys(orders)[0];
+            }
+
+            // Facets
             var self = this;
             var facets_options = qs_params.getAll('selected_facets');
             if (facets_options) {

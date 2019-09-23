@@ -1,3 +1,3 @@
 def haystack_id(obj):
-    ret = '{}_{}'.format(obj.location, obj.n)
+    ret = '{}.{:03d}'.format(obj.location, int(obj.n))
     return ret

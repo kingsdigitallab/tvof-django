@@ -15,6 +15,7 @@ import os
 
 from django_auth_ldap.config import LDAPGroupQuery
 from kdl_ldap.settings import *  # noqa
+from collections import OrderedDict
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -525,11 +526,34 @@ SHORT_HANDS = {
 
 SEARCH_PAGE_SIZES = [10, 20, 50, 100]
 
+'''
+Used by front end and backend to sort the search results.
+    [KEY, {
+        'label': DISPLAY_LABEL,
+        'fields': LIST_OF_HAYSTACK_FIELDS_TO_SORT_BY,
+    }],
+'''
+SEARCH_PAGE_ORDERS = OrderedDict([
+    ['location', {
+        'label': 'Location',
+        'fields': ['id'],
+    }],
+    ['previous', {
+        'label': 'Previous word',
+        'fields': ['previous_word', 'id'],
+    }],
+    ['next', {
+        'label': 'Next word',
+        'fields': ['next_word', 'id'],
+    }],
+])
+
 # List of settings vars exposed on client side as windows.SETTINGS_JS
 # see base.html and cms_tags.py
 SETTINGS_JS = [
     'SHORT_HANDS',
     'SEARCH_PAGE_SIZES',
+    'SEARCH_PAGE_ORDERS',
 ]
 
 HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'
