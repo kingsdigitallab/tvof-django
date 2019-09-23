@@ -548,12 +548,30 @@ SEARCH_PAGE_ORDERS = OrderedDict([
     }],
 ])
 
+HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'
+
+# ./manage.py textviewer sections
+SECTIONS_NAME = {
+    '1': 'Genesis',
+    '10': 'Rome II',
+    '11': 'Conquest of France by Caesar',
+    '2': 'Orient I',
+    '3': 'Thebes',
+    '4': 'Greeks and Amazons',
+    '5': 'Troy',
+    '5bis': 'Prose 5',
+    '6': 'Eneas',
+    '6bis': 'Assyrian Kings',
+    '7': 'Rome I',
+    '8': 'Orient II',
+    '9': 'Alexander'
+}
+
 # List of settings vars exposed on client side as windows.SETTINGS_JS
 # see base.html and cms_tags.py
 SETTINGS_JS = [
     'SHORT_HANDS',
     'SEARCH_PAGE_SIZES',
     'SEARCH_PAGE_ORDERS',
+    'SECTIONS_NAME',
 ]
-
-HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'

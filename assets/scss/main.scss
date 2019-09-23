@@ -1014,7 +1014,9 @@ footer {
         }
 
         .selected {
-            font-weight: bold;
+          padding: 0.2rem;
+          background-color: burlywood;
+          // font-weight: bold;
         }
     }
     .search-results {

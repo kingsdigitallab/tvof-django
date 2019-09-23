@@ -40,7 +40,8 @@ class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
     verse_cat = indexes.IntegerField(default=0, faceted=True)
     # these fields are derived from .location
     manuscript_number = indexes.IntegerField(faceted=True, stored=True)
-    section_number = indexes.CharField(faceted=True)
+    section_number = indexes.CharField(
+        model_attr='section_number', faceted=True)
     is_rubric = indexes.BooleanField(faceted=True)
 
     # Non-faceted (stored and indexed)
@@ -72,10 +73,6 @@ class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
         if len(parts) > 2:
             ret = int(parts[2])
         return ret
-
-    def prepare_section_number(self, token):
-        # TODO
-        return 'section X'
 
     def prepare_is_rubric(self, token):
         return token.type == 'rubric_item'

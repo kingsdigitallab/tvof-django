@@ -3,6 +3,7 @@
 from django.db import models
 from django.db.models.query import BaseIterable
 from xml.etree import ElementTree as ET
+from text_viewer.text_viewer_tvof import TextViewerAPITvof
 
 kwic_file_path = 'kwic-out.xml'
 
@@ -38,13 +39,20 @@ class KwicQuerySet(models.QuerySet):
         return ret
 
     def get_generator(self):
+        tvof_viewer = TextViewerAPITvof()
+        mss_sections = tvof_viewer.read_all_sections_data()
+
         next_mark = 0
         # print('iterparse', id(self))
         for event, elem in ET.iterparse(kwic_file_path, events=['start']):
             if elem.tag == 'item':
                 item = elem
             if elem.tag == 'string':
-                token = AnnotatedToken.new_from_kwik_item(item, elem)
+                token = AnnotatedToken.new_from_kwik_item(
+                    item,
+                    elem,
+                    mss_sections
+                )
                 next_mark += 1
                 # print(token.location, next_mark)
                 yield next_mark, token
@@ -111,6 +119,7 @@ class AnnotatedToken(models.Model):
     n = models.SmallIntegerField(default=0)
     preceding = models.CharField(max_length=300)
     following = models.CharField(max_length=300)
+    section_number = models.CharField(max_length=10)
 
     @classmethod
     def update_or_create_from_kwik_item(cls, item, token):
@@ -132,11 +141,13 @@ class AnnotatedToken(models.Model):
         return ret
 
     @classmethod
-    def new_from_kwik_item(cls, item, string):
-        return cls(**cls._get_data_from_kwik_item(item, string))
+    def new_from_kwik_item(cls, item, string, mss_sections=None):
+        return cls(**cls._get_data_from_kwik_item(
+            item, string, mss_sections
+        ))
 
     @classmethod
-    def _get_data_from_kwik_item(cls, item, string):
+    def _get_data_from_kwik_item(cls, item, string, mss_sections=None):
         ret = {
             k.lower().strip(): (v or '').strip()
             for k, v
@@ -144,5 +155,16 @@ class AnnotatedToken(models.Model):
             if hasattr(cls, k)
         }
         ret['string'] = (string.text or '').strip()
+
+        if mss_sections:
+            ms = 'Royal'
+            if 'edfr' in ret['location']:
+                ms = 'Fr20125'
+            for section in mss_sections[ms]:
+                if section['para'] > ret['location']:
+                    break
+                ret['section_number'] = section['number']
+
+        # print(ret)
 
         return ret

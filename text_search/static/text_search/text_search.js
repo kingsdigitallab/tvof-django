@@ -26,7 +26,7 @@ var ui_facets = [
         label: 'Form',
     },
     {
-        key: 'section_name',
+        key: 'section_number',
         label: 'Section',
     },
     {
@@ -111,6 +111,9 @@ var app = new window.Vue({
             }
             if (facet_key == 'is_rubric') {
                 ret = ret == 'true' ? 'rubricated' : 'not rubricated';
+            }
+            if (facet_key == 'section_number') {
+                ret = window.SETTINGS_JS.SECTIONS_NAME[ret];
             }
 
             return ret;
