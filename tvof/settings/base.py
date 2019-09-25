@@ -380,7 +380,7 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
         'URL': 'http://localhost:8983/solr/default',
         'TIMEOUT': 60 * 5,
-        'INCLUDE_SPELLING': True,
+        'INCLUDE_SPELLING': False,
         'BATCH_SIZE': 100,
     },
     #     'default': {

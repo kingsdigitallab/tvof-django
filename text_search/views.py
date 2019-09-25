@@ -9,7 +9,7 @@ from .models import AnnotatedToken
 from .search_indexes import AnnotatedTokenIndex
 from rest_framework import pagination
 from drf_haystack.mixins import FacetMixin
-from drf_haystack.filters import HaystackFacetFilter
+from drf_haystack.filters import HaystackFacetFilter, HaystackFilter
 
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
@@ -29,6 +29,8 @@ class AnnotatedTokenSerializer(HaystackSerializer):
 
         # fields to return for each hit
         fields = [
+            # although we don't need to return it,
+            # without 'text' any keyword search will return everything
             'text',
             'token', 'lemma', 'pos',
             'manuscript_number', 'para_number', 'seg_number', 'token_number',
@@ -102,15 +104,16 @@ class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
 
     facet_serializer_class = AnnotatedTokenFacetSerializer
 
-    facet_filter_backends = [HaystackFacetFilter]
+    # HaystackFilter to filter by text/keywords
+    # HaystackFacetFilter to filter by selected facets
+    facet_filter_backends = [HaystackFilter, HaystackFacetFilter]
 
     pagination_class = AnnotatedTokenSearchPagination
 
     def get_queryset(self, *args, **kwargs):
         '''
-        See https://github.com/inonit/drf-haystack/issues/114
-        We apply the normal search before faceting.
-        By default FacetMixin disables the normal search.
+        Apply order to the queryset.
+        The queryset will be filter after that (seefacet_filter_backends).
         '''
         ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
 
