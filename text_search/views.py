@@ -89,6 +89,8 @@ class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
             'manuscript_number': {},
             'section_number': {},
             'is_rubric': {},
+            'verse_cat': {},
+            'speech_cat': {},
         }
         # list of all faceted fields
         fields = list(field_options.keys())
@@ -113,7 +115,8 @@ class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
     def get_queryset(self, *args, **kwargs):
         '''
         Apply order to the queryset.
-        The queryset will be filter after that (seefacet_filter_backends).
+        The queryset will be filter after that
+        by facet_filter_backends[i].filter_queryset()
         '''
         ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
 

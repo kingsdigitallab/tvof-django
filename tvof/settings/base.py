@@ -575,3 +575,13 @@ SETTINGS_JS = [
     'SEARCH_PAGE_ORDERS',
     'SECTIONS_NAME',
 ]
+
+# kiln_out/received/kwic-out.xml
+TOKENISED_FILES_BASE_PATH = 'kiln_out/'
+TOKENISED_FILES = {
+    'fr': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'fr_tokenised.xml'),
+    'royal': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'royal_tokenised.xml'),
+}
+
+KWIC_FILE_PATH = os.path.join(
+    TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')

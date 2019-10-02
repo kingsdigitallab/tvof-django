@@ -37,6 +37,14 @@ var ui_facets = [
         key: 'is_rubric',
         label: 'Rubrication',
     },
+    {
+        key: 'verse_cat',
+        label: 'Verse',
+    },
+    {
+        key: 'speech_cat',
+        label: 'Speech',
+    },
 ];
 
 // /api/v1/tokens/search/?format=json&page=2&lemma=dire
@@ -114,6 +122,24 @@ var app = new window.Vue({
             }
             if (facet_key == 'section_number') {
                 ret = window.SETTINGS_JS.SECTIONS_NAME[ret];
+            }
+            if (facet_key == 'verse_cat') {
+                ret = {
+                  '0': 'prose',
+                  '1': 'verse',
+                  '2': 'lineated',
+                  '3': 'continuous',
+                  '4': 'unspecified',
+                }[ret];
+            }
+            if (facet_key == 'speech_cat') {
+                ret = {
+                  '0': 'not speech',
+                  '1': 'speech',
+                  '2': 'direct speech',
+                  '3': 'indirect speech',
+                  '4': 'speech (unspecified)',
+                }[ret];
             }
 
             return ret;

@@ -1,11 +1,56 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from django.db.models.query import BaseIterable
 from xml.etree import ElementTree as ET
 from text_viewer.text_viewer_tvof import TextViewerAPITvof
+from django.conf import settings
+import re
 
-kwic_file_path = 'kwic-out.xml'
+TOKEN_LIMIT = 10000
+
+
+def read_tokenised_data():
+    '''
+    <seg type="6" xml:id="edfr20125_00910_07"><lg type="octo_coup">
+        <lg type="lineated">
+            <l n="001"><w n="1">Q[ua]r</w> <w n="2">ele</w> <w n="3">fu</w> <w n="4">si</w> <w n="5">bien</w> <w n="6">plantee<pc rend="1" /></w></l>
+    '''
+
+    lg_types = {'lineated': 2, 'cont': 3, 'unspecified': 4}
+    sc_types = {'true': 2, 'false': 3, 'unspecified': 4}
+
+    ret = {}
+
+    for key, path in settings.TOKENISED_FILES.items():
+        with open(path, 'rt') as f:
+            content = f.read()
+            content = re.sub(r'\sxmlns="[^"]+"', '', content, count=1)
+
+        root = ET.fromstring(content)
+        xmlns = 'http://www.w3.org/XML/1998/namespace'
+
+        # lt = language_type/verse_cat
+        for seg in root.findall('.//seg[@type="6"]'):
+            seg_id = seg.attrib.get('{%s}id' % xmlns)
+            ret[seg_id] = {'verse_cat': 4}
+            for lg in seg.findall('.//lg'):
+                ret[seg_id]['verse_cat'] = lg_types.get(
+                    lg.attrib.get('type'), 4)
+
+        # sc = speech_cat
+        for seg in root.findall('.//seg'):
+            seg_id = seg.attrib.get('{%s}id' % xmlns)
+            for said in seg.findall('.//said'):
+                said_type = said.attrib.get(
+                    'direct', 'unspecified'
+                ).strip().lower()
+                for word in seg.findall('.//w'):
+                    seg_id_n = seg_id + '.' + word.attrib.get('n')
+                    ret[seg_id_n] = {
+                        'speech_cat': sc_types.get(said_type, 4)
+                    }
+
+    return ret
 
 
 class KwicQuerySet(models.QuerySet):
@@ -42,16 +87,21 @@ class KwicQuerySet(models.QuerySet):
         tvof_viewer = TextViewerAPITvof()
         mss_sections = tvof_viewer.read_all_sections_data()
 
+        tokenised_data = read_tokenised_data()
+
         next_mark = 0
         # print('iterparse', id(self))
-        for event, elem in ET.iterparse(kwic_file_path, events=['start']):
+        for event, elem in ET.iterparse(
+            settings.KWIC_FILE_PATH, events=['start']
+        ):
             if elem.tag == 'item':
                 item = elem
             if elem.tag == 'string':
                 token = AnnotatedToken.new_from_kwik_item(
                     item,
                     elem,
-                    mss_sections
+                    mss_sections,
+                    tokenised_data
                 )
                 next_mark += 1
                 # print(token.location, next_mark)
@@ -81,12 +131,16 @@ class KwicQuerySet(models.QuerySet):
         # print('end', '#' * 40)
 
     def count(self):
-        if self._count is None:
-            self._count = 0
-            for event, elem in ET.iterparse(kwic_file_path, events=['start']):
-                if elem.tag == 'string':
-                    self._count += 1
-            self._count = 1000
+        if TOKEN_LIMIT:
+            self._count = TOKEN_LIMIT
+        else:
+            if self._count is None:
+                self._count = 0
+                for event, elem in ET.iterparse(
+                    settings.KWIC_FILE_PATH, events=['start']
+                ):
+                    if elem.tag == 'string':
+                        self._count += 1
 
         return self._count
 
@@ -120,6 +174,10 @@ class AnnotatedToken(models.Model):
     preceding = models.CharField(max_length=300)
     following = models.CharField(max_length=300)
     section_number = models.CharField(max_length=10)
+    # 0: non-speech, 1: speech, 2: direct, 3: indirect
+    speech_cat = models.SmallIntegerField(default=0)
+    # 0: prose, 2: lineated, 3: continuous
+    verse_cat = models.SmallIntegerField(default=0)
 
     @classmethod
     def update_or_create_from_kwik_item(cls, item, token):
@@ -141,13 +199,15 @@ class AnnotatedToken(models.Model):
         return ret
 
     @classmethod
-    def new_from_kwik_item(cls, item, string, mss_sections=None):
+    def new_from_kwik_item(cls, item, string, mss_sections=None,
+                           tokenised_data=None):
         return cls(**cls._get_data_from_kwik_item(
-            item, string, mss_sections
+            item, string, mss_sections, tokenised_data
         ))
 
     @classmethod
-    def _get_data_from_kwik_item(cls, item, string, mss_sections=None):
+    def _get_data_from_kwik_item(cls, item, string, mss_sections=None,
+                                 tokenised_data=None):
         ret = {
             k.lower().strip(): (v or '').strip()
             for k, v
@@ -165,6 +225,15 @@ class AnnotatedToken(models.Model):
                     break
                 ret['section_number'] = section['number']
 
-        # print(ret)
+        if tokenised_data:
+            verse_cat_index = tokenised_data.get(
+                ret['location'], {}
+            ).get('verse_cat', 0)
+            ret['verse_cat'] = verse_cat_index
+
+            speech_cat_index = tokenised_data.get(
+                ret['location'] + '.' + ret['n'], {}
+            ).get('speech_cat', 0)
+            ret['speech_cat'] = speech_cat_index
 
         return ret

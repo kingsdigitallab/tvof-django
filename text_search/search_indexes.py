@@ -36,8 +36,11 @@ class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
     token = indexes.CharField(model_attr='string', faceted=True)
     lemma = indexes.CharField(model_attr='lemma', faceted=True)
     pos = indexes.CharField(model_attr='pos', faceted=True)
-    speech_cat = indexes.IntegerField(default=0, faceted=True)
-    verse_cat = indexes.IntegerField(default=0, faceted=True)
+    # 0: non-speech, 1: speech, 2: direct, 3: indirect
+    speech_cat = indexes.MultiValueField(faceted=True)
+    # 0: prose, 1: verse, 2: lineated, 3: continuous
+    verse_cat = indexes.MultiValueField(faceted=True)
+
     # these fields are derived from .location
     manuscript_number = indexes.IntegerField(faceted=True, stored=True)
     section_number = indexes.CharField(
@@ -54,6 +57,18 @@ class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
     # Indexed only
     previous_word = indexes.CharField(stored=False)
     next_word = indexes.CharField(stored=False)
+
+    def prepare_speech_cat(self, token):
+        ret = [0]
+        if token.speech_cat:
+            ret = [1, token.speech_cat]
+        return ret
+
+    def prepare_verse_cat(self, token):
+        ret = [0]
+        if token.verse_cat:
+            ret = [1, token.verse_cat]
+        return ret
 
     def prepare_previous_word(self, token):
         parts = token.preceding.split(' ')
