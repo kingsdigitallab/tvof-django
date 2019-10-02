@@ -6,8 +6,6 @@ from text_viewer.text_viewer_tvof import TextViewerAPITvof
 from django.conf import settings
 import re
 
-TOKEN_LIMIT = 10000
-
 
 def read_tokenised_data():
     '''
