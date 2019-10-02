@@ -585,3 +585,5 @@ TOKENISED_FILES = {
 
 KWIC_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
+
+SEARCH_INDEX_LIMIT = 0

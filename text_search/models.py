@@ -131,8 +131,8 @@ class KwicQuerySet(models.QuerySet):
         # print('end', '#' * 40)
 
     def count(self):
-        if TOKEN_LIMIT:
-            self._count = TOKEN_LIMIT
+        if settings.SEARCH_INDEX_LIMIT:
+            self._count = settings.SEARCH_INDEX_LIMIT
         else:
             if self._count is None:
                 self._count = 0
