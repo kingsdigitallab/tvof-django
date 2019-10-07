@@ -10,14 +10,66 @@ from .search_indexes import AnnotatedTokenIndex
 from rest_framework import pagination
 from drf_haystack.mixins import FacetMixin
 from drf_haystack.filters import HaystackFacetFilter, HaystackFilter
-
+from text_search.models import SearchFacet
+import re
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
 ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
 
 
+def transform_search_facets(content):
+
+    def replace(match):
+        ret = ''
+        for f in SearchFacet.objects.all():
+            if f.description:
+                # TODO: the id shoudl be asssigned to first heading instead...
+                ret += '<span id="{}">&nbsp;</span>'.format(f.key)
+                ret += f.description
+
+        return ret
+
+    content = re.sub(
+        r'<p>\s*\{\{\s*search_facets\s*\}\}\s*</p>', replace, content
+    )
+
+    return content
+
+
 def search_view(request):
-    return render(request, 'text_search/search.html', {'title': 'Search'})
+    facets = {
+        f.key: f
+        for f
+        in SearchFacet.objects.all()
+    }
+
+    search_facets = []
+    for f in settings.SEARCH_FACETS:
+        fdb = facets.get(f['key'], None)
+        search_facet = {
+            'key': f['key'],
+            'label': f['label'],
+            'href': '#',
+        }
+
+        if fdb:
+            if fdb.label:
+                search_facet['label'] = fdb.label
+            if fdb.tooltip:
+                search_facet['tooltip'] = fdb.tooltip
+            if fdb.description:
+                search_facet['href'] = settings.SEARCH_FACETS_INFO_PATH + \
+                    '#' + f['key']
+                if not search_facet.get('tooltip', None):
+                    search_facet['tooltip'] = 'Search help'
+
+        search_facets.append(search_facet)
+
+    context = {
+        'title': 'Search',
+        'search_facets': search_facets,
+    }
+    return render(request, 'text_search/search.html', context)
 
 
 class AnnotatedTokenSerializer(HaystackSerializer):
@@ -64,6 +116,8 @@ Facet search is on separate /search/facets/ url.
 It returns facets and also the objects (hits).
 '''
 
+# field_options settings.SEARCH_FACETS
+
 
 class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
     '''
@@ -77,23 +131,17 @@ class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
         index_classes = [AnnotatedTokenIndex]
 
         field_options = {
-            'token': {
-                'limit': 10,
-            },
-            'lemma': {
-                'limit': 10,
-            },
-            'pos': {},
-            'speech_cat': {},
-            'verse_cat': {},
-            'manuscript_number': {},
-            'section_number': {},
-            'is_rubric': {},
-            'verse_cat': {},
-            'speech_cat': {},
+            f['key']: {
+                'limit': f.get('limit', settings.SEARCH_FACET_LIMIT_DEFAULT)
+            }
+            for f
+            in settings.SEARCH_FACETS
         }
         # list of all faceted fields
         fields = list(field_options.keys())
+
+
+# print(AnnotatedTokenFacetSerializer.Meta.field_options)
 
 
 class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):

@@ -6,6 +6,35 @@ from text_viewer.text_viewer_tvof import TextViewerAPITvof
 from django.conf import settings
 import re
 
+from wagtail.core.fields import RichTextField
+from wagtail.admin.edit_handlers import FieldPanel
+
+
+class SearchFacet(models.Model):
+    key = models.CharField(max_length=32, unique=True, choices=[
+        (f['key'], f['key'])
+        for f
+        in settings.SEARCH_FACETS
+    ])
+    label = models.CharField(max_length=32, help_text='')
+    tooltip = models.CharField(max_length=255, blank=True)
+    description = RichTextField(blank=True)
+    display_rank = models.IntegerField(default=0)
+
+    panels = [
+        FieldPanel('key'),
+        FieldPanel('label'),
+        FieldPanel('tooltip'),
+        FieldPanel('description'),
+        FieldPanel('display_rank'),
+    ]
+
+    class Meta:
+        ordering = ['display_rank']
+
+    def __str__(self):
+        return self.label
+
 
 def read_tokenised_data():
     '''

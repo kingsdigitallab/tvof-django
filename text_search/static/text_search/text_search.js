@@ -12,40 +12,7 @@ var id_to_label = {
 // This is a list of a facets to show on the front end
 // the order is important and it contains a mapping
 // between facet keys and display labels.
-var ui_facets = [
-    {
-        key: 'manuscript_number',
-        label: 'Manuscript',
-    },
-    {
-        key: 'lemma',
-        label: 'Lemma',
-    },
-    {
-        key: 'token',
-        label: 'Form',
-    },
-    {
-        key: 'section_number',
-        label: 'Section',
-    },
-    {
-        key: 'pos',
-        label: 'Part of speech',
-    },
-    {
-        key: 'is_rubric',
-        label: 'Rubrication',
-    },
-    {
-        key: 'verse_cat',
-        label: 'Verse',
-    },
-    {
-        key: 'speech_cat',
-        label: 'Speech',
-    },
-];
+var ui_facets = window.SEARCH_FACETS;
 
 // /api/v1/tokens/search/?format=json&page=2&lemma=dire
 var app = new window.Vue({

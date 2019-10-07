@@ -122,5 +122,3 @@ class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
         then from DB to Solr, we directly load from XML to Solr.
         '''
         return self.get_model().from_kwic.all()
-
-        raise Exception('Not yet implemented')

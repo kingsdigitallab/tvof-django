@@ -112,6 +112,7 @@ INSTALLED_APPS = (
     'taggit',
     'modelcluster',
 
+    'wagtail.contrib.modeladmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -567,14 +568,6 @@ SECTIONS_NAME = {
     '9': 'Alexander'
 }
 
-# List of settings vars exposed on client side as windows.SETTINGS_JS
-# see base.html and cms_tags.py
-SETTINGS_JS = [
-    'SHORT_HANDS',
-    'SEARCH_PAGE_SIZES',
-    'SEARCH_PAGE_ORDERS',
-    'SECTIONS_NAME',
-]
 
 # kiln_out/received/kwic-out.xml
 TOKENISED_FILES_BASE_PATH = 'kiln_out/'
@@ -587,3 +580,57 @@ KWIC_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
 
 SEARCH_INDEX_LIMIT = 0
+
+SEARCH_FACETS = [
+    {
+        'key': 'manuscript_number',
+        'label': 'Manuscript',
+    },
+    {
+        'key': 'lemma',
+        'label': 'Lemma',
+        'limit': 10,
+    },
+    {
+        'key': 'token',
+        'label': 'Form',
+        'limit': 10,
+    },
+    {
+        'key': 'section_number',
+        'label': 'Section',
+    },
+    {
+        'key': 'pos',
+        'label': 'Part of speech',
+    },
+    {
+        'key': 'is_rubric',
+        'label': 'Rubrication',
+    },
+    {
+        'key': 'verse_cat',
+        'label': 'Verse',
+    },
+    {
+        'key': 'speech_cat',
+        'label': 'Speech',
+    },
+]
+
+SEARCH_FACET_LIMIT_DEFAULT = 1000
+
+SEARCH_FACETS_INFO_PATH = '/about/search'
+
+# List of settings vars exposed on client side as windows.SETTINGS_JS
+# see base.html and cms_tags.py
+SETTINGS_JS = [
+    'SHORT_HANDS',
+    'SEARCH_PAGE_SIZES',
+    'SEARCH_PAGE_ORDERS',
+    'SECTIONS_NAME',
+]
+
+WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
+    'text_search.views.transform_search_facets'
+]

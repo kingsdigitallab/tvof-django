@@ -33,6 +33,7 @@
                 <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size">
                   <option v-for="size in page_sizes" :value="size">{{ size }}</option>
                 </select>
+                per page
               </li>
 
             </ul>
@@ -97,6 +98,7 @@
             <div class="card" v-for="ui_facet in ui_facets">
               <div class="card-divider">
                 <h4>{{ ui_facet.label }}</h4>
+                <a v-if="ui_facet.tooltip" class="facet-info fa fa-info-circle" :href="ui_facet.href" :title="ui_facet.tooltip"></a>
               </div>
               <div class="card-section">
                 <ul class="search-facet undecorated-list">
@@ -120,6 +122,9 @@
 
 {% block extra_js %}
   {{ block.super }}
+  <script>
+    var SEARCH_FACETS = {{search_facets|json}};
+  </script>
   <script src="{% static 'vue/dist/vue.js' %}"></script>
   <script src="{% static 'text_search/text_search.js' %}"></script>
 {% endblock %}
