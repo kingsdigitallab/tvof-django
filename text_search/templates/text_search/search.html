@@ -6,7 +6,6 @@
 {% block title %}<h1>Search</h1>{% endblock %}
 
 {% block main %}
-
   {% verbatim %}
     <div id="tvof-search">
         <div class="search-query hide-for-large">
@@ -98,7 +97,11 @@
             <div class="card" v-for="ui_facet in ui_facets">
               <div class="card-divider">
                 <h4>{{ ui_facet.label }}</h4>
-                <a v-if="ui_facet.tooltip" class="facet-info fa fa-info-circle" :href="ui_facet.href" :title="ui_facet.tooltip"></a>
+                <a v-if="ui_facet.tooltip"
+                  data-tooltip-vue
+                  data-click-open="false" class="facet-info fa fa-info-circle has-tip right"
+                  :href="ui_facet.href" :title="ui_facet.tooltip">
+                </a>
               </div>
               <div class="card-section">
                 <ul class="search-facet undecorated-list">

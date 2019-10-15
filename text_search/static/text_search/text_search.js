@@ -75,6 +75,11 @@ var app = new window.Vue({
                 self._call_api(window.location.search, true);
             }
         }, false);
+
+        window.Vue.nextTick(function () {
+            // do something cool
+            $('.has-tip[data-tooltip-vue]').attr('data-tooltip', '').foundation();
+        });
     },
     methods: {
         get_option_label_from_text: function(text, facet_key) {
