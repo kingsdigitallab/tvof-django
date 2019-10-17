@@ -98,6 +98,8 @@ class KwicQuerySet(models.QuerySet):
     NO support for any filter, exlcude, order_by, etc.
     '''
 
+    max_count = settings.SEARCH_INDEX_LIMIT
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._count = None
@@ -117,7 +119,6 @@ class KwicQuerySet(models.QuerySet):
         tokenised_data = read_tokenised_data()
 
         next_mark = 0
-        # print('iterparse', id(self))
         for event, elem in ET.iterparse(
             settings.KWIC_FILE_PATH, events=['start']
         ):
@@ -131,7 +132,7 @@ class KwicQuerySet(models.QuerySet):
                     tokenised_data
                 )
                 next_mark += 1
-                # print(token.location, next_mark)
+
                 yield next_mark, token
 
     def __iter__(self):
@@ -158,8 +159,8 @@ class KwicQuerySet(models.QuerySet):
         # print('end', '#' * 40)
 
     def count(self):
-        if settings.SEARCH_INDEX_LIMIT:
-            self._count = settings.SEARCH_INDEX_LIMIT
+        if self.max_count:
+            self._count = self.max_count
         else:
             if self._count is None:
                 self._count = 0
@@ -170,6 +171,55 @@ class KwicQuerySet(models.QuerySet):
                         self._count += 1
 
         return self._count
+
+
+class AutocompleteTokenQuerySet(KwicQuerySet):
+
+    def get_generator(self):
+        found = {}
+        next_mark = 0
+
+        def get_yielded_token(token, lemma):
+            if lemma:
+                key = '{}_{}'.format(lemma, token)
+                if key not in found:
+                    found[key] = 1
+                    token = AutocompleteToken(
+                        lemma=lemma, token=token
+                    )
+                    return token
+
+            return None
+
+        for event, elem in ET.iterparse(
+            settings.KWIC_FILE_PATH, events=['start']
+        ):
+            yielded_token = None
+            text = (elem.text or '').strip()
+            if elem.tag == 'item':
+                lemma = elem.attrib.get('lemma', '')
+                yielded_token = get_yielded_token('', lemma)
+            if elem.tag == 'string':
+                token = text
+                yielded_token = get_yielded_token(token, lemma)
+
+            if yielded_token:
+                next_mark += 1
+                yield next_mark, yielded_token
+
+    def count(self):
+        return sum(1 for _ in self.get_generator())
+
+
+class AutocompleteToken(models.Model):
+    from_kwic = AutocompleteTokenQuerySet.as_manager()
+
+    token = models.CharField(max_length=30)
+    lemma = models.CharField(max_length=30)
+
+    def get_unique_id(self):
+        ret = '{}_{}'.format(self.lemma, self.token)
+        return ret
 
 
 class AnnotatedToken(models.Model):
@@ -263,4 +313,8 @@ class AnnotatedToken(models.Model):
             ).get('speech_cat', 0)
             ret['speech_cat'] = speech_cat_index
 
+        return ret
+
+    def get_unique_id(self):
+        ret = '{}.{:03d}'.format(self.location, int(self.n))
         return ret

@@ -1,5 +1,41 @@
 from haystack import indexes
-from .models import AnnotatedToken
+from .models import AnnotatedToken, AutocompleteToken
+
+
+class AutocompleteTokenIndex(indexes.SearchIndex, indexes.Indexable):
+    # this is required by haystack
+    # we also need to match the type of AnotatedTokenIndex.text
+    text = indexes.CharField(document=True)
+    autocomplete = indexes.EdgeNgramField()
+    token = indexes.CharField(model_attr='token')
+    lemma = indexes.CharField(model_attr='lemma')
+
+    def get_model(self):
+        '''We must override this method'''
+        return AutocompleteToken
+
+    def prepare_text(self, token):
+        # .text is necessary but unused, so we leave it blank to save space
+        return ''
+
+    def prepare_autocomplete(self, token):
+        return '{} {}'.format(token.token, token.lemma)
+
+    def index_queryset(self, using=None):
+        '''We must override this method'''
+        # return self._index_queryset_rdb(using=using)
+        return self._index_queryset_xml()
+
+    def _index_queryset_xml(self):
+        '''Returns the searchable models from XML files.
+        Why not using DB?
+        We already have the XML file created by partners for text viewer, etc.
+        We have no need so far for holding that specific data in the RDB,
+        only used for search.
+        So instead of loading a large amount of data from XML to DB,
+        then from DB to Solr, we directly load from XML to Solr.
+        '''
+        return self.get_model().from_kwic.all()
 
 
 class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):

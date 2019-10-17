@@ -526,6 +526,7 @@ SHORT_HANDS = {
 }
 
 SEARCH_PAGE_SIZES = [10, 20, 50, 100]
+AUTOCOMPLETE_PAGE_SIZES = [10, 20, 50, 100]
 
 '''
 Used by front end and backend to sort the search results.

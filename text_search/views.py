@@ -5,12 +5,15 @@ from drf_haystack.serializers import (
     HaystackSerializer, HaystackFacetSerializer
 )
 from drf_haystack.viewsets import HaystackViewSet
-from .models import AnnotatedToken
-from .search_indexes import AnnotatedTokenIndex
+from .models import AnnotatedToken, AutocompleteToken
+from .search_indexes import AnnotatedTokenIndex, AutocompleteTokenIndex
 from rest_framework import pagination
 from drf_haystack.mixins import FacetMixin
 from drf_haystack.filters import HaystackFacetFilter, HaystackFilter
 from text_search.models import SearchFacet
+from drf_haystack.filters import HaystackAutocompleteFilter
+from drf_haystack.serializers import HaystackSerializer
+from drf_haystack.viewsets import HaystackViewSet
 import re
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
@@ -141,9 +144,6 @@ class AnnotatedTokenFacetSerializer(HaystackFacetSerializer):
         fields = list(field_options.keys())
 
 
-# print(AnnotatedTokenFacetSerializer.Meta.field_options)
-
-
 class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
     '''
     Web API view for Faceted Search
@@ -178,5 +178,82 @@ class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
             order_key = order_keys[0]
         order = settings.SEARCH_PAGE_ORDERS[order_key]
         ret = ret.order_by(*order['fields'])
+
+        return ret
+
+
+# AUTOCOMPLETE
+
+
+class AutocompletePagination(pagination.PageNumberPagination):
+    '''Pagination parameters for the autocomplete'''
+    page_size = settings.AUTOCOMPLETE_PAGE_SIZES[0]
+    page_size_query_param = 'page_size'
+    max_page_size = settings.SEARCH_PAGE_SIZES[-1]
+
+
+class AutocompleteSerializer(HaystackSerializer):
+
+    class Meta:
+        index_classes = [AutocompleteTokenIndex]
+        fields = ['token', 'lemma', 'autocomplete']
+        ignore_fields = ['autocomplete']
+
+        # The `field_aliases` attribute can be used in order to alias a
+        # query parameter to a field attribute. In this case a query like
+        # /search/?q=oslo would alias the `q` parameter to the `autocomplete`
+        # field on the index.
+        field_aliases = {
+            'q': 'autocomplete'
+        }
+
+
+class AutocompleteFilter(HaystackAutocompleteFilter):
+    """
+    Customisation to allow autocomplete queries with a single letter.
+
+    autocomplete:a will not work woth solr
+    because the ngram field needs at least two characters.
+
+    So we turn that type of queries into token__startswith:a
+
+    Assumes that we have a single search term.
+    """
+
+    def process_filters(self, filters, queryset, view):
+        if not filters:
+            return filters
+
+        for i, child in enumerate(filters.children):
+            field_name, query = child
+            for word in query.split(' '):
+                if field_name == 'autocomplete' and len(word) == 1:
+                    filters.children[i] = ('token__startswith', query)
+
+        ret = super(AutocompleteFilter, self).process_filters(
+            filters, queryset, view
+        )
+        return ret
+
+
+class AutocompleteSearchViewSet(HaystackViewSet):
+
+    index_models = [AutocompleteToken]
+    serializer_class = AutocompleteSerializer
+    filter_backends = [AutocompleteFilter]
+
+    pagination_class = AutocompletePagination
+
+    def get_queryset(self, *args, **kwargs):
+        '''
+        Apply order to the queryset.
+        The queryset will be filter after that
+        by facet_filter_backends[i].filter_queryset()
+        '''
+        ret = super(AutocompleteSearchViewSet, self).get_queryset()
+
+        # order by
+
+        ret = ret.order_by('token')
 
         return ret
