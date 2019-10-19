@@ -254,6 +254,6 @@ class AutocompleteSearchViewSet(HaystackViewSet):
 
         # order by
 
-        ret = ret.order_by('token')
+        # ret = ret.order_by('token', 'lemma')
 
         return ret

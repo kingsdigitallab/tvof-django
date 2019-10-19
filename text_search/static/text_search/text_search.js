@@ -1,4 +1,5 @@
 var api_url = '/api/v1/tokens/search/facets/?format=json';
+var autocomplete_url = '/api/v1/tokens/autocomplete/?format=json&page_size=50';
 var text_viewer_url = '/textviewer/?p1=';
 var id_to_viewer_slug = {
     0: 'Fr20125',
@@ -13,6 +14,18 @@ var id_to_label = {
 // the order is important and it contains a mapping
 // between facet keys and display labels.
 var ui_facets = window.SEARCH_FACETS;
+
+function get_text_from_suggestion(r) {
+    var ret = '';
+    if (r.token) {
+        ret = r.token + ' (' + r.lemma + ')';
+    } else {
+        ret = r.lemma + ' [lemma]';
+    }
+    return ret;
+}
+
+window.Vue.use(window.VueAutosuggest);
 
 // /api/v1/tokens/search/?format=json&page=2&lemma=dire
 var app = new window.Vue({
@@ -35,10 +48,15 @@ var app = new window.Vue({
             page_size: 10,
             order: '',
         },
+        suggestions: [],
+        suggestion_closed: true,
         ui_facets: ui_facets,
         page_sizes: window.SETTINGS_JS.SEARCH_PAGE_SIZES,
     },
     computed: {
+        autosuggestions: function() {
+          return [{data: this.suggestions}];
+        },
         last_page_index: function() {
             return Math.ceil(this.response.objects.count / this.query.page_size);
         },
@@ -69,17 +87,22 @@ var app = new window.Vue({
     },
     mounted: function() {
         var self = this;
+
+        // initial search request
         this._call_api(window.location.search);
+
+        // back button trigger a new search
         window.addEventListener('popstate', function(event) {
             if (event.state) {
                 self._call_api(window.location.search, true);
             }
         }, false);
 
+        // foundation tooltips
         window.Vue.nextTick(function () {
-            // do something cool
             $('.has-tip[data-tooltip-vue]').attr('data-tooltip', '').foundation();
         });
+
     },
     methods: {
         get_option_label_from_text: function(text, facet_key) {
@@ -171,6 +194,37 @@ var app = new window.Vue({
             this.query.page = 1;
             this.query.facets = {};
             this.call_api();
+        },
+        on_keyup_search_text: function(e) {
+            this.fetch_suggestions(e.target.value);
+        },
+        on_selected_suggestion: function(suggestion) {
+            // when a search text is submitted by the user.
+            // (they want to update search results).
+            // suggestion is null if user press enter in input
+            // instead of selecting a suggestion.
+            if (suggestion) {
+                var item = suggestion.item;
+                this.query.text = item.token || item.lemma;
+            }
+            // window.console.log(suggestion);
+            this.on_change_search_text();
+        },
+        fetch_suggestions: function(search_text) {
+            var self = this;
+            var qs = {
+                q: search_text
+            };
+            var req = $.getJSON(autocomplete_url, qs);
+            req.done(function(response) {
+                self.$set(self, 'suggestions', response.results);
+            });
+        },
+        get_suggestion_value: function(suggestion) {
+            // returns the string to set in the input box
+            // when the user highlights a suggestion
+            var item = suggestion.item;
+            return item.token || item.lemma;
         },
         call_api: function() {
             // send request to search api using data.query

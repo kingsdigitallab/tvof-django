@@ -6,8 +6,10 @@
 {% block title %}<h1>Search</h1>{% endblock %}
 
 {% block main %}
+
   {% verbatim %}
     <div id="tvof-search">
+
         <div class="search-query hide-for-large">
           <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
           <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
@@ -88,10 +90,39 @@
               <div class="card-divider">
                 <h4>Lemma or Form</h4>
               </div>
-              <div class="search-query">
+              <!-- <div class="search-query">
                 <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
                 <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
+              </div> -->
+              <div class="card-section">
+                <vue-autosuggest
+                    :suggestions="autosuggestions"
+                    :input-props="{id:'autosuggest-input', placeholder:'dire or dirai'}"
+                    :get-suggestion-value="get_suggestion_value"
+                    @input="fetch_suggestions"
+                    v-model="query.text"
+                    @selected="on_selected_suggestion"
+                    @blur="suggestion_closed = true"
+                    @focus="suggestion_closed = false"
+                    :should-render-suggestions="(size, loading) => size >= 0 && !loading && !suggestion_closed"
+                >
+                  <template slot-scope="{suggestion}">
+                    <span class="suggestion">
+                      <template v-if="suggestion.item.token">
+                        {{suggestion.item.token}} ({{suggestion.item.lemma}})
+                      </template>
+                      <template v-else>
+                        {{suggestion.item.lemma}} [LEMMA]
+                      </template>
+                    </span>
+                  </template>
+                </vue-autosuggest>
               </div>
+
+              <!-- <div class="card-section">
+                <select class="select2" name="state">
+                </select>
+              </div> -->
             </div>
 
             <div class="card" v-for="ui_facet in ui_facets">
@@ -129,5 +160,6 @@
     var SEARCH_FACETS = {{search_facets|json}};
   </script>
   <script src="{% static 'vue/dist/vue.js' %}"></script>
+  <script src="{% static 'vue-autosuggest/dist/vue-autosuggest.js' %}"></script>
   <script src="{% static 'text_search/text_search.js' %}"></script>
 {% endblock %}
