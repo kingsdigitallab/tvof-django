@@ -164,66 +164,76 @@ class KwicQuerySet(models.QuerySet):
         # print('end', '#' * 40)
 
     def count(self):
-        if self.max_count:
-            self._count = self.max_count
-        else:
-            if self._count is None:
-                self._count = 0
-                for event, elem in ET.iterparse(
-                    settings.KWIC_FILE_PATH, events=['start']
-                ):
-                    if elem.tag == 'string':
-                        self._count += 1
+        if self._count is not None:
+            return self._count
+
+        self._count = 0
+        if self.max_count != 0:
+            for _, elem in ET.iterparse(
+                settings.KWIC_FILE_PATH, events=['start']
+            ):
+                if elem.tag == 'string':
+                    self._count += 1
+                    if (self.max_count > -1) and (self._count >= self.max_count):
+                        break
 
         return self._count
 
 
-class AutocompleteTokenQuerySet(KwicQuerySet):
+class AutocompleteFormQuerySet(KwicQuerySet):
 
     def get_generator(self):
         found = {}
         next_mark = 0
 
-        def get_yielded_token(token, lemma):
+        def normalise(string):
+            return (string or '').strip().lower()
+
+        def get_new_doc(form, lemma):
+            '''
+            Returns a AutocompleteForm for the given (form, lemma) pair.
+            Returns None if that pair was seen before (see found).
+            '''
+            ret = None
+
             if lemma:
-                key = '{}_{}'.format(lemma, token)
+                key = '{}_{}'.format(lemma, form)
                 if key not in found:
                     found[key] = 1
-                    token = AutocompleteToken(
-                        lemma=lemma, token=token
-                    )
-                    return token
+                    ret = AutocompleteForm(lemma=lemma, form=form)
 
-            return None
+            return ret
 
-        for event, elem in ET.iterparse(
-            settings.KWIC_FILE_PATH, events=['start']
-        ):
-            yielded_token = None
-            text = (elem.text or '').strip()
+        # parse the kwic file for pairs of (token, lemma)
+        # Note: kwic contains tokens,
+        # but we normalise them into forms (lowercase).
+        file_path = settings.KWIC_FILE_PATH
+        for _, elem in ET.iterparse(file_path, events=['start']):
+            doc = None
             if elem.tag == 'item':
-                lemma = elem.attrib.get('lemma', '')
-                yielded_token = get_yielded_token('', lemma)
+                lemma = normalise(elem.attrib.get('lemma', ''))
+                # we issue one doc for the lemma itself
+                doc = get_new_doc('', lemma)
             if elem.tag == 'string':
-                token = text
-                yielded_token = get_yielded_token(token, lemma)
+                form = normalise(elem.text)
+                doc = get_new_doc(form, lemma)
 
-            if yielded_token:
+            if doc:
                 next_mark += 1
-                yield next_mark, yielded_token
+                yield next_mark, doc
 
     def count(self):
         return sum(1 for _ in self.get_generator())
 
 
-class AutocompleteToken(models.Model):
-    from_kwic = AutocompleteTokenQuerySet.as_manager()
+class AutocompleteForm(models.Model):
+    from_kwic = AutocompleteFormQuerySet.as_manager()
 
-    token = models.CharField(max_length=30)
-    lemma = models.CharField(max_length=30)
+    form = models.CharField(max_length=30, default='', blank=True)
+    lemma = models.CharField(max_length=30, default='')
 
     def get_unique_id(self):
-        ret = '{}_{}'.format(self.lemma, self.token)
+        ret = '{}_{}'.format(self.lemma, self.form)
         return ret
 
 

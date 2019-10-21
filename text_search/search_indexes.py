@@ -1,32 +1,28 @@
 from haystack import indexes
-from .models import AnnotatedToken, AutocompleteToken
+from .models import AnnotatedToken, AutocompleteForm
 
 
-class AutocompleteTokenIndex(indexes.SearchIndex, indexes.Indexable):
+class AutocompleteFormIndex(indexes.SearchIndex, indexes.Indexable):
     # this is required by haystack
-    # we also need to match the type of AnotatedTokenIndex.text
+    # we also need to match the type of AnnotatedTokenIndex.text
     text = indexes.CharField(document=True)
     autocomplete = indexes.EdgeNgramField()
-    form = indexes.CharField()
+    form = indexes.CharField(model_attr='form')
     lemma = indexes.CharField(model_attr='lemma')
 
     def get_model(self):
         '''We must override this method'''
-        return AutocompleteToken
+        return AutocompleteForm
 
     def prepare_text(self, token):
         # .text is necessary but unused, so we leave it blank to save space
         return ''
 
-    def prepare_form(self, token):
-        return (token.token or '').strip().lower()
-
     def prepare_autocomplete(self, token):
-        return '{} {}'.format(token.token, token.lemma)
+        return ' '.join([v for v in [token.form, token.lemma] if v])
 
     def index_queryset(self, using=None):
         '''We must override this method'''
-        # return self._index_queryset_rdb(using=using)
         return self._index_queryset_xml()
 
     def _index_queryset_xml(self):

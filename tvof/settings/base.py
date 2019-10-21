@@ -580,8 +580,18 @@ TOKENISED_FILES = {
 KWIC_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
 
-SEARCH_INDEX_LIMIT = 0
+# maximum number of kwic entries to index
+# -1: no limit
+# 0: none
+SEARCH_INDEX_LIMIT = -1
 
+SEARCH_FACET_LIMIT_DEFAULT = 1000
+
+SEARCH_FACETS_INFO_PATH = '/about/search'
+
+# The facets o the search page.
+# Note that entries in this array can be overridden by
+# instances in models.SearchFacet
 SEARCH_FACETS = [
     {
         'key': 'manuscript_number',
@@ -618,10 +628,6 @@ SEARCH_FACETS = [
         'label': 'Speech',
     },
 ]
-
-SEARCH_FACET_LIMIT_DEFAULT = 1000
-
-SEARCH_FACETS_INFO_PATH = '/about/search'
 
 # List of settings vars exposed on client side as windows.SETTINGS_JS
 # see base.html and cms_tags.py

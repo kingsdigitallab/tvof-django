@@ -5,8 +5,8 @@ from drf_haystack.serializers import (
     HaystackSerializer, HaystackFacetSerializer
 )
 from drf_haystack.viewsets import HaystackViewSet
-from .models import AnnotatedToken, AutocompleteToken
-from .search_indexes import AnnotatedTokenIndex, AutocompleteTokenIndex
+from .models import AnnotatedToken, AutocompleteForm
+from .search_indexes import AnnotatedTokenIndex, AutocompleteFormIndex
 from rest_framework import pagination
 from drf_haystack.mixins import FacetMixin
 from drf_haystack.filters import HaystackFacetFilter, HaystackFilter
@@ -198,7 +198,7 @@ class AutocompletePagination(pagination.PageNumberPagination):
 class AutocompleteSerializer(HaystackSerializer):
 
     class Meta:
-        index_classes = [AutocompleteTokenIndex]
+        index_classes = [AutocompleteFormIndex]
         fields = ['form', 'lemma', 'autocomplete']
         ignore_fields = ['autocomplete']
 
@@ -241,7 +241,7 @@ class AutocompleteFilter(HaystackAutocompleteFilter):
 
 class AutocompleteSearchViewSet(HaystackViewSet):
 
-    index_models = [AutocompleteToken]
+    index_models = [AutocompleteForm]
     serializer_class = AutocompleteSerializer
     filter_backends = [AutocompleteFilter]
 
