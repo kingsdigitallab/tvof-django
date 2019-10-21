@@ -19,6 +19,7 @@ class SearchFacet(models.Model):
     label = models.CharField(max_length=32, help_text='')
     tooltip = models.CharField(max_length=255, blank=True)
     description = RichTextField(blank=True)
+    whitelist = models.TextField(blank=True, default='')
     display_rank = models.IntegerField(default=0)
 
     panels = [
@@ -26,6 +27,7 @@ class SearchFacet(models.Model):
         FieldPanel('label'),
         FieldPanel('tooltip'),
         FieldPanel('description'),
+        FieldPanel('whitelist'),
         FieldPanel('display_rank'),
     ]
 
@@ -34,6 +36,9 @@ class SearchFacet(models.Model):
 
     def __str__(self):
         return self.label
+
+    def get_white_list(self):
+        return [l.lower().strip() for l in self.whitelist.split('\n') if l.strip()]
 
 
 def read_tokenised_data():
@@ -71,7 +76,7 @@ def read_tokenised_data():
                 said_type = said.attrib.get(
                     'direct', 'unspecified'
                 ).strip().lower()
-                for word in seg.findall('.//w'):
+                for word in said.findall('.//w'):
                     seg_id_n = seg_id + '.' + word.attrib.get('n')
                     ret[seg_id_n] = {
                         'speech_cat': sc_types.get(said_type, 4)

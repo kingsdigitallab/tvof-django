@@ -17,8 +17,8 @@ var ui_facets = window.SEARCH_FACETS;
 
 function get_text_from_suggestion(r) {
     var ret = '';
-    if (r.token) {
-        ret = r.token + ' (' + r.lemma + ')';
+    if (r.form) {
+        ret = r.form + ' (' + r.lemma + ')';
     } else {
         ret = r.lemma + ' [lemma]';
     }
@@ -113,7 +113,7 @@ var app = new window.Vue({
                 ret = id_to_label[ret];
             }
             if (facet_key == 'is_rubric') {
-                ret = ret == 'true' ? 'rubricated' : 'not rubricated';
+                ret = ret == 'true' ? 'Rubric' : 'Text body';
             }
             if (facet_key == 'section_number') {
                 ret = window.SETTINGS_JS.SECTIONS_NAME[ret];
@@ -122,8 +122,8 @@ var app = new window.Vue({
                 ret = {
                   '0': 'prose',
                   '1': 'verse',
-                  '2': 'lineated',
-                  '3': 'continuous',
+                  '2': 'verse: lineated',
+                  '3': 'verse: continuous',
                   '4': 'unspecified',
                 }[ret];
             }
@@ -132,7 +132,7 @@ var app = new window.Vue({
                   '0': 'not speech',
                   '1': 'speech',
                   '2': 'direct speech',
-                  '3': 'indirect speech',
+                  '3': 'indirect reported speech',
                   '4': 'speech (unspecified)',
                 }[ret];
             }
@@ -205,7 +205,7 @@ var app = new window.Vue({
             // instead of selecting a suggestion.
             if (suggestion) {
                 var item = suggestion.item;
-                this.query.text = item.token || item.lemma;
+                this.query.text = item.form || item.lemma;
             }
             // window.console.log(suggestion);
             this.on_change_search_text();
@@ -224,7 +224,7 @@ var app = new window.Vue({
             // returns the string to set in the input box
             // when the user highlights a suggestion
             var item = suggestion.item;
-            return item.token || item.lemma;
+            return item.form || item.lemma;
         },
         call_api: function() {
             // send request to search api using data.query
@@ -256,6 +256,8 @@ var app = new window.Vue({
             var self = this;
             var req = $.getJSON(api_url, qs);
             req.done(function(response) {
+                self.filter_response(response);
+
                 self.$set(self, 'response', response);
 
                 if (!is_state_popped) {
@@ -267,6 +269,37 @@ var app = new window.Vue({
                 }
 
                 self.set_state_from_query_string();
+            });
+        },
+        filter_response: function(response) {
+            // transofrm the response from the search API
+            // mainly facet option ordering and filtering
+            var fields = response.fields;
+
+            ui_facets.map(function(ui_facet) {
+                var key = ui_facet.key;
+                var ret = fields[key];
+
+                if (ret) {
+                    if (ret && ui_facet.whitelist) {
+                        ret = ret.filter(function(v) {
+                            return (ui_facet.whitelist.indexOf(v.text.toLowerCase()) > -1);
+                        });
+                        fields[key] = ret;
+                    }
+
+                    if (ret && key == 'section_number') {
+                        // sections should be in order of their numbers
+                        ret.sort(function(a, b) {
+                            var na = parseInt(a.text);
+                            var nb = parseInt(b.text);
+                            if (na == nb) return (a.text > b.text) ? 1 : -1;
+                            return na > nb ? 1 : -1;
+                        });
+                    }
+                }
+
+                return ui_facet;
             });
         },
         set_state_from_query_string: function() {

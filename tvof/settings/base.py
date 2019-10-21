@@ -593,7 +593,7 @@ SEARCH_FACETS = [
         'limit': 10,
     },
     {
-        'key': 'token',
+        'key': 'form',
         'label': 'Form',
         'limit': 10,
     },
@@ -607,11 +607,11 @@ SEARCH_FACETS = [
     },
     {
         'key': 'is_rubric',
-        'label': 'Rubrication',
+        'label': 'Text body/rubrics',
     },
     {
         'key': 'verse_cat',
-        'label': 'Verse',
+        'label': 'Textual form',
     },
     {
         'key': 'speech_cat',

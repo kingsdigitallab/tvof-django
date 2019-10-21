@@ -108,8 +108,8 @@
                 >
                   <template slot-scope="{suggestion}">
                     <span class="suggestion">
-                      <template v-if="suggestion.item.token">
-                        {{suggestion.item.token}} ({{suggestion.item.lemma}})
+                      <template v-if="suggestion.item.form">
+                        {{suggestion.item.form}} ({{suggestion.item.lemma}})
                       </template>
                       <template v-else>
                         {{suggestion.item.lemma}} [LEMMA]

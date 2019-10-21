@@ -7,7 +7,7 @@ class AutocompleteTokenIndex(indexes.SearchIndex, indexes.Indexable):
     # we also need to match the type of AnotatedTokenIndex.text
     text = indexes.CharField(document=True)
     autocomplete = indexes.EdgeNgramField()
-    token = indexes.CharField(model_attr='token')
+    form = indexes.CharField()
     lemma = indexes.CharField(model_attr='lemma')
 
     def get_model(self):
@@ -17,6 +17,9 @@ class AutocompleteTokenIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_text(self, token):
         # .text is necessary but unused, so we leave it blank to save space
         return ''
+
+    def prepare_form(self, token):
+        return (token.token or '').strip().lower()
 
     def prepare_autocomplete(self, token):
         return '{} {}'.format(token.token, token.lemma)
@@ -69,7 +72,8 @@ class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
     text = indexes.CharField(document=True, use_template=True)
 
     # Facets
-    token = indexes.CharField(model_attr='string', faceted=True)
+    token = indexes.CharField(model_attr='string')
+    form = indexes.CharField(faceted=True)
     lemma = indexes.CharField(model_attr='lemma', faceted=True)
     pos = indexes.CharField(model_attr='pos', faceted=True)
     # 0: non-speech, 1: speech, 2: direct, 3: indirect
@@ -94,10 +98,19 @@ class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
     previous_word = indexes.CharField(stored=False)
     next_word = indexes.CharField(stored=False)
 
-    def prepare_speech_cat(self, token):
+    def prepare_form(self, token):
+        return (token.string or '').strip().lower()
+
+    def prepare_speech_cat_deprecated(self, token):
         ret = [0]
         if token.speech_cat:
             ret = [1, token.speech_cat]
+        return ret
+
+    def prepare_speech_cat(self, token):
+        ret = []
+        if token.speech_cat:
+            ret = [token.speech_cat]
         return ret
 
     def prepare_verse_cat(self, token):

@@ -56,6 +56,9 @@ def search_view(request):
         }
 
         if fdb:
+            whitelist = fdb.get_white_list()
+            if whitelist:
+                search_facet['whitelist'] = whitelist
             if fdb.label:
                 search_facet['label'] = fdb.label
             if fdb.tooltip:
@@ -196,7 +199,7 @@ class AutocompleteSerializer(HaystackSerializer):
 
     class Meta:
         index_classes = [AutocompleteTokenIndex]
-        fields = ['token', 'lemma', 'autocomplete']
+        fields = ['form', 'lemma', 'autocomplete']
         ignore_fields = ['autocomplete']
 
         # The `field_aliases` attribute can be used in order to alias a
@@ -215,7 +218,7 @@ class AutocompleteFilter(HaystackAutocompleteFilter):
     autocomplete:a will not work woth solr
     because the ngram field needs at least two characters.
 
-    So we turn that type of queries into token__startswith:a
+    So we turn that type of queries into form__startswith:a
 
     Assumes that we have a single search term.
     """
@@ -228,7 +231,7 @@ class AutocompleteFilter(HaystackAutocompleteFilter):
             field_name, query = child
             for word in query.split(' '):
                 if field_name == 'autocomplete' and len(word) == 1:
-                    filters.children[i] = ('token__startswith', query)
+                    filters.children[i] = ('form__startswith', query)
 
         ret = super(AutocompleteFilter, self).process_filters(
             filters, queryset, view
@@ -254,6 +257,6 @@ class AutocompleteSearchViewSet(HaystackViewSet):
 
         # order by
 
-        # ret = ret.order_by('token', 'lemma')
+        # ret = ret.order_by('form', 'lemma')
 
         return ret
