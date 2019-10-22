@@ -124,7 +124,7 @@ class KwicQuerySet(models.QuerySet):
         tokenised_data = read_tokenised_data()
 
         next_mark = 0
-        for event, elem in ET.iterparse(
+        for _, elem in ET.iterparse(
             settings.KWIC_FILE_PATH, events=['start']
         ):
             if elem.tag == 'item':
@@ -144,9 +144,6 @@ class KwicQuerySet(models.QuerySet):
         return self._read_from_kwic()
 
     def _read_from_kwic(self):
-        # print('-' * 40)
-        # print('here', self.query.low_mark, self.query.high_mark)
-
         if self.query.low_mark < self.next_mark:
             # print('NEW', self.query.low_mark, self.next_mark)
             self.generator = self.get_generator()
@@ -154,17 +151,21 @@ class KwicQuerySet(models.QuerySet):
 
         while self.query.high_mark > self.next_mark:
             g = next(self.generator)
-            # print(g)
             self.next_mark, token = g
-            # print(token, self.next_mark, self.query.low_mark)
             if self.query.low_mark < self.next_mark:
-                # print(token.location)
                 yield token
 
-        # print('end', '#' * 40)
-
     def count(self):
-        if self._count is not None:
+        return self._count_or_save()
+
+    def _count_or_save(self, save=False):
+        '''
+        return the number of tokens in the kwic file.
+        if save = True, save those token in the database
+        (for debugging or research purpose only).
+        '''
+
+        if not (save and self._count is None):
             return self._count
 
         self._count = 0
@@ -172,7 +173,12 @@ class KwicQuerySet(models.QuerySet):
             for _, elem in ET.iterparse(
                 settings.KWIC_FILE_PATH, events=['start']
             ):
+                if elem.tag == 'item':
+                    lemma = elem.attrib.get('lemma', '')
                 if elem.tag == 'string':
+                    string = elem.text
+                    if save and string:
+                        AnnotatedToken(lemma=lemma, string=string).save()
                     self._count += 1
                     if (self.max_count > -1) and (self._count >= self.max_count):
                         break
