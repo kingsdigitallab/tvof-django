@@ -59,8 +59,12 @@ def search_view(request):
             whitelist = fdb.get_white_list()
             if whitelist:
                 search_facet['whitelist'] = whitelist
+            if fdb.is_hidden:
+                search_facet['is_hidden'] = True
             if fdb.label:
                 search_facet['label'] = fdb.label
+            if fdb.limit != -2:
+                search_facet['limit'] = fdb.limit
             if fdb.tooltip:
                 search_facet['tooltip'] = fdb.tooltip
             if fdb.description:

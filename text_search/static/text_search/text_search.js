@@ -82,6 +82,9 @@ var app = new window.Vue({
             if (hit.seg_number) {
                 ret += '.' + hit.seg_number;
             }
+            if (hit.token_number && window.SETTINGS_JS.SEARCH_SHOW_TOKEN_NUMBER) {
+                ret += ' #' + hit.token_number + '';
+            }
             return ret;
         }
     },
@@ -129,7 +132,7 @@ var app = new window.Vue({
             }
             if (facet_key == 'speech_cat') {
                 ret = {
-                  '0': 'not speech',
+                  '0': 'narration',
                   '1': 'speech',
                   '2': 'direct speech',
                   '3': 'indirect reported speech',
@@ -203,12 +206,21 @@ var app = new window.Vue({
             // (they want to update search results).
             // suggestion is null if user press enter in input
             // instead of selecting a suggestion.
+            window.console.log('SELECT');
+            window.console.log(suggestion);
             if (suggestion) {
                 var item = suggestion.item;
                 this.query.text = item.form || item.lemma;
             }
             // window.console.log(suggestion);
             this.on_change_search_text();
+        },
+        on_blur_suggestions: function() {
+            window.console.log('BLUR');
+            window.Vue.nextTick(function () {
+                window.console.log('BLURRING');
+                this.suggestion_closed = true;
+            });
         },
         fetch_suggestions: function(search_text) {
             var self = this;

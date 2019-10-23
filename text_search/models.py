@@ -4,6 +4,7 @@ from django.db import models
 from xml.etree import ElementTree as ET
 from text_viewer.text_viewer_tvof import TextViewerAPITvof
 from django.conf import settings
+from . import utils
 import re
 
 from wagtail.core.fields import RichTextField
@@ -11,24 +12,61 @@ from wagtail.admin.edit_handlers import FieldPanel
 
 
 class SearchFacet(models.Model):
+    '''
+    Represents editable settings for a search facet.
+    Editable in Wagtail admin interface.
+    '''
+    # see setting.base.SEARCH_FACETS
     key = models.CharField(max_length=32, unique=True, choices=[
         (f['key'], f['key'])
         for f
         in settings.SEARCH_FACETS
     ])
-    label = models.CharField(max_length=32, help_text='')
-    tooltip = models.CharField(max_length=255, blank=True)
-    description = RichTextField(blank=True)
-    whitelist = models.TextField(blank=True, default='')
-    display_rank = models.IntegerField(default=0)
+    label = models.CharField(
+        max_length=32,
+        help_text='The heading for this facet on the search page'
+    )
+
+    tooltip = models.CharField(
+        max_length=255, blank=True,
+        help_text='One short sentence to describe this facet to the users.'
+    )
+    description = RichTextField(
+        blank=True,
+        help_text='a more verbose description of the facet'
+        ' to appear on a separate help page.'
+    )
+    whitelist = models.TextField(
+        blank=True,
+        default='',
+        help_text='one facet option per line. If empty all options are visible'
+        ', otherwise only the supplied options are visible.'
+    )
+    display_rank = models.IntegerField(
+        default=0,
+        help_text='the display order of this facet on the search page, '
+        'lower numbers appear on top. NOT YET IMPLEMENTED.'
+    )
+    is_hidden = models.BooleanField(
+        default=False,
+        help_text='tick this to hide the facet from the search page'
+    )
+    limit = models.IntegerField(
+        default=-2,
+        help_text='maximum number of options to show under this facet. '
+        'Special numbers: -1 unlimited, -2 default preset.'
+    )
 
     panels = [
         FieldPanel('key'),
         FieldPanel('label'),
+        FieldPanel('is_hidden'),
         FieldPanel('tooltip'),
         FieldPanel('description'),
         FieldPanel('whitelist'),
-        FieldPanel('display_rank'),
+        # Hidden as it would be slow to make a DB request before each API call
+        # FieldPanel('limit'),
+        # FieldPanel('display_rank'),
     ]
 
     class Meta:
@@ -38,14 +76,33 @@ class SearchFacet(models.Model):
         return self.label
 
     def get_white_list(self):
-        return [l.lower().strip() for l in self.whitelist.split('\n') if l.strip()]
+        return [
+            l.lower().strip()
+            for l
+            in self.whitelist.split('\n') if l.strip()
+        ]
 
 
 def read_tokenised_data():
     '''
+    Read XML file of tokenised texts (Fr & Royal).
+    Return a dictionary with information about all the
+        <said> elements
+        <seg type="6"> verses elements
+
+    That dictionary key is the location of the element and the value
+    is a categorisation of the element.
+
+    The output is meant to be combined with a kwic file to build the
+    search index.
+
     <seg type="6" xml:id="edfr20125_00910_07"><lg type="octo_coup">
         <lg type="lineated">
-            <l n="001"><w n="1">Q[ua]r</w> <w n="2">ele</w> <w n="3">fu</w> <w n="4">si</w> <w n="5">bien</w> <w n="6">plantee<pc rend="1" /></w></l>
+            <l n="001">
+                <w n="1">Q[ua]r</w> <w n="2">ele</w> <w n="3">fu</w>
+                <w n="4">si</w> <w n="5">bien</w>
+                <w n="6">plantee<pc rend="1" /></w>
+            </l>
     '''
 
     lg_types = {'lineated': 2, 'cont': 3, 'unspecified': 4}
@@ -53,7 +110,7 @@ def read_tokenised_data():
 
     ret = {}
 
-    for key, path in settings.TOKENISED_FILES.items():
+    for _, path in settings.TOKENISED_FILES.items():
         with open(path, 'rt') as f:
             content = f.read()
             content = re.sub(r'\sxmlns="[^"]+"', '', content, count=1)
@@ -78,11 +135,20 @@ def read_tokenised_data():
                 ).strip().lower()
                 for word in said.findall('.//w'):
                     seg_id_n = seg_id + '.' + word.attrib.get('n')
-                    ret[seg_id_n] = {
-                        'speech_cat': sc_types.get(said_type, 4)
-                    }
+                    if seg_id_n not in ret:
+                        # we ignore nested <said>
+                        ret[seg_id_n] = {
+                            'speech_cat': sc_types.get(said_type, 4)
+                        }
+                    else:
+                        # print('Nested {}'.format(seg_id_n))
+                        pass
 
     return ret
+
+# ----------------------------------------------------------------------
+# virtual model for kwic / annotated token index
+# ----------------------------------------------------------------------
 
 
 class KwicQuerySet(models.QuerySet):
@@ -123,27 +189,28 @@ class KwicQuerySet(models.QuerySet):
 
         tokenised_data = read_tokenised_data()
 
-        next_mark = 0
-        for _, elem in ET.iterparse(
-            settings.KWIC_FILE_PATH, events=['start']
-        ):
-            if elem.tag == 'item':
-                item = elem
-            if elem.tag == 'string':
+        def callback(item, elem):
+            if elem is not None:
                 token = AnnotatedToken.new_from_kwik_item(
                     item,
                     elem,
                     mss_sections,
                     tokenised_data
                 )
-                next_mark += 1
 
-                yield next_mark, token
+                return token
+
+        for res in utils.parse_kwic(settings.KWIC_FILE_PATH, callback):
+            yield res
 
     def __iter__(self):
         return self._read_from_kwic()
 
     def _read_from_kwic(self):
+        '''
+        An generator for a given slice of the query result.
+        See Django QuerySet
+        '''
         if self.query.low_mark < self.next_mark:
             # print('NEW', self.query.low_mark, self.next_mark)
             self.generator = self.get_generator()
@@ -165,82 +232,27 @@ class KwicQuerySet(models.QuerySet):
         (for debugging or research purpose only).
         '''
 
-        if not (save and self._count is None):
+        if not (save or self._count is None):
             return self._count
 
         self._count = 0
         if self.max_count != 0:
-            for _, elem in ET.iterparse(
-                settings.KWIC_FILE_PATH, events=['start']
-            ):
-                if elem.tag == 'item':
-                    lemma = elem.attrib.get('lemma', '')
-                if elem.tag == 'string':
-                    string = elem.text
-                    if save and string:
-                        AnnotatedToken(lemma=lemma, string=string).save()
-                    self._count += 1
-                    if (self.max_count > -1) and (self._count >= self.max_count):
-                        break
+
+            def callback(item, elem):
+                if elem is not None:
+                    if save:
+                        AnnotatedToken(
+                            lemma=item.attrib('lemma', ''),
+                            string=item.text
+                        ).save()
+                    return 1
+
+            for _ in utils.parse_kwic(settings.KWIC_FILE_PATH, callback):
+                self._count += 1
+                if (self.max_count > -1) and (self._count >= self.max_count):
+                    break
 
         return self._count
-
-
-class AutocompleteFormQuerySet(KwicQuerySet):
-
-    def get_generator(self):
-        found = {}
-        next_mark = 0
-
-        def normalise(string):
-            return (string or '').strip().lower()
-
-        def get_new_doc(form, lemma):
-            '''
-            Returns a AutocompleteForm for the given (form, lemma) pair.
-            Returns None if that pair was seen before (see found).
-            '''
-            ret = None
-
-            if lemma:
-                key = '{}_{}'.format(lemma, form)
-                if key not in found:
-                    found[key] = 1
-                    ret = AutocompleteForm(lemma=lemma, form=form)
-
-            return ret
-
-        # parse the kwic file for pairs of (token, lemma)
-        # Note: kwic contains tokens,
-        # but we normalise them into forms (lowercase).
-        file_path = settings.KWIC_FILE_PATH
-        for _, elem in ET.iterparse(file_path, events=['start']):
-            doc = None
-            if elem.tag == 'item':
-                lemma = normalise(elem.attrib.get('lemma', ''))
-                # we issue one doc for the lemma itself
-                doc = get_new_doc('', lemma)
-            if elem.tag == 'string':
-                form = normalise(elem.text)
-                doc = get_new_doc(form, lemma)
-
-            if doc:
-                next_mark += 1
-                yield next_mark, doc
-
-    def count(self):
-        return sum(1 for _ in self.get_generator())
-
-
-class AutocompleteForm(models.Model):
-    from_kwic = AutocompleteFormQuerySet.as_manager()
-
-    form = models.CharField(max_length=30, default='', blank=True)
-    lemma = models.CharField(max_length=30, default='')
-
-    def get_unique_id(self):
-        ret = '{}_{}'.format(self.lemma, self.form)
-        return ret
 
 
 class AnnotatedToken(models.Model):
@@ -265,8 +277,12 @@ class AnnotatedToken(models.Model):
 
     type = models.CharField(max_length=30, default='')
     string = models.CharField(max_length=30)
+
+    # most of these field SHOULD match
+    # the name of the related attrbutes in the kwic.xml file
     lemma = models.CharField(max_length=30)
     pos = models.CharField(max_length=30)
+    lemmapos = models.CharField(max_length=30, default='')
     location = models.CharField(max_length=30)
     n = models.SmallIntegerField(default=0)
     preceding = models.CharField(max_length=300)
@@ -306,12 +322,16 @@ class AnnotatedToken(models.Model):
     @classmethod
     def _get_data_from_kwik_item(cls, item, string, mss_sections=None,
                                  tokenised_data=None):
+        # for each attribute in kwic <item>
+        # copy the value in the field with the same name
+        # in the model instance
         ret = {
             k.lower().strip(): (v or '').strip()
             for k, v
             in list(item.attrib.items())
-            if hasattr(cls, k)
+            if hasattr(cls, k.lower())
         }
+        # print(ret, string.text)
         ret['string'] = (string.text or '').strip()
 
         if mss_sections:
@@ -338,4 +358,69 @@ class AnnotatedToken(models.Model):
 
     def get_unique_id(self):
         ret = '{}.{:03d}'.format(self.location, int(self.n))
+        return ret
+
+# ----------------------------------------------------------------------
+# virtual model for Forms and Lemmas autocomplete index
+# ----------------------------------------------------------------------
+
+
+class AutocompleteFormQuerySet(KwicQuerySet):
+
+    def get_generator(self):
+        found = {}
+
+        def normalise(string, lower=False):
+            ret = (string or '').strip()
+            if lower:
+                ret = ret.lower()
+            return ret
+
+        def get_new_doc(lemma, form=''):
+            '''
+            Returns a AutocompleteForm for the given (lemma, form) pair.
+            Returns None if that pair was seen before (see found).
+            '''
+            ret = None
+
+            if lemma:
+                key = '{}_{}'.format(lemma, form)
+                if key not in found:
+                    found[key] = 1
+                    ret = AutocompleteForm(lemma=lemma, form=form)
+
+            return ret
+
+        def callback(item, elem):
+            lemma = normalise(item.attrib.get('lemma', ''))
+            form = ''
+            if elem is not None:
+                nom_propre = item.attrib.get('pos', '') == 'nom propre'
+                form = normalise(elem.text, True)
+                if nom_propre:
+                    form = form.title()
+
+            doc = get_new_doc(lemma, form)
+
+            if doc:
+                return doc
+
+        # parse the kwic file for pairs of (token, lemma)
+        # Note: kwic contains tokens,
+        # but we normalise them into forms (lowercase).
+        for res in utils.parse_kwic(settings.KWIC_FILE_PATH, callback):
+            yield res
+
+    def count(self):
+        return sum(1 for _ in self.get_generator())
+
+
+class AutocompleteForm(models.Model):
+    from_kwic = AutocompleteFormQuerySet.as_manager()
+
+    form = models.CharField(max_length=30, default='', blank=True)
+    lemma = models.CharField(max_length=30, default='')
+
+    def get_unique_id(self):
+        ret = '{}_{}'.format(self.lemma, self.form)
         return ret

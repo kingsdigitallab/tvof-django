@@ -536,17 +536,21 @@ Used by front end and backend to sort the search results.
     }],
 '''
 SEARCH_PAGE_ORDERS = OrderedDict([
+    ['form', {
+        'label': 'Form',
+        'fields': ['form', 'next_word', 'id'],
+    }],
     ['location', {
         'label': 'Location',
-        'fields': ['id'],
+        'fields': ['id', 'form'],
     }],
     ['previous', {
         'label': 'Previous word',
-        'fields': ['previous_word', 'id'],
+        'fields': ['previous_word', 'form', 'id'],
     }],
     ['next', {
         'label': 'Next word',
-        'fields': ['next_word', 'id'],
+        'fields': ['next_word', 'form', 'id'],
     }],
 ])
 
@@ -589,9 +593,13 @@ SEARCH_FACET_LIMIT_DEFAULT = 1000
 
 SEARCH_FACETS_INFO_PATH = '/about/search'
 
+# If True, show the the token number on the search result page
+SEARCH_SHOW_TOKEN_NUMBER = False
+
 # The facets o the search page.
 # Note that entries in this array can be overridden by
-# instances in models.SearchFacet
+# instances in models.SearchFacet.
+# The key shoudl match the field name in AnnotatedTokenIndex
 SEARCH_FACETS = [
     {
         'key': 'manuscript_number',
@@ -616,6 +624,10 @@ SEARCH_FACETS = [
         'label': 'Part of speech',
     },
     {
+        'key': 'lemmapos',
+        'label': 'TVOF POS',
+    },
+    {
         'key': 'is_rubric',
         'label': 'Text body/rubrics',
     },
@@ -636,6 +648,7 @@ SETTINGS_JS = [
     'SEARCH_PAGE_SIZES',
     'SEARCH_PAGE_ORDERS',
     'SECTIONS_NAME',
+    'SEARCH_SHOW_TOKEN_NUMBER',
 ]
 
 WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
