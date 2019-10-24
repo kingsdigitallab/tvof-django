@@ -46,6 +46,7 @@ for docids in DOCUMENT_IDS_ARRAY:
 
 docs_sections = None
 
+
 def _get_xpath_from_location(slug, view, location_type, location,
                              synced_with):
     ret = []
@@ -292,6 +293,29 @@ class TextViewerAPITvof(TextViewerAPIXML):
         ]
         for pattern in patterns:
             ret = ret.replace(pattern, '').strip()
+
+        return ret
+
+    def read_all_sections_data(self):
+        '''
+        For each section in Fr and Royal,
+        returns the sections number, name and first para-number.
+        '''
+        ret = {}
+
+        for doc in DOCUMENT_IDS_ARRAY:
+            sections = []
+            xml = self.fetch_xml_from_kiln(doc['kiln_file'], 'semi-diplomatic')
+            for section_node in xml.findall('.//div[@class="section"]'):
+                section = {
+                    'number': section_node.attrib.get('data-n', ''),
+                    'name': section_node.attrib.get('data-type', '')
+                }
+                para = section_node.find('div[h4]')
+                if para is not None:
+                    section['para'] = para.attrib.get('id', '')
+                sections.append(section)
+            ret[doc['slug']] = sections
 
         return ret
 

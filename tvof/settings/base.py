@@ -15,6 +15,7 @@ import os
 
 from django_auth_ldap.config import LDAPGroupQuery
 from kdl_ldap.settings import *  # noqa
+from collections import OrderedDict
 
 # Build paths inside the project like this: os.path.join(BASE_DIR, ...)
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(__file__)))
@@ -111,6 +112,7 @@ INSTALLED_APPS = (
     'taggit',
     'modelcluster',
 
+    'wagtail.contrib.modeladmin',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -379,7 +381,7 @@ HAYSTACK_CONNECTIONS = {
         'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
         'URL': 'http://localhost:8983/solr/default',
         'TIMEOUT': 60 * 5,
-        'INCLUDE_SPELLING': True,
+        'INCLUDE_SPELLING': False,
         'BATCH_SIZE': 100,
     },
     #     'default': {
@@ -524,10 +526,131 @@ SHORT_HANDS = {
 }
 
 SEARCH_PAGE_SIZES = [10, 20, 50, 100]
+AUTOCOMPLETE_PAGE_SIZES = [10, 20, 50, 100]
+
+'''
+Used by front end and backend to sort the search results.
+    [KEY, {
+        'label': DISPLAY_LABEL,
+        'fields': LIST_OF_HAYSTACK_FIELDS_TO_SORT_BY,
+    }],
+'''
+SEARCH_PAGE_ORDERS = OrderedDict([
+    ['form', {
+        'label': 'Form',
+        'fields': ['form', 'next_word', 'id'],
+    }],
+    ['location', {
+        'label': 'Location',
+        'fields': ['id', 'form'],
+    }],
+    ['previous', {
+        'label': 'Previous word',
+        'fields': ['previous_word', 'form', 'id'],
+    }],
+    ['next', {
+        'label': 'Next word',
+        'fields': ['next_word', 'form', 'id'],
+    }],
+])
+
+HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'
+
+# ./manage.py textviewer sections
+SECTIONS_NAME = {
+    '1': 'Genesis',
+    '10': 'Rome II',
+    '11': 'Conquest of France by Caesar',
+    '2': 'Orient I',
+    '3': 'Thebes',
+    '4': 'Greeks and Amazons',
+    '5': 'Troy',
+    '5bis': 'Prose 5',
+    '6': 'Eneas',
+    '6bis': 'Assyrian Kings',
+    '7': 'Rome I',
+    '8': 'Orient II',
+    '9': 'Alexander'
+}
+
+
+# kiln_out/received/kwic-out.xml
+TOKENISED_FILES_BASE_PATH = 'kiln_out/'
+TOKENISED_FILES = {
+    'fr': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'fr_tokenised.xml'),
+    'royal': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'royal_tokenised.xml'),
+}
+
+KWIC_FILE_PATH = os.path.join(
+    TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
+
+# maximum number of kwic entries to index
+# -1: no limit
+# 0: none
+SEARCH_INDEX_LIMIT = -1
+
+SEARCH_FACET_LIMIT_DEFAULT = 1000
+
+SEARCH_FACETS_INFO_PATH = '/about/search'
+
+# If True, show the the token number on the search result page
+SEARCH_SHOW_TOKEN_NUMBER = False
+
+# The facets o the search page.
+# Note that entries in this array can be overridden by
+# instances in models.SearchFacet.
+# The key shoudl match the field name in AnnotatedTokenIndex
+SEARCH_FACETS = [
+    {
+        'key': 'manuscript_number',
+        'label': 'Manuscript',
+    },
+    {
+        'key': 'lemma',
+        'label': 'Lemma',
+        'limit': 10,
+    },
+    {
+        'key': 'form',
+        'label': 'Form',
+        'limit': 10,
+    },
+    {
+        'key': 'section_number',
+        'label': 'Section',
+    },
+    {
+        'key': 'pos',
+        'label': 'Part of speech',
+    },
+    {
+        'key': 'lemmapos',
+        'label': 'TVOF POS',
+    },
+    {
+        'key': 'is_rubric',
+        'label': 'Text body/rubrics',
+    },
+    {
+        'key': 'verse_cat',
+        'label': 'Textual form',
+    },
+    {
+        'key': 'speech_cat',
+        'label': 'Speech',
+    },
+]
 
 # List of settings vars exposed on client side as windows.SETTINGS_JS
 # see base.html and cms_tags.py
 SETTINGS_JS = [
     'SHORT_HANDS',
     'SEARCH_PAGE_SIZES',
+    'SEARCH_PAGE_ORDERS',
+    'SECTIONS_NAME',
+    'SEARCH_SHOW_TOKEN_NUMBER',
+]
+
+WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
+    'text_search.views.transform_search_facets'
 ]

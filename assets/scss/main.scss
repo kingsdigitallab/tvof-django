@@ -1014,7 +1014,19 @@ footer {
         }
 
         .selected {
-            font-weight: bold;
+          padding: 0.2rem;
+          background-color: burlywood;
+          // font-weight: bold;
+        }
+
+        .card-divider {
+          padding: 0.5rem 1rem;
+        }
+
+        .facet-info {
+          margin-left: auto;
+          font-size: 1.3rem;
+          margin-top: 0.3rem;
         }
     }
     .search-results {
@@ -1026,6 +1038,10 @@ footer {
     .button:focus, .button:hover {
         color: #c7d0e1;
         background: #3a4b6c;
+    }
+
+    .pagination {
+      margin-bottom: 0;
     }
 }
 
@@ -1084,5 +1100,35 @@ footer {
 }
 
 select.page-sizes {
-    width: 6em;
+    width: auto;
+}
+select.search-orders {
+    width: auto;
+}
+
+.autosuggest__results {
+    border: 1px solid lightgrey;
+    position: absolute;
+    z-index: 1;
+    background: white;
+    padding: 0.5rem;
+    max-height: 10rem;
+    overflow-x: hidden;
+    overflow-y: auto;
+    width: 13rem;
+    -webkit-box-shadow: 5px 5px 14px -4px #000000;
+    box-shadow: 5px 5px 14px -4px #000000;
+
+    ul {
+      list-style: none;
+      margin-left: 0;
+
+      .autosuggest__results-item--highlighted {
+          background-color: #ddd;
+      }
+
+    }
+}
+input#autosuggest-input {
+    margin-bottom: 0;
 }
