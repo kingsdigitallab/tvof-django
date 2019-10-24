@@ -1,5 +1,7 @@
 from django.core.management.base import BaseCommand
 from text_viewer.kiln_requester import CachedRequesterKiln
+from text_viewer.text_viewer_tvof import TextViewerAPITvof
+from collections import OrderedDict
 
 
 class Command(BaseCommand):
@@ -18,6 +20,25 @@ class Command(BaseCommand):
         if action == 'test_cache':
             known_action = True
             self.test_cache()
+
+        if action == 'sections':
+            tvof_viewer = TextViewerAPITvof()
+            res = tvof_viewer.read_all_sections_data()
+            import pprint
+            pp = pprint.PrettyPrinter(indent=4)
+            pp.pprint(res)
+
+            sections_name = {}
+            for ms, sections in res.items():
+                for section in sections:
+                    sections_name[
+                        section['number']
+                    ] = section['name'].replace('_', ' ')
+
+            print()
+            pp.pprint(sections_name)
+
+            known_action = True
 
         if not known_action:
             print('ERROR: unknown action "%s"' % action)

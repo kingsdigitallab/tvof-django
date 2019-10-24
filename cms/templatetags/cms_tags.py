@@ -251,3 +251,19 @@ def json(obj):
     import json
     from django.utils.safestring import mark_safe
     return mark_safe(json.dumps(obj, separators=(',', ':')))
+
+
+@register.filter
+@stringfilter
+def cms_page_transforms(content):
+    '''
+    Post-process the page html (e.g. variable substitutions)
+    Run series of transform functions defined in
+    settings.WAGTAIL_PAGE_CONTENT_TRANSFORMS
+    '''
+    from django.utils.module_loading import import_string
+    for trans_path in settings.WAGTAIL_PAGE_CONTENT_TRANSFORMS:
+        trans_function = import_string(trans_path)
+        content = trans_function(content)
+
+    return content

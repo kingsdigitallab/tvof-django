@@ -153,6 +153,27 @@ class TextViewerAPITvof(TextViewerAPIXML):
         },
     ]
 
+    def get_sublocationid_from_address(self, address, chunk):
+        '''
+        :param address: e.g. 'Fr20125/interpretive/paragraph/588/2'
+        :param chunk: chunk of xml content that contains the id
+        :return: 'edfr20125_00588_02'
+        '''
+        ret = ''
+        parts = self.get_address_parts(address)
+
+        para = parts.get('location', '')
+        seg = parts.get('sublocation', '')
+        if para and seg:
+            pattern = 'id="([^"]+0*{}_0*{})"'.format(para, seg)
+            m = re.search(pattern, chunk)
+            if m:
+                ret = m.group(1)
+                # attrib = 'id="'+ret+'"'
+                # chunk = chunk.replace(attrib, attrib+' cla')
+
+        return ret, chunk
+
     def compute_section_mappings(self):
         '''
         Build a mapping among the units from Royal and its corresp(s)
@@ -272,6 +293,29 @@ class TextViewerAPITvof(TextViewerAPIXML):
         ]
         for pattern in patterns:
             ret = ret.replace(pattern, '').strip()
+
+        return ret
+
+    def read_all_sections_data(self):
+        '''
+        For each section in Fr and Royal,
+        returns the sections number, name and first para-number.
+        '''
+        ret = {}
+
+        for doc in DOCUMENT_IDS_ARRAY:
+            sections = []
+            xml = self.fetch_xml_from_kiln(doc['kiln_file'], 'semi-diplomatic')
+            for section_node in xml.findall('.//div[@class="section"]'):
+                section = {
+                    'number': section_node.attrib.get('data-n', ''),
+                    'name': section_node.attrib.get('data-type', '')
+                }
+                para = section_node.find('div[h4]')
+                if para is not None:
+                    section['para'] = para.attrib.get('id', '')
+                sections.append(section)
+            ret[doc['slug']] = sections
 
         return ret
 

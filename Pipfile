@@ -21,6 +21,7 @@ django-redis = "*"
 django-libsass = "*"
 drf-haystack = "*"
 pysolr = "*"
+tqdm = "*"
 
 [requires]
 python_version = "3.5"

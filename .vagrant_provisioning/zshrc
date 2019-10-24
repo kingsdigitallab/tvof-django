@@ -71,8 +71,14 @@ ZSH_HIGHLIGHT_HIGHLIGHTERS=(main brackets pattern cursor)
 # Remounts the vagrant shared folder if needed
 [ "$(ls -A /vagrant)" ] || sudo mount -t vboxsf -o uid=1000,gid=1000 vagrant /vagrant
 
-# Moves to the project directory
-cd /vagrant
+# The following are only executed on login, to prevent duplication and nested shells
+if [[ -o login ]]
+then
+    export PATH="/usr/local/bin:/usr/bin:/bin:/usr/sbin:$PATH"
 
-# and activates the virtual environment
-source .venv/bin/activate
+    # Change to the project directory
+    cd /vagrant
+
+    # and activate the virtual environment
+    pipenv shell
+fi

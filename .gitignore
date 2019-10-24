@@ -67,5 +67,6 @@ local.py
 logs/
 playbook.retry
 /static/
+/media/
 kiln_out/
 

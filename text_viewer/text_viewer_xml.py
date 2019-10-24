@@ -174,7 +174,7 @@ class TextViewerAPIXML(TextViewerAPI):
         ret = False
 
         # resolve address (e.g. 'default')
-        document, view, location_type_slug, location = \
+        document, view, location_type_slug, location, sublocation = \
             self.get_list_from_address_parts(address_parts)
 
         if document in ['default', '']:
@@ -233,8 +233,12 @@ class TextViewerAPIXML(TextViewerAPI):
 
                 chunks.append(get_unicode_from_xml(chunk))
 
-                address = '/'.join([document, view,
-                                    location_type_slug, location])
+                retrieved_address_parts = [
+                    document, view, location_type_slug, location
+                ]
+                if sublocation:
+                    retrieved_address_parts.append(sublocation)
+                address = '/'.join(retrieved_address_parts)
 
         if not xpaths:
             self.set_chunk_not_found_error()
@@ -257,12 +261,15 @@ class TextViewerAPIXML(TextViewerAPI):
             else:
                 classes.append('tv-viewer-pane')
 
+            sublocationid, chunk = self.get_sublocationid_from_address(address, chunk)
+
             self.response = {
                 'chunk':
                     r'<div class="{}">{}</div>'.
                     format(' '.join(classes), chunk),
                 'address': address,
-                'generated': self.generated_date
+                'generated': self.generated_date,
+                'sublocationid': sublocationid,
             }
             ret = True
 

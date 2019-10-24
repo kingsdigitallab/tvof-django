@@ -212,6 +212,9 @@
             location: '1',
             //locations: ['1', '2'],
 
+            sublocation: '',
+            sublocationid: '',
+
             addresses: {},
 
             conventions: '',
@@ -292,23 +295,32 @@
             'view': parts.shift() || 'default',
             'location_type': parts.shift() || 'default',
             'location': parts.shift() || 'default',
+            'sublocation': parts.shift() || '',
         };
         return ret;
     };
 
     Pane.prototype.getAddressFromParts = function(parts) {
         var ret = parts.document + '/' + parts.view + '/' + parts.location_type + '/' + parts.location;
+        if (parts.sublocation) {
+            ret += '/' + parts.sublocation;
+        }
         return ret;
     };
 
     Pane.prototype.getUIAddress = function() {
-        return [this.uimodel.document.slug, this.uimodel.view.slug, this.uimodel.location_type.slug, this.uimodel.location.slug].join('/');
+        ret = [this.uimodel.document.slug, this.uimodel.view.slug, this.uimodel.location_type.slug, this.uimodel.location.slug].join('/');
+        if (this.uimodel.sublocation) {
+            ret += '/' + this.uimodel.sublocation;
+        }
+        return ret;
     };
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
         //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
         var parts = this.getAddressParts(this.address);
         parts[part_name] = value;
+        if (part_name !== 'sublocation') parts.sublocation = '';
         return this.requestAddress(this.getAddressFromParts(parts));
     };
 
@@ -316,6 +328,7 @@
         //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
         var parts = this.getAddressParts(this.address);
         $.extend(parts, aparts);
+        parts.sublocation = aparts.sublocation || '';
         return this.requestAddress(this.getAddressFromParts(parts));
     };
 
@@ -369,6 +382,7 @@
             this.uimodel.chunk = response.chunk;
             this.onReceivedAddress(response.address);
             this.uimodel.errors = [];
+            this.uimodel.sublocationid = response.sublocationid;
         } else {
             this.uimodel.errors = response.errors;
             this.uimodel.chunk = response.errors[0].message;
@@ -680,7 +694,17 @@
                         }
 
                         // scroll to top
-                        $(this.$el).find('.text-chunk').scrollTop(0);
+                        var $text_chunk = $(this.$el).find('.text-chunk');
+                        $text_chunk.scrollTop(0);
+
+                        // scroll to sublocationid
+                        if (self.sublocationid) {
+                            $text_chunk.find('#'+self.sublocationid).each(function() {
+                                var $seg = $(this);
+                                $seg.addClass('sublocated');
+                                $text_chunk.scrollTop($text_chunk.scrollTop() + $seg.position().top);
+                            });
+                        }
                     });
                 },
                 'is_synced': function(val) {
