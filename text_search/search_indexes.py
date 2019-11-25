@@ -39,25 +39,32 @@ class AutocompleteFormIndex(indexes.SearchIndex, indexes.Indexable):
 
 class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
     '''
+    https://django-haystack.readthedocs.io/en/master/installing_search_engines.html
+
     https://django-haystack.readthedocs.io/en/master/tutorial.html#reindex
 
-    "If you’re using the Solr backend, you have an extra step.
+    If you’re using the Solr backend, you have an extra step.
     Solr’s configuration is XML-based,
     so you’ll need to manually regenerate the schema. You should [first] run
 
-    ./manage.py build_solr_schema > solr_schema.xml
+    # 1. generate solr config & schema files
+    mkdir -p /tmp/solr && ./manage.py build_solr_schema --configure-directory=/tmp/solr
 
-    , drop the XML output in your Solr’s schema.xml file
-    and restart your Solr server."
+    # 2. copy to solr
 
-    # vagrant
-    sudo cp solr_schema.xml /var/solr/data/default/conf/schema.xml
+    # the very first time you run this,
+    # make sure managed-schema is removed from your solr conf dir
 
-    # staging VM /var/solr/data/stg/conf/schema.xml
+    # for local vagrant
+    sudo cp /tmp/solr/* /var/solr/data/default/conf/ && sudo service solr restart
 
+    # for STG MV
+    sudo cp /tmp/solr/* /var/solr/data/stg/conf/ && sudo service solr restart
+    # for LIV MV
+    sudo cp /tmp/solr/* /var/solr/data/liv/conf/ && sudo service solr restart
+
+    # 3. rebuild the index
     ./manage.py rebuild_index --noinput
-
-    # ./manage.py rebuild_index --noinput --nocommit
 
     By default, all fields in Haystack are both indexed and stored
     '''

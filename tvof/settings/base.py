@@ -613,7 +613,7 @@ SEARCH_FACETS = [
     {
         'key': 'form',
         'label': 'Form',
-        'limit': 10,
+        'limit': 70,
     },
     {
         'key': 'section_number',
