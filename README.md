@@ -1,4 +1,8 @@
-# tvof-django
+# TVOF Django
+
+Codebase of the public Django website for research project "The Values of French Language and Literature in the European Middle Ages" (ERC Advanced Grant at King's College London).
+
+https://tvof.ac.uk/
 
 The projects is configured to use [Vagrant](https://www.vagrantup.com/) for local development and [fabric](http://www.fabfile.org/) for deployment. The project also has some default templates based on [Foundation](http://foundation.zurb.com/).
 
