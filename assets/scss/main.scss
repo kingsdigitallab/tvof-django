@@ -460,7 +460,7 @@ ul.sticky {
         color: green;
     }
 
-    .tei-c.red, .tei-rubric, .tei-hi.red {
+    .tei-c.red, .tei-rubric, .tei-hi.red, .tei-hi.red-highlight {
         color: scale-color($secondary-color, $lightness: 25%);
     }
     .first-letter-red::first-letter {

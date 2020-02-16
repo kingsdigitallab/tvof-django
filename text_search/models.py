@@ -166,7 +166,7 @@ class KwicQuerySet(models.QuerySet):
     Saves time and disk space.
 
     Support for slicing results.
-    NO support for any filter, exlcude, order_by, etc.
+    NO support for any filter, exclude, order_by, etc.
     '''
 
     max_count = settings.SEARCH_INDEX_LIMIT
@@ -279,7 +279,7 @@ class AnnotatedToken(models.Model):
     string = models.CharField(max_length=30)
 
     # most of these field SHOULD match
-    # the name of the related attrbutes in the kwic.xml file
+    # the name of the related attributes in the kwic.xml file
     lemma = models.CharField(max_length=30)
     pos = models.CharField(max_length=30)
     lemmapos = models.CharField(max_length=30, default='')
