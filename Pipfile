@@ -6,6 +6,7 @@ verify_ssl = true
 [dev-packages]
 fabric3 = "*"
 ipython = "*"
+django_debug_toolbar = "*"
 
 [packages]
 django = "*"

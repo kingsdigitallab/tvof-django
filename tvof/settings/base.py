@@ -91,7 +91,7 @@ EMAIL_USE_TLS = False
 # Sender of error messages to ADMINS and MANAGERS
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     # leave this ABOVE wagtail.search to avoid command conflicts (update_index)
     'haystack',
 
@@ -122,9 +122,9 @@ INSTALLED_APPS = (
     'compressor',
     'cms',
     'rest_framework',
-)
+]
 
-INSTALLED_APPS += (
+INSTALLED_APPS += [
     # your project apps here
     'activecollab_digger',
     'kdl_ldap',
@@ -133,8 +133,9 @@ INSTALLED_APPS += (
     'text_patterns',
     'text_alignment',
     'text_search',
+    'data_release',
     'tvof',
-)
+]
 
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -654,3 +655,34 @@ SETTINGS_JS = [
 WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
     'text_search.views.transform_search_facets'
 ]
+
+# See data_release app
+DATA_RELEASE = {
+    'sites': {
+        # Don't edit the first entry, it's a special one for the current site.
+        'source': {
+            'name': 'This website',
+            'path': BASE_DIR,
+        },
+        'dev': {
+            'name': 'Development site',
+        },
+        'liv': {
+            'name': 'Public live site',
+        },
+        # for testing in vagrant only.
+        # you'll need to create this folder:
+        # /home/vagrant/tvof_dev/kiln_out
+        'vagrant_mirror': {
+            'name': 'Vagrant mirror',
+            'path': '/home/vagrant/tvof_dev',
+        },
+    },
+    'files': {
+    },
+}
+
+# List of available targets for data release web page.
+# Each entry refers to a key in DATA_RELEASE['sites'].
+# First entry is the default target.
+DATA_RELEASE_AVAILABLE_TARGETS = ['vagrant_mirror', 'dev']

@@ -33,7 +33,15 @@ urlpatterns = [
     ),
 
     path(r'', include('text_search.urls')),
+    path(r'', include('data_release.urls')),
 ]
+
+if 'debug_toolbar' in settings.INSTALLED_APPS:
+    import debug_toolbar
+    urlpatterns = [
+        path('__debug__/', include(debug_toolbar.urls)),
+    ] + urlpatterns
+
 
 urlpatterns += i18n_patterns(
     path(r'wagtail/', include(wagtailadmin_urls)),
