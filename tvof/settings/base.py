@@ -666,9 +666,11 @@ DATA_RELEASE = {
         },
         'dev': {
             'name': 'Development site',
+            'path': '/vol/tvof2/webroot/dev/django/tvof-django',
         },
         'liv': {
             'name': 'Public live site',
+            # 'path': '/vol/tvof2/webroot/liv/django/tvof-django',
         },
         # for testing in vagrant only.
         # you'll need to create this folder:
@@ -678,11 +680,65 @@ DATA_RELEASE = {
             'path': '/home/vagrant/tvof_dev',
         },
     },
-    'files': {
-    },
+    'files': OrderedDict([
+        ['fr_semi_diplomatic', {
+            'name': 'Fr semi-diplomatic',
+            'path': 'kiln_out/backend-texts-fr20125-semi-diplomatic',
+            'group': 'tei',
+        }],
+        ['fr_interpretive', {
+            'name': 'Fr interpretive',
+            'path': 'kiln_out/backend-texts-fr20125-interpretive',
+            'group': 'tei',
+        }],
+        ['royal_semi_diplomatic', {
+            'name': 'Royal semi-diplomatic',
+            'path': 'kiln_out/backend-texts-royal-interpretive',
+            'group': 'tei',
+        }],
+        ['royal_interpretive', {
+            'name': 'Royal interpretive',
+            'path': 'kiln_out/backend-texts-royal-interpretive',
+            'group': 'tei',
+        }],
+
+        ['bibliography', {
+            'name': 'Bibliography',
+            'path': 'kiln_out/backend-bibliography',
+            'group': 'tei',
+        }],
+        ['alignment', {
+            'name': 'Alignment',
+            'path': 'kiln_out/backend-preprocess-alists-tvofparaalignmentxml',
+            'group': 'tei',
+        }],
+
+        ['kwic_out', {
+            'name': 'Kwic out',
+            'path': 'kiln_out/received/kwic-out.xml',
+            'group': 'search',
+        }],
+        ['fr_tokenised', {
+            'name': 'Fr Tokenised',
+            'path': 'kiln_out/prepared/fr_tokenised.xml',
+            'group': 'search',
+        }],
+        ['royal_tokenised', {
+            'name': 'Royal Tokenised',
+            'path': 'kiln_out/prepared/royal_tokenised.xml',
+            'group': 'search',
+        }],
+    ]),
+    'file_groups': OrderedDict([
+        ['tei', {'name': 'TEI files'}],
+        ['search', {'name': 'Search index'}]
+    ])
 }
 
 # List of available targets for data release web page.
 # Each entry refers to a key in DATA_RELEASE['sites'].
 # First entry is the default target.
-DATA_RELEASE_AVAILABLE_TARGETS = ['vagrant_mirror', 'dev']
+#
+# LEAVE THIS BLANK HERE - customise it in local.py on stg and your vagrant
+#
+DATA_RELEASE_AVAILABLE_TARGETS = []
