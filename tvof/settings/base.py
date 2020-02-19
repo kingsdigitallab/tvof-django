@@ -91,7 +91,7 @@ EMAIL_USE_TLS = False
 # Sender of error messages to ADMINS and MANAGERS
 SERVER_EMAIL = DEFAULT_FROM_EMAIL
 
-INSTALLED_APPS = (
+INSTALLED_APPS = [
     # leave this ABOVE wagtail.search to avoid command conflicts (update_index)
     'haystack',
 
@@ -122,9 +122,9 @@ INSTALLED_APPS = (
     'compressor',
     'cms',
     'rest_framework',
-)
+]
 
-INSTALLED_APPS += (
+INSTALLED_APPS += [
     # your project apps here
     'activecollab_digger',
     'kdl_ldap',
@@ -133,8 +133,9 @@ INSTALLED_APPS += (
     'text_patterns',
     'text_alignment',
     'text_search',
+    'data_release',
     'tvof',
-)
+]
 
 INTERNAL_IPS = ['127.0.0.1']
 
@@ -654,3 +655,90 @@ SETTINGS_JS = [
 WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
     'text_search.views.transform_search_facets'
 ]
+
+# See data_release app
+DATA_RELEASE = {
+    'sites': {
+        # Don't edit the first entry, it's a special one for the current site.
+        'source': {
+            'name': 'This website',
+            'path': BASE_DIR,
+        },
+        'dev': {
+            'name': 'Development site',
+            'path': '/vol/tvof2/webroot/dev/django/tvof-django',
+        },
+        'liv': {
+            'name': 'Public live site',
+            # 'path': '/vol/tvof2/webroot/liv/django/tvof-django',
+        },
+        # for testing in vagrant only.
+        # you'll need to create this folder:
+        # /home/vagrant/tvof_dev/kiln_out
+        'vagrant_mirror': {
+            'name': 'Vagrant mirror',
+            'path': '/home/vagrant/tvof_dev',
+        },
+    },
+    'files': OrderedDict([
+        ['fr_semi_diplomatic', {
+            'name': 'Fr semi-diplomatic',
+            'path': 'kiln_out/backend-texts-fr20125-semi-diplomatic',
+            'group': 'tei',
+        }],
+        ['fr_interpretive', {
+            'name': 'Fr interpretive',
+            'path': 'kiln_out/backend-texts-fr20125-interpretive',
+            'group': 'tei',
+        }],
+        ['royal_semi_diplomatic', {
+            'name': 'Royal semi-diplomatic',
+            'path': 'kiln_out/backend-texts-royal-semi-diplomatic',
+            'group': 'tei',
+        }],
+        ['royal_interpretive', {
+            'name': 'Royal interpretive',
+            'path': 'kiln_out/backend-texts-royal-interpretive',
+            'group': 'tei',
+        }],
+
+        ['bibliography', {
+            'name': 'Bibliography',
+            'path': 'kiln_out/backend-bibliography',
+            'group': 'tei',
+        }],
+        ['alignment', {
+            'name': 'Alignment',
+            'path': 'kiln_out/backend-preprocess-alists-tvofparaalignmentxml',
+            'group': 'tei',
+        }],
+
+        ['kwic_out', {
+            'name': 'Kwic out',
+            'path': 'kiln_out/received/kwic-out.xml',
+            'group': 'search',
+        }],
+        ['fr_tokenised', {
+            'name': 'Fr Tokenised',
+            'path': 'kiln_out/prepared/fr_tokenised.xml',
+            'group': 'search',
+        }],
+        ['royal_tokenised', {
+            'name': 'Royal Tokenised',
+            'path': 'kiln_out/prepared/royal_tokenised.xml',
+            'group': 'search',
+        }],
+    ]),
+    'file_groups': OrderedDict([
+        ['tei', {'name': 'TEI files'}],
+        ['search', {'name': 'Search index'}]
+    ])
+}
+
+# List of available targets for data release web page.
+# Each entry refers to a key in DATA_RELEASE['sites'].
+# First entry is the default target.
+#
+# LEAVE THIS BLANK HERE - customise it in local.py on stg and your vagrant
+#
+DATA_RELEASE_AVAILABLE_TARGETS = []

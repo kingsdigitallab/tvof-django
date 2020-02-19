@@ -5,10 +5,12 @@ from functools import wraps
 
 from django.conf import settings as django_settings
 from django.core.management.utils import get_random_secret_key
-from fabric.api import (cd, env, prefix, prompt, put, quiet, require, run,
-                        settings, sudo, task)
+from fabric.api import (
+    cd, env, prompt, put, quiet, require, run, settings, sudo, task
+)
 from fabric.colors import green, yellow
 from fabric.contrib import django
+from fabric.contrib.files import exists
 from fabric.utils import abort
 
 # put project directory in path
@@ -27,17 +29,34 @@ FABRIC_GATEWAY: e.g. myusername@my.ssh.proxy.com
     default: don't use a gateway, acces remote server directly
 FABRIC_USER: name of user used to execute command on remote server
     default: name of user who started fab
+FABRIC_DEV_PACKAGES: dev python packages from github to install outside venv
+    default: empty
+    example:
+    {
+        'git': 'https://github.com/kingsdigitallab/django-kdl-wagtail.git',
+        'folder_git': 'django-kdl-wagtail',
+        'folder_package': 'kdl_wagtail',
+        'branch': 'develop',
+        # which fab servers should use this?
+        'servers': ['lcl', 'dev'],
+    }
+]
+    Note: to let pipenv manage your package instead, you'll need to:
+        - delete the two package folders in your project dir
+        - pipenv uninstall PACKAGE && pipenv install PACKAGE
 
 '''
 
 
-# The name of the Django app for this project
-# Folder that contains settings/local.py
 def find_project_name():
+    '''
+    The name of the Django app for this project
+    Folder that contains settings/local.py
+    '''
     ret = None
     for name in os.listdir(project_root):
-        if os.path.exists(os.path.join(
-                project_root, name, 'settings', 'local.py')):
+        path = os.path.join(project_root, name, 'settings', 'local.py')
+        if os.path.exists(path):
             if ret is not None:
                 raise Exception('Ambiguous project name')
             ret = name
@@ -71,11 +90,13 @@ env.django_root_path = '/vol/{}/webroot/'.format(SERVER_NAME)
 # if you are behind a proxy.
 FABRIC_GATEWAY = getattr(django_settings, 'FABRIC_GATEWAY', None)
 if FABRIC_GATEWAY:
-    env.forward_agent = True
     env.gateway = FABRIC_GATEWAY
 
 # Name of linux user who deploys on the remote server
 env.user = django_settings.FABRIC_USER
+env.forward_agent = True
+
+env.dev_packages = getattr(django_settings, 'FABRIC_DEV_PACKAGES', [])
 
 
 def server(func):
@@ -91,6 +112,16 @@ def server(func):
         return func(*args, **kwargs)
 
     return decorated
+
+
+@task
+@server
+def lcl():
+    env.srvr = 'lcl'
+    env.user = 'vagrant'
+    env.gateway = None
+    env.hosts = ['127.0.0.1']
+    set_srvr_vars()
 
 
 @task
@@ -117,84 +148,95 @@ def liv():
 def set_srvr_vars():
     # Absolute filesystem path to the django project root
     # Contains manage.py
-    env.path = os.path.join(env.root_path, env.srvr, 'django',
-                            '{}-django'.format(PROJECT_NAME))
-    env.within_virtualenv = 'source {}'.format(
-        os.path.join(get_virtual_env_path(), 'bin', 'activate'))
+    if is_vagrant():
+        env.path = '/vagrant'
+    else:
+        env.path = os.path.join(
+            env.root_path, env.srvr, 'django', '{}-django'.format(PROJECT_NAME)
+        )
+
+    env.within_virtualenv = 'pipenv run '
 
 
 @task
 def setup_environment(version=None):
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+    require('srvr', provided_by=env.servers)
+
     clone_repo()
-    create_virtualenv()
+    fix_permissions()
     update(version)
     install_requirements()
 
 
 @task
-def create_virtualenv():
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
-    env_vpath = get_virtual_env_path()
-    with quiet():
-        if run('ls {}'.format(env_vpath)).succeeded:
-            print(
-                green('virtual environment at [{}] exists'.format(env_vpath)))
-            return
-
-    # All we need is a .venv dir in the project folder;
-    # 'pipenv install' will set it up first time
-    print(yellow('setting up virtual environment in [{}]'.format(env_vpath)))
-    run('mkdir {}'.format(env_vpath))
-
-
-def get_virtual_env_path():
-    '''Returns the absolute path to the python virtualenv for the server
-    (dev, stg, live) we are working on.
-    E.g. /vol/tvof/webroot/.../.venv
-    '''
-    return os.path.join(env.path, '.venv')
-
-
-@task
 def clone_repo():
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
-    with quiet():
-        if run('ls {}'.format(os.path.join(env.path, '.git'))).succeeded:
-            print(green(('repository at'
-                         ' [{}] exists').format(env.path)))
-            return
+    require('srvr', 'path', provided_by=env.servers)
 
-    print(yellow('cloneing repository to [{}]'.format(env.path)))
+    git_path = os.path.join(env.path, '.git')
+    if remote_path_exists(git_path):
+        print(green(('repository at [{}] exists').format(env.path)))
+        return
+
+    print(yellow('cloning repository to [{}]'.format(env.path)))
     run('git clone {} {}'.format(REPOSITORY, env.path))
 
 
 @task
 def install_requirements():
-
     require('srvr', 'path', provided_by=env.servers)
 
     create_virtualenv()
 
-    fix_permissions('virtualenv')
+    dev_flag = ''
+    if is_vagrant():
+        dev_flag = '-d'
 
     with cd(env.path):
         check_pipenv()
-        run('pipenv sync')
+        run('pipenv sync {}'.format(dev_flag))
         run('pipenv clean')
 
+        run('npm ci')
 
-@task
-def check_pipenv():
-    with quiet():
-        if run('which pipenv').failed:
-            abort('pipenv is missing, '
-                  'please install it as root with "pip install pipenv"')
+        # npm ci recreates the node_modules folder
+        # so we have to fix its permissions
+        run('chmod -R g+rwx node_modules')
 
 
 @task
-def reinstall_requirement(which):
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+def create_virtualenv():
+    '''
+    Create the pipenv venv if it is not there yet.
+    If within vagrant we create it in vagrant home folder.
+    If remote server, we create it within the project folder.
+    '''
+    require('srvr', 'path', provided_by=env.servers)
+
+    check_pipenv()
+    with cd(env.path):
+        venv_path = get_virtual_env_path()
+        if venv_path is not None:
+            print(green('virtual environment already exists'))
+        else:
+            print(yellow('setting up virtual environment'))
+
+            dev_flag = ''
+            if is_vagrant():
+                dev_flag = '-d'
+
+            # with pipenv we don't really need to set up the venv
+            # it will be done automatically when we call pipenv install / sync
+            if not is_vagrant() and not exists('.venv'):
+                run('mkdir .venv')
+            if not exists('Pipfile'):
+                run('pipenv install --three {}'.format(dev_flag))
+            if not exists('Pipfile.lock'):
+                run('pipenv lock {}'.format(dev_flag))
+
+
+@task
+def reinstall_requirement():
+    require('srvr', 'path', provided_by=env.servers)
 
     with cd(env.path):
         check_pipenv()
@@ -205,11 +247,15 @@ def reinstall_requirement(which):
 
 @task
 def deploy(version=None):
+    '''
+    GN: permission-fixing has been removed from this process.
+    Because the new version should be more sustainable.
+    Only call fab dev fix_permissions when you have issues.
+    Now the deploy process can be run entirely without sudo.
+    '''
     update(version)
     install_requirements()
     upload_local_settings()
-    own_django_log()
-    fix_permissions()
     migrate()
     collect_static()
     # update_index()
@@ -225,7 +271,7 @@ def update(version=None):
     if version:
         # try specified version first
         to_version = version
-    elif not version and env.srvr in ['local', 'vagrant', 'dev']:
+    elif env.srvr in ['local', 'vagrant', 'dev', 'lcl']:
         # if local, vagrant or dev deploy to develop branch
         to_version = 'develop'
     else:
@@ -233,12 +279,48 @@ def update(version=None):
         to_version = 'master'
 
     with cd(env.path):
-        run('git pull')
+        # keep this sequence as it will cope well with change of branch
+        # during deployment.
+        run('git fetch')
         run('git checkout {}'.format(to_version))
+        run('git merge')
+
+    update_dev_packages()
+
+
+@task
+def update_dev_packages():
+    '''pull all the dev packages'''
+
+    for package in env.dev_packages:
+        if env.srvr.lower() in package['servers']:
+            path_git = os.path.join(env.path, package['folder_git'])
+            path_package = os.path.join(env.path, package['folder_package'])
+
+            # clone package
+            with cd(env.path):
+                if not exists(path_git):
+                    run('git clone -b {} --single-branch {}'.format(
+                        package['branch'], package['git']
+                    ))
+
+            # pull package
+            with cd(os.path.join(env.path, package['folder_git'])):
+                run('git pull')
+
+            # create symlink
+            with cd(env.path):
+                if not exists(path_package):
+                    run('ln -s {}'.format(os.path.join(
+                        path_git, package['folder_package']
+                    )))
 
 
 @task
 def upload_local_settings():
+    if is_vagrant():
+        return
+
     require('srvr', 'path', provided_by=env.servers)
 
     with cd(env.path):
@@ -266,110 +348,160 @@ def upload_local_settings():
 @task
 def own_django_log():
     """ make sure logs/django.log is owned by www-data"""
+    if is_vagrant():
+        return
+
     require('srvr', 'path', provided_by=env.servers)
 
     with quiet():
         log_path = os.path.join(env.path, 'logs', 'django.log')
-        if run('ls {}'.format(log_path)).succeeded:
+        if exists(log_path):
             sudo('chown www-data:www-data {}'.format(log_path))
             sudo('chmod g+rw {}'.format(log_path))
 
 
 @task
-def fix_permissions(category='static'):
+def fix_permissions():
     '''
-    Reset the permissions on various paths.
-    category: determines which set of paths to work on:
-        'static' (default): django static path + general project path
-        'virtualenv': fix the virtualenv permissions
+    Reset all permissions in the django project.
+    Uses facl for www-data, with defaults for newly created files.
+    This permission configuration should cope with changes
+    from www-data and kdl-staff users and support multiple deployments
+    from various kdl-staff.
     '''
-    require('srvr', 'path', provided_by=env.servers)
-
-    processed = False
-
-    dir_names = ['static', 'logs', 'django_cache']
-
-    with cd(env.path), quiet():
-        if category == 'static':
-            processed = True
-
-            for dir_name in dir_names:
-                if run('ls "{}"'.format(dir_name)).succeeded:
-                    sudo('setfacl -R -m g:www-data:rwx "{}"'.format(dir_name))
-                    sudo('setfacl -R -d -m g:www-data:rwx "{}"'.
-                         format(dir_name))
-                    sudo('setfacl -R -m g:kdl-staff:rwx "{}"'.format(dir_name))
-                    sudo('setfacl -R -d -m g:kdl-staff:rwx "{}"'.
-                         format(dir_name))
-                    sudo('chgrp -Rf kdl-staff "{}"'.format(dir_name))
-                    sudo('chmod -Rf g+w "{}"'.format(dir_name))
-
-        if category == 'virtualenv':
-            path = get_virtual_env_path()
-            sudo('chgrp -Rf kdl-staff {}'.format(path))
-            sudo('chmod -Rf g+rw {}'.format(path))
-            processed = True
-
-    if not processed:
-        raise Exception(
-            'fix_permission(category="{}"): unrecognised category name.'.
-            format(category)
-        )
-
-
-@task
-def migrate(app=None):
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
-
-    with cd(env.path), prefix(env.within_virtualenv):
-        run('./manage.py migrate {}'.format(app if app else ''))
-
-
-@task
-def collect_static(process=False):
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
-
-    with cd(env.path):
-        run('npm ci')
-
-    if env.srvr in ['local', 'vagrant']:
-        print(yellow('Do not run collect_static on local servers'))
+    if is_vagrant():
         return
 
-    with cd(env.path), prefix(env.within_virtualenv):
-        run('./manage.py collectstatic {process} --noinput'.format(
-            process=('--no-post-process' if not process else '')))
+    require('srvr', 'path', provided_by=env.servers)
 
+    with cd(env.path), quiet():
+        # write access to kdl-staff and current user
+        # read access to www-data
+        paths = '.'
+        path_venv = get_virtual_env_path()
+        if path_venv is not None:
+            paths += ' ' + path_venv
 
-@task
-def update_index():
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+        sudo('setfacl -R -b {}'.format(paths))
+        sudo('chown -Rf {}:kdl-staff {}'.format(env.user, paths))
+        sudo('chmod -Rf u+rw,g+rw,o-rwx {}'.format(paths))
+        sudo((
+            'setfacl -R -d -m u:www-data:rx,g:kdl-staff:rwx,o::---,m::rwx {}'
+        ).format(paths))
+        sudo('setfacl -R -m u:www-data:rx {}'.format(paths))
 
-    with cd(env.path), prefix(env.within_virtualenv):
-        run('./manage.py update_index')
+        # write access for www-data only where needed
+        paths = [
+            'logs',
+            'static',
+            'media',
+            'django_cache',
+            'kiln_out',
+        ]
 
+        paths = ' '.join([
+            path
+            for path
+            in paths
+            if path and exists(path)
+        ])
 
-@task
-def clear_cache():
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
-
-    with cd(env.path), prefix(env.within_virtualenv):
-        run('./manage.py clear_cache')
+        sudo('setfacl -R -d -m u:www-data:rwx {}'.format(paths))
+        sudo('setfacl -R -m u:www-data:rwx {}'.format(paths))
 
 
 @task
 def touch_wsgi():
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+    if is_vagrant():
+        return
 
-    with cd(os.path.join(env.path, PROJECT_NAME)), \
-            prefix(env.within_virtualenv):
+    require('srvr', 'path', provided_by=env.servers)
+
+    with cd(os.path.join(env.path, PROJECT_NAME)):
         run('touch wsgi.py')
+
+
+# =======================================================================
+# Django commands
+
+@task
+def migrate(app=None):
+    run_django_command('migrate {}'.format(app if app else ''))
+
+
+@task
+def collect_static(process=False):
+    if is_vagrant():
+        return
+
+    cmd = 'collectstatic {process} --noinput'.format(
+        process=('--no-post-process' if not process else '')
+    )
+
+    run_django_command(cmd)
+
+
+@task
+def update_index():
+    run_django_command('update_index')
+
+
+@task
+def clear_cache():
+    run_django_command('clear_cache')
 
 
 @task
 def check_deploy():
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+    require('srvr', provided_by=env.servers)
 
     if env.srvr in ['stg', 'liv']:
-        with cd(env.path), prefix(env.within_virtualenv):
-            run('./manage.py check --deploy')
+        run_django_command('check --deploy')
+
+# =======================================================================
+# Helper functions
+
+
+def is_vagrant():
+    '''Return True if the task runs within local vagrant env.
+    Return False if the task runs within a remote server.
+    '''
+    return env.srvr in ['local', 'vagrant', 'lcl']
+
+
+def remote_path_exists(path):
+    '''Returns True if remote path exists (folder or file)
+    path can be relative or absolute.
+    '''
+    return exists(path)
+
+
+def run_django_command(command):
+    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
+
+    with cd(env.path):
+        run('{} python manage.py {}'.format(env.within_virtualenv, command))
+
+
+def get_virtual_env_path():
+    '''Returns the absolute path to the python virtualenv for the server
+    (dev, stg, live) we are working on.
+    E.g. /vol/tvof/webroot/.../.venv
+
+    return None if no venv is associated to the project folder.
+    '''
+    require('srvr', 'path')
+
+    with cd(env.path), settings(warn_only=True):
+        ret = run('PIPENV_VERBOSITY=-1 pipenv --venv')
+        if not ret.succeeded:
+            ret = None
+
+    return ret
+
+
+def check_pipenv():
+    with quiet():
+        if run('which pipenv').failed:
+            abort('pipenv is missing, '
+                  'please install it as root with "pip install pipenv"')
