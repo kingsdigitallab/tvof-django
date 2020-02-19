@@ -396,6 +396,7 @@ def fix_permissions():
             'static',
             'media',
             'django_cache',
+            'kiln_out',
         ]
 
         paths = ' '.join([
