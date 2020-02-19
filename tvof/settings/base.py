@@ -693,7 +693,7 @@ DATA_RELEASE = {
         }],
         ['royal_semi_diplomatic', {
             'name': 'Royal semi-diplomatic',
-            'path': 'kiln_out/backend-texts-royal-interpretive',
+            'path': 'kiln_out/backend-texts-royal-semi-diplomatic',
             'group': 'tei',
         }],
         ['royal_interpretive', {
