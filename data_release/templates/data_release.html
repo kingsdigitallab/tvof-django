@@ -1,0 +1,67 @@
+{% extends "base.html" %}
+{% load staticfiles compress cms_tags wagtailcore_tags %}
+
+{% block meta_title %}Data release{% endblock %}
+
+{% block extra_head %}
+  {% compress css %}
+  {% endcompress %}
+{% endblock %}
+
+{% block title %}Data release{% endblock %}
+
+{% block main_wrapper %}
+  <form action="" method="post">
+    <section class="main">
+      <div class="row">
+        <div class="large-12 columns">
+          <h1>Data release</h1>
+        </div>
+      </div>
+
+      <div class="row">
+
+        <div class="large-6 columns">
+          <h2>Source: this website</h2>
+
+          {% csrf_token %}
+          {# {{ form }} #}
+
+          {% include "site_groups.html" with groups=source_groups editable=1 %}
+
+          <input type="submit" value="Submit">
+        </div>
+
+        <div class="large-6 columns">
+          <h2><i class="fa fa-arrow-right" aria-hidden="true"></i> Target: {{ selected_target.name }}</h2>
+          {% if selected_target or unselected_targets %}
+            {% for site in unselected_targets %}
+              <p>(<a href="?target={{site.key}}">change to {{ site.name }}</a>)</p>
+
+              {% include "site_groups.html" with groups=target_groups %}
+
+            {% endfor %}
+          {% else %}
+            <p>
+              You cannot release data from this website.
+              <br>
+              To release data, go to the staging site.
+              <br><br>
+              <em>If you are a developer/sysadmin,
+              you may want to define
+              DATA_RELEASE_AVAILABLE_TARGETS
+              in your local.py</em>
+            </p>
+          {% endif %}
+        </div>
+
+      </div>
+
+      <br>
+    </section>
+  </endform>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+{% endblock %}

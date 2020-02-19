@@ -1,0 +1,13 @@
+{% for group in groups %}
+  <h3>{{ group.name }}</h3>
+  <ul>
+    {% for file in group.files %}
+      <li>
+        <label>
+          {% if editable %}<input type="checkbox" name="{{ file.key }}">{% endif%}
+          {{ file.name }} ({{ file.stats }})
+        </label>
+      </li>
+    {% endfor %}
+  </ul>
+{% endfor %}
