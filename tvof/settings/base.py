@@ -670,7 +670,7 @@ DATA_RELEASE = {
         },
         'liv': {
             'name': 'Public live site',
-            # 'path': '/vol/tvof2/webroot/liv/django/tvof-django',
+            'path': '/vol/tvof2/webroot/liv/django/tvof-django',
         },
         # for testing in vagrant only.
         # you'll need to create this folder:
