@@ -308,6 +308,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL.strip('/'))
 if not os.path.exists(MEDIA_ROOT):
     os.makedirs(MEDIA_ROOT)
 
+MEDIA_UPLOAD_DIR = os.path.join(MEDIA_ROOT, 'upload')
+if not os.path.exists(MEDIA_UPLOAD_DIR):
+    os.makedirs(MEDIA_UPLOAD_DIR)
+
 # -----------------------------------------------------------------------------
 # Installed Applications Settings
 # -----------------------------------------------------------------------------

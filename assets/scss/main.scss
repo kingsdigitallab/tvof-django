@@ -1137,3 +1137,35 @@ select.search-orders {
 input#autosuggest-input {
     margin-bottom: 0;
 }
+
+// /data_release
+
+.file-group {
+    label {
+        display: inline;
+        padding: 0.4em;
+        border: 2px solid transparent;
+    }
+    input + label:hover {
+      border: 2px solid orange;
+    }
+    input:checked + label {
+        background-color: lightgoldenrodyellow;
+    }
+}
+
+.messages {
+  background-color: #edc;
+  padding: 0.5rem;
+  list-style: none;
+
+  .error {
+    color: red;
+    &:before {
+      content: '\26A0';
+      margin-right: 0.5rem;
+      font-size: 1.5rem;
+    }
+  }
+
+}

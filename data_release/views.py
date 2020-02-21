@@ -5,10 +5,11 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from shutil import copy2
 import os
+from django.core.exceptions import ValidationError
 
 
 class DataReleaseForm(forms.Form):
-    name = forms.CharField(required=False)
+    index_input_file = forms.FileField(required=False)
 
 
 class DataReleaseView(LoginRequiredMixin, FormView):
@@ -18,6 +19,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
     def __init__(self, *args, **kwargs):
         self.config = settings.DATA_RELEASE
+        self.errors = []
         for k, v in self.config['sites'].items():
             v['key'] = k
 
@@ -47,7 +49,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                     'files': files
                 }
                 ret.append(group)
-            print(files)
+            # print(files)
 
         return ret
 
@@ -55,7 +57,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         ret = 'not found'
         path = os.path.join(site['path'], file['path'])
 
-        print(path)
+        # print(path)
 
         if os.path.exists(path):
             from datetime import datetime
@@ -90,17 +92,75 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         target = self.get_selected_target()
 
         if ret and source and target:
+            self.process_index_input_file()
+
             for file_key, file in self.config['files'].items():
                 ticked = self.request.POST.get(file_key, '')
                 if ticked:
                     src = os.path.join(source['path'], file['path'])
                     dst = os.path.join(target['path'], file['path'])
-                    # todo: error management
+                    # TODO: error management
                     copy2(src, dst)
 
-            # todo: restart site
-
         return ret
+
+    def process_index_input_file(self):
+        index_input_file = self.request.FILES.get('index_input_file', None)
+        if not index_input_file:
+            return
+
+        # write the file to disk
+        upload_path = os.path.join(settings.MEDIA_UPLOAD_DIR, 'search.zip')
+        with open(upload_path, 'wb+') as destination:
+            for chunk in index_input_file.chunks():
+                destination.write(chunk)
+
+        import zipfile
+        # unzip it
+        unzip_path = settings.MEDIA_UPLOAD_DIR
+        with zipfile.ZipFile(upload_path, 'r') as zip_ref:
+            zip_ref.extractall(unzip_path)
+
+            # move and rename the files to kiln_out
+            file_names = zip_ref.namelist()
+
+            #
+            patterns = {
+                r'fr': 'prepared/fr_tokenised.xml',
+                r'royal': 'prepared/royal_tokenised.xml',
+                r'kwic': 'received/kwic-out.xml'
+            }
+            if len(file_names) != 3:
+                self.add_error(
+                    'zip file should contain three files exactly'
+                )
+            else:
+                import re
+                for file_name in file_names:
+                    recognised = False
+                    for pattern, new_name in patterns.items():
+                        if re.search(r'(?i)' + re.escape(pattern), file_name):
+                            print(file_name, new_name)
+                            os.replace(
+                                os.path.join(unzip_path, file_name),
+                                os.path.join(
+                                    settings.KILN_STATIC_PATH, new_name
+                                )
+                            )
+                            recognised = True
+                    if not recognised:
+                        self.add_error(
+                            '{} is not a recognised file name.'.format(file_name))
+                        break
+
+            print(file_names)
+
+    def add_error(self, message):
+        from django.contrib import messages
+        messages.error(self.request, message)
+
+    def get_errors(self):
+        return self.errors
 
     def get_unselected_targets(self):
         selected = self.get_selected_target()
@@ -119,5 +179,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         ret['unselected_targets'] = self.get_unselected_targets()
         ret['source_groups'] = self.get_site_groups()
         ret['target_groups'] = self.get_site_groups(True)
+
+        ret['errors'] = self.get_errors()
 
         return ret
