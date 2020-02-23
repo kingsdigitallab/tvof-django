@@ -243,6 +243,10 @@ class Job:
                 os.kill(ret, 0)
             except ProcessLookupError:
                 ret = self.set_job_status(STATUS_DIED)
+            except PermissionError:
+                # www-data may not have permissions to
+                # check if pid exists... we just assume its running
+                pass
 
         return ret
 
