@@ -34,9 +34,13 @@
           {% endif %}
           {{ form.non_field_errors }}
 
-          {% include "site_groups.html" with groups=source_groups editable=1 %}
+          {% include "site_groups.html" with groups=source_groups editable=editable %}
 
-          <input type="submit" value="Submit">
+          {% if editable %}
+            <button type="submit" class="button primary">Apply</button>
+          {% else %}
+            <p><em>Automated text conversion or indexing is scheduled or in progress. Please wait until they complete to upload or copy files.</em></p>
+          {% endif %}
         </div>
 
         <div class="large-6 columns">
@@ -45,7 +49,7 @@
             {% for site in unselected_targets %}
               <p>(<a href="?target={{site.key}}">change to {{ site.name }}</a>)</p>
 
-              {% include "site_groups.html" with groups=target_groups %}
+              {% include "site_groups.html" with groups=target_groups editable=0 %}
 
             {% endfor %}
           {% else %}

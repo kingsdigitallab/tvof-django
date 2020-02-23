@@ -4,6 +4,11 @@
     {{ form.index_input_file.errors }}
     {{ form.index_input_file }}
   {% endif %}
+  {% if group.job %}
+    <p class="job-info {{group.job.class}}" title="Last activity: {{ group.job.info.modified|date:'D j M - P'|default:'never run' }}">
+      {{ group.job.label }}: {{ group.job.info.message }}
+    </p>
+  {% endif %}
   <ul class="file-group">
     {% for file in group.files %}
       <li>

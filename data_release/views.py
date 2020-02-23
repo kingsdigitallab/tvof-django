@@ -6,6 +6,7 @@ from django.conf import settings
 from shutil import copy2
 import os
 from django.core.exceptions import ValidationError
+from .jobs import job_action, STATUS_SCHEDULED
 
 
 class DataReleaseForm(forms.Form):
@@ -35,6 +36,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
         for group_key, group in self.config['file_groups'].items():
             files = []
+
             for file_key, afile in self.config['files'].items():
                 if afile['group'] == group_key:
                     file = {k: v for k, v in afile.items()}
@@ -42,14 +44,38 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                     file['key'] = file_key
                     file['stats'] = self.get_file_stats(site, file)
                     files.append(file)
+
             if files:
-                group = {
+                job_slug = group['job']
+
+                group_dict = {
                     'key': group_key,
                     'name': group['name'],
-                    'files': files
+                    'files': files,
+                    'job': self.config['jobs'][job_slug].copy(),
                 }
-                ret.append(group)
-            # print(files)
+
+                group_dict['job']['info'] = job_action(
+                    job_slug,
+                    'info',
+                    site['path']
+                )
+
+                print(group_dict['job'])
+
+                job_status = group_dict['job']['info']['status']
+                class_css = ''
+                if job_status > 0:
+                    self.running_or_scheduled_job_count += 1
+                    class_css = 'job-running'
+                elif job_status == STATUS_SCHEDULED:
+                    self.running_or_scheduled_job_count += 1
+                    class_css = 'job-scheduled'
+                elif job_status != 0:
+                    class_css = 'job-error'
+                group_dict['job']['class'] = class_css
+
+                ret.append(group_dict)
 
         return ret
 
@@ -57,13 +83,11 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         ret = 'not found'
         path = os.path.join(site['path'], file['path'])
 
-        # print(path)
-
         if os.path.exists(path):
             from datetime import datetime
             modified = os.path.getmtime(path)
             ret = datetime.utcfromtimestamp(modified)
-            ret = ret.strftime('%d/%m/%Y %H:%M:%S')
+            ret = ret.strftime('%d %b %Y, %H:%M:%S')
 
         return ret
 
@@ -94,6 +118,8 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         if ret and source and target:
             self.process_index_input_file()
 
+            search_file_copied = False
+
             for file_key, file in self.config['files'].items():
                 ticked = self.request.POST.get(file_key, '')
                 if ticked:
@@ -101,6 +127,12 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                     dst = os.path.join(target['path'], file['path'])
                     # TODO: error management
                     copy2(src, dst)
+
+                    if file['group'] == 'search':
+                        search_file_copied = True
+
+            if search_file_copied:
+                job_action('index', 'schedule', target['path'])
 
         return ret
 
@@ -140,7 +172,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                     recognised = False
                     for pattern, new_name in patterns.items():
                         if re.search(r'(?i)' + re.escape(pattern), file_name):
-                            print(file_name, new_name)
+                            # print(file_name, new_name)
                             os.replace(
                                 os.path.join(unzip_path, file_name),
                                 os.path.join(
@@ -153,7 +185,9 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                             '{} is not a recognised file name.'.format(file_name))
                         break
 
-            print(file_names)
+                if recognised:
+                    # schedule the indexing
+                    job_action('index', 'schedule', settings.BASE_DIR)
 
     def add_error(self, message):
         from django.contrib import messages
@@ -175,10 +209,15 @@ class DataReleaseView(LoginRequiredMixin, FormView):
     def get_context_data(self, **kwargs):
         ret = super().get_context_data(**kwargs)
 
+        self.running_or_scheduled_job_count = 0
+
         ret['selected_target'] = self.get_selected_target()
         ret['unselected_targets'] = self.get_unselected_targets()
         ret['source_groups'] = self.get_site_groups()
         ret['target_groups'] = self.get_site_groups(True)
+        ret['editable'] = \
+            self.running_or_scheduled_job_count == 0
+        print('sch-running-count', self.running_or_scheduled_job_count)
 
         ret['errors'] = self.get_errors()
 
