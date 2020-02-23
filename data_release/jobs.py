@@ -4,15 +4,29 @@ from datetime import datetime
 import os
 import signal
 from django.core.management import call_command
-from subprocess import PIPE, run
+from subprocess import PIPE, run, STDOUT
+
+'''
+Minimalistic job scheduling system for the text processing tasks.
+
+Supposed to be used in conjunction with a cronjob
+and Django management commands (see 'datajob').
+
+All the settings are specified in settings.py DATA_RELEASE['jobs'].
+
+Job status save in kiln_out/jobs/JOBNAME.status
+Job execution log saved in kiln_out/jobs/JOBNAME.log
+'''
 
 STATUS_SCHEDULED = -1000  # Exception: this is NOT an error!
 STATUS_DIED = -1008
 STATUS_KILLED = -1009
 INVALID_ACTION = -1010
+STATUS_INVALID_STATUS_CODE = -1011
+STATUS_PYTHON_EXCEPTION = -1012
 
 
-def job_action(job_key, action='', project_root=''):
+def job_action(job_key, action, project_root=None):
     '''
     A facade for the JobX classes.
 
@@ -56,9 +70,14 @@ def job_action(job_key, action='', project_root=''):
 
 
 class Job:
+    '''Abstract base class for all Job types.
+    Subclasses just have to define the actual job in _run(self)
+    '''
     slug = 'unnamed'
 
-    def __init__(self, project_root):
+    def __init__(self, project_root=None):
+        if project_root is None:
+            project_root = settings.BASE_DIR
         self.project_root = project_root
 
     def log(self):
@@ -82,8 +101,12 @@ class Job:
             message = 'died'
         elif status == STATUS_KILLED:
             message = 'interrupted'
+        elif status == STATUS_INVALID_STATUS_CODE:
+            message = 'error (invalid status code)'
+        elif status == STATUS_PYTHON_EXCEPTION:
+            message = 'python exception'
         elif status < 0:
-            message = 'unknown error'
+            message = 'unknown error ({})'.format(status)
         elif status > 0:
             message = 'running'
 
@@ -153,25 +176,34 @@ class Job:
         # sysout = sys.stdout
         self.run_fh = None
 
-        try:
-            self.run_fh = open(self.get_job_path('log'), 'w')
-            self.run_fh.write('start')
-            # sys.stdout = fh
-
+        with open(self.get_job_path('log'), 'wt') as self.run_fh:
             # run the job
-            ret = self._run()
-            if ret > 0:
-                ret = -ret
-        finally:
-            if self.run_fh:
-                self.run_fh.close()
-            # sys.stdout = sysout
-            # raise e
+            self._log('Start', True)
+            try:
+                # sys.stdout = fh
+                ret = self._run()
+                if ret > 0:
+                    ret = -ret
+            except BaseException as e:
+                self._log('EXCEPTION: ({}) {}'.format(
+                    e.__class__.__name__, str(e)
+                ))
+                ret = STATUS_PYTHON_EXCEPTION
 
-        # set new status
-        self.set_job_status(ret)
+            # set new status
+            self.set_job_status(ret)
+            self._log('Done ({})'.format(ret), True)
 
         return ret
+
+    # ------------------------------------
+
+    def _log(self, message, show_date=False):
+        '''Write a message to the job log'''
+        if show_date:
+            message += ' {}'.format(datetime.utcnow())
+        self.run_fh.write(message + '\n')
+        self.run_fh.flush()
 
     def get_job_path(self, file_type):
         jobs_path = os.path.join(self.project_root, 'kiln_out', 'jobs')
@@ -203,7 +235,7 @@ class Job:
             try:
                 ret = int(ret)
             except:
-                pass
+                ret = STATUS_INVALID_STATUS_CODE
 
         if ret > 0:
             # still running?
@@ -231,8 +263,8 @@ class JobConvert(Job):
 
     def _run(self):
         command = settings.DATA_RELEASE['jobs'][self.slug]['command']
-        ret = os.system(command)
-        return ret
+        ret = run_shell_command(command, self.run_fh)
+        return ret.returncode
 
 
 class JobIndex(Job):
@@ -243,17 +275,21 @@ class JobIndex(Job):
             'rebuild_index', '--noinput',
             stdout=self.run_fh, stderr=self.run_fh
         )
+        if ret is None:
+            # rebuild_index returns None on success
+            ret = 0
         return ret
 
 
-def run_shell_command(command):
+def run_shell_command(command, fh):
     '''runs a shell command and returns a CompletedProcess object
     ret.stdout, ret.returncode
     '''
     ret = run(
         args=command,
-        stdout=PIPE,
-        stderr=PIPE,
+        stdout=fh,
+        stderr=STDOUT,
         shell=True
     )
+    print(ret)
     return ret

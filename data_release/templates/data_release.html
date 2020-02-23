@@ -34,7 +34,7 @@
           {% endif %}
           {{ form.non_field_errors }}
 
-          {% include "site_groups.html" with groups=source_groups editable=editable %}
+          {% include "site_groups.html" with groups=source_groups editable=editable job_site_key="source" %}
 
           {% if editable %}
             <button type="submit" class="button primary">Apply</button>
@@ -48,10 +48,8 @@
           {% if selected_target or unselected_targets %}
             {% for site in unselected_targets %}
               <p>(<a href="?target={{site.key}}">change to {{ site.name }}</a>)</p>
-
-              {% include "site_groups.html" with groups=target_groups editable=0 %}
-
             {% endfor %}
+            {% include "site_groups.html" with groups=target_groups editable=0  job_site_key=selected_target.key %}
           {% else %}
             <p>
               You cannot release data from this website.

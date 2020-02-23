@@ -5,8 +5,8 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from shutil import copy2
 import os
-from django.core.exceptions import ValidationError
 from .jobs import job_action, STATUS_SCHEDULED
+from django.views.generic.base import TemplateView
 
 
 class DataReleaseForm(forms.Form):
@@ -54,6 +54,8 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                     'files': files,
                     'job': self.config['jobs'][job_slug].copy(),
                 }
+
+                group_dict['job']['slug'] = job_slug
 
                 group_dict['job']['info'] = job_action(
                     job_slug,
@@ -182,7 +184,9 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                             recognised = True
                     if not recognised:
                         self.add_error(
-                            '{} is not a recognised file name.'.format(file_name))
+                            '{} is not a recognised file name.'.format(
+                                file_name
+                            ))
                         break
 
                 if recognised:
@@ -220,5 +224,30 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         print('sch-running-count', self.running_or_scheduled_job_count)
 
         ret['errors'] = self.get_errors()
+
+        return ret
+
+
+class DataReleaseJobView(LoginRequiredMixin, TemplateView):
+    template_name = 'data_release_job.html'
+
+    def get_context_data(self, **kwargs):
+        ret = super().get_context_data(**kwargs)
+
+        site_key = kwargs['site']
+        site_dict = settings.DATA_RELEASE['sites'].get(site_key, {})
+
+        ret['site'] = site_dict
+
+        if site_dict:
+            job_key = kwargs['job']
+
+            job_dict = settings.DATA_RELEASE['jobs'].get(job_key, {})
+
+            ret['job'] = job_dict.copy()
+            ret['job'].update({
+                'log': job_action(job_key, 'log', site_dict['path']),
+                'info': job_action(job_key, 'info', site_dict['path']),
+            })
 
         return ret

@@ -1,14 +1,22 @@
 {% for group in groups %}
   <h3>{{ group.name }}</h3>
+
   {% if group.key == 'search' and editable %}
     {{ form.index_input_file.errors }}
     {{ form.index_input_file }}
   {% endif %}
+
   {% if group.job %}
-    <p class="job-info {{group.job.class}}" title="Last activity: {{ group.job.info.modified|date:'D j M - P'|default:'never run' }}">
-      {{ group.job.label }}: {{ group.job.info.message }}
-    </p>
+    {% with group.job as job %}
+      <p class="job-info {{job.class}}" title="Last activity: {{ job.info.modified|date:'D j M - P'|default:'never run' }}">
+        {{ job.label }}:
+        <a href="{% url 'data_release_job' job_site_key job.slug %}" target="_blank" >
+          {{ job.info.message }}
+        </a>
+      </p>
+    {% endwith %}
   {% endif %}
+
   <ul class="file-group">
     {% for file in group.files %}
       <li>

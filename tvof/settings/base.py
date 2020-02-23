@@ -747,8 +747,8 @@ DATA_RELEASE = {
         ['convert', {
             'class_name': 'JobConvert',
             'label': 'Conversion',
-            'command': 'cd /vagrant/tmp && bash t.sh',
-            # 'command': 'cd /vol/tvof2/webroot/stg/tvof-kiln && bash download_and_publish.sh',
+            # 'command': 'cd /vagrant/tmp && bash t.sh',
+            'command': 'cd /vol/tvof2/webroot/stg/tvof-kiln && bash download_and_publish.sh',
             'help': 'download source TEI files from Dropbox and convert them to HTML (using Kiln)',
         }],
         ['index', {
