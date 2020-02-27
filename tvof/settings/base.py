@@ -308,6 +308,10 @@ MEDIA_ROOT = os.path.join(BASE_DIR, MEDIA_URL.strip('/'))
 if not os.path.exists(MEDIA_ROOT):
     os.makedirs(MEDIA_ROOT)
 
+MEDIA_UPLOAD_DIR = os.path.join(MEDIA_ROOT, 'upload')
+if not os.path.exists(MEDIA_UPLOAD_DIR):
+    os.makedirs(MEDIA_UPLOAD_DIR)
+
 # -----------------------------------------------------------------------------
 # Installed Applications Settings
 # -----------------------------------------------------------------------------
@@ -730,9 +734,29 @@ DATA_RELEASE = {
         }],
     ]),
     'file_groups': OrderedDict([
-        ['tei', {'name': 'TEI files'}],
-        ['search', {'name': 'Search index'}]
-    ])
+        ['tei', {
+            'name': 'TEI files',
+            'job': 'convert',
+        }],
+        ['search', {
+            'name': 'Search index',
+            'job': 'index',
+        }]
+    ]),
+    'jobs': OrderedDict([
+        ['convert', {
+            'class_name': 'JobConvert',
+            'label': 'Conversion',
+            # 'command': 'cd /vagrant/tmp && bash t.sh',
+            'command': 'cd /vol/tvof2/webroot/stg/tvof-kiln && bash download_and_publish.sh',
+            'help': 'download source TEI files from Dropbox and convert them to HTML (using Kiln)',
+        }],
+        ['index', {
+            'class_name': 'JobIndex',
+            'label': 'Indexing',
+            'help': 'rebuild the concordance index for the search page',
+        }],
+    ]),
 }
 
 # List of available targets for data release web page.

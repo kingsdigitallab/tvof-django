@@ -409,6 +409,10 @@ def fix_permissions():
         sudo('setfacl -R -d -m u:www-data:rwx {}'.format(paths))
         sudo('setfacl -R -m u:www-data:rwx {}'.format(paths))
 
+        # kiln_out needs to be owned by www-data
+        # because data_release sets the file metadata...
+        sudo('chown -Rf www-data:kdl-staff kiln_out')
+
 
 @task
 def touch_wsgi():

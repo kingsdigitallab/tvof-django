@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% load staticfiles compress cms_tags wagtailcore_tags %}
+
+{% block meta_title %}Data release{% endblock %}
+
+{% block extra_head %}
+  {% compress css %}
+  {% endcompress %}
+{% endblock %}
+
+{% block title %}Data release{% endblock %}
+
+{% block main_wrapper %}
+    <section class="main">
+      <div class="row">
+        <div class="large-12 columns">
+          <h1><a href="{% url 'data_release' %}">Data release</a> - {{ job.label }} ({{ site.name }})</h1>
+          <p class="job-info">{{ job.info.message }} ({{ job.info.modified|date:'D j M - P'|default:'never run' }})</p>
+          <pre class="job-log">{{ job.log }}
+          </pre>
+        </div>
+      </div>
+    </section>
+  </endform>
+{% endblock %}
+
+{% block extra_js %}
+  {{ block.super }}
+{% endblock %}

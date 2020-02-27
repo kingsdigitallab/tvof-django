@@ -11,7 +11,7 @@
 {% block title %}Data release{% endblock %}
 
 {% block main_wrapper %}
-  <form action="" method="post">
+  <form action="" method="post" enctype="multipart/form-data">
     <section class="main">
       <div class="row">
         <div class="large-12 columns">
@@ -25,11 +25,22 @@
           <h2>Source: this website</h2>
 
           {% csrf_token %}
-          {# {{ form }} #}
+          {% if messages %}
+            <ul class="messages">
+              {% for message in messages %}
+                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+              {% endfor %}
+            </ul>
+          {% endif %}
+          {{ form.non_field_errors }}
 
-          {% include "site_groups.html" with groups=source_groups editable=1 %}
+          {% include "site_groups.html" with groups=source_groups editable=editable job_site_key="source" %}
 
-          <input type="submit" value="Submit">
+          {% if editable %}
+            <button type="submit" class="button primary">Apply</button>
+          {% else %}
+            <p><em>Automated text conversion or indexing is scheduled or in progress. Please wait until they complete to upload or copy files.</em></p>
+          {% endif %}
         </div>
 
         <div class="large-6 columns">
@@ -37,10 +48,8 @@
           {% if selected_target or unselected_targets %}
             {% for site in unselected_targets %}
               <p>(<a href="?target={{site.key}}">change to {{ site.name }}</a>)</p>
-
-              {% include "site_groups.html" with groups=target_groups %}
-
             {% endfor %}
+            {% include "site_groups.html" with groups=target_groups editable=0  job_site_key=selected_target.key %}
           {% else %}
             <p>
               You cannot release data from this website.

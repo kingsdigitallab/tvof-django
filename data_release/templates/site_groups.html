@@ -1,10 +1,27 @@
 {% for group in groups %}
   <h3>{{ group.name }}</h3>
-  <ul>
+
+  {% if group.key == 'search' and editable %}
+    {{ form.index_input_file.errors }}
+    {{ form.index_input_file }}
+  {% endif %}
+
+  {% if group.job %}
+    {% with group.job as job %}
+      <p class="job-info {{job.class}}" title="Last activity: {{ job.info.modified|date:'D j M - P'|default:'never run' }}">
+        {{ job.label }}:
+        <a href="{% url 'data_release_job' job_site_key job.slug %}" target="_blank" >
+          {{ job.info.message }}
+        </a>
+      </p>
+    {% endwith %}
+  {% endif %}
+
+  <ul class="file-group">
     {% for file in group.files %}
       <li>
-        <label>
-          {% if editable %}<input type="checkbox" name="{{ file.key }}">{% endif%}
+        {% if editable %}<input type="checkbox" id="{{ file.key }}" name="{{ file.key }}">{% endif%}
+        <label {% if editable %}for="{{ file.key }}"{% endif %}>
           {{ file.name }} ({{ file.stats }})
         </label>
       </li>
