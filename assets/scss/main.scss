@@ -40,6 +40,18 @@ Search
     background: scale-color($dark-orange, $lightness: -10%);
 }
 
+.buttonforicons {
+    font-family: 'FontAwesome';
+    height: 30px;
+    width: 30px;
+    color: white;
+}
+
+.textviewericons {
+    font-family: 'FontAwesome';
+    color: #4e2626;
+}
+
 // Colours
 
 .red {
@@ -82,6 +94,14 @@ a.ext-links {
 
 .darker {
     background: scale-color($primary-color, $lightness: 30%) !important;
+}
+
+/* Skip to the main content*/
+
+.skip-main {
+    font-size: 1px;
+    position: absolute;
+    top:-25px;
 }
 
 /* Header */
@@ -132,7 +152,7 @@ nav {
         }
 
         &:hover {
-            color: scale-color($primary-color, $lightness: 80%) !important;
+            color: $light-gray !important;
             background: scale-color($primary-color, $lightness: 20%);
         }
     }
@@ -257,11 +277,18 @@ ul.sticky {
     h4 {
         font-size: 1.25rem;
     }
+    a  {
+        font-weight: bold;
+        color: #6f3f3f;
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 
     // Blog
 
     .bydate {
-        color: scale-color($almost-black, $lightness: 25%);
+        color: #504f4f;
         font-style: italic;
         line-height: 1;
         margin: 0;
@@ -418,7 +445,7 @@ ul.sticky {
 
     .tei-cb,
     .tei-pb {
-        color: teal;
+        color: #06564d;
     }
     .tei-cb.split-word,
     .tei-pb.split-word {
@@ -461,7 +488,7 @@ ul.sticky {
     }
 
     .tei-c.red, .tei-rubric, .tei-hi.red, .tei-hi.red-highlight {
-        color: scale-color($secondary-color, $lightness: 25%);
+        color: scale-color($secondary-color, $lightness: 10%);
     }
     .first-letter-red::first-letter {
         color: scale-color($secondary-color, $lightness: 25%);
@@ -833,6 +860,11 @@ footer {
     color: white;
     a {
         color: white;
+        font-weight: bold;
+        &:hover{
+            text-decoration: underline;
+            color: grey !important;
+        }
     }
     background: $body-background;
     padding: 1rem 0;

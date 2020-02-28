@@ -1,0 +1,11 @@
+text_search/search_indexes.py:46:    If you’re using the Solr backend, you have an extra step.
+text_search/search_indexes.py:47:    Solr’s configuration is XML-based,
+text_search/search_indexes.py:50:    # 1. generate solr config & schema files
+text_search/search_indexes.py:51:    mkdir -p /tmp/solr && ./manage.py build_solr_schema --configure-directory=/tmp/solr
+text_search/search_indexes.py:53:    # 2. copy to solr
+text_search/search_indexes.py:56:    # make sure managed-schema is removed from your solr conf dir
+text_search/search_indexes.py:59:    sudo cp /tmp/solr/* /var/solr/data/default/conf/ && sudo service solr restart
+text_search/search_indexes.py:62:    sudo cp /tmp/solr/* /var/solr/data/stg/conf/ && sudo service solr restart
+text_search/search_indexes.py:64:    sudo cp /tmp/solr/* /var/solr/data/liv/conf/ && sudo service solr restart
+text_search/search_indexes.py:175:        then from DB to Solr, we directly load from XML to Solr.
+

@@ -7,7 +7,9 @@ postgresql: {admin_user: postgres, cluster_name: main, cluster_reset: false, def
   encoding: UTF-8, initial_data_file: data.sql, locale: en_GB.UTF-8, user: tvof}
 project_root: /vagrant
 python: {requirements: requirements-dev.txt, virtualenv_location: /home/vagrant/venv}
-system_packages: [ack-grep, adminer, aptitude, binutils, elasticsearch, gdal-bin, git, git-core, libgdal-dev, libjpeg-dev,
+system_packages: [ack-grep, adminer, aptitude, binutils, 
+  elasticsearch, 
+  gdal-bin, git, git-core, libgdal-dev, libjpeg-dev,
   libldap2-dev, libproj-dev,libsasl2-dev, libssl-dev, libxml2-dev, libxslt-dev, nfs-common, open-vm-tools,
   openjdk-8-jre,
   postgis, postgresql, postgresql-client, postgresql-server-dev-all,
@@ -15,6 +17,7 @@ system_packages: [ack-grep, adminer, aptitude, binutils, elasticsearch, gdal-bin
   vim-nox, zsh,
   # wget is needed for upgrading node & npm to latest version (https://www.npmjs.com/package/n)
   wget, npm,
+  linux-headers-generic,
   # redis-server
 ]
 user_home: /home/vagrant

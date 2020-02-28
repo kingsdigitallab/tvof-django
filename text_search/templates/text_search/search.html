@@ -11,7 +11,7 @@
     <div id="tvof-search">
 
         <div class="search-query hide-for-large">
-          <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
+          <input class="search-text" type="search" aria-label="search box" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
           <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
         </div>
         <div class="row">
@@ -31,7 +31,7 @@
                 <template v-else>Next</template>
               </li>
               <li>
-                <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size">
+                <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size" aria-label="page size">
                   <option v-for="size in page_sizes" :value="size">{{ size }}</option>
                 </select>
                 per page
@@ -41,7 +41,7 @@
 
             <ul class="search-params undecorated-list">
               <li>Sort by:
-                <select class="search-orders" v-model="query.order" v-on:change="on_change_order">
+                <select class="search-orders" v-model="query.order" v-on:change="on_change_order" aria-label="query order">
                   <option v-for="order in orders" :value="order.key">{{ order.label }}</option>
                 </select>
               </li>
@@ -88,7 +88,7 @@
 
             <div class="card show-for-large">
               <div class="card-divider">
-                <h4>Lemma or Form</h4>
+                <h2>Lemma or Form</h2>
               </div>
               <div class="card-section">
                 <vue-autosuggest
@@ -119,7 +119,7 @@
             <template v-for="ui_facet in ui_facets">
               <div class="card" v-if="!ui_facet.is_hidden">
                 <div class="card-divider">
-                  <h4>{{ ui_facet.label }}</h4>
+                  <strong>{{ ui_facet.label }}</strong>
                   <a v-if="ui_facet.tooltip"
                     data-tooltip-vue
                     data-click-open="false" class="facet-info fa fa-info-circle has-tip right"
