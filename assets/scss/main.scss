@@ -80,6 +80,9 @@ a.ext-links {
     height: 0;
     overflow: hidden;
     border: 3px solid scale-color($secondary-color, $lightness: 50%);
+    &:focus, &:active {
+        background: gray;
+    }
 
     iframe {
         position: absolute;
@@ -256,7 +259,7 @@ ul.sticky {
 /* Main content area */
 
 .main {
-    background: scale-color($almost-black, $lightness: 94%);
+    background: #ffffff;
 
     h1 {
         border-bottom: 1px solid scale-color($primary-color, $lightness: 50%);
@@ -279,7 +282,7 @@ ul.sticky {
     }
     a  {
         font-weight: bold;
-        color: #6f3f3f;
+        color: #834848;
         &:hover {
             text-decoration: underline;
         }
@@ -511,7 +514,7 @@ ul.sticky {
 
     p.tei.lg.lineated,
     // ac-358.1 : cont is now dislayed line by line
-    p.tei.lg.cont,
+    p.tei.lg.cont
     {
         // https://stackoverflow.com/a/14832019/3748764
         display: table;
@@ -562,7 +565,7 @@ ul.sticky {
 
     .tv-view-semi-diplomatic .tei-add,
     .tv-view-interpretive .tei-corr,
-    .tv-view-interpretive .tei-supplied, {
+    .tv-view-interpretive .tei-supplied {
         &:before {
             content: '<';
         }
@@ -862,8 +865,8 @@ footer {
         color: white;
         font-weight: bold;
         &:hover{
-            text-decoration: underline;
-            color: grey !important;
+            text-decoration: none;
+            color: darken($light-gray, 10%);
         }
     }
     background: $body-background;
