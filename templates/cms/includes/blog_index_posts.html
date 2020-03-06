@@ -25,7 +25,7 @@
                                     <a href="{{ post.url }}">{{ post.title }}</a>
                                 </h2>
                                 <p class="bydate">by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at|date:"j M Y" }}</p>
-                                <div class="richtext">
+                                <section class="postcontent">
                                     {% for child in post.blogpost.content %} 
                                         <p>
                                             {% if child.block_type == 'paragraph' %}
@@ -36,7 +36,7 @@
                                             {% endif %}
                                         </p>
                                     {% endfor %}
-                                    </div>
+                                    </section>
                             {% endblock %}
                         </div>
                     </div>
