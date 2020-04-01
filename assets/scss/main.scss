@@ -507,8 +507,7 @@ ul.sticky {
     */
 
     //-----
-
-    .tei-unclear {
+    .tv-view-semi-diplomatic .tei-unclear {
         // GN: icon even if superscripted,
         // without this hover on top of icon doesn't do anything
         @include tooltip-and-icon("\f128");
@@ -648,6 +647,10 @@ ul.sticky {
 
         .tei-note.tei-type-gloss {
             @include tooltip-and-icon('\f14b');
+        }
+
+        &.tv-view-interpretive .tei-note.tei-type-gloss {
+            display: none;
         }
 
         .tei-note.tei-type-note,
@@ -989,7 +992,7 @@ footer {
         }
     }
 
-    .tei-unclear {
+    .tv-view-semi-diplomatic .tei-unclear {
         &:before {
             color: $tertiary-color !important;
             content: "\f128";
