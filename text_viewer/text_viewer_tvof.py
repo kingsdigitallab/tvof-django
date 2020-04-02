@@ -1,9 +1,8 @@
 from .text_viewer_xml import (TextViewerAPIXML)
-from .text_viewer import (get_unicode_from_xml,)
 import xml.etree.ElementTree as ET
 from django.conf import settings
 import re
-from django.utils.html import escape
+from . import utils
 
 # TODO: move this to another package, outside of generic text_viewer
 '''
@@ -279,7 +278,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
         conventions_xml = xml.find('.//div[@id="text-conventions"]')
         if conventions_xml is not None:
-            conventions = get_unicode_from_xml(conventions_xml)
+            conventions = utils.get_unicode_from_xml(conventions_xml)
             conventions = re.sub(r'id="([^"]+)"', r'class="\1"', conventions)
 
         return conventions
@@ -356,7 +355,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 for e in rubric:
                     if (rubric_hidden_classes.search(e.attrib.get('class', ''))
                             is None):
-                        label_long += get_unicode_from_xml(e)
+                        label_long += utils.get_unicode_from_xml(e)
                     label_long += (e.tail or '')
                 label_long = self.compress_html(label_long)
 
@@ -377,6 +376,14 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     'label': number,
                     'label_long': label_long,
                 }
+
+        return ret
+
+    def prepare_view_version(self, chunk, view):
+        ret = chunk
+
+        if view == 'interpretive':
+            utils.remove_xml_elements(ret, './/span[@data-tei-type="gloss"]')
 
         return ret
 
@@ -531,7 +538,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 # print(ET.tostring(note_text))
 
                 # add note to the notes_info
-                notes_info['notes'].append(get_unicode_from_xml(note))
+                notes_info['notes'].append(utils.get_unicode_from_xml(note))
 
                 # replace note in chunk with an inline reference
                 note.clear()

@@ -1,11 +1,5 @@
-import xml.etree.ElementTree as ET
-
-import requests
-import re
-from django.conf import settings
 from django.views.decorators.gzip import gzip_page
 from django.shortcuts import render
-from text_viewer.text_viewer import get_unicode_from_xml
 from text_viewer.kiln_requester import CachedRequesterKiln
 
 
