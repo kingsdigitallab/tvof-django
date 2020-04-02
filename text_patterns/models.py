@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 from text_viewer.text_viewer_tvof import TextViewerAPITvof
-from text_viewer.text_viewer import (get_unicode_from_xml)
 from django.contrib.auth.models import User
 from django.db import models
 from . import utils
 import xml.etree.ElementTree as ET
-from . import utils as dputils
+from text_viewer.utils import get_unicode_from_xml
 
 
 class TextPatternSet(models.Model):
@@ -27,11 +26,11 @@ class TextPatternSet(models.Model):
         return len(self.get_dicts_from_patterns())
 
     def get_dicts_from_patterns(self):
-        ret = dputils.json_loads(self.patterns or [])
+        ret = utils.json_loads(self.patterns or [])
         return ret
 
     def set_patterns_from_dicts(self, dicts):
-        self.patterns = dputils.json_dumps(dicts)
+        self.patterns = utils.json_dumps(dicts)
 
     def get_absolute_url(self):
         from django.urls import reverse
