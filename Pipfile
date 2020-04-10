@@ -23,6 +23,7 @@ django-libsass = "*"
 drf-haystack = "*"
 pysolr = "*"
 tqdm = "*"
+lxml = "*"
 
 [requires]
 python_version = "3.5"

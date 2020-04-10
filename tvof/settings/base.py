@@ -564,8 +564,6 @@ HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'
 # ./manage.py textviewer sections
 SECTIONS_NAME = {
     '1': 'Genesis',
-    '10': 'Rome II',
-    '11': 'Conquest of France by Caesar',
     '2': 'Orient I',
     '3': 'Thebes',
     '4': 'Greeks and Amazons',
@@ -575,7 +573,9 @@ SECTIONS_NAME = {
     '6bis': 'Assyrian Kings',
     '7': 'Rome I',
     '8': 'Orient II',
-    '9': 'Alexander'
+    '9': 'Alexander',
+    '10': 'Rome II',
+    '11': 'Conquest of France by Caesar',
 }
 
 
@@ -586,8 +586,10 @@ TOKENISED_FILES = {
     'royal': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'royal_tokenised.xml'),
 }
 
-KWIC_FILE_PATH = os.path.join(
+KWIC_OUT_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
+KWIC_IDX_FILE_PATH = os.path.join(
+    TOKENISED_FILES_BASE_PATH, 'prepared', 'kwic-idx.xml')
 
 # maximum number of kwic entries to index
 # -1: no limit
