@@ -302,19 +302,6 @@ class AnnotatedToken(models.Model):
         ))
 
     @classmethod
-    def _normalise_lemma(cls, lemma):
-        ret = lemma
-        # porfit(i)er => porfitier
-        ret = re.sub(r'(\w)\(([^\)]+)\)', r'\1\2', ret)
-        # maintas (a) => maintas, a
-        # rechief (de) => rechief, de
-        ret = re.sub(r'^(.*) \(([^\)]+)\)', r'\1, \2', ret)
-
-        ret = ret.strip()
-
-        return ret
-
-    @classmethod
     def _get_data_from_kwik_item(cls, item, mss_sections=None,
                                  tokenised_data=None):
         # for each attribute in kwic <item>
@@ -329,7 +316,7 @@ class AnnotatedToken(models.Model):
         # print(ret, string.text)
         ret['string'] = (item.text or '').strip()
 
-        ret['lemma'] = cls._normalise_lemma(ret.get('lemma', ''))
+        ret['lemma'] = utils.normalise_lemma(ret.get('lemma', ''))
 
         if mss_sections:
             ms = 'Royal'
@@ -389,7 +376,9 @@ class AutocompleteFormQuerySet(KwicQuerySet):
             return ret
 
         def callback(item):
-            lemma = normalise(item.attrib.get('lemma', ''))
+            lemma = normalise(
+                utils.normalise_lemma(item.attrib.get('lemma', ''))
+            )
             nom_propre = item.attrib.get('pos', '') == 'nom propre'
             form = normalise(item.text, True)
             if nom_propre:

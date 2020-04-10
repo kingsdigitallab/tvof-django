@@ -19,6 +19,10 @@ class AutocompleteFormIndex(indexes.SearchIndex, indexes.Indexable):
         return ''
 
     def prepare_autocomplete(self, token):
+        if not token.form:
+            # duplicate to avoid relevant lemma being demoted too low
+            # in the result set
+            return token.lemma + ' ' + token.lemma
         return ' '.join([v for v in [token.form, token.lemma] if v])
 
     def index_queryset(self, using=None):

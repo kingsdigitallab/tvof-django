@@ -261,6 +261,8 @@ class AutocompleteSearchViewSet(HaystackViewSet):
 
         # order by
 
-        # ret = ret.order_by('form', 'lemma')
+        # print(ret)
+
+        # ret = ret.order_by('lemma', 'form')
 
         return ret

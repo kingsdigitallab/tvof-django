@@ -6,6 +6,22 @@ def haystack_id(obj):
     return obj.get_unique_id()
 
 
+def normalise_lemma(lemma):
+    # ac-368
+
+    import re
+    ret = lemma
+    # porfit(i)er => porfitier
+    ret = re.sub(r'(\w)\(([^\)]+)\)', r'\1\2', ret)
+    # maintas (a) => maintas, a
+    # rechief (de) => rechief, de
+    ret = re.sub(r'^(.*) \(([^\)]+)\)', r'\1, \2', ret)
+
+    ret = ret.strip()
+
+    return ret
+
+
 def write_kwic_index(force=False):
     '''Transforms kwic.xml obtained from Lemmings
     into an xml file where all concordances are directly under the
