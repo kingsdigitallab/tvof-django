@@ -15,17 +15,39 @@ var id_to_label = {
 // between facet keys and display labels.
 var ui_facets = window.SEARCH_FACETS;
 
-function get_text_from_suggestion(r) {
-    var ret = '';
-    if (r.form) {
-        ret = r.form + ' (' + r.lemma + ')';
-    } else {
-        ret = r.lemma + ' [lemma]';
-    }
-    return ret;
+window.Vue.use(window.VueAutosuggest);
+
+
+function sort_suggestions(suggestions, phrase) {
+  // ac-368: comparison places exact matches on top
+  // then consider length difference
+  // then take alaphebetical difference into account (see compare_suggestions)
+  if (suggestions) {
+    suggestions.map(function(sug) {
+      sug.cmp = 0;
+      for (var k of ['lemma', 'form']) {
+        var s = (sug[k] ? sug[k] : sug.lemma || '').toLowerCase();
+        if (s) {
+          if (s.startsWith(phrase)) sug.cmp -= 1000;
+          sug.cmp += 10 * Math.abs(s.length - phrase.length);
+        }
+        sug[k+'_l'] = s;
+      }
+
+      return sug;
+    });
+    suggestions.sort(compare_suggestions);
+  }
+  return suggestions;
 }
 
-window.Vue.use(window.VueAutosuggest);
+function compare_suggestions(a, b) {
+  var ret = a.cmp - b.cmp;
+  ret += (a.lemma_l < b.lemma_l) ? -1 : (a.lemma_l == b.lemma_l) ? 0 : 1;
+  ret += (a.form_l < b.form_l) ? -1 : (a.form_l == b.form_l) ? 0 : 1;
+  return ret;
+}
+
 
 // /api/v1/tokens/search/?format=json&page=2&lemma=dire
 var app = new window.Vue({
@@ -55,7 +77,9 @@ var app = new window.Vue({
     },
     computed: {
         autosuggestions: function() {
-          return [{data: this.suggestions}];
+          // ac-368: sort suggestion better than haystack/solr
+          // just so exact matches appear first.
+          return [{data: sort_suggestions(this.suggestions, this.query.text)}];
         },
         last_page_index: function() {
             return Math.ceil(this.response.objects.count / this.query.page_size);
@@ -70,7 +94,7 @@ var app = new window.Vue({
             e.key = key;
             return e;
           });
-        }
+        },
     },
     filters: {
         nice_location: function(hit) {
@@ -229,7 +253,11 @@ var app = new window.Vue({
             };
             var req = $.getJSON(autocomplete_url, qs);
             req.done(function(response) {
-                self.$set(self, 'suggestions', response.results);
+                self.$set(
+                  self,
+                  'suggestions',
+                  response.results
+                );
             });
         },
         get_suggestion_value: function(suggestion) {
