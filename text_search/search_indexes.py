@@ -21,7 +21,9 @@ class AutocompleteFormIndex(indexes.SearchIndex, indexes.Indexable):
     def prepare_autocomplete(self, token):
         if not token.form:
             # duplicate to avoid relevant lemma being demoted too low
-            # in the result set
+            # in the result set.
+            # ac-368/b/2, without this a search for ?q=par
+            # wouldn't show par (lemma) in the first 50 suggestions
             return token.lemma + ' ' + token.lemma
         return ' '.join([v for v in [token.form, token.lemma] if v])
 
