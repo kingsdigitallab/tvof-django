@@ -3,6 +3,7 @@ from django.test import TestCase
 from text_search.models import AnnotatedToken, AutocompleteForm
 from django.conf import settings
 import os
+from text_search.utils import normalise_lemma
 
 
 class KwicTests(TestCase):
@@ -28,7 +29,7 @@ class KwicTests(TestCase):
         ]
 
         for case in cases:
-            res = AnnotatedToken._normalise_lemma(case[0])
+            res = normalise_lemma(case[0])
             self.assertEqual(res, case[1], case[0])
 
     def test_transform(self):

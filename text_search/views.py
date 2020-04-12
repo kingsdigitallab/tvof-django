@@ -16,6 +16,7 @@ from drf_haystack.serializers import HaystackSerializer
 from drf_haystack.viewsets import HaystackViewSet
 import re
 
+
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
 ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
 
