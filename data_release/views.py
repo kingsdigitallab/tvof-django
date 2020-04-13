@@ -136,7 +136,35 @@ class DataReleaseView(LoginRequiredMixin, FormView):
             if search_file_copied:
                 job_action('index', 'schedule', target['path'])
 
+            self.process_sections()
+
         return ret
+
+    def process_sections(self):
+        req = self.request.POST
+        path = self.get_selected_target()['path']
+        from text_viewer.utils import update_text_viewer_filters, get_text_viewer_filters
+        # read
+        content = {
+            'textviewer': get_text_viewer_filters(
+                client='textviewer',
+                project_root_path=path
+            )
+        }
+        # update
+        for doc, views in content['textviewer'].items():
+            views['interpretive'] = [
+                section
+                for section
+                in settings.SECTIONS_NAME.keys()
+                if req.get('{}-{}'.format(doc, section), None)
+            ]
+
+        # write
+        update_text_viewer_filters(
+            project_root_path=path,
+            content=content
+        )
 
     def process_index_input_file(self):
         index_input_file = self.request.FILES.get('index_input_file', None)
@@ -219,6 +247,14 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         ret['unselected_targets'] = self.get_unselected_targets()
         ret['source_groups'] = self.get_site_groups()
         ret['target_groups'] = self.get_site_groups(True)
+
+        from text_viewer.utils import get_text_viewer_filters
+        ret['section_docs'] = ['Fr20125', 'Royal']
+        ret['doc_filters'] = get_text_viewer_filters(
+            project_root_path=ret['selected_target']['path']
+        )
+        ret['sections'] = sorted(settings.SECTIONS_NAME.keys())
+
         ret['editable'] = \
             self.running_or_scheduled_job_count == 0
         print('sch-running-count', self.running_or_scheduled_job_count)

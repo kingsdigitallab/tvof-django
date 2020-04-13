@@ -425,7 +425,7 @@ ALIGNEMENT_MSS = []
 
 # Filter which MSS and sections are visible
 # Don't modify it here, copy and change it in your 'local.py'
-# TEXT_VIEWER_DOC_FILTERS = {
+TEXT_VIEWER_FILTERS_PATH = 'tvof/settings/text_viewer_filters.py'
 #     'textviewer': {
 #         'Fr20125': {
 #             'semi-diplomatic': [],

@@ -1184,3 +1184,16 @@ input#autosuggest-input {
   }
 }
 
+.data-release-sections label {
+  display: inline;
+
+  border: 2px solid transparent;
+  border-right: 2px solid grey;
+  padding-right: 0.5rem;
+  padding: 0.2rem;
+
+  &:hover {
+    border: 2px solid orange;
+  }
+
+}

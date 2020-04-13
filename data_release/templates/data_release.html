@@ -50,6 +50,17 @@
               <p>(<a href="?target={{site.key}}">change to {{ site.name }}</a>)</p>
             {% endfor %}
             {% include "site_groups.html" with groups=target_groups editable=0  job_site_key=selected_target.key %}
+
+            <div class="data-release-sections">
+              <h3>Sections</h3>
+              {% for doc in section_docs %}
+                <h4>{{ doc }}</h4>
+                {% for section in sections %}
+                  <label><input name="{{ doc }}-{{ section }}" type="checkbox" {% if section in doc_filters|dic_key:doc|dic_key:'interpretive' %}checked{%endif%}>{{ section }}</label>
+                {% endfor %}
+              {% endfor %}
+            <div>
+
           {% else %}
             <p>
               You cannot release data from this website.
