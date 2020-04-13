@@ -142,6 +142,11 @@ a vue directive:
                                 </li>
                             </ul>
                         </li>
+                        <li v-if="view.slug=='interpretive'">
+                            <a target="_blank" @click.prevent="onClickSearch" href="/search" aria-label="Print view" title="Look up this word">
+                                <i class="fa fa-search"></i>
+                            </a>
+                        </li>
                         <li class="key">
                             <a><i class="fa fa-key"></i></a>
                             <ul class="text-left">
