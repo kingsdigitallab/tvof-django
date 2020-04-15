@@ -540,7 +540,60 @@ Used by front end and backend to sort the search results.
         'fields': LIST_OF_HAYSTACK_FIELDS_TO_SORT_BY,
     }],
 '''
-SEARCH_PAGE_ORDERS = OrderedDict([
+
+'''
+Search page configuration, shared by server and client-side.
+'''
+SEARCH_CONFIG = OrderedDict([
+    # config by result type
+    ['tokens', {
+        'label': 'Tokens',
+        'api': '/api/v1/tokens/search/facets/?format=json',
+        'phrase_title': 'Lemma or Form',
+        'orders': OrderedDict([
+            ['form', {
+                'label': 'Form',
+                'fields': ['form', 'next_word', 'id'],
+            }],
+            ['location', {
+                'label': 'Location',
+                'fields': ['id', 'form'],
+            }],
+            ['previous', {
+                'label': 'Previous word',
+                'fields': ['previous_word', 'form', 'id'],
+            }],
+            ['next', {
+                'label': 'Next word',
+                'fields': ['next_word', 'form', 'id'],
+            }],
+        ]),
+    }],
+    ['names', {
+        'label': 'Names',
+        'api': '/api/v1/lemma/search/facets/?format=json&selected_facets=pos_exact%3Anom%20propre',
+        'phrase_title': 'Name or Form',
+        'orders': OrderedDict([
+            ['lemma', {
+                'label': 'Lemma',
+                'fields': ['lemma'],
+            }],
+        ]),
+    }],
+    ['lemmata', {
+        'label': 'Lemmata',
+        'api': '/api/v1/lemma/search/facets/?format=json',
+        'phrase_title': 'Lemma or Form',
+        'orders': OrderedDict([
+            ['lemma', {
+                'label': 'Lemma',
+                'fields': ['lemma'],
+            }],
+        ]),
+    }]
+])
+
+SEARCH_PAGE_ORDERS_2 = OrderedDict([
     ['form', {
         'label': 'Form',
         'fields': ['form', 'next_word', 'id'],
@@ -595,6 +648,7 @@ KWIC_IDX_FILE_PATH = os.path.join(
 # -1: no limit
 # 0: none
 SEARCH_INDEX_LIMIT = -1
+SEARCH_INDEX_LIMIT_AUTOCOMPLETE = -1
 
 SEARCH_FACET_LIMIT_DEFAULT = 1000
 
@@ -656,6 +710,7 @@ SETTINGS_JS = [
     'SEARCH_PAGE_ORDERS',
     'SECTIONS_NAME',
     'SEARCH_SHOW_TOKEN_NUMBER',
+    'SEARCH_CONFIG',
 ]
 
 WAGTAIL_PAGE_CONTENT_TRANSFORMS = [

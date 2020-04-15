@@ -1,8 +1,43 @@
 from haystack import indexes
-from .models import AnnotatedToken, AutocompleteForm
+from .models import AnnotatedToken, AutocompleteForm, Lemma
+
+'''
+TODO: replace with ElastiSearch when migrating to cookie cutter
+
+https://django-haystack.readthedocs.io/en/master/installing_search_engines.html
+
+https://django-haystack.readthedocs.io/en/master/tutorial.html#reindex
+
+If you’re using the Solr backend, you have an extra step.
+Solr’s configuration is XML-based,
+so you’ll need to manually regenerate the schema. You should [first] run
+
+# 1. generate solr config & schema files
+mkdir -p /tmp/solr && ./manage.py build_solr_schema --configure-directory=/tmp/solr
+
+# 2. copy to solr
+
+# the very first time you run this,
+# make sure managed-schema is removed from your solr conf dir
+
+# for local vagrant
+sudo cp /tmp/solr/* /var/solr/data/default/conf/ && sudo service solr restart
+
+# for STG MV
+sudo cp /tmp/solr/* /var/solr/data/stg/conf/ && sudo service solr restart
+# for LIV MV
+sudo cp /tmp/solr/* /var/solr/data/liv/conf/ && sudo service solr restart
+
+# 3. rebuild the index
+./manage.py rebuild_index --noinput
+
+By default, all fields in Haystack are both indexed and stored
+'''
 
 
 class AutocompleteFormIndex(indexes.SearchIndex, indexes.Indexable):
+    '''Indexing model for Autocomplete suggestions (forms and lemmata)'''
+
     # this is required by haystack
     # we also need to match the type of AnnotatedTokenIndex.text
     text = indexes.CharField(document=True)
@@ -43,37 +78,48 @@ class AutocompleteFormIndex(indexes.SearchIndex, indexes.Indexable):
         return self.get_model().from_kwic.all()
 
 
+class LemmaIndex(indexes.SearchIndex, indexes.Indexable):
+    '''Indexing model for Lemmata'''
+
+    # document=True : the primary field used for keyword searches
+    # use_template=True : value created by using the following template
+    #  see templates/search/indexes/text_search/annotatedtoken_text.txt
+    text = indexes.CharField(document=True, use_template=True)
+
+    # Facets
+    lemma = indexes.CharField(model_attr='lemma', stored=True)
+    forms = indexes.CharField(model_attr='forms', stored=True)
+    pos = indexes.CharField(model_attr='pos', faceted=True)
+    name_type = indexes.CharField(
+        model_attr='name_type', faceted=True, stored=True)
+
+    def get_model(self):
+        '''We must override this method'''
+        return Lemma
+
+    def index_queryset(self, using=None):
+        '''We must override this method'''
+        # return self._index_queryset_rdb(using=using)
+        return self._index_queryset_xml()
+
+    def _index_queryset_rdb(self, using=None):
+        '''Returns the searchable models from the Relational Database'''
+        return self.get_model().objects.all()
+
+    def _index_queryset_xml(self):
+        '''Returns the searchable models from XML files.
+        Why not using DB?
+        We already have the XML file created by partners for text viewer, etc.
+        We have no need so far for holding that specific data in the RDB,
+        only used for search.
+        So instead of loading a large amount of data from XML to DB,
+        then from DB to Solr, we directly load from XML to Solr.
+        '''
+        return self.get_model().from_kwic.all()
+
+
 class AnnotatedTokenIndex(indexes.SearchIndex, indexes.Indexable):
-    '''
-    https://django-haystack.readthedocs.io/en/master/installing_search_engines.html
-
-    https://django-haystack.readthedocs.io/en/master/tutorial.html#reindex
-
-    If you’re using the Solr backend, you have an extra step.
-    Solr’s configuration is XML-based,
-    so you’ll need to manually regenerate the schema. You should [first] run
-
-    # 1. generate solr config & schema files
-    mkdir -p /tmp/solr && ./manage.py build_solr_schema --configure-directory=/tmp/solr
-
-    # 2. copy to solr
-
-    # the very first time you run this,
-    # make sure managed-schema is removed from your solr conf dir
-
-    # for local vagrant
-    sudo cp /tmp/solr/* /var/solr/data/default/conf/ && sudo service solr restart
-
-    # for STG MV
-    sudo cp /tmp/solr/* /var/solr/data/stg/conf/ && sudo service solr restart
-    # for LIV MV
-    sudo cp /tmp/solr/* /var/solr/data/liv/conf/ && sudo service solr restart
-
-    # 3. rebuild the index
-    ./manage.py rebuild_index --noinput
-
-    By default, all fields in Haystack are both indexed and stored
-    '''
+    '''Indexing model for Keyword/token in context'''
 
     # document=True : the primary field used for keyword searches
     # use_template=True : value created by using the following template

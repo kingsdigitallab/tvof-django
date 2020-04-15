@@ -12,6 +12,8 @@ from builtins import super
 
 # ./manage.py rebuild_index -b 10000 --noinput
 
+POS_NAME = 'nom propre'
+
 
 class SearchFacet(models.Model):
     '''
@@ -218,6 +220,7 @@ class KwicQuerySet(models.QuerySet):
         if self.max_count != 0:
 
             def callback(item):
+                # for debugging purpose only, we save records in DB
                 if save:
                     AnnotatedToken(
                         lemma=item.attrib('lemma', ''),
@@ -231,6 +234,10 @@ class KwicQuerySet(models.QuerySet):
                     break
 
         return self._count
+
+# ----------------------------------------------------------------------
+# virtual model for AnnotatedToken documents
+# ----------------------------------------------------------------------
 
 
 class AnnotatedToken(models.Model):
@@ -273,27 +280,8 @@ class AnnotatedToken(models.Model):
     # 0: prose, 2: lineated, 3: continuous
     verse_cat = models.SmallIntegerField(default=0)
 
-    @classmethod
-    def update_or_create_from_kwik_item(cls, item):
-        data = cls._get_data_from_kwik_item(item)
-
-        ret, _ = cls.objects.update_or_create(
-            location=data['location'],
-            token_number=data['token_number'],
-            defaults=data
-        )
-
-        return ret
-
     def __str__(self):
         return '{} [{}]'.format(self.string, self.lemma)
-
-    @classmethod
-    def create_from_kwik_item(cls, item, string):
-        ret = cls.new_from_kwik_item(item, string)
-        ret.save()
-
-        return ret
 
     @classmethod
     def new_from_kwik_item(cls, item, mss_sections=None, tokenised_data=None):
@@ -304,9 +292,12 @@ class AnnotatedToken(models.Model):
     @classmethod
     def _get_data_from_kwik_item(cls, item, mss_sections=None,
                                  tokenised_data=None):
-        # for each attribute in kwic <item>
-        # copy the value in the field with the same name
-        # in the model instance
+        '''
+        Returns a dictionary from a kwic item (XML Element).
+        The dictionary will be used to create a new AnnotatedToken.
+        '''
+
+        # Maps attributes to dictionary entries.
         ret = {
             k.lower().strip(): (v or '').strip()
             for k, v
@@ -318,6 +309,7 @@ class AnnotatedToken(models.Model):
 
         ret['lemma'] = utils.normalise_lemma(ret.get('lemma', ''))
 
+        # sets section_number from location attribute and mss_sections
         if mss_sections:
             ms = 'Royal'
             if 'edfr' in ret['location']:
@@ -327,16 +319,15 @@ class AnnotatedToken(models.Model):
                     break
                 ret['section_number'] = section['number']
 
+        # augment the dictionary with metadata coming from tokenised XML
         if tokenised_data:
-            verse_cat_index = tokenised_data.get(
+            ret['verse_cat'] = tokenised_data.get(
                 ret['location'], {}
             ).get('verse_cat', 0)
-            ret['verse_cat'] = verse_cat_index
 
-            speech_cat_index = tokenised_data.get(
+            ret['speech_cat'] = tokenised_data.get(
                 ret['location'] + '.' + ret['n'], {}
             ).get('speech_cat', 0)
-            ret['speech_cat'] = speech_cat_index
 
         return ret
 
@@ -344,8 +335,79 @@ class AnnotatedToken(models.Model):
         ret = '{}.{:03d}'.format(self.location, int(self.n))
         return ret
 
+
 # ----------------------------------------------------------------------
-# virtual model for Forms and Lemmas autocomplete index
+# virtual model for Lemmas documents
+# ----------------------------------------------------------------------
+
+
+class LemmaQuerySet(KwicQuerySet):
+
+    def _new_parser(self):
+        found = {}
+
+        def normalise(string, lower=False):
+            ret = (string or '').strip()
+            if lower:
+                ret = ret.lower()
+            return ret
+
+        def get_new_doc(lemma, pos):
+            '''
+            Returns a AutocompleteForm for the given (lemma, form) pair.
+            Returns None if that pair was seen before (see found).
+            '''
+            ret = None
+
+            if lemma:
+                key = '{}'.format(lemma)
+                if key not in found:
+                    found[key] = 1
+                    ret = Lemma(lemma=lemma, pos=pos)
+
+            return ret
+
+        def callback(item):
+            lemma = normalise(
+                utils.normalise_lemma(item.attrib.get('lemma', ''))
+            )
+            pos = item.attrib.get('pos', '').strip()
+            nom_propre = pos == POS_NAME
+            form = normalise(item.text, True)
+            if nom_propre:
+                form = form.title()
+
+            return [
+                r
+                for r
+                in [get_new_doc(lemma, pos)]
+                if r
+            ]
+
+        return utils.KwicParser(callback)
+
+    def count(self):
+        return sum(1 for _ in self._new_parser())
+
+
+class Lemma(models.Model):
+    from_kwic = LemmaQuerySet.as_manager()
+
+    lemma = models.CharField(max_length=30, default='')
+    # a ; separated list of forms
+    forms = models.CharField(max_length=300, default='', blank=True)
+    pos = models.CharField(max_length=30, default='', blank=True)
+    name_type = models.CharField(max_length=30, default='', blank=True)
+
+    def get_unique_id(self):
+        ret = '{}'.format(self.lemma)
+        return ret
+
+    def __str__(self):
+        return '{}'.format(self.lemma)
+
+# ----------------------------------------------------------------------
+# virtual model for Forms and Lemmas autocomplete documents
 # ----------------------------------------------------------------------
 
 
@@ -379,7 +441,7 @@ class AutocompleteFormQuerySet(KwicQuerySet):
             lemma = normalise(
                 utils.normalise_lemma(item.attrib.get('lemma', ''))
             )
-            nom_propre = item.attrib.get('pos', '') == 'nom propre'
+            nom_propre = item.attrib.get('pos', '') == POS_NAME
             form = normalise(item.text, True)
             if nom_propre:
                 form = form.title()
@@ -394,7 +456,14 @@ class AutocompleteFormQuerySet(KwicQuerySet):
         return utils.KwicParser(callback)
 
     def count(self):
-        return sum(1 for _ in self._new_parser())
+        ret = 0
+        limit = settings.SEARCH_INDEX_LIMIT_AUTOCOMPLETE
+        for _ in self._new_parser():
+            ret += 1
+            if limit > -1 and ret >= limit:
+                break
+
+        return ret
 
 
 class AutocompleteForm(models.Model):
