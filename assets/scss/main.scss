@@ -168,7 +168,7 @@ nav {
     }
 
     &.dropdown {
-        .is-dropdown-submenu-parent {
+        .is-dropdown-submenu-parent a {
             &:hover {
                 background: scale-color($primary-color, $lightness: 20%);
                 color: $white !important;
