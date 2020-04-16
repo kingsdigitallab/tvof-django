@@ -10,7 +10,7 @@ django_debug_toolbar = "*"
 
 [packages]
 django = "*"
-wagtail = "*"
+wagtail = "<2.9"
 django-kdl-ldap = "*"
 django-compressor = "*"
 django-haystack = "*"
