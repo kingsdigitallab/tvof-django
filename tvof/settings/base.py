@@ -578,6 +578,10 @@ SEARCH_CONFIG = OrderedDict([
                 'label': 'Lemma',
                 'fields': ['lemma'],
             }],
+            ['name_type', {
+                'label': 'Type',
+                'fields': ['name_type', 'lemma'],
+            }],
         ]),
     }],
     ['lemmata', {
@@ -588,6 +592,14 @@ SEARCH_CONFIG = OrderedDict([
             ['lemma', {
                 'label': 'Lemma',
                 'fields': ['lemma'],
+            }],
+            ['name_type', {
+                'label': 'Type',
+                'fields': ['name_type', 'lemma'],
+            }],
+            ['pos', {
+                'label': 'Part of speech',
+                'fields': ['pos', 'lemma'],
             }],
         ]),
     }]
@@ -699,6 +711,10 @@ SEARCH_FACETS = [
     {
         'key': 'speech_cat',
         'label': 'Speech',
+    },
+    {
+        'key': 'name_type',
+        'label': 'Name type',
     },
 ]
 

@@ -151,6 +151,39 @@ class KwicParser:
                         yield r
 
 
+def read_tokenised_name_types():
+    from django.conf import settings
+    import re
+
+    tags = {
+        'persName': 'Person',
+        'name': 'Name',
+        'placeName': 'Place',
+    }
+
+    ret = {}
+
+    for _, path in settings.TOKENISED_FILES.items():
+        with open(path, 'rt') as f:
+            content = f.read()
+            content = re.sub(r'\sxmlns="[^"]+"', '', content, count=1)
+
+        root = ET.fromstring(content)
+        xmlns = 'http://www.w3.org/XML/1998/namespace'
+
+        for seg in root.findall('.//seg'):
+            seg_id = seg.attrib.get('{%s}id' % xmlns)
+            for tag in tags:
+                for name in seg.findall('.//{}'.format(tag)):
+                    w = name.find('.//w')
+                    if w is not None:
+                        name_type = name.attrib.get('type', tags[tag])
+                        ret['{}__{}'.format(
+                            seg_id, w.attrib.get('n', '0'))] = name_type.title()
+
+    return ret
+
+
 def read_tokenised_data():
     '''
     Read XML file of tokenised texts (Fr & Royal).

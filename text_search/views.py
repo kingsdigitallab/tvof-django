@@ -26,6 +26,18 @@ def get_config(result_type):
     return settings.SEARCH_CONFIG[result_type]
 
 
+def get_ordered_queryset(view, queryset, result_type):
+    order_key = view.request.GET.get(
+        ORDER_BY_QUERY_STRING_PARAMETER_NAME, ''
+    )
+    orders = get_config(result_type)['orders']
+    order = orders.get(order_key, list(orders.items())[0][1])
+
+    print(order['fields'])
+
+    return queryset.order_by(*order['fields'])
+
+
 def transform_search_facets(content):
 
     def replace(match):
@@ -183,16 +195,7 @@ class AnnotatedTokenFacetSearchView(FacetMixin, HaystackViewSet):
         '''
         ret = super(AnnotatedTokenFacetSearchView, self).get_queryset()
 
-        # order by
-
-        order_key = self.request.GET.get(
-            ORDER_BY_QUERY_STRING_PARAMETER_NAME, ''
-        )
-        orders = get_config('tokens')['orders']
-        order = orders.get(order_key, list(orders.items())[0][1])
-        ret = ret.order_by(*order['fields'])
-
-        return ret
+        return get_ordered_queryset(self, ret, 'tokens')
 
 
 # AUTOCOMPLETE
@@ -265,12 +268,6 @@ class AutocompleteSearchViewSet(HaystackViewSet):
         '''
         ret = super(AutocompleteSearchViewSet, self).get_queryset()
 
-        # order by
-
-        # print(ret)
-
-        # ret = ret.order_by('lemma', 'form')
-
         return ret
 
 # LEMMATA
@@ -288,7 +285,7 @@ class LemmaSerializer(HaystackSerializer):
             # although we don't need to return it,
             # without 'text' any keyword search will return everything
             'text',
-            'forms', 'lemma', 'pos',
+            'forms', 'lemma', 'pos', 'name_type',
         ]
 
 
@@ -369,6 +366,6 @@ class LemmaFacetSearchView(FacetMixin, HaystackViewSet):
         '''
         ret = super(LemmaFacetSearchView, self).get_queryset()
 
-        ret = ret.order_by('lemma')
+        print(type(ret))
 
-        return ret
+        return get_ordered_queryset(self, ret, 'lemmata')

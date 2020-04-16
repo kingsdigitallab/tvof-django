@@ -352,7 +352,7 @@ class LemmaQuerySet(KwicQuerySet):
                 ret = ret.lower()
             return ret
 
-        def get_new_doc(lemma, pos):
+        def get_new_doc(lemma, pos, item, tokenised_data):
             '''
             Returns a AutocompleteForm for the given (lemma, form) pair.
             Returns None if that pair was seen before (see found).
@@ -363,15 +363,24 @@ class LemmaQuerySet(KwicQuerySet):
                 key = '{}'.format(lemma)
                 if key not in found:
                     found[key] = 1
-                    ret = Lemma(lemma=lemma, pos=pos)
+
+                    ref = item.attrib.get(
+                        'location', '') + '__' + item.attrib.get('n', '')
+                    name_type = tokenised_data.get(ref, 'Unspecified')
+
+                    ret = Lemma(lemma=lemma, pos=pos, name_type=name_type)
 
             return ret
 
         def callback(item):
+            # don't move this outside of this function!
+            if not self.tokenised_data:
+                self.tokenised_data.update(utils.read_tokenised_name_types())
+
             lemma = normalise(
                 utils.normalise_lemma(item.attrib.get('lemma', ''))
             )
-            pos = item.attrib.get('pos', '').strip()
+            pos = item.attrib.get('pos', 'Unspecified').strip()
             nom_propre = pos == POS_NAME
             form = normalise(item.text, True)
             if nom_propre:
@@ -380,7 +389,7 @@ class LemmaQuerySet(KwicQuerySet):
             return [
                 r
                 for r
-                in [get_new_doc(lemma, pos)]
+                in [get_new_doc(lemma, pos, item, self.tokenised_data)]
                 if r
             ]
 

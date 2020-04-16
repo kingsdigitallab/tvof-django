@@ -94,9 +94,9 @@
                 <tbody>
                   <tr v-for="hit in response.objects.results">
                     <td>
-                      {{ hit.lemma }}
+                      <a href="#" @click.prevent="on_click_lemma(hit)">{{ hit.lemma }}</a>
                     </td>
-                    <td v-if="query.result_type == 'names'"></td>
+                    <td v-if="query.result_type == 'names'">{{ hit.name_type }}</td>
                     <td v-else>{{ hit.pos }}</td>
                   </tr>
                 </tbody>

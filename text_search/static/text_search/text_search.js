@@ -233,6 +233,13 @@ var app = new window.Vue({
             this.query.page = 1;
             this.call_api();
         },
+        on_click_lemma: function(hit) {
+            // search for that lemma in the tokens/kwic result type
+            this.query.text = hit.lemma;
+            this.query.result_type = 'tokens';
+            this.$set(this.query, 'facets', {});
+            this.call_api();
+        },
         on_click_token: function(hit) {
             // edfr20125_00598_08
             // => /textviewer/?p1=Fr20125/semi-diplomatic/paragraph/2
