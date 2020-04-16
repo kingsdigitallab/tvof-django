@@ -727,7 +727,11 @@ SETTINGS_JS = [
     'SECTIONS_NAME',
     'SEARCH_SHOW_TOKEN_NUMBER',
     'SEARCH_CONFIG',
+    'IMAGE_SERVER_URL',
 ]
+
+# IMAGE_SERVER_URL = '//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'
+IMAGE_SERVER_URL = '//loris.kdl.kcl.ac.uk/tvof2/webroot/images/jp2/'
 
 WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
     'text_search.views.transform_search_facets'

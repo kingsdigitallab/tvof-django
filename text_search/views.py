@@ -39,6 +39,11 @@ def get_ordered_queryset(view, queryset, result_type):
 
 
 def transform_search_facets(content):
+    '''
+    {{search_facets}} in a wagtail page content
+    will be expanded into a list of facet definitions
+    as described in the database (see SearchFacet)
+    '''
 
     def replace(match):
         ret = ''
