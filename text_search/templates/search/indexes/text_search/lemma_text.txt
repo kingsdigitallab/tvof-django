@@ -1,0 +1,1 @@
+{% load textsearch_tags %}{{ object.lemma }} {{ object.lemma }} {{ object.forms|unicode_to_ascii }}

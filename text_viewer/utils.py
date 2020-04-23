@@ -1,5 +1,34 @@
 import xml.etree.ElementTree as ET
 import re
+from django.conf import settings
+import os
+import json
+
+
+def update_text_viewer_filters(client='textviewer', project_root_path=None, content=None):
+    if not project_root_path:
+        project_root_path = settings.BASE_DIR
+    path = os.path.join(project_root_path, settings.TEXT_VIEWER_FILTERS_PATH)
+
+    with open(path, 'wt') as fh:
+        content = fh.write(json.dumps(content))
+
+
+def get_text_viewer_filters(client='textviewer', project_root_path=None):
+    ret = None
+
+    if not project_root_path:
+        project_root_path = settings.BASE_DIR
+    path = os.path.join(project_root_path, settings.TEXT_VIEWER_FILTERS_PATH)
+
+    if os.path.exists(path):
+        with open(path, 'rt') as fh:
+            content = fh.read()
+        filters = json.loads(content)
+        if filters:
+            ret = filters[client]
+
+    return ret
 
 
 def findall_in_etree(tree, xpath):

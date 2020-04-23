@@ -775,6 +775,13 @@
                     };
                     return 'fa fa-'+ (ltypes_icon[location_type] || '');
                 },
+                onClickSearch: function() {
+                    var selected = window.getSelection();
+                    if (selected) {
+                        var url = '/search?text='+selected;
+                        window.open(url, '_blank');
+                    }
+                },
                 onClickDocument: function(document) {
                     //this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
                     // We assume here that all docs support the same location_types,

@@ -42,53 +42,100 @@
             <ul class="search-params undecorated-list">
               <li>Sort by:
                 <select class="search-orders" v-model="query.order" v-on:change="on_change_order">
-                  <option v-for="order in orders" :value="order.key">{{ order.label }}</option>
+                  <option v-for="(order, okey) in orders" :value="okey">{{ order.label }}</option>
                 </select>
               </li>
             </ul>
 
             <table class="search-hits">
-              <thead>
-                <tr>
-                  <th>Location</th>
-                  <th class="token-preceding">Preceding</th>
-                  <th>Form<br>(Lemma)</th>
-                  <th>Following</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="hit in response.objects.results">
-                  <td>
-                    <a href="#" v-on:click.prevent="on_click_token(hit)">
-                      {{ hit|nice_location }}
-                    </a>
-                  </td>
-                  <td class="token-preceding">
-                    <a href="#" v-on:click.prevent="on_click_token(hit)">
-                      {{ hit.preceding }}
-                    </a>
-                  </td>
-                  <td>
-                    <a href="#" v-on:click.prevent="on_click_token(hit)">
-                      {{ hit.token }}
-                    </a><br>
-                    ({{ hit.lemma }})
-                  </td>
-                  <td>
-                    <a href="#" v-on:click.prevent="on_click_token(hit)">
-                      {{ hit.following }}
-                    </a>
-                  </td>
-                </tr>
-              </tbody>
+              <template v-if="query.result_type == 'tokens'">
+                <thead>
+                  <tr>
+                    <th>Location</th>
+                    <th class="token-preceding">Preceding</th>
+                    <th>Form<br>(Lemma)</th>
+                    <th>Following</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="hit in response.objects.results">
+                    <td>
+                      <a href="#" v-on:click.prevent="on_click_token(hit)">
+                        {{ hit|nice_location }}
+                      </a>
+                    </td>
+                    <td class="token-preceding">
+                      <a href="#" v-on:click.prevent="on_click_token(hit)">
+                        {{ hit.preceding }}
+                      </a>
+                    </td>
+                    <td>
+                      <a href="#" v-on:click.prevent="on_click_token(hit)">
+                        {{ hit.token }}
+                      </a><br>
+                      ({{ hit.lemma }})
+                    </td>
+                    <td>
+                      <a href="#" v-on:click.prevent="on_click_token(hit)">
+                        {{ hit.following }}
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
+              </template>
+              <template v-if="query.result_type == 'names' || query.result_type == 'lemmata'">
+                <thead>
+                  <tr>
+                    <th>Name</th>
+                    <th v-if="query.result_type == 'names'">Type</th>
+                    <th v-else>Part of Speech</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr v-for="hit in response.objects.results">
+                    <td>
+                      <a href="#" @click.prevent="on_click_lemma(hit)">{{ hit.lemma }}</a>
+                    </td>
+                    <td v-if="query.result_type == 'names'">{{ hit.name_type }}</td>
+                    <td v-else>{{ hit.pos }}</td>
+                  </tr>
+                </tbody>
+              </template>
             </table>
           </div>
 
           <div class="search-facets columns small-12 large-3 large-order-1">
 
+            <!-- Result types -->
+            <template v-for="ui_facet in ui_facets_top">
+              <div class="card" v-if="!ui_facet.is_hidden">
+                <div class="card-divider">
+                  <h4>{{ ui_facet.label }}</h4>
+                  <a v-if="ui_facet.tooltip"
+                    data-tooltip-vue
+                    data-click-open="false" class="facet-info fa fa-info-circle has-tip right"
+                    :href="ui_facet.href" :title="ui_facet.tooltip">
+                  </a>
+                </div>
+                <div class="card-section">
+                  <ul class="search-facet undecorated-list">
+                    <li class="search-option" v-for="option in get_facet_options(ui_facet)">
+                      <a href="#" v-on:click.prevent="on_change_result_type(option.key)"
+                        :class="{'selected': query.result_type == option.key}"
+                        v-if="option.count > 0">
+                        {{ get_option_label_from_text(option.text, ui_facet.key) }} <!--({{ option.count }}) -->
+                        <template v-if="query.result_type == option.key">X</template>
+                      </a>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </template>
+
+            <!-- Search phrase -->
             <div class="card show-for-large">
               <div class="card-divider">
-                <h4>Lemma or Form</h4>
+                <h4>{{ config.phrase_title }}</h4>
               </div>
               <div class="card-section">
                 <vue-autosuggest
@@ -116,8 +163,9 @@
               </div>
             </div>
 
+            <!-- Other facets -->
             <template v-for="ui_facet in ui_facets">
-              <div class="card" v-if="!ui_facet.is_hidden">
+              <div class="card">
                 <div class="card-divider">
                   <h4>{{ ui_facet.label }}</h4>
                   <a v-if="ui_facet.tooltip"

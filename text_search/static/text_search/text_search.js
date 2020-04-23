@@ -1,4 +1,3 @@
-var api_url = '/api/v1/tokens/search/facets/?format=json';
 var autocomplete_url = '/api/v1/tokens/autocomplete/?format=json&page_size=50';
 var text_viewer_url = '/textviewer/?p1=';
 var id_to_viewer_slug = {
@@ -9,23 +8,47 @@ var id_to_label = {
     0: 'Fr20125',
     1: 'Royal 20 D I',
 };
+var RESULT_TYPE_DEFAULT = 'tokens';
 
 // This is a list of a facets to show on the front end
 // the order is important and it contains a mapping
 // between facet keys and display labels.
-var ui_facets = window.SEARCH_FACETS;
-
-function get_text_from_suggestion(r) {
-    var ret = '';
-    if (r.form) {
-        ret = r.form + ' (' + r.lemma + ')';
-    } else {
-        ret = r.lemma + ' [lemma]';
-    }
-    return ret;
-}
+var CONFIG = window.SETTINGS_JS.SEARCH_CONFIG;
 
 window.Vue.use(window.VueAutosuggest);
+
+
+function sort_suggestions(suggestions, phrase) {
+  // ac-368: comparison places exact matches on top
+  // then consider length difference
+  // then take alaphebetical difference into account (see compare_suggestions)
+  if (suggestions) {
+    suggestions.map(function(sug) {
+      sug.cmp = 0;
+      for (var k of ['lemma', 'form']) {
+        var s = (sug[k] ? sug[k] : sug.lemma || '').toLowerCase();
+        if (s) {
+          if (s.startsWith(phrase)) sug.cmp -= 500;
+          if (s == phrase) sug.cmp -= 1000;
+          sug.cmp += 10 * Math.abs(s.length - phrase.length);
+        }
+        sug[k+'_l'] = s;
+      }
+
+      return sug;
+    });
+    suggestions.sort(compare_suggestions);
+  }
+  return suggestions;
+}
+
+function compare_suggestions(a, b) {
+  var ret = a.cmp - b.cmp;
+  ret += (a.lemma_l < b.lemma_l) ? -1 : (a.lemma_l == b.lemma_l) ? 0 : 1;
+  ret += (a.form_l < b.form_l) ? -1 : (a.form_l == b.form_l) ? 0 : 1;
+  return ret;
+}
+
 
 // /api/v1/tokens/search/?format=json&page=2&lemma=dire
 var app = new window.Vue({
@@ -47,29 +70,45 @@ var app = new window.Vue({
             facets: {},
             page_size: 10,
             order: '',
+            result_type: 'names',
         },
         suggestions: [],
         suggestion_closed: true,
-        ui_facets: ui_facets,
         page_sizes: window.SETTINGS_JS.SEARCH_PAGE_SIZES,
+        ui_facets_top: [
+          {
+            'key': 'result_type',
+            'label': 'Result Type',
+          },
+        ],
     },
     computed: {
         autosuggestions: function() {
-          return [{data: this.suggestions}];
+          // ac-368: sort suggestion better than haystack/solr
+          // just so exact matches appear first.
+          return [{data: sort_suggestions(this.suggestions, this.query.text)}];
         },
         last_page_index: function() {
             return Math.ceil(this.response.objects.count / this.query.page_size);
         },
         orders: function() {
-          // Returns the possible orders as an array
-          // Each item will have a key entry
-          var orders = window.SETTINGS_JS.SEARCH_PAGE_ORDERS;
-
-          return Object.keys(orders).map(function(key) {
-            var e = orders[key];
-            e.key = key;
-            return e;
-          });
+          // returns dictionary ORDER_KEY: {label: ORDER_LABEL}
+          return this.config.orders;
+        },
+        config: function() {
+            var result_type = this.query.result_type || RESULT_TYPE_DEFAULT;
+            return CONFIG[result_type];
+        },
+        ui_facets: function() {
+            var self = this;
+            return window.SEARCH_FACETS.filter(function(facet) {
+                if (!facet.is_hidden && self.response && self.response.fields[facet.key]) {
+                    if (self.query.result_type != 'names' || facet.key != 'pos') {
+                        return true;
+                    }
+                }
+                return false;
+            });
         }
     },
     filters: {
@@ -145,9 +184,30 @@ var app = new window.Vue({
         get_facet_options: function(ui_facet) {
             var ret = [];
 
+            if (ui_facet.key == 'result_type') {
+                var config = CONFIG;
+                ret = [];
+                Object.keys(config).forEach(function(key) {
+                    ret.push({
+                        'key': key,
+                        'text': config[key].label,
+                        'count': 1,
+                    });
+                });
+
+                return ret;
+            }
+
             ret = this.response.fields[ui_facet.key];
 
             return ret;
+        },
+        on_change_result_type: function(type) {
+            this.query.result_type = type;
+            this.query.page = 1;
+            // reset all facets (we at least need the pos to be reset for names)
+            this.$set(this.query, 'facets', {});
+            this.call_api();
         },
         on_change_order: function() {
             this.query.page = 1;
@@ -171,6 +231,13 @@ var app = new window.Vue({
                 this.query.facets[facet+'__'+option.text] = [facet, option.text];
             }
             this.query.page = 1;
+            this.call_api();
+        },
+        on_click_lemma: function(hit) {
+            // search for that lemma in the tokens/kwic result type
+            this.query.text = hit.lemma;
+            this.query.result_type = 'tokens';
+            this.$set(this.query, 'facets', {});
             this.call_api();
         },
         on_click_token: function(hit) {
@@ -229,7 +296,11 @@ var app = new window.Vue({
             };
             var req = $.getJSON(autocomplete_url, qs);
             req.done(function(response) {
-                self.$set(self, 'suggestions', response.results);
+                self.$set(
+                  self,
+                  'suggestions',
+                  response.results
+                );
             });
         },
         get_suggestion_value: function(suggestion) {
@@ -245,6 +316,7 @@ var app = new window.Vue({
             // query = $.extend(self.query, query);
             // var req = $.getJSON(url || api_url, url ? null : query);
             var query = {
+                result_type: self.query.result_type,
                 page: self.query.page,
                 text: self.query.text,
                 selected_facets: self.get_selected_facets(),
@@ -265,8 +337,11 @@ var app = new window.Vue({
             qs = qs.replace(/^\?/, '');
             qs = qs.replace(/[?&^][^=&#]*=?(?=(?:#|&|$))/ig, '');
 
+            var result_type = qs.replace(/(.*)result_type=([^=&#]+)(.*)/, '$2');
+            if (result_type == qs) result_type = RESULT_TYPE_DEFAULT;
+
             var self = this;
-            var req = $.getJSON(api_url, qs);
+            var req = $.getJSON(CONFIG[result_type].api, qs);
             req.done(function(response) {
                 self.filter_response(response);
 
@@ -288,7 +363,7 @@ var app = new window.Vue({
             // mainly facet option ordering and filtering
             var fields = response.fields;
 
-            ui_facets.map(function(ui_facet) {
+            this.ui_facets.map(function(ui_facet) {
                 var key = ui_facet.key;
                 var ret = fields[key];
 
@@ -324,11 +399,13 @@ var app = new window.Vue({
             this.query.page = parseInt(qs_params.get('page') || 1);
             this.query.page_size = parseInt(qs_params.get('page_size') || this.page_sizes[0]);
 
+            // result_type
+            this.query.result_type = qs_params.get('result_type') || RESULT_TYPE_DEFAULT;
+
             // order
             this.query.order = qs_params.get('order') || '';
-            var orders = window.SETTINGS_JS.SEARCH_PAGE_ORDERS;
-            if (!orders[this.query.order]) {
-              this.query.order = Object.keys(orders)[0];
+            if (!this.orders[this.query.order]) {
+              this.query.order = Object.keys(this.orders)[0];
             }
 
             // Facets

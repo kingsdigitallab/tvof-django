@@ -155,6 +155,12 @@ class TextViewerAPIXML(TextViewerAPI):
         # remove spans without attributes (saves a lot of space!)
         ret = re.sub(r'(?musi)<span>([^<]*)</span>', r'\1', ret)
 
+        # 2020-3-h
+        # Please convert space before “:”, “;”, “!”, “?”, “»”,
+        # (or after) “«”into an unbreakable space.
+        ret = re.sub(r'\s+([:;!?»])', r'&nbsp;\1', ret)
+        ret = re.sub(r'([«])\s+', r'\1&nbsp;', ret)
+
         return ret
 
     def request_chunk(self, address_parts=None, synced_with=None):

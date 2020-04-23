@@ -54,7 +54,7 @@ $(function() {
         $modal.find('.image-viewer-caption').toggle(!!caption).html(caption);
 
         window.image_viewer_map_layer = L.tileLayer.iiif(
-            '//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'+image_url+'/info.json', {
+            window.SETTINGS_JS.IMAGE_SERVER_URL+image_url+'/info.json', {
                 tileSize: image_viewer_tile_size,
                 setMaxBounds: true,
             }
