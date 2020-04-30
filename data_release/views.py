@@ -63,7 +63,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                     site['path']
                 )
 
-                print(group_dict['job'])
+                # print(group_dict['job'])
 
                 job_status = group_dict['job']['info']['status']
                 class_css = ''
@@ -184,7 +184,15 @@ class DataReleaseView(LoginRequiredMixin, FormView):
             zip_ref.extractall(unzip_path)
 
             # move and rename the files to kiln_out
-            file_names = zip_ref.namelist()
+            file_names = [
+                fn
+                for fn
+                in zip_ref.namelist()
+                if fn.endswith('.xml')
+                and '/' not in fn
+            ]
+
+            print(file_names)
 
             #
             patterns = {
@@ -194,7 +202,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
             }
             if len(file_names) != 3:
                 self.add_error(
-                    'zip file should contain three files exactly'
+                    'zip file should contain three XML files exactly'
                 )
             else:
                 import re
@@ -257,7 +265,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
         ret['editable'] = \
             self.running_or_scheduled_job_count == 0
-        print('sch-running-count', self.running_or_scheduled_job_count)
+        # print('sch-running-count', self.running_or_scheduled_job_count)
 
         ret['errors'] = self.get_errors()
 
