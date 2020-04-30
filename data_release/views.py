@@ -167,6 +167,12 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         )
 
     def process_index_input_file(self):
+        patterns = {
+            r'fr': 'prepared/fr_tokenised.xml',
+            r'royal': 'prepared/royal_tokenised.xml',
+            r'kwic': 'received/kwic-out.xml'
+        }
+
         index_input_file = self.request.FILES.get('index_input_file', None)
         if not index_input_file:
             return
@@ -194,40 +200,35 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
             print(file_names)
 
-            #
-            patterns = {
-                r'fr': 'prepared/fr_tokenised.xml',
-                r'royal': 'prepared/royal_tokenised.xml',
-                r'kwic': 'received/kwic-out.xml'
-            }
-            if len(file_names) != 3:
-                self.add_error(
-                    'zip file should contain three XML files exactly'
-                )
-            else:
-                import re
-                for file_name in file_names:
-                    recognised = False
-                    for pattern, new_name in patterns.items():
-                        if re.search(r'(?i)' + re.escape(pattern), file_name):
-                            # print(file_name, new_name)
-                            os.replace(
-                                os.path.join(unzip_path, file_name),
-                                os.path.join(
-                                    settings.KILN_STATIC_PATH, new_name
-                                )
+        # check file names, move them and schedule indexing job
+        if len(file_names) != 3:
+            self.add_error(
+                'zip file should contain three XML files exactly'
+            )
+        else:
+            import re
+            for file_name in file_names:
+                recognised = False
+                for pattern, new_name in patterns.items():
+                    if re.search(r'(?i)' + re.escape(pattern), file_name):
+                        # print(file_name, new_name)
+                        os.replace(
+                            os.path.join(unzip_path, file_name),
+                            os.path.join(
+                                settings.KILN_STATIC_PATH, new_name
                             )
-                            recognised = True
-                    if not recognised:
-                        self.add_error(
-                            '{} is not a recognised file name.'.format(
-                                file_name
-                            ))
-                        break
+                        )
+                        recognised = True
+                if not recognised:
+                    self.add_error(
+                        '{} is not a recognised file name.'.format(
+                            file_name
+                        ))
+                    break
 
-                if recognised:
-                    # schedule the indexing
-                    job_action('index', 'schedule', settings.BASE_DIR)
+            if recognised:
+                # schedule the indexing
+                job_action('index', 'schedule', settings.BASE_DIR)
 
     def add_error(self, message):
         from django.contrib import messages

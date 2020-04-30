@@ -30,24 +30,69 @@ def write_kwic_index(force=False):
     This order will allow grouping of consecutive "proper nouns" tokens
     into a single string (see AC-370).
     '''
+    dlog('write kwic index')
+
+    import gc
+
     from django.conf import settings
     ret = settings.KWIC_IDX_FILE_PATH
     kwic_path = settings.KWIC_OUT_FILE_PATH
     import os
-    if not force and os.path.exists(ret) and os.path.getmtime(kwic_path) < os.path.getmtime(ret):
+    if (
+        not force
+        and os.path.exists(ret)
+        and os.path.getmtime(kwic_path) < os.path.getmtime(ret)
+        and os.path.getsize(ret) > 10
+    ):
         return ret
 
     import lxml.etree as ET
-    dom = ET.parse(kwic_path)
+    dlog('h2')
     xslt = ET.parse('text_search/kwic_idx.xsl')
+    dlog('h3')
     transform = ET.XSLT(xslt)
+    del xslt
+    dlog('h4')
+    # ac-373.4: this takes 1+GB to parse a 90MB xml file
+    dom = ET.parse(kwic_path)
+    dlog('h5')
     newdom = transform(dom)
+    del dom
+    dlog('h6')
 
-    with open(settings.KWIC_IDX_FILE_PATH, 'wt') as fh:
-        s = ET.tostring(newdom, pretty_print=True, encoding='unicode')
-        fh.write(s)
+    '''
+    # ac-373.4: 180MB xml file will take 2GB to be transformed
+    xsltproc -o o.xml text_search/kwic_idx.xsl kiln_out/received/kwic-out.xml
+    '''
+
+    newdom.write_output(ret)
+
+    dlog('h7')
 
     return ret
+
+
+t0 = None
+
+
+def dlog(s):
+    '''Debug log'''
+    from django.conf import settings
+    if not settings.DEBUG:
+        return
+
+    from time import time
+    import resource
+    usage = resource.getrusage(resource.RUSAGE_SELF)
+
+    global t0
+    t1 = time()
+    if not t0:
+        t0 = t1
+    print('[{:6.2f}s {:.2f}GB] {}'.format(
+        (t1 - t0), usage[2] / 1024 / 1024, s)
+    )
+    t0 = t1
 
 
 class KwicParser:
@@ -136,6 +181,8 @@ class KwicParser:
         self.reset()
 
         kwic_path = write_kwic_index()
+
+        print('transformed {}'.format(kwic_path))
 
         for event, elem in ET.iterparse(
             kwic_path, events=['start', 'end']
