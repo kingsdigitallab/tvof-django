@@ -63,6 +63,13 @@ def transform_search_facets(content):
 
 
 def search_view(request):
+    ''' returns initial search view
+    with context for the vuejs app
+    context contains all facet definitions
+    definitions first comes from settings.SEARCH_FACETS
+    but can be overwritten by the database facet records
+    '''
+
     facets = {
         f.key: f
         for f
@@ -104,7 +111,7 @@ def search_view(request):
     }
     return render(request, 'text_search/search.html', context)
 
-# TODO: replace with ElastiSearch when migrating to cookie cutter
+# TODO: replace with ElasticSearch when migrating to cookie cutter
 
 
 class AnnotatedTokenSerializer(HaystackSerializer):

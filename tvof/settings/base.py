@@ -672,7 +672,7 @@ SEARCH_SHOW_TOKEN_NUMBER = False
 # The facets o the search page.
 # Note that entries in this array can be overridden by
 # instances in models.SearchFacet.
-# The key shoudl match the field name in AnnotatedTokenIndex
+# The key should match the field name in AnnotatedTokenIndex
 SEARCH_FACETS = [
     {
         'key': 'manuscript_number',

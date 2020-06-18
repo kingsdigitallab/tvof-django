@@ -181,6 +181,12 @@ var app = new window.Vue({
 
             return ret;
         },
+        has_facet_options: function(ui_facet) {
+            for (r of this.get_facet_options(ui_facet)) {
+                if (r.count) return true
+            }
+            return false
+        },
         get_facet_options: function(ui_facet) {
             var ret = [];
 

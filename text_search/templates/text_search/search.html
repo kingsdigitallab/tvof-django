@@ -165,7 +165,7 @@
 
             <!-- Other facets -->
             <template v-for="ui_facet in ui_facets">
-              <div class="card">
+              <div class="card" v-if="has_facet_options(ui_facet)">
                 <div class="card-divider">
                   <h4>{{ ui_facet.label }}</h4>
                   <a v-if="ui_facet.tooltip"

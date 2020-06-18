@@ -199,6 +199,10 @@ class KwicParser:
 
 
 def read_tokenised_name_types():
+    '''
+    :return: returns all the 'names' found in all the tokenised XML files.
+    '''
+
     from django.conf import settings
     import re
 
@@ -206,6 +210,7 @@ def read_tokenised_name_types():
         'persName': 'Person',
         'name': 'Name',
         'placeName': 'Place',
+        'geogName': 'Geographical Feature',
     }
 
     ret = {}
