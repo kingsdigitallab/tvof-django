@@ -124,7 +124,6 @@
                         :class="{'selected': query.result_type == option.key}"
                         v-if="option.count > 0">
                         {{ get_option_label_from_text(option.text, ui_facet.key) }} <!--({{ option.count }}) -->
-                        <template v-if="query.result_type == option.key">X</template>
                       </a>
                     </li>
                   </ul>
@@ -165,7 +164,7 @@
 
             <!-- Other facets -->
             <template v-for="ui_facet in ui_facets">
-              <div class="card" v-if="has_facet_options(ui_facet)">
+              <div class="card facet-normal" v-if="has_facet_options(ui_facet)">
                 <div class="card-divider">
                   <h4>{{ ui_facet.label }}</h4>
                   <a v-if="ui_facet.tooltip"

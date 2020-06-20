@@ -227,11 +227,11 @@ def read_tokenised_name_types():
             seg_id = seg.attrib.get('{%s}id' % xmlns)
             for tag in tags:
                 for name in seg.findall('.//{}'.format(tag)):
-                    w = name.find('.//w')
-                    if w is not None:
+                    # we cna have more than one w in a persname (e.g. choice)
+                    for w in name.findall('.//w'):
                         name_type = name.attrib.get('type', tags[tag])
-                        ret['{}__{}'.format(
-                            seg_id, w.attrib.get('n', '0'))] = name_type.title()
+                        akey = '{}__{}'.format(seg_id, w.attrib.get('n', '0'))
+                        ret[akey] = name_type.title()
 
     return ret
 

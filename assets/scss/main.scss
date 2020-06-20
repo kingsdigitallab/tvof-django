@@ -1003,13 +1003,16 @@ footer {
 // Search Page
 
 #tvof-search {
+    .search-facets .facet-normal {
+        .search-option a.selected:hover {
+            text-decoration: line-through;
+        }
+    }
+
     .search-facets {
 
         .search-option a:hover {
             text-decoration: underline;
-        }
-        .search-option a.selected:hover {
-            text-decoration: line-through;
         }
 
         .selected {

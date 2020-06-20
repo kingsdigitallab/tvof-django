@@ -4,6 +4,8 @@ from text_search.models import AnnotatedToken
 from argparse import RawTextHelpFormatter
 import os
 
+from text_search.utils import read_tokenised_name_types
+
 
 class Command(BaseCommand):
     help = '''Toolbox for the Text Viewer app
@@ -38,6 +40,10 @@ action:
         if action == 'clear':
             known_action = True
             self.action_clear()
+
+        if action == 'test_names':
+            known_action = True
+            read_tokenised_name_types()
 
         if not known_action:
             print('ERROR: unknown action "%s"' % action)
