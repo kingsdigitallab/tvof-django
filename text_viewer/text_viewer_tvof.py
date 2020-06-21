@@ -91,6 +91,9 @@ def _get_xpath_from_location_section(slug, view, location_type, location,
 
 
 def get_location_translated(doc_from, location_from, doc_to):
+    '''Returns the sync'ed location from one doc to another
+    e.g. para 600 in fr could be 540 in royal
+    This function return an array of unit numbers e.g. [540, 541].'''
     global docs_sections
     # ret = location_from
     ret = []
@@ -98,6 +101,12 @@ def get_location_translated(doc_from, location_from, doc_to):
     if docs_sections is None:
         tvof = TextViewerAPITvof()
         docs_sections = tvof.compute_section_mappings()
+        if 0:
+            # for inspection/debugging only
+            import json
+            print('sync.json')
+            with open('sync.json', 'wt') as fh:
+                fh.write(json.dumps(docs_sections))
 
     units = docs_sections.get(doc_from + '_' + doc_to, None)
     if units:
@@ -202,9 +211,10 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     pair.append([m.group(1), str(int(m.group(2)))])
 
             if len(pair) == 2:
-                # pair = [['Royal20D1', 00544_01], ['fr20125', 00621]]
+                # pair = [['Royal20D1', '00544'], ['fr20125', '00621']]
 
                 for i in [0, 1]:
+                    # k = 'Royal_Fr20125' (for i = 0)
                     k = '_'.join([DOCUMENT_IDS[p[0].lower()]['slug']
                                   for p in pair])
                     if k not in ret:
@@ -217,7 +227,31 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     # now map the other way round
                     pair[0], pair[1] = pair[1], pair[0]
 
+        if 1:
+            self._report_gap_in_mappings(ret)
+
         return ret
+
+    def _report_gap_in_mappings(self, mappings):
+        '''For debugging purpose, we report all the ids from Royal
+        that have no mapping with Fr
+        '''
+
+        # a block is a range if ids with no mapping to Fr
+        blocks = [[]]
+        for i in range(1, 1500):
+            if str(i) not in mappings['Royal_Fr20125']:
+                if not blocks[-1]:
+                    blocks[-1].append(i)
+            else:
+                if blocks[-1]:
+                    if i - 1 not in blocks[-1]:
+                        blocks[-1].append(i - 1)
+                    blocks.append([])
+
+        if blocks[-1]:
+            print('WARNING: these ids in Royal are not mapped to Fr: {}'.format(
+                repr(blocks)))
 
     def set_chunk_not_found_error(self, xpath=None):
         message = 'Chunk not found: {}'.format(
