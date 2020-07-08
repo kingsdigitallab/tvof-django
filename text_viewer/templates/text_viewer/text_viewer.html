@@ -125,16 +125,16 @@ a vue directive:
                         <li>
                             <a href="#" v-on:click.stop.prevent="onClickViewExternal(view.slug)"
                                 aria-label="Open a new panel" title="Open a new panel">
-                                <button aria-label="colums" class="textviewericons"></button>
+                                <span class="fa fa-columns" aria-label="icon columns"></span>
                             </a>
                         </li>
                         <li>
                             <a target="_blank" v-bind:href="getPrintUrl()" aria-label="Print view" title="Print view">
-                                <button aria-label="print" class="textviewericons"></button>
+                                <span class="fa fa-print" aria-label="icon print"></span>
                             </a>
                         </li>
                         <li v-bind:class="{toolbar: 1, hidden: display_settings.length == 0}">
-                            <a><button aria-label="pencil" class="textviewericons"></button></a>
+                            <a><span class="fa fa-pencil"></span></a>
                             <ul class="text-left">
                                 <h3>Display</h3>
                                 <li v-for="setting in display_settings" v-bind:class="{active: isDisplaySettingActive(setting), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
@@ -145,7 +145,7 @@ a vue directive:
                             </ul>
                         </li>
                         <li class="key">
-                            <a><button aria-label="key" class="buttonforicons"></button></a>
+                            <a><span class="fa fa-key"></span></a>
                             <ul class="text-left">
                                 <li>
                                     <h3>Notations</h3>
