@@ -714,7 +714,7 @@ SEARCH_FACETS = [
     },
     {
         'key': 'name_type',
-        'label': 'Name type',
+        'label': 'Lemma type',
     },
 ]
 

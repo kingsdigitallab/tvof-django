@@ -83,12 +83,16 @@
                   </tr>
                 </tbody>
               </template>
+
               <template v-if="query.result_type == 'names' || query.result_type == 'lemmata'">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th v-if="query.result_type == 'names'">Type</th>
-                    <th v-else>Part of Speech</th>
+                    <th v-if="query.result_type == 'names'">Name</th>
+                    <th v-else>Lemma</th>
+                    <!-- AC-392 8/7/2020 -->
+                    <!-- th v-if="query.result_type == 'names'">Type</th -->
+                    <!-- th v-else>Part of Speech</th -->
+                    <th>Type</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -96,8 +100,10 @@
                     <td>
                       <a href="#" @click.prevent="on_click_lemma(hit)">{{ hit.lemma }}</a>
                     </td>
-                    <td v-if="query.result_type == 'names'">{{ hit.name_type }}</td>
-                    <td v-else>{{ hit.pos }}</td>
+                    <!-- AC-392 8/7/2020 -->
+                    <!-- td v-if="query.result_type == 'names'">{{ hit.name_type }}</td -->
+                    <!-- td v-else>{{ hit.pos }}</td -->
+                    <td>{{ hit.name_type }}</td>
                   </tr>
                 </tbody>
               </template>
@@ -166,7 +172,8 @@
             <template v-for="ui_facet in ui_facets">
               <div class="card facet-normal" v-if="has_facet_options(ui_facet)">
                 <div class="card-divider">
-                  <h4>{{ ui_facet.label }}</h4>
+                  <h4 v-if="ui_facet.key == 'name_type' && query.result_type == 'names'">Name type</h4>
+                  <h4 v-else>{{ ui_facet.label }}</h4>
                   <a v-if="ui_facet.tooltip"
                     data-tooltip-vue
                     data-click-open="false" class="facet-info fa fa-info-circle has-tip right"

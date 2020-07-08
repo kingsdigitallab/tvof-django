@@ -103,7 +103,9 @@ var app = new window.Vue({
             var self = this;
             return window.SEARCH_FACETS.filter(function(facet) {
                 if (!facet.is_hidden && self.response && self.response.fields[facet.key]) {
-                    if (self.query.result_type != 'names' || facet.key != 'pos') {
+                    // <!-- AC-392 8/7/2020 -->
+                    // if (self.query.result_type != 'names' || facet.key != 'pos') {
+                    if (self.query.result_type == 'tokens' || facet.key != 'pos') {
                         return true;
                     }
                 }
