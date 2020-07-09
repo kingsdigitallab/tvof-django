@@ -1,4 +1,4 @@
-{% load staticfiles compress cms_tags wagtailcore_tags %}
+{% load staticfiles compress cms_tags wagtailcore_tags alignment_tags %}
 
 {# TODO: move this to external file (main.js?) #}
 <script>
@@ -54,7 +54,7 @@ $(function() {
     {% endifchanged %}
     <div class="row expanded small-up-4 medium-up-6">
         <div class="column column-block first">
-            {{ para.id }}
+            {{ para.id|format_seg_reference }}
         </div>
         {% for ms in params.mss.options %}
         {% if ms.selected %}

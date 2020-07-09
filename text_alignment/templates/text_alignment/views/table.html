@@ -1,9 +1,9 @@
-{% load staticfiles compress cms_tags wagtailcore_tags %}
+{% load staticfiles compress cms_tags wagtailcore_tags alignment_tags %}
 
 <table class="alignment-paras viz viz-table">
   <thead>
     <tr>
-      <th>Section</th>
+      <th>Paragraph</th>
       {% for ms in params.mss.options %}
         {% if ms.selected %}
           <th>
@@ -23,7 +23,7 @@
         <td>
           {{ para.section }}
           <br/>
-          {{ para.id }}
+          {{ para.id|format_seg_reference }}
         </td>
         {% for ms in params.mss.options %}
           {% if ms.selected %}
