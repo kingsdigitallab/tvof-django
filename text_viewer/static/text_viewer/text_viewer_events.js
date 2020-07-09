@@ -163,7 +163,9 @@ $(function() {
 
                 var content = '';
                 content = '<h3>'+tootlip_fields.title+'</h3>';
-                content += '<div class="body">'+tootlip_fields.body+'</div>';
+                if (tootlip_fields.body) {
+                    content += '<div class="body">'+tootlip_fields.body+'</div>';
+                }
 
                 window.tv_tooltip = new Foundation.Tooltip($(this), {
                     tipText: content,
