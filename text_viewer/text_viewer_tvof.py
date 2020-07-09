@@ -1,9 +1,8 @@
 from .text_viewer_xml import (TextViewerAPIXML)
-from .text_viewer import (get_unicode_from_xml,)
 import xml.etree.ElementTree as ET
 from django.conf import settings
 import re
-from django.utils.html import escape
+from . import utils
 
 # TODO: move this to another package, outside of generic text_viewer
 '''
@@ -92,6 +91,9 @@ def _get_xpath_from_location_section(slug, view, location_type, location,
 
 
 def get_location_translated(doc_from, location_from, doc_to):
+    '''Returns the sync'ed location from one doc to another
+    e.g. para 600 in fr could be 540 in royal
+    This function return an array of unit numbers e.g. [540, 541].'''
     global docs_sections
     # ret = location_from
     ret = []
@@ -99,6 +101,12 @@ def get_location_translated(doc_from, location_from, doc_to):
     if docs_sections is None:
         tvof = TextViewerAPITvof()
         docs_sections = tvof.compute_section_mappings()
+        if 0:
+            # for inspection/debugging only
+            import json
+            print('sync.json')
+            with open('sync.json', 'wt') as fh:
+                fh.write(json.dumps(docs_sections))
 
     units = docs_sections.get(doc_from + '_' + doc_to, None)
     if units:
@@ -203,9 +211,10 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     pair.append([m.group(1), str(int(m.group(2)))])
 
             if len(pair) == 2:
-                # pair = [['Royal20D1', 00544_01], ['fr20125', 00621]]
+                # pair = [['Royal20D1', '00544'], ['fr20125', '00621']]
 
                 for i in [0, 1]:
+                    # k = 'Royal_Fr20125' (for i = 0)
                     k = '_'.join([DOCUMENT_IDS[p[0].lower()]['slug']
                                   for p in pair])
                     if k not in ret:
@@ -218,7 +227,31 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     # now map the other way round
                     pair[0], pair[1] = pair[1], pair[0]
 
+        if 1:
+            self._report_gap_in_mappings(ret)
+
         return ret
+
+    def _report_gap_in_mappings(self, mappings):
+        '''For debugging purpose, we report all the ids from Royal
+        that have no mapping with Fr
+        '''
+
+        # a block is a range if ids with no mapping to Fr
+        blocks = [[]]
+        for i in range(1, 1500):
+            if str(i) not in mappings['Royal_Fr20125']:
+                if not blocks[-1]:
+                    blocks[-1].append(i)
+            else:
+                if blocks[-1]:
+                    if i - 1 not in blocks[-1]:
+                        blocks[-1].append(i - 1)
+                    blocks.append([])
+
+        if blocks[-1]:
+            print('WARNING: these ids in Royal are not mapped to Fr: {}'.format(
+                repr(blocks)))
 
     def set_chunk_not_found_error(self, xpath=None):
         message = 'Chunk not found: {}'.format(
@@ -244,13 +277,10 @@ class TextViewerAPITvof(TextViewerAPIXML):
     def is_location_visible(self, location_xml, doc_slug, view_slug,
                             location_type_slug):
         '''Returns True if the location can be shown on the site
-        according to the filters set in settings.py:TEXT_VIEWER_DOC_FILTERS'''
+        according to the filters set in settings.TEXT_VIEWER_FILTERS_PATH'''
         ret = True
-        filters = getattr(
-            settings,
-            'TEXT_VIEWER_DOC_FILTERS',
-            {}
-        ).get(self.client)
+
+        filters = utils.get_text_viewer_filters()
         if filters:
             filter = filters.get(doc_slug, None)
             if filter is not None:
@@ -279,7 +309,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
         conventions_xml = xml.find('.//div[@id="text-conventions"]')
         if conventions_xml is not None:
-            conventions = get_unicode_from_xml(conventions_xml)
+            conventions = utils.get_unicode_from_xml(conventions_xml)
             conventions = re.sub(r'id="([^"]+)"', r'class="\1"', conventions)
 
         return conventions
@@ -356,7 +386,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 for e in rubric:
                     if (rubric_hidden_classes.search(e.attrib.get('class', ''))
                             is None):
-                        label_long += get_unicode_from_xml(e)
+                        label_long += utils.get_unicode_from_xml(e)
                     label_long += (e.tail or '')
                 label_long = self.compress_html(label_long)
 
@@ -377,6 +407,14 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     'label': number,
                     'label_long': label_long,
                 }
+
+        return ret
+
+    def prepare_view_version(self, chunk, view):
+        ret = chunk
+
+        if view == 'interpretive':
+            utils.remove_xml_elements(ret, './/span[@data-tei-type="gloss"]')
 
         return ret
 
@@ -531,7 +569,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 # print(ET.tostring(note_text))
 
                 # add note to the notes_info
-                notes_info['notes'].append(get_unicode_from_xml(note))
+                notes_info['notes'].append(utils.get_unicode_from_xml(note))
 
                 # replace note in chunk with an inline reference
                 note.clear()

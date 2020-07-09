@@ -425,7 +425,7 @@ ALIGNEMENT_MSS = []
 
 # Filter which MSS and sections are visible
 # Don't modify it here, copy and change it in your 'local.py'
-# TEXT_VIEWER_DOC_FILTERS = {
+TEXT_VIEWER_FILTERS_PATH = 'tvof/settings/text_viewer_filters.py'
 #     'textviewer': {
 #         'Fr20125': {
 #             'semi-diplomatic': [],
@@ -540,7 +540,72 @@ Used by front end and backend to sort the search results.
         'fields': LIST_OF_HAYSTACK_FIELDS_TO_SORT_BY,
     }],
 '''
-SEARCH_PAGE_ORDERS = OrderedDict([
+
+'''
+Search page configuration, shared by server and client-side.
+'''
+SEARCH_CONFIG = OrderedDict([
+    # config by result type
+    ['tokens', {
+        'label': 'Tokens',
+        'api': '/api/v1/tokens/search/facets/?format=json',
+        'phrase_title': 'Lemma or Form',
+        'orders': OrderedDict([
+            ['form', {
+                'label': 'Form',
+                'fields': ['form', 'next_word', 'id'],
+            }],
+            ['location', {
+                'label': 'Location',
+                'fields': ['id', 'form'],
+            }],
+            ['previous', {
+                'label': 'Previous word',
+                'fields': ['previous_word', 'form', 'id'],
+            }],
+            ['next', {
+                'label': 'Next word',
+                'fields': ['next_word', 'form', 'id'],
+            }],
+        ]),
+    }],
+    ['names', {
+        'label': 'Names',
+        'api': '/api/v1/lemma/search/facets/?format=json&selected_facets=pos_exact%3Anom%20propre',
+        'phrase_title': 'Name or Form',
+        'orders': OrderedDict([
+            ['lemma', {
+                'label': 'Lemma',
+                'fields': ['lemma'],
+            }],
+            ['name_type', {
+                'label': 'Type',
+                'fields': ['name_type', 'lemma'],
+            }],
+        ]),
+    }],
+    ['lemmata', {
+        'label': 'Lemmata',
+        'api': '/api/v1/lemma/search/facets/?format=json',
+        'phrase_title': 'Lemma or Form',
+        'orders': OrderedDict([
+            ['lemma', {
+                'label': 'Lemma',
+                'fields': ['lemma'],
+            }],
+            ['name_type', {
+                'label': 'Type',
+                'fields': ['name_type', 'lemma'],
+            }],
+            ['pos', {
+                'label': 'Part of speech',
+                'fields': ['pos', 'lemma'],
+            }],
+        ]),
+    }]
+])
+
+SEARCH_PAGE_ORDERS_2 = OrderedDict([
     ['form', {
         'label': 'Form',
         'fields': ['form', 'next_word', 'id'],
@@ -564,8 +629,6 @@ HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'
 # ./manage.py textviewer sections
 SECTIONS_NAME = {
     '1': 'Genesis',
-    '10': 'Rome II',
-    '11': 'Conquest of France by Caesar',
     '2': 'Orient I',
     '3': 'Thebes',
     '4': 'Greeks and Amazons',
@@ -575,7 +638,9 @@ SECTIONS_NAME = {
     '6bis': 'Assyrian Kings',
     '7': 'Rome I',
     '8': 'Orient II',
-    '9': 'Alexander'
+    '9': 'Alexander',
+    '10': 'Rome II',
+    '11': 'Conquest of France by Caesar',
 }
 
 
@@ -586,13 +651,16 @@ TOKENISED_FILES = {
     'royal': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'royal_tokenised.xml'),
 }
 
-KWIC_FILE_PATH = os.path.join(
+KWIC_OUT_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
+KWIC_IDX_FILE_PATH = os.path.join(
+    TOKENISED_FILES_BASE_PATH, 'prepared', 'kwic-idx.xml')
 
 # maximum number of kwic entries to index
 # -1: no limit
 # 0: none
 SEARCH_INDEX_LIMIT = -1
+SEARCH_INDEX_LIMIT_AUTOCOMPLETE = -1
 
 SEARCH_FACET_LIMIT_DEFAULT = 1000
 
@@ -604,7 +672,7 @@ SEARCH_SHOW_TOKEN_NUMBER = False
 # The facets o the search page.
 # Note that entries in this array can be overridden by
 # instances in models.SearchFacet.
-# The key shoudl match the field name in AnnotatedTokenIndex
+# The key should match the field name in AnnotatedTokenIndex
 SEARCH_FACETS = [
     {
         'key': 'manuscript_number',
@@ -644,6 +712,10 @@ SEARCH_FACETS = [
         'key': 'speech_cat',
         'label': 'Speech',
     },
+    {
+        'key': 'name_type',
+        'label': 'Lemma type',
+    },
 ]
 
 # List of settings vars exposed on client side as windows.SETTINGS_JS
@@ -654,7 +726,12 @@ SETTINGS_JS = [
     'SEARCH_PAGE_ORDERS',
     'SECTIONS_NAME',
     'SEARCH_SHOW_TOKEN_NUMBER',
+    'SEARCH_CONFIG',
+    'IMAGE_SERVER_URL',
 ]
+
+# IMAGE_SERVER_URL = '//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'
+IMAGE_SERVER_URL = '//loris.kdl.kcl.ac.uk/tvof2/webroot/images/jp2/'
 
 WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
     'text_search.views.transform_search_facets'

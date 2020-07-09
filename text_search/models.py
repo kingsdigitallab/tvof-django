@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from xml.etree import ElementTree as ET
 from text_viewer.text_viewer_tvof import TextViewerAPITvof
 from django.conf import settings
 from . import utils
@@ -9,6 +8,11 @@ import re
 
 from wagtail.core.fields import RichTextField
 from wagtail.admin.edit_handlers import FieldPanel
+from builtins import super
+
+# ./manage.py rebuild_index -b 10000 --noinput
+
+POS_NAME = 'nom propre'
 
 
 class SearchFacet(models.Model):
@@ -83,71 +87,8 @@ class SearchFacet(models.Model):
         ]
 
 
-def read_tokenised_data():
-    '''
-    Read XML file of tokenised texts (Fr & Royal).
-    Return a dictionary with information about all the
-        <said> elements
-        <seg type="6"> verses elements
-
-    That dictionary key is the location of the element and the value
-    is a categorisation of the element.
-
-    The output is meant to be combined with a kwic file to build the
-    search index.
-
-    <seg type="6" xml:id="edfr20125_00910_07"><lg type="octo_coup">
-        <lg type="lineated">
-            <l n="001">
-                <w n="1">Q[ua]r</w> <w n="2">ele</w> <w n="3">fu</w>
-                <w n="4">si</w> <w n="5">bien</w>
-                <w n="6">plantee<pc rend="1" /></w>
-            </l>
-    '''
-
-    lg_types = {'lineated': 2, 'cont': 3, 'unspecified': 4}
-    sc_types = {'true': 2, 'false': 3, 'unspecified': 4}
-
-    ret = {}
-
-    for _, path in settings.TOKENISED_FILES.items():
-        with open(path, 'rt') as f:
-            content = f.read()
-            content = re.sub(r'\sxmlns="[^"]+"', '', content, count=1)
-
-        root = ET.fromstring(content)
-        xmlns = 'http://www.w3.org/XML/1998/namespace'
-
-        # lt = language_type/verse_cat
-        for seg in root.findall('.//seg[@type="6"]'):
-            seg_id = seg.attrib.get('{%s}id' % xmlns)
-            ret[seg_id] = {'verse_cat': 4}
-            for lg in seg.findall('.//lg'):
-                ret[seg_id]['verse_cat'] = lg_types.get(
-                    lg.attrib.get('type'), 4)
-
-        # sc = speech_cat
-        for seg in root.findall('.//seg'):
-            seg_id = seg.attrib.get('{%s}id' % xmlns)
-            for said in seg.findall('.//said'):
-                said_type = said.attrib.get(
-                    'direct', 'unspecified'
-                ).strip().lower()
-                for word in said.findall('.//w'):
-                    seg_id_n = seg_id + '.' + word.attrib.get('n')
-                    if seg_id_n not in ret:
-                        # we ignore nested <said>
-                        ret[seg_id_n] = {
-                            'speech_cat': sc_types.get(said_type, 4)
-                        }
-                    else:
-                        # print('Nested {}'.format(seg_id_n))
-                        pass
-
-    return ret
-
 # ----------------------------------------------------------------------
-# virtual model for kwic / annotated token index
+# pseudo Django Model for the kwic / annotated token index
 # ----------------------------------------------------------------------
 
 
@@ -157,16 +98,24 @@ class KwicQuerySet(models.QuerySet):
     that always returns all the entries
     read from a kwic XML file (exported from Lemming).
 
-    The purpose is avoid storing all the kwic data in the database.
+    The purpose is to avoid storing all the kwic data in the database.
 
     To directly move the entries from the kwic file into the search engine:
 
     ./manage.py rebuild_index --noinput
 
-    Saves time and disk space.
+    SAVES TIME, MEMORY AND DISK SPACE.
 
-    Support for slicing results.
+    Support only: all(), count(), len() and slicing of results.
     NO support for any filter, exclude, order_by, etc.
+
+    TODO: simplify or rewrite entirely.
+    Perhaps as part of dockerisation we can switch to native ES indexing
+    without going through Haystack and this virtual QuerySet.
+    The code was very simple and elegant at the beginning
+    but it has now become way too complex and very hard to maintain.
+
+    We use self._result_cache defined in QuerySet to populate results.
     '''
 
     max_count = settings.SEARCH_INDEX_LIMIT
@@ -174,53 +123,85 @@ class KwicQuerySet(models.QuerySet):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self._count = None
-        self.next_mark = 0
-        self.generator = self.get_generator()
+        # will be shared with sub-querysets, leave it {}
+        self.mss_sections = {}
+        self.tokenised_data = {}
+        # We need a default parser here so it can be shared with sub-queryset
+        self.set_parser()
 
     def _clone(self, *args, **kwargs):
         ret = super()._clone(*args, **kwargs)
         ret._count = self._count
-        ret.generator = self.generator
+        ret.parser = self.parser
+        ret.mss_sections = self.mss_sections
+        ret.tokenised_data = self.tokenised_data
+
         return ret
 
-    def get_generator(self):
-        tvof_viewer = TextViewerAPITvof()
-        mss_sections = tvof_viewer.read_all_sections_data()
-
-        tokenised_data = read_tokenised_data()
-
-        def callback(item, elem):
-            if elem is not None:
-                token = AnnotatedToken.new_from_kwik_item(
-                    item,
-                    elem,
-                    mss_sections,
-                    tokenised_data
-                )
-
-                return token
-
-        for res in utils.parse_kwic(settings.KWIC_FILE_PATH, callback):
-            yield res
-
-    def __iter__(self):
-        return self._read_from_kwic()
-
-    def _read_from_kwic(self):
+    def set_parser(self, from_mark=0):
         '''
-        An generator for a given slice of the query result.
-        See Django QuerySet
-        '''
-        if self.query.low_mark < self.next_mark:
-            # print('NEW', self.query.low_mark, self.next_mark)
-            self.generator = self.get_generator()
-            self.next_mark = 0
+        set self.parser with a new KwicParser.
+        Keep existing one if it can be reused for parsing from from_mark.
 
-        while self.query.high_mark > self.next_mark:
-            g = next(self.generator)
-            self.next_mark, token = g
-            if self.query.low_mark < self.next_mark:
-                yield token
+        Returns True only if a new parser was set.
+        '''
+        parser = getattr(self, 'parser', None)
+        if parser and from_mark >= self.parser.next_mark:
+            # we can reuse the existing parser and its generator
+            return False
+
+        self.parser = self._new_parser()
+
+        return True
+
+    def _new_parser(self):
+        def callback(item):
+            if not self.mss_sections:
+                # print('  REQUEST')
+                tvof_viewer = TextViewerAPITvof()
+                self.mss_sections.update(tvof_viewer.read_all_sections_data())
+
+            if not self.tokenised_data:
+                self.tokenised_data.update(utils.read_tokenised_data())
+
+            token = AnnotatedToken.new_from_kwik_item(
+                item,
+                self.mss_sections,
+                self.tokenised_data,
+            )
+
+            return [token]
+
+        return utils.KwicParser(callback)
+
+    def _fetch_all(self):
+        '''Fetch the result of this QuerySet (it could just be a slice).
+        Needed for many QuerySet methods like.
+        len(), count(), [:], __iter__'''
+
+        # return cached result
+        if self._result_cache:
+            return self._result_cache
+
+        # reset the generator if it's ahead of the query lower bound
+        self.set_parser(self.query.low_mark)
+
+        _result_cache = []
+
+        generator = self.parser.get_generator(self.query.low_mark)
+
+        while self.query.high_mark is None or self.query.high_mark > self.parser.next_mark:
+            token = next(generator, None)
+            if token is None:
+                break
+            if self.query.low_mark < self.parser.next_mark:
+                _result_cache.append(token)
+
+        self._result_cache = _result_cache
+        if len(self._result_cache) > 1000:
+            print('WARNING large cached result {}'.format(
+                len(self._result_cache))
+            )
 
     def count(self):
         return self._count_or_save()
@@ -238,21 +219,25 @@ class KwicQuerySet(models.QuerySet):
         self._count = 0
         if self.max_count != 0:
 
-            def callback(item, elem):
-                if elem is not None:
-                    if save:
-                        AnnotatedToken(
-                            lemma=item.attrib('lemma', ''),
-                            string=item.text
-                        ).save()
-                    return 1
+            def callback(item):
+                # for debugging purpose only, we save records in DB
+                if save:
+                    AnnotatedToken(
+                        lemma=item.attrib('lemma', ''),
+                        string=item.text
+                    ).save()
+                return [1]
 
-            for _ in utils.parse_kwic(settings.KWIC_FILE_PATH, callback):
+            for _ in utils.KwicParser(callback):
                 self._count += 1
                 if (self.max_count > -1) and (self._count >= self.max_count):
                     break
 
         return self._count
+
+# ----------------------------------------------------------------------
+# virtual model for AnnotatedToken documents
+# ----------------------------------------------------------------------
 
 
 class AnnotatedToken(models.Model):
@@ -273,6 +258,8 @@ class AnnotatedToken(models.Model):
     13MB for 45427 records, 5% of the total.
     => 260MB for 1M tokens.
     '''
+
+    # this manager will read entries from the XML file, not the DB
     from_kwic = KwicQuerySet.as_manager()
 
     type = models.CharField(max_length=30, default='')
@@ -293,38 +280,24 @@ class AnnotatedToken(models.Model):
     # 0: prose, 2: lineated, 3: continuous
     verse_cat = models.SmallIntegerField(default=0)
 
-    @classmethod
-    def update_or_create_from_kwik_item(cls, item, token):
-        data = cls._get_data_from_kwik_item(item, token)
-
-        ret, _ = cls.objects.update_or_create(
-            location=data['location'],
-            token_number=data['token_number'],
-            defaults=data
-        )
-
-        return ret
+    def __str__(self):
+        return '{} [{}]'.format(self.string, self.lemma)
 
     @classmethod
-    def create_from_kwik_item(cls, item, string):
-        ret = cls.new_from_kwik_item(item, string)
-        ret.save()
-
-        return ret
-
-    @classmethod
-    def new_from_kwik_item(cls, item, string, mss_sections=None,
-                           tokenised_data=None):
+    def new_from_kwik_item(cls, item, mss_sections=None, tokenised_data=None):
         return cls(**cls._get_data_from_kwik_item(
-            item, string, mss_sections, tokenised_data
+            item, mss_sections, tokenised_data
         ))
 
     @classmethod
-    def _get_data_from_kwik_item(cls, item, string, mss_sections=None,
+    def _get_data_from_kwik_item(cls, item, mss_sections=None,
                                  tokenised_data=None):
-        # for each attribute in kwic <item>
-        # copy the value in the field with the same name
-        # in the model instance
+        '''
+        Returns a dictionary from a kwic item (XML Element).
+        The dictionary will be used to create a new AnnotatedToken.
+        '''
+
+        # Maps attributes to dictionary entries.
         ret = {
             k.lower().strip(): (v or '').strip()
             for k, v
@@ -332,8 +305,11 @@ class AnnotatedToken(models.Model):
             if hasattr(cls, k.lower())
         }
         # print(ret, string.text)
-        ret['string'] = (string.text or '').strip()
+        ret['string'] = (item.text or '').strip()
 
+        ret['lemma'] = utils.normalise_lemma(ret.get('lemma', ''))
+
+        # sets section_number from location attribute and mss_sections
         if mss_sections:
             ms = 'Royal'
             if 'edfr' in ret['location']:
@@ -343,16 +319,15 @@ class AnnotatedToken(models.Model):
                     break
                 ret['section_number'] = section['number']
 
+        # augment the dictionary with metadata coming from tokenised XML
         if tokenised_data:
-            verse_cat_index = tokenised_data.get(
+            ret['verse_cat'] = tokenised_data.get(
                 ret['location'], {}
             ).get('verse_cat', 0)
-            ret['verse_cat'] = verse_cat_index
 
-            speech_cat_index = tokenised_data.get(
+            ret['speech_cat'] = tokenised_data.get(
                 ret['location'] + '.' + ret['n'], {}
             ).get('speech_cat', 0)
-            ret['speech_cat'] = speech_cat_index
 
         return ret
 
@@ -360,14 +335,94 @@ class AnnotatedToken(models.Model):
         ret = '{}.{:03d}'.format(self.location, int(self.n))
         return ret
 
+
 # ----------------------------------------------------------------------
-# virtual model for Forms and Lemmas autocomplete index
+# virtual model for Lemmas documents
+# ----------------------------------------------------------------------
+
+
+class LemmaQuerySet(KwicQuerySet):
+
+    def _new_parser(self):
+        found = {}
+
+        def normalise(string, lower=False):
+            ret = (string or '').strip()
+            if lower:
+                ret = ret.lower()
+            return ret
+
+        def get_new_doc(lemma, pos, item, tokenised_data):
+            '''
+            Returns a AutocompleteForm for the given (lemma, form) pair.
+            Returns None if that pair was seen before (see found).
+            '''
+            ret = None
+
+            if lemma:
+                key = '{}'.format(lemma)
+                if key not in found:
+                    found[key] = 1
+
+                    ref = item.attrib.get(
+                        'location', '') + '__' + item.attrib.get('n', '')
+                    name_type = tokenised_data.get(ref, 'Unspecified')
+
+                    ret = Lemma(lemma=lemma, pos=pos, name_type=name_type)
+
+            return ret
+
+        def callback(item):
+            # don't move this outside of this function!
+            if not self.tokenised_data:
+                self.tokenised_data.update(utils.read_tokenised_name_types())
+
+            lemma = normalise(
+                utils.normalise_lemma(item.attrib.get('lemma', ''))
+            )
+            pos = item.attrib.get('pos', 'Unspecified').strip()
+            nom_propre = pos == POS_NAME
+            form = normalise(item.text, True)
+            if nom_propre:
+                form = form.title()
+
+            return [
+                r
+                for r
+                in [get_new_doc(lemma, pos, item, self.tokenised_data)]
+                if r
+            ]
+
+        return utils.KwicParser(callback)
+
+    def count(self):
+        return sum(1 for _ in self._new_parser())
+
+
+class Lemma(models.Model):
+    from_kwic = LemmaQuerySet.as_manager()
+
+    lemma = models.CharField(max_length=30, default='')
+    # a ; separated list of forms
+    forms = models.CharField(max_length=300, default='', blank=True)
+    pos = models.CharField(max_length=30, default='', blank=True)
+    name_type = models.CharField(max_length=30, default='', blank=True)
+
+    def get_unique_id(self):
+        ret = '{}'.format(self.lemma)
+        return ret
+
+    def __str__(self):
+        return '{}'.format(self.lemma)
+
+# ----------------------------------------------------------------------
+# virtual model for Forms and Lemmas autocomplete documents
 # ----------------------------------------------------------------------
 
 
 class AutocompleteFormQuerySet(KwicQuerySet):
 
-    def get_generator(self):
+    def _new_parser(self):
         found = {}
 
         def normalise(string, lower=False):
@@ -391,28 +446,33 @@ class AutocompleteFormQuerySet(KwicQuerySet):
 
             return ret
 
-        def callback(item, elem):
-            lemma = normalise(item.attrib.get('lemma', ''))
-            form = ''
-            if elem is not None:
-                nom_propre = item.attrib.get('pos', '') == 'nom propre'
-                form = normalise(elem.text, True)
-                if nom_propre:
-                    form = form.title()
+        def callback(item):
+            lemma = normalise(
+                utils.normalise_lemma(item.attrib.get('lemma', ''))
+            )
+            nom_propre = item.attrib.get('pos', '') == POS_NAME
+            form = normalise(item.text, True)
+            if nom_propre:
+                form = form.title()
 
-            doc = get_new_doc(lemma, form)
+            return [
+                r
+                for r
+                in [get_new_doc(lemma), get_new_doc(lemma, form)]
+                if r
+            ]
 
-            if doc:
-                return doc
-
-        # parse the kwic file for pairs of (token, lemma)
-        # Note: kwic contains tokens,
-        # but we normalise them into forms (lowercase).
-        for res in utils.parse_kwic(settings.KWIC_FILE_PATH, callback):
-            yield res
+        return utils.KwicParser(callback)
 
     def count(self):
-        return sum(1 for _ in self.get_generator())
+        ret = 0
+        limit = settings.SEARCH_INDEX_LIMIT_AUTOCOMPLETE
+        for _ in self._new_parser():
+            ret += 1
+            if limit > -1 and ret >= limit:
+                break
+
+        return ret
 
 
 class AutocompleteForm(models.Model):
@@ -424,3 +484,6 @@ class AutocompleteForm(models.Model):
     def get_unique_id(self):
         ret = '{}_{}'.format(self.lemma, self.form)
         return ret
+
+    def __str__(self):
+        return '{} [{}]'.format(self.form, self.lemma)

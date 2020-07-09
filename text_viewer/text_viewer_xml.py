@@ -1,7 +1,6 @@
-from django.conf import settings
-from .text_viewer import (TextViewerAPI, get_unicode_from_xml,
-                          remove_xml_elements)
+from .text_viewer import TextViewerAPI
 import xml.etree.ElementTree as ET
+from . import utils
 import re
 
 
@@ -124,7 +123,7 @@ class TextViewerAPIXML(TextViewerAPI):
     def get_doc_title(self, xml):
         ret = xml.find('title')
         if ret is not None:
-            ret = get_unicode_from_xml(ret, text_only=True)
+            ret = utils.get_unicode_from_xml(ret, text_only=True)
 
         return ret
 
@@ -156,6 +155,12 @@ class TextViewerAPIXML(TextViewerAPI):
         # remove spans without attributes (saves a lot of space!)
         ret = re.sub(r'(?musi)<span>([^<]*)</span>', r'\1', ret)
 
+        # 2020-3-h
+        # Please convert space before “:”, “;”, “!”, “?”, “»”,
+        # (or after) “«”into an unbreakable space.
+        ret = re.sub(r'\s+([:;!?»])', r'&nbsp;\1', ret)
+        ret = re.sub(r'([«])\s+', r'\1&nbsp;', ret)
+
         return ret
 
     def request_chunk(self, address_parts=None, synced_with=None):
@@ -185,7 +190,7 @@ class TextViewerAPIXML(TextViewerAPI):
 
         # get the XML document
         xml = self.fetch_xml_from_kiln(document, view)
-        remove_xml_elements(xml, './/div[@id="text-conventions"]')
+        utils.remove_xml_elements(xml, './/div[@id="text-conventions"]')
 
         # resolve the rest of the address
         location_type = self.get_location_type(location_type_slug)
@@ -216,7 +221,7 @@ class TextViewerAPIXML(TextViewerAPI):
                 # print achunk
                 if self.is_location_visible(
                         achunk, document, view, location_type_slug):
-                    chunk = achunk
+                    chunk = self.prepare_view_version(achunk, view)
                     break
 
             # build response from chunk and address
@@ -231,7 +236,7 @@ class TextViewerAPIXML(TextViewerAPI):
                 if self.is_print:
                     self.prepare_print_version(chunk, notes_info)
 
-                chunks.append(get_unicode_from_xml(chunk))
+                chunks.append(utils.get_unicode_from_xml(chunk))
 
                 retrieved_address_parts = [
                     document, view, location_type_slug, location
@@ -261,7 +266,8 @@ class TextViewerAPIXML(TextViewerAPI):
             else:
                 classes.append('tv-viewer-pane')
 
-            sublocationid, chunk = self.get_sublocationid_from_address(address, chunk)
+            sublocationid, chunk = self.get_sublocationid_from_address(
+                address, chunk)
 
             self.response = {
                 'chunk':
@@ -274,9 +280,6 @@ class TextViewerAPIXML(TextViewerAPI):
             ret = True
 
         return ret
-
-    def prepare_print_version(self, chunk, notes_info):
-        pass
 
     def get_notational_conventions(self, xml, view_slug):
         conventions = ''
@@ -306,3 +309,9 @@ class TextViewerAPIXML(TextViewerAPI):
             self.generated_date = generated_date.text
 
         return ret
+
+    def prepare_print_version(self, chunk, notes_info):
+        pass
+
+    def prepare_view_version(self, chunk, view):
+        pass
