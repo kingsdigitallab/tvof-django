@@ -185,7 +185,7 @@ $(function() {
 
     attach_tooltip('figure', function($el) {
         return {
-            'title': 'Image (click to view)',
+            'title': 'Image (click to view / cliquez pour voir)',
             'body': $el.find('img').attr('title'),
         };
     });
