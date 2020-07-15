@@ -188,7 +188,7 @@ nav {
     }
 
     &.dropdown {
-        .is-dropdown-submenu-parent {
+        .is-dropdown-submenu-parent a {
             &:hover {
                 background: scale-color($primary-color, $lightness: 20%);
                 color: $white !important;
@@ -487,8 +487,15 @@ ul.sticky {
         color: green;
     }
 
+<<<<<<< HEAD
     .tei-c.red, .tei-rubric, .tei-hi.red, .tei-hi.red-highlight {
         color: scale-color($secondary-color, $lightness: 30%);
+=======
+    // AC-392 - 5.q
+    //.tei-c.red, .tei-rubric, .tei-hi.red, .tei-hi.red-highlight {
+    .tei-c.red, .tei-rubric, .tei-hi.red {
+        color: scale-color($secondary-color, $lightness: 10%);
+>>>>>>> f0a6000473c512220e34b1fe7c845f88880aa7e2
     }
     .first-letter-red::first-letter {
         color: scale-color($secondary-color, $lightness: 25%);
@@ -509,9 +516,14 @@ ul.sticky {
         display: inline;
     }
 
+    // 2020-3-d:
+    // M: Verse (seg type=6) @type=cont needs to be lineated only in the
+    // interp text – currently it appears lineated in the semi-dip too,
+    // e.g. Fr20 §1061 and §698.5.
+
     p.tei.lg.lineated,
     // ac-358.1 : cont is now dislayed line by line
-    p.tei.lg.cont
+    .tv-view-interpretive p.tei.lg.cont
     {
         // https://stackoverflow.com/a/14832019/3748764
         display: table;
@@ -520,22 +532,14 @@ ul.sticky {
 
     .lineated > span,
     // ac-358.1 : cont is now displayed line by line
-    .cont > span
+    .tv-view-interpretive .cont > span
     {
         display: block;
         padding-right: 3rem;
     }
 
-    // ac-358.1 : cont is now dislayed line by line
-    /*
-    .cont span {
-        display: inline;
-    }
-    */
-
     //-----
-
-    .tei-unclear {
+    .tv-view-semi-diplomatic .tei-unclear {
         // GN: icon even if superscripted,
         // without this hover on top of icon doesn't do anything
         @include tooltip-and-icon("\f128");
@@ -675,6 +679,10 @@ ul.sticky {
 
         .tei-note.tei-type-gloss {
             @include tooltip-and-icon('\f14b');
+        }
+
+        &.tv-view-interpretive .tei-note.tei-type-gloss {
+            display: none;
         }
 
         .tei-note.tei-type-note,
@@ -1021,7 +1029,7 @@ footer {
         }
     }
 
-    .tei-unclear {
+    .tv-view-semi-diplomatic .tei-unclear {
         &:before {
             color: $tertiary-color !important;
             content: "\f128";
@@ -1034,13 +1042,16 @@ footer {
 // Search Page
 
 #tvof-search {
+    .search-facets .facet-normal {
+        .search-option a.selected:hover {
+            text-decoration: line-through;
+        }
+    }
+
     .search-facets {
 
         .search-option a:hover {
             text-decoration: underline;
-        }
-        .search-option a.selected:hover {
-            text-decoration: line-through;
         }
 
         .selected {
@@ -1213,3 +1224,20 @@ input#autosuggest-input {
   }
 }
 
+.data-release-sections label {
+  display: inline;
+
+  border: 2px solid transparent;
+  border-right: 2px solid grey;
+  padding-right: 0.5rem;
+  padding: 0.2rem;
+
+  &:hover {
+    border: 2px solid orange;
+  }
+
+}
+
+.sub-title {
+  font-size: 0.6em;
+}

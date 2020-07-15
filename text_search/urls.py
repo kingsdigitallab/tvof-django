@@ -1,12 +1,20 @@
 from . import views
 from django.urls import path, include, re_path
 from rest_framework import routers
-from .views import AnnotatedTokenFacetSearchView, AutocompleteSearchViewSet
+from .views import (
+    AnnotatedTokenFacetSearchView,
+    AutocompleteSearchViewSet,
+    LemmaFacetSearchView
+)
 
 router = routers.DefaultRouter()
 router.register(
     'tokens/search', AnnotatedTokenFacetSearchView,
     base_name='tokens-search'
+)
+router.register(
+    'lemma/search', LemmaFacetSearchView,
+    base_name='lemma-search'
 )
 router.register(
     'tokens/autocomplete', AutocompleteSearchViewSet,

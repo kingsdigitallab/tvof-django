@@ -1,3 +1,34 @@
+import xml.etree.ElementTree as ET
+import re
+from django.conf import settings
+import os
+import json
+
+
+def update_text_viewer_filters(client='textviewer', project_root_path=None, content=None):
+    if not project_root_path:
+        project_root_path = settings.BASE_DIR
+    path = os.path.join(project_root_path, settings.TEXT_VIEWER_FILTERS_PATH)
+
+    with open(path, 'wt') as fh:
+        content = fh.write(json.dumps(content))
+
+
+def get_text_viewer_filters(client='textviewer', project_root_path=None):
+    ret = None
+
+    if not project_root_path:
+        project_root_path = settings.BASE_DIR
+    path = os.path.join(project_root_path, settings.TEXT_VIEWER_FILTERS_PATH)
+
+    if os.path.exists(path):
+        with open(path, 'rt') as fh:
+            content = fh.read()
+        filters = json.loads(content)
+        if filters:
+            ret = filters[client]
+
+    return ret
 
 
 def findall_in_etree(tree, xpath):
@@ -15,28 +46,76 @@ def findall_in_etree(tree, xpath):
     leaf = xpath.split('/')[-1]
     for parent in tree.findall('{}/..'.format(xpath)):
         elements = parent.findall(leaf)
-        print(parent, leaf, elements)
+        # print(parent, leaf, elements)
         for i, element in enumerate(parent):
             if element in elements:
                 yield {'parent': parent, 'el': element, 'index': i}
 
 
-if 0:
-    xml_str = '''<r>
-    <gp>
-      <p>
-        <e>e1.1</e>
-        <e class="c1">e1.2</e>
-      </p>
-      <p>
-        <e>e2.1</e>
-        <e>e2.2</e>
-      </p>
-    </gp>
-    </r>
-    '''
+def remove_xml_elements(xml, xpath):
+    '''Remove all the elements matching xpath (and all their content)'''
+    ret = 0
+    xpath_from_parent = re.sub(r'.*/', '', xpath)
 
-    import xml.etree.ElementTree as ET
-    root = ET.fromstring(xml_str)
-    for e in findall_from_xml(root, './/e[@class="c1"]'):
-        print(e['el'].text)
+    for parent in xml.findall(xpath + '/..'):
+        for item in parent.findall(xpath_from_parent)[::-1]:
+            ret += 1
+            if item.tail:
+                last = None
+                found = 0
+                for kid in list(parent):
+                    if item == kid:
+                        if last is None:
+                            parent.text = (parent.text or '') + item.tail
+                        else:
+                            last.tail = (last.tail or '') + item.tail
+                        found = 1
+                        break
+                    last = kid
+                assert found
+            parent.remove(item)
+    return ret
+
+
+def get_unicode_from_xml(xmltree, encoding='utf-8', text_only=False,
+                         remove_root=False):
+    '''
+    Returns the xmltree (EL subtree) as a unicode string.
+    If text_only == True => element text only, no tags
+    '''
+    # if text_only = True => strip all XML tags
+    # EXCLUDE the TAIL
+    if text_only:
+        return get_xml_element_text(xmltree)
+    else:
+        if hasattr(xmltree, 'getroot'):
+            xmltree = xmltree.getroot()
+        ret = ET.tostring(xmltree, encoding=encoding).decode()
+        if xmltree.tail is not None and ret[0] == '<':
+            # remove the tail
+            import re
+            ret = re.sub(r'[^>]+$', '', ret)
+
+        if remove_root:
+            ret = ret.replace('<root>', '').replace('</root>', '')
+
+        return ret
+
+
+def get_xml_element_text(element):
+    # returns all the text within element and its descendants
+    # WITHOUT the TAIL.
+    #
+    # element is etree Element object
+    #
+    # '<r>t0<e1>t1<e2>t2</e2>t3</e1>t4</r>'
+    # e = (xml.findall(el))[0]
+    # e.text => t1
+    # e.tail => t4 (! part of e1)
+    # get_xml_element_text(element) => 't1t2t3'
+
+    return ''.join(element.itertext())
+
+
+def get_xml_from_unicode(s):
+    return ET.fromstring(s)

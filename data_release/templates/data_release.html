@@ -15,7 +15,7 @@
     <section class="main">
       <div class="row">
         <div class="large-12 columns">
-          <h1>Data release</h1>
+          <h1>Data release <a href="https://github.com/kingsdigitallab/tvof-django/wiki/Data-Release" target="_blank" class="sub-title">Help</a></h1>
         </div>
       </div>
 
@@ -50,6 +50,18 @@
               <p>(<a href="?target={{site.key}}">change to {{ site.name }}</a>)</p>
             {% endfor %}
             {% include "site_groups.html" with groups=target_groups editable=0  job_site_key=selected_target.key %}
+
+            <div class="data-release-sections">
+              <h3>Sections</h3>
+              <p><i>Sections of the interpretive texts visible in the Text Viewer:</i></p>
+              {% for doc in section_docs %}
+                <h4>{{ doc }}</h4>
+                {% for section in sections %}
+                  <label><input name="{{ doc }}-{{ section }}" type="checkbox" {% if section in doc_filters|get_item:doc|get_item:'interpretive' %}checked{%endif%}>{{ section }}</label>
+                {% endfor %}
+              {% endfor %}
+            <div>
+
           {% else %}
             <p>
               You cannot release data from this website.
