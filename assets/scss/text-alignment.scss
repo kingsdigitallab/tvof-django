@@ -73,7 +73,7 @@ move: a > on top the rubric icon*/
     right: 0;
     display: none;
     padding: 0.3em;
-
+    color: $white;
     &:hover {
         color: scale-color($primary-color, $lightness: 80%);
         background: scale-color($primary-color, $lightness: 20%);
