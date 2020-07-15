@@ -511,6 +511,12 @@ ul.sticky {
         // GN: icon even if superscripted,
         // without this hover on top of icon doesn't do anything
         @include tooltip-and-icon("\f128");
+        &:after {
+            // GN: 07/2020, partners prefer to reduce gap
+            // when unclear splits word
+            margin-right: -0.05em;
+            margin-left: -0.1em;
+        }
         padding: 0.5em 0em;
     }
 

@@ -144,6 +144,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         req = self.request.POST
         path = self.get_selected_target()['path']
         from text_viewer.utils import update_text_viewer_filters, get_text_viewer_filters
+
         # read
         content = {
             'textviewer': get_text_viewer_filters(
@@ -151,6 +152,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                 project_root_path=path
             )
         }
+
         # update
         for doc, views in content['textviewer'].items():
             views['interpretive'] = [
