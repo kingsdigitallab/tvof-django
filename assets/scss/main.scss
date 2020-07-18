@@ -520,6 +520,15 @@ ul.sticky {
         padding: 0.5em 0em;
     }
 
+    .tei-pc-rend-2
+    {
+        // why? because we show a special Right-to-left character
+        // in there to emulate the punctus elevatus.
+        // Without inline-block that character would be displayed
+        // in the wrong order. ac-392
+        display: inline-block;
+    }
+
     .tv-view-semi-diplomatic .tei-mod,
     .tv-view-semi-diplomatic .tei-add,
     .tei-corr,
