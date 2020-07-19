@@ -1,4 +1,5 @@
 from collections import OrderedDict
+from text_alignment import utils
 
 
 class API_Vars(object):
@@ -26,7 +27,7 @@ class API_Vars(object):
         if var['options'] and not isinstance(var['options'][0], dict):
             options = []
             for name in var['options']:
-                option_key = get_key_from_name(name)
+                option_key = utils.get_key_from_name(name)
                 options.append({
                     'key': option_key,
                     'name': name,
@@ -124,11 +125,3 @@ class API_Vars(object):
         return ret
 
 
-def get_key_from_name(name):
-    import re
-    return re.sub(r'[^\w_]+', r'-', name.lower()).strip()
-
-
-def get_name_from_key(akey):
-    import re
-    return re.sub(r'[_]', r' ', akey.title()).strip()

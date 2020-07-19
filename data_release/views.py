@@ -5,6 +5,7 @@ from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from shutil import copy2
 import os
+
 from .jobs import job_action, STATUS_SCHEDULED
 from django.views.generic.base import TemplateView
 
@@ -137,6 +138,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                 job_action('index', 'schedule', target['path'])
 
             self.process_sections()
+            self.process_alignment_mss()
 
         return ret
 
@@ -166,6 +168,16 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         update_text_viewer_filters(
             project_root_path=path,
             content=content
+        )
+
+    def process_alignment_mss(self):
+        '''update the list of visible mss on the alignment viz pages
+        e.g. POST: 'alignment_mss': ['add-15268', 'add-25884']
+        '''
+        from text_alignment.utils import write_alignment_visible_ms_slugs
+        write_alignment_visible_ms_slugs(
+            self.request.POST.getlist('alignment_mss', []),
+            self.get_selected_target()['path']
         )
 
     def process_index_input_file(self):
@@ -200,7 +212,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                 and '/' not in fn
             ]
 
-            print(file_names)
+            # print(file_names)
 
         # check file names, move them and schedule indexing job
         if len(file_names) != 3:
@@ -265,6 +277,11 @@ class DataReleaseView(LoginRequiredMixin, FormView):
             project_root_path=ret['selected_target']['path']
         )
         ret['sections'] = sorted(settings.SECTIONS_NAME.keys())
+
+        from text_alignment.utils import read_alignment_ms_names
+        ret['alignment_mss'] = read_alignment_ms_names(
+            self.get_selected_target()['path']
+        )
 
         ret['editable'] = \
             self.running_or_scheduled_job_count == 0

@@ -62,6 +62,16 @@
               {% endfor %}
             <div>
 
+            <div class="data-release-sections">
+              <h3>MSS in alignment</h3>
+              <p><i>Press CTRL (or Command key) and click to select/unselect an item</i></p>
+              <select name="alignment_mss" multiple>
+                {% for ms in alignment_mss %}
+                  <option value="{{ ms.1 }}" {% if ms.2 %}selected{% endif %}>{{ ms.0 }}</option>
+                {% endfor %}
+              </select>
+            <div>
+
           {% else %}
             <p>
               You cannot release data from this website.
