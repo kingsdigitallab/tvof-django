@@ -474,6 +474,10 @@ ul.sticky {
         font-weight: 700;
     }
 
+    .seg-lineated .tei-seg-num {
+        // 2020-II-d: seg number on separate line before lineated lines
+        display: block;
+    }
 
     // GN: two types of verses:
     // ((.cont (flows continuously within a p/div)))
@@ -1219,3 +1223,4 @@ input#autosuggest-input {
 .sub-title {
   font-size: 0.6em;
 }
+
