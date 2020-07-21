@@ -487,15 +487,10 @@ ul.sticky {
         color: green;
     }
 
-<<<<<<< HEAD
-    .tei-c.red, .tei-rubric, .tei-hi.red, .tei-hi.red-highlight {
-        color: scale-color($secondary-color, $lightness: 30%);
-=======
     // AC-392 - 5.q
     //.tei-c.red, .tei-rubric, .tei-hi.red, .tei-hi.red-highlight {
     .tei-c.red, .tei-rubric, .tei-hi.red {
-        color: scale-color($secondary-color, $lightness: 10%);
->>>>>>> f0a6000473c512220e34b1fe7c845f88880aa7e2
+        color: scale-color($secondary-color, $lightness: 30%);
     }
     .first-letter-red::first-letter {
         color: scale-color($secondary-color, $lightness: 25%);
