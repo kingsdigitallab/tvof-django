@@ -4,8 +4,8 @@ from django.shortcuts import render
 from text_viewer.kiln_requester import CachedRequesterKiln
 from django.core.cache import caches
 from .api_vars import API_Vars
-from text_alignment.api_vars import get_key_from_name
 from cms.templatetags.cms_tags import json
+from text_alignment import utils
 import re
 
 
@@ -165,11 +165,7 @@ class Alignment(object):
                 return ret
 
         # fetch alignment XML from Kiln
-        kiln = CachedRequesterKiln()
-        url = '/backend/preprocess/alists/TVOF_para_alignment.xml'
-        res = kiln.request(url)
-        if not res:
-            raise Exception('Could not fetch alignment XML from Kiln')
+        res = utils.read_alignment_html()
 
         # extract data from XML
         ret = self.get_dict_from_alignment_xml(res)
@@ -189,7 +185,8 @@ class Alignment(object):
     def get_config_schema(self, alignment_data):
         # cache = caches['kiln']
 
-        possible_mss = getattr(settings, 'ALIGNMENT_MSS', None)
+        # possible_mss = getattr(settings, 'ALIGNMENT_MSS', None)
+        possible_mss = utils.read_alignment_visible_ms_slugs()
 
         ret = [
             {
@@ -219,7 +216,7 @@ class Alignment(object):
                     for ms
                     in alignment_data['mss']
                     if (not possible_mss) or
-                    get_key_from_name(ms['name']) in possible_mss
+                    utils.get_key_from_name(ms['name']) in possible_mss
                 ],
                 'name': 'Manuscripts',
                 'type': 'multi',
@@ -379,7 +376,7 @@ class Alignment(object):
             'sections': sections,
         }
 
-        print(len(json(paras)))
+        # print(len(json(paras)))
 
         # import pprint
         # print(pprint.pprint(paras[0]))
@@ -537,7 +534,7 @@ class Alignment(object):
 
         # Expand variations
 
-        # TODO: moved thos hard-coded values to settings/base.py
+        # TODO: moved those hard-coded values to settings/base.py
 
         variation_names = {
             'pml': 'Partial material lacuna',
@@ -594,53 +591,14 @@ class Alignment(object):
         return para_ms_dict
 
     def get_ms_names_from_xml(self, root):
-        '''
-        Returns a mapping between all unique MS names
+        '''Returns a mapping between all unique MS names
         found in root and normalised names.
         e.g. {Dijon -> Dijon 262, Dijon262 -> Dijon 262, ...}
         '''
 
-        # get all unique names
-        ms_names = {}
-        for seg in root.findall('.//seg[@type="ms_name"]'):
-            name = seg.text
-            if name:
-                ms_names[name] = ms_names.get(name, 0) + 1
-
-        # now normalise the names
-        # Fr15455 | Fr 15455, Marciana_fr_Z_II | Marciana Fr Z Ii
-        for name in ms_names:
-            normalised = name.replace(
-                '-',
-                ' ').replace(
-                '_',
-                ' ').lower().strip()
-            normalised = re.sub(r'(?i)([a-z])(\d)', r'\1 \2', normalised)
-            normalised = normalised.title()
-            ms_names[name] = normalised
-
-        # merge
-        # e.g. Dijon -> Dijon 562
-        for name, normalised in list(ms_names.items()):
-            if ' ' not in normalised:
-                candidates = [
-                    v
-                    for v
-                    in set(ms_names.values())
-                    if v.startswith(normalised + ' ')
-                ]
-                c = len(candidates)
-                if c == 1:
-                    ms_names[name] = candidates[0]
-                elif c > 2:
-                    print('WARNING: ambiguous MS name: %s (%s ?)' %
-                          (name, ', '.join(candidates)))
-                elif c == 0:
-                    print('INFO: MS name without number: %s' % name)
-
-        # print '\n'.join(['%s | %s' % (k, v) for k, v in ms_names.items()])
-
-        return ms_names
+        return utils.get_normalised_ms_names(
+            [seg.text for seg in root.findall('.//seg[@type="ms_name"]')]
+        )
 
 
 '''

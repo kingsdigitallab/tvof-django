@@ -164,29 +164,31 @@ $(function() {
             var newurl = window.location.protocol + "//" + window.location.host + window.location.pathname + '?' + data.qs;
             window.history.pushState({path:newurl},'',newurl);
         }
-        fix_thead();
+        fix_thead($fragment);
     }
 
     var row_top = 0;
-    function fix_width_row($row) {
+    function fix_width_row($row_fixed, $row) {
+        let $children_fixed = $row_fixed.children()
         $row.children().each(function(index, th) {
             var $th = $(th);
-            $th.css('min-width', $th.outerWidth());
+            $($children_fixed[index]).css('min-width', $th.outerWidth(true));
         });
     }
-    function fix_thead() {
+    function fix_thead($root) {
+        // diy sticky for column & table views.
+        // todo: replace with foundation sticky
         $('.fixed-tr').remove();
 
-        var $row = $('.alignment-paras thead tr:first');
+        var $row = $root.find('.sticky-diy');
 
         if ($row.length === 0) return;
 
-        fix_width_row($row);
-
         var $row_fixed = $row.clone();
-        $row.parent().append($row_fixed);
-
         $row_fixed.addClass('fixed-tr');
+        $row_fixed.css('display', $row.css('display'));
+        $row.parent().append($row_fixed);
+        fix_width_row($row_fixed, $row);
 
         $row_fixed.data('threshold', $row.offset().top);
 
@@ -204,11 +206,15 @@ $(function() {
         update_table_heads();
     });
 
+    $win.on('resize', function() {
+        fix_thead($('body'));
+    });
+
     function update_table_heads() {
         var top = $win.scrollTop();
         $('.fixed-tr').each(function(index, row) {
             var $row = $(row);
-            $row.toggle(top > $(row).data('threshold')).css('top', top);
+            $row.toggle(top > $row.data('threshold')).css('top', top);
         });
     }
 });

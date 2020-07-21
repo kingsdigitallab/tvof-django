@@ -506,6 +506,10 @@ ul.sticky {
         font-weight: 700;
     }
 
+    .seg-lineated .tei-seg-num {
+        // 2020-II-d: seg number on separate line before lineated lines
+        display: block;
+    }
 
     // GN: two types of verses:
     // ((.cont (flows continuously within a p/div)))
@@ -543,7 +547,22 @@ ul.sticky {
         // GN: icon even if superscripted,
         // without this hover on top of icon doesn't do anything
         @include tooltip-and-icon("\f128");
+        &:after {
+            // GN: 07/2020, partners prefer to reduce gap
+            // when unclear splits word
+            margin-right: -0.05em;
+            margin-left: -0.1em;
+        }
         padding: 0.5em 0em;
+    }
+
+    .tei-pc-rend-2
+    {
+        // why? because we show a special Right-to-left character
+        // in there to emulate the punctus elevatus.
+        // Without inline-block that character would be displayed
+        // in the wrong order. ac-392
+        display: inline-block;
     }
 
     .tv-view-semi-diplomatic .tei-mod,
@@ -1241,3 +1260,4 @@ input#autosuggest-input {
 .sub-title {
   font-size: 0.6em;
 }
+

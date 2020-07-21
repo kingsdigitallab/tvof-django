@@ -1,21 +1,4 @@
-{% load staticfiles compress cms_tags wagtailcore_tags %}
-
-{# TODO: move this to external file (main.js?) #}
-<script>
-$(function() {
-    // Expand / Collapse
-    $('.expand').on("click", function () {
-        $(this).children().next('ul').slideToggle(400).toggleClass("hide show");
-        $(this).toggleClass("active");
-        // GN: removed 'return false' as it prevents links inside the element
-        // to open their href on click.
-        // See AC-265.
-        // return false;
-    });
-
-    Foundation.reInit('data-sticky');
-});
-</script>
+{% load staticfiles compress cms_tags wagtailcore_tags alignment_tags %}
 
 {% comment %}
     GF: Foundation's sticky plugin seems to be in conflict with Vue.js
@@ -32,7 +15,7 @@ $(function() {
 {% endcomment %}
 
 <div class="viz viz-column" data-sticky-container>
-    <div class="row thead expanded small-up-4 medium-up-6" data-sticky>
+    <div class="row thead expanded small-up-4 medium-up-6 sticky sticky-diy" data-sticky>
         <div class="column column-block">
             &nbsp;
         </div>
@@ -54,7 +37,7 @@ $(function() {
     {% endifchanged %}
     <div class="row expanded small-up-4 medium-up-6">
         <div class="column column-block first">
-            {{ para.id }}
+            {{ para.id|format_seg_reference }}
         </div>
         {% for ms in params.mss.options %}
         {% if ms.selected %}
@@ -139,3 +122,23 @@ $(function() {
 </div>
 {% endfor %}
 </div>
+
+{# TODO: move this to external file (main.js?) #}
+<script>
+$(function() {
+    // Expand / Collapse
+    $('.expand').on("click", function () {
+        $(this).children().next('ul').slideToggle(400).toggleClass("hide show");
+        $(this).toggleClass("active");
+        // GN: removed 'return false' as it prevents links inside the element
+        // to open their href on click.
+        // See AC-265.
+        // return false;
+    });
+
+    // window.Foundation.reInit($('div.viz'));
+    // GN: this applies the sticky behaviour but the styles are broken
+    // new window.Foundation.Sticky($('div.viz .sticky'));
+    // GN: see fix_thead() in alignment.js
+});
+</script>
