@@ -880,6 +880,9 @@ ul.sticky {
 
 footer {
     color: white;
+    background: $body-background;
+    padding: 0.5rem 0;
+
     a {
         color: white;
         font-weight: bold;
@@ -888,13 +891,16 @@ footer {
             color: darken($light-gray, 10%);
         }
     }
-    background: $body-background;
-    padding: 0.5rem 0;
 
     .logo {
         img {
             max-height: rem-calc(200);
         }
+    }
+
+    p {
+        margin-bottom:0.1rem;
+        font-size:0.8rem;
     }
 }
 
@@ -975,7 +981,9 @@ footer {
         // We should really control the heights of the toolbar elements rather
         // than leave it dynamic
 
-        height: calc(100vh - 230px);
+        // height: calc(100vh - 230px);
+        // ac-355
+        height: calc(100vh - 160px);
     }
 
     // footer {

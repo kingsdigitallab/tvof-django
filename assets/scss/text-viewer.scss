@@ -92,8 +92,9 @@
             margin: 0;
 
             &.menu {
-                background: $dark-gray;
+                background: #ffffff;
                 padding: rem-calc(24 16 16);
+                border: 1px solid #8a8a8a;
             }
 
             li {
@@ -296,6 +297,12 @@
 
     .hidden {
         display: none;
+    }
+
+    // ac-355
+    .menu .active > a:after,
+    .menu > li:hover > a::after {
+        border-color: #fff transparent transparent;
     }
 }
 
