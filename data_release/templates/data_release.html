@@ -44,7 +44,7 @@
         </div>
 
         <div class="large-6 columns">
-          <h2><i class="fa fa-arrow-right" aria-hidden="true"></i> Target: {{ selected_target.name }}</h2>
+          <h2><span class="fa fa-arrow-right" aria-hidden="true"></span> Target: {{ selected_target.name }}</h2>
           {% if selected_target or unselected_targets %}
             {% for site in unselected_targets %}
               <p>(<a href="?target={{site.key}}">change to {{ site.name }}</a>)</p>

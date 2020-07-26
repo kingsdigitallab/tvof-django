@@ -16,6 +16,8 @@
 {% block main_wrapper %}
 
 {% verbatim %}
+
+<div id="maincontent" tabindex="0" aria-label="option to skip to the top"></div>
 <!-- #text-viewer height is adjusted automatically with JS  -->
 <section id="text-viewer" class="main text-viewer">
     <div id="text-viewer-glass"></div>
@@ -42,8 +44,8 @@ a vue directive:
             <div class="small-12 columns">
 
                 <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()" class="close-panel-button float-right">
-                    <i class="fa fa-trash" aria-label="Close this panel" title="Close this panel">
-                    </i>
+                    <span class="fa fa-trash" aria-label="Close this panel" title="Close this panel"></span>
+                    </span>
                 </a>
 
                 <div class="controls">
@@ -94,7 +96,7 @@ a vue directive:
                             </a>
                             <template v-if="alocation_type.locations.length > 1">
                                 <div class="list-filter">
-                                    <input v-on:keyup.stop.prevent="filterLocations(alocation_type, $event)" type="text" name="filter" value="keyword" v-model="location_type_filters[alocation_type.slug]" placeholder="Search...">
+                                    <input v-on:keyup.stop.prevent="filterLocations(alocation_type, $event)" type="text" name="filter" value="keyword" aria-label="search" v-model="location_type_filters[alocation_type.slug]" placeholder="Search...">
                                     <a class="clear-filter fa fa-times-circle" href="#" v-on:click.prevent="clearLocationFilter(alocation_type)"></a>
                                 </div>
                                 <ul>
@@ -123,16 +125,16 @@ a vue directive:
                         <li>
                             <a href="#" v-on:click.stop.prevent="onClickViewExternal(view.slug)"
                                 aria-label="Open a new panel" title="Open a new panel">
-                                <i class="fa fa-columns"></i>
+                                <span class="fa fa-columns" aria-label="icon columns"></span>
                             </a>
                         </li>
                         <li>
                             <a target="_blank" v-bind:href="getPrintUrl()" aria-label="Print view" title="Print view">
-                                <i class="fa fa-print"></i>
+                                <span class="fa fa-print" aria-label="icon print"></span>
                             </a>
                         </li>
                         <li v-bind:class="{toolbar: 1, hidden: display_settings.length == 0}">
-                            <a><i class="fa fa-pencil"></i></a>
+                            <a><span class="fa fa-pencil"></span></a>
                             <ul class="text-left">
                                 <h3>Display</h3>
                                 <li v-for="setting in display_settings" v-bind:class="{active: isDisplaySettingActive(setting), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
@@ -148,7 +150,7 @@ a vue directive:
                             </a>
                         </li>
                         <li class="key">
-                            <a><i class="fa fa-key"></i></a>
+                            <a><span class="fa fa-key"></span></a>
                             <ul class="text-left">
                                 <li>
                                     <h3>Notations</h3>
@@ -171,7 +173,7 @@ a vue directive:
 
 <div class="reveal tv-reveal" id="image-viewer-modal" data-reveal>
     <h3>Image Viewer</h3>
-    <div id="image-viewer"></div>
+    <div id="image-viewer" role="complementary" aria-label="image viewer"></div>
     <div class="image-viewer-caption"></div>
     <button class="close-button" data-close aria-label="Close modal" type="button">
         <span aria-hidden="true">&times;</span>
@@ -180,7 +182,7 @@ a vue directive:
 
 <div class="reveal tv-reveal" id="shared-reveal" data-reveal>
     <h3>Image Viewer</h3>
-    <div class="body"></div>
+    <div class="body" role="complementary" aria-label="image viewer body"></div>
     <button class="close-button" data-close aria-label="Close modal" type="button">
         <span aria-hidden="true">&times;</span>
     </button>

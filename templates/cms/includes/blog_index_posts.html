@@ -1,6 +1,6 @@
 {% load staticfiles wagtailcore_tags wagtailimages_tags %}
 
-{% include "cms/includes/pagination.html" with page=page_of_posts %}
+<role="top navigation">{% include "cms/includes/pagination.html" with page=page_of_posts %}></role>
 
 <ul class="{{ class }} no-bullet">
     {% for apost in page_of_posts %}
@@ -31,12 +31,12 @@
                                             {% if child.block_type == 'paragraph' %}
                                                 {% if forloop.first %}
                                                 {{ child.value|richtext|truncatewords:15 }}
-                                                <a href="{{ post.url }}"><strong>Read more &raquo;</strong></a>
+                                                <a href="{{ post.url }}"><strong>Read more about {{post.title}} &raquo;</strong></a>
                                                 {% endif %}
                                             {% endif %}
                                         </p>
                                     {% endfor %}
-                                </section>
+                                    </section>
                             {% endblock %}
                         </div>
                     </div>
@@ -50,4 +50,4 @@
     
 </ul>
 
-{% include "cms/includes/pagination.html" with page=page_of_posts %}
+<role="bottom navigation">{% include "cms/includes/pagination.html" with page=page_of_posts %}</role>

@@ -1,10 +1,10 @@
 <div class="search-box">
   <form action="" method="get">
-    <input type="text" class="search-box-text" name="q"{% if query_string %} value="{{ query_string }}"{% endif %} placeholder="Search the site">
+    <input type="text" class="search-box-text" aria-label="search box" name="q"{% if query_string %} value="{{ query_string }}"{% endif %} placeholder="Search the site">
 
     <div class="search-button-container">
       <button type="submit" class="search-button">
-        <i class="fa fa-search"></i>
+        <span class="fa fa-search"></span>
       </button>
     </div>
   </form>

@@ -2,7 +2,7 @@
 
 {% get_request_parameters exclude="page" as params %}
 
-<ul class="pagination" role="navigation" aria-label="Pagination">
+<ul class="pagination" aria-label="Pagination">
     <li class="pagination-previous{% if not page.has_previous %} disabled{% endif %}">{% if page.has_previous %}<a href="?q={{ query }}&amp;page={{ page.previous_page_number }}&amp;#map" aria-label="Previous page">{% endif %}Previous{% if page.has_previous %}</a>{% endif %}</li>
     <li class="">Page {{ page.number }} of {{ page.paginator.num_pages }}</li>
     <li class="pagination-next{% if not page.has_next %} disabled{% endif %}">{% if page.has_next %}<a href="?q={{ query }}&amp;page={{ page.next_page_number }}&amp;#map" aria-label="Next page">{% endif %}Next{% if page.has_next %}</a>{% endif %}</li>

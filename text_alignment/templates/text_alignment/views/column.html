@@ -53,19 +53,19 @@
         data-plink="{{forloop.counter0}}/{{para_ms.corresp|default:para.id|short_para_id}}"
         >
         {% if fields_locus and para_ms.location or fields_rubric and para_ms.rubric or fields_verse and para_ms.verse %}
-        {% if fields_locus and para_ms.location %}<i class="fa fa-map-marker"></i>{% endif %}
+        {% if fields_locus and para_ms.location %}<span class="fa fa-map-marker"></span>{% endif %}
         {% if fields_rubric %}
             {% for rubric in para_ms.rubric %}
-                <i class="fa fa-align-center {% if rubric.diff %}rubric-diff rubric-diff-{{rubric.diff}}{%endif%}"></i>
+                <span class="fa fa-align-center {% if rubric.diff %}rubric-diff rubric-diff-{{rubric.diff}}{%endif%}"></span>
             {% endfor %}
         {% endif %}
-        {% if fields_variation and para_ms.variation %} <i class="fa fa-edit"></i>{% endif %}
-        {% if fields_verse and para_ms.verse %} <i class="fa fa-pencil"></i>{% endif %}
+        {% if fields_variation and para_ms.variation %} <span class="fa fa-edit"></span>{% endif %}
+        {% if fields_verse and para_ms.verse %} <span class="fa fa-pencil"></span>{% endif %}
 
         {% if fields_note and para_ms.note %}
         {% for note in para_ms.note %}
         {% if ALIGNMENT_SHOW_INTERNAL_NOTES or note.feat %}
-        <i class="fa fa-file"></i>
+        <span class="fa fa-file"></span>
         {% endif %}
         {% endfor %}
         {% endif %}
@@ -76,14 +76,14 @@
 
         <ul class="hide">
             {% if fields_locus and para_ms.location %}
-            <li><strong><i class="fa fa-map-marker"></i> Location:</strong> {{ para_ms.location }}</li>
+            <li><strong><span class="fa fa-map-marker"></span> Location:</strong> {{ para_ms.location }}</li>
             {% endif %}
 
             {% if fields_rubric and para_ms.rubric %}
             {% for rubric in para_ms.rubric %}
             <li>
                 <strong>
-                    <i class="fa fa-align-center {% if rubric.diff %}rubric-diff rubric-diff-{{rubric.diff}}{%endif%}"></i>
+                    <span class="fa fa-align-center {% if rubric.diff %}rubric-diff rubric-diff-{{rubric.diff}}{%endif%}"></span>
                     {{ rubric.diff_label|default:'Rubric' }}:
                 </strong>
             {% if rubric.dest_label %}<span class="rubric-dest">{{ rubric.dest_label }}</span>{% endif %}
@@ -94,19 +94,19 @@
 
             {% if fields_variation and para_ms.vars %}
             {% for var in para_ms.vars %}
-            <li><strong><i class="fa fa-edit"></i> Variation:</strong> {{ var.t }}</li>
+            <li><strong><span class="fa fa-edit"></span> Variation:</strong> {{ var.t }}</li>
             {% endfor %}
             {% endif %}
 
             {% if fields_verse and para_ms.verse %}
-            <li><strong><i class="fa fa-pencil"></i> Verse:</strong> {{ para_ms.verse }}</li>
+            <li><strong><span class="fa fa-pencil"></span> Verse:</strong> {{ para_ms.verse }}</li>
             {% endif %}
 
             {% if fields_note and para_ms.note %}
             {% for note in para_ms.note %}
             {% if ALIGNMENT_SHOW_INTERNAL_NOTES or note.feat %}
             <li>
-                <strong><i class="fa fa-file"></i>
+                <strong><span class="fa fa-file"></span>
                 Note ({% if note.feat %}{{ ALIGNMENT_FEATURE_LABELS|get_item:note.feat }}{% else %}internal{% endif %}):
                 </strong>
                 {{ note.t }}

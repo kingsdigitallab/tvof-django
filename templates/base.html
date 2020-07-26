@@ -1,6 +1,6 @@
 {% load staticfiles compress cms_tags %}
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -24,10 +24,12 @@
 </head>
 
 <body class="{% block body_classes %}{% endblock %}" >
+  <div role="complementary" class="skip-main" aria-label="option to skip to the main content"><a href="#maincontent">Skip to main content</a></div>
   {% block header %}
   <header>
     {% include 'includes/header.html' %}
   </header>
+  <div id="maincontent" tabindex="0"></div>
 
   <nav>
     {% include 'includes/navigation.html' %}

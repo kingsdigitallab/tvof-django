@@ -4,10 +4,10 @@
     {% if children %}
         {% if request.path == section.get_url %}
           {% if title %}
-              <h3>{{ title }}</h3>
+              <h2>{{ title }}</h2>
           {% endif %}
         {% else %}
-            <h3><a href="{% pageurl section %}">{% page_title section %}</a></h3>
+            <h2><a href="{% pageurl section %}">{% page_title section %}</a></h2>
         {% endif %}
     
         <ul class="menu vertical side-menu">
