@@ -40,7 +40,7 @@
 .main {
 
     .boxed {
-        background: $light-gray;
+        background: white;
         border-radius: rem-calc(4);
         &:first-child {
             margin-bottom: rem-calc(8);
@@ -92,8 +92,9 @@
             margin: 0;
 
             &.menu {
-                background: $light-gray;
+                background: #ffffff;
                 padding: rem-calc(24 16 16);
+                border: 1px solid #8a8a8a;
             }
 
             li {
@@ -163,7 +164,7 @@
 
     ul.menu li.active > a,
     ul.menu li > a:focus {
-        background-color: #5871a4;
+        background-color: #3e5586;
     }
 
     ul.menu li.disabled > a {
@@ -263,7 +264,7 @@
         }
 
         .key {
-            background: $dark-gray;
+            background: #595959;
             bottom: 0;
             position: absolute;
             width: 100%;
@@ -296,6 +297,12 @@
 
     .hidden {
         display: none;
+    }
+
+    // ac-355
+    .menu .active > a:after,
+    .menu > li:hover > a::after {
+        border-color: #fff transparent transparent;
     }
 }
 

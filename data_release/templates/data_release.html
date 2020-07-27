@@ -44,7 +44,7 @@
         </div>
 
         <div class="large-6 columns">
-          <h2><i class="fa fa-arrow-right" aria-hidden="true"></i> Target: {{ selected_target.name }}</h2>
+          <h2><span class="fa fa-arrow-right" aria-hidden="true"></span> Target: {{ selected_target.name }}</h2>
           {% if selected_target or unselected_targets %}
             {% for site in unselected_targets %}
               <p>(<a href="?target={{site.key}}">change to {{ site.name }}</a>)</p>
@@ -60,6 +60,16 @@
                   <label><input name="{{ doc }}-{{ section }}" type="checkbox" {% if section in doc_filters|get_item:doc|get_item:'interpretive' %}checked{%endif%}>{{ section }}</label>
                 {% endfor %}
               {% endfor %}
+            <div>
+
+            <div class="data-release-sections">
+              <h3>MSS in alignment</h3>
+              <p><i>Press CTRL (or Command key) and click to select/unselect an item</i></p>
+              <select name="alignment_mss" multiple>
+                {% for ms in alignment_mss %}
+                  <option value="{{ ms.1 }}" {% if ms.2 %}selected{% endif %}>{{ ms.0 }}</option>
+                {% endfor %}
+              </select>
             <div>
 
           {% else %}

@@ -11,7 +11,7 @@
     <div id="tvof-search">
 
         <div class="search-query hide-for-large">
-          <input class="search-text" type="search" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
+          <input class="search-text" type="search" aria-label="search box" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
           <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
         </div>
         <div class="row">
@@ -31,7 +31,7 @@
                 <template v-else>Next</template>
               </li>
               <li>
-                <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size">
+                <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size" aria-label="page size">
                   <option v-for="size in page_sizes" :value="size">{{ size }}</option>
                 </select>
                 per page
@@ -41,7 +41,7 @@
 
             <ul class="search-params undecorated-list">
               <li>Sort by:
-                <select class="search-orders" v-model="query.order" v-on:change="on_change_order">
+                <select class="search-orders" v-model="query.order" v-on:change="on_change_order" aria-label="query order">
                   <option v-for="(order, okey) in orders" :value="okey">{{ order.label }}</option>
                 </select>
               </li>
@@ -83,12 +83,16 @@
                   </tr>
                 </tbody>
               </template>
+
               <template v-if="query.result_type == 'names' || query.result_type == 'lemmata'">
                 <thead>
                   <tr>
-                    <th>Name</th>
-                    <th v-if="query.result_type == 'names'">Type</th>
-                    <th v-else>Part of Speech</th>
+                    <th v-if="query.result_type == 'names'">Name</th>
+                    <th v-else>Lemma</th>
+                    <!-- AC-392 8/7/2020 -->
+                    <!-- th v-if="query.result_type == 'names'">Type</th -->
+                    <!-- th v-else>Part of Speech</th -->
+                    <th>Type</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -96,8 +100,10 @@
                     <td>
                       <a href="#" @click.prevent="on_click_lemma(hit)">{{ hit.lemma }}</a>
                     </td>
-                    <td v-if="query.result_type == 'names'">{{ hit.name_type }}</td>
-                    <td v-else>{{ hit.pos }}</td>
+                    <!-- AC-392 8/7/2020 -->
+                    <!-- td v-if="query.result_type == 'names'">{{ hit.name_type }}</td -->
+                    <!-- td v-else>{{ hit.pos }}</td -->
+                    <td>{{ hit.name_type }}</td>
                   </tr>
                 </tbody>
               </template>
@@ -134,7 +140,7 @@
             <!-- Search phrase -->
             <div class="card show-for-large">
               <div class="card-divider">
-                <h4>{{ config.phrase_title }}</h4>
+                <h2>{{ config.phrase_title }}</h2>
               </div>
               <div class="card-section">
                 <vue-autosuggest
@@ -166,7 +172,8 @@
             <template v-for="ui_facet in ui_facets">
               <div class="card facet-normal" v-if="has_facet_options(ui_facet)">
                 <div class="card-divider">
-                  <h4>{{ ui_facet.label }}</h4>
+                  <strong v-if="ui_facet.key == 'name_type' && query.result_type == 'names'">Name type</strong>
+                  <strong v-else>{{ ui_facet.label }}</strong>
                   <a v-if="ui_facet.tooltip"
                     data-tooltip-vue
                     data-click-open="false" class="facet-info fa fa-info-circle has-tip right"

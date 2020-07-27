@@ -419,13 +419,17 @@ CMS_LANGUAGES = [
 # Click settings and select the desired MSS
 # then copy &ms=...& from the querystring
 # and paste it here
-# ALIGNEMENT_MSS = 'add-15268,add-19669,fr-17177,fr-20125,royal-20-d-1'\
+# ALIGNMENT_MSS = 'add-15268,add-19669,fr-17177,fr-20125,royal-20-d-1'\
 #     .split(',')
-ALIGNEMENT_MSS = []
+# DEPRECATED, the list is saved as json in ALIGNMENT_FILTERS_PATH
+ALIGNMENT_MSS = []
 
 # Filter which MSS and sections are visible
 # Don't modify it here, copy and change it in your 'local.py'
+# TODO: change to json extension (!make sure change is applied on servers)
 TEXT_VIEWER_FILTERS_PATH = 'tvof/settings/text_viewer_filters.py'
+ALIGNMENT_FILTERS_PATH = 'tvof/settings/alignment_filters.py'
+
 #     'textviewer': {
 #         'Fr20125': {
 #             'semi-diplomatic': [],
@@ -714,7 +718,7 @@ SEARCH_FACETS = [
     },
     {
         'key': 'name_type',
-        'label': 'Name type',
+        'label': 'Lemma type',
     },
 ]
 

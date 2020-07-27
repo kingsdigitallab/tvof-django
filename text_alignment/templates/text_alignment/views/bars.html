@@ -276,6 +276,22 @@
                 return ret;
             }
 
+            function format_seg_reference(segid) {
+                // returns 'Fr20125 §590'
+                // if segid = 'fr20125_00590'
+
+                let ret = segid
+
+                let parts = ret.split('_')
+                if (parts.length > 1) {
+                    ret = (parts[0].toLowerCase().startsWith('royal')) ? 'Royal 20 D I' : 'Fr20125'
+                    ret += ' §'
+                    ret += parts[1].replace(/^0+/, '')
+                }
+
+                return ret
+            }
+
             function update_info_box(ev, clicked) {
                 // convert mouse position into indices [para_idx, ms_idx]
                 var mouse_pos = [ev.pageX, ev.pageY];
@@ -292,7 +308,7 @@
                 var info = '';
                 if (data_pos[0] > -1 && data_pos[0] < align.paras.length) {
                     var para = align.paras[data_pos[0]];
-                    info += para.id;
+                    info += format_seg_reference(para.id);
                     if (data_pos[1] > -1 && data_pos[1] < ms_names.length) {
                         var ms_name = ms_names[data_pos[1]];
                         para_ms = para.mss[ms_name];

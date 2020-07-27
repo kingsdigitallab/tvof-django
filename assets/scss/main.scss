@@ -40,6 +40,12 @@ Search
     background: scale-color($dark-orange, $lightness: -10%);
 }
 
+.textviewericons {
+    font-family: 'FontAwesome';
+    color: #4e2626;
+}
+
+
 // Colours
 
 .red {
@@ -68,6 +74,9 @@ a.ext-links {
     height: 0;
     overflow: hidden;
     border: 3px solid scale-color($secondary-color, $lightness: 50%);
+    &:focus {
+        background: gray;
+    }
 
     iframe {
         position: absolute;
@@ -75,6 +84,9 @@ a.ext-links {
         left: 0;
         width: 100%;
         height: 100%;
+        &:focus {
+            background: gray;
+        }
     }
 }
 
@@ -82,6 +94,14 @@ a.ext-links {
 
 .darker {
     background: scale-color($primary-color, $lightness: 30%) !important;
+}
+
+/* Skip to the main content*/
+
+.skip-main {
+    font-size: 1px;
+    position: absolute;
+    top:-25px;
 }
 
 /* Header */
@@ -132,7 +152,7 @@ nav {
         }
 
         &:hover {
-            color: scale-color($primary-color, $lightness: 80%) !important;
+            color: $light-gray !important;
             background: scale-color($primary-color, $lightness: 20%);
         }
     }
@@ -236,7 +256,7 @@ ul.sticky {
 /* Main content area */
 
 .main {
-    background: scale-color($almost-black, $lightness: 94%);
+    background: #ffffff;
 
     h1 {
         border-bottom: 1px solid scale-color($primary-color, $lightness: 50%);
@@ -257,11 +277,18 @@ ul.sticky {
     h4 {
         font-size: 1.25rem;
     }
+    a  {
+        font-weight: bold;
+        color: scale-color($secondary-color, $lightness:10%);
+        &:hover {
+            text-decoration: underline;
+        }
+    }
 
     // Blog
 
     .bydate {
-        color: scale-color($almost-black, $lightness: 25%);
+        color: #504f4f;
         font-style: italic;
         line-height: 1;
         margin: 0;
@@ -332,7 +359,7 @@ ul.sticky {
     .menu {
         a {
             &:hover {
-                color: $white;
+                color: $white !important;
             }
         }
     }
@@ -418,7 +445,7 @@ ul.sticky {
 
     .tei-cb,
     .tei-pb {
-        color: teal;
+        color: #06564d;
     }
     .tei-cb.split-word,
     .tei-pb.split-word {
@@ -460,8 +487,10 @@ ul.sticky {
         color: green;
     }
 
-    .tei-c.red, .tei-rubric, .tei-hi.red, .tei-hi.red-highlight {
-        color: scale-color($secondary-color, $lightness: 25%);
+    // AC-392 - 5.q
+    //.tei-c.red, .tei-rubric, .tei-hi.red, .tei-hi.red-highlight {
+    .tei-c.red, .tei-rubric, .tei-hi.red {
+        color: scale-color($secondary-color, $lightness: 30%);
     }
     .first-letter-red::first-letter {
         color: scale-color($secondary-color, $lightness: 25%);
@@ -472,6 +501,10 @@ ul.sticky {
         font-weight: 700;
     }
 
+    .seg-lineated .tei-seg-num {
+        // 2020-II-d: seg number on separate line before lineated lines
+        display: block;
+    }
 
     // GN: two types of verses:
     // ((.cont (flows continuously within a p/div)))
@@ -489,7 +522,7 @@ ul.sticky {
 
     p.tei.lg.lineated,
     // ac-358.1 : cont is now dislayed line by line
-    .tv-view-interpretive p.tei.lg.cont,
+    .tv-view-interpretive p.tei.lg.cont
     {
         // https://stackoverflow.com/a/14832019/3748764
         display: table;
@@ -509,7 +542,22 @@ ul.sticky {
         // GN: icon even if superscripted,
         // without this hover on top of icon doesn't do anything
         @include tooltip-and-icon("\f128");
+        &:after {
+            // GN: 07/2020, partners prefer to reduce gap
+            // when unclear splits word
+            margin-right: -0.05em;
+            margin-left: -0.1em;
+        }
         padding: 0.5em 0em;
+    }
+
+    .tei-pc-rend-2
+    {
+        // why? because we show a special Right-to-left character
+        // in there to emulate the punctus elevatus.
+        // Without inline-block that character would be displayed
+        // in the wrong order. ac-392
+        display: inline-block;
     }
 
     .tv-view-semi-diplomatic .tei-mod,
@@ -532,7 +580,7 @@ ul.sticky {
 
     .tv-view-semi-diplomatic .tei-add,
     .tv-view-interpretive .tei-corr,
-    .tv-view-interpretive .tei-supplied, {
+    .tv-view-interpretive .tei-supplied {
         &:before {
             content: '<';
         }
@@ -832,16 +880,27 @@ ul.sticky {
 
 footer {
     color: white;
+    background: $body-background;
+    padding: 0.5rem 0;
+
     a {
         color: white;
+        font-weight: bold;
+        &:hover{
+            text-decoration: none;
+            color: darken($light-gray, 10%);
+        }
     }
-    background: $body-background;
-    padding: 1rem 0;
 
     .logo {
         img {
             max-height: rem-calc(200);
         }
+    }
+
+    p {
+        margin-bottom:0.1rem;
+        font-size:0.8rem;
     }
 }
 
@@ -922,7 +981,9 @@ footer {
         // We should really control the heights of the toolbar elements rather
         // than leave it dynamic
 
-        height: calc(100vh - 230px);
+        // height: calc(100vh - 230px);
+        // ac-355
+        height: calc(100vh - 160px);
     }
 
     // footer {
@@ -1202,3 +1263,4 @@ input#autosuggest-input {
 .sub-title {
   font-size: 0.6em;
 }
+
