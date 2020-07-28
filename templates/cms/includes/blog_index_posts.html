@@ -1,6 +1,6 @@
 {% load staticfiles wagtailcore_tags wagtailimages_tags %}
 
-<role="top navigation">{% include "cms/includes/pagination.html" with page=page_of_posts %}></role>
+<role="top navigation">{% include "cms/includes/pagination.html" with page=page_of_posts %}</role>
 
 <ul class="{{ class }} no-bullet">
     {% for apost in page_of_posts %}
