@@ -1,3 +1,4 @@
+from data_release.jobs import job_action
 from .kiln_requester import CachedRequesterKiln
 
 '''
@@ -28,6 +29,7 @@ class TextViewerAPI(object):
 
     def __init__(self):
         # TODO: don't hard-code Kiln here
+        self.clear_errors()
         self.requester = CachedRequesterKiln()
 
     def add_error(self, code, message, info=None):
@@ -46,9 +48,15 @@ class TextViewerAPI(object):
         E.g. notes will be at the end of the text rather than clickable
         icons.
         '''
-
+        self.clear_errors()
         self.response = {}
-        self.errors = []
+
+        if job_action('convert', 'info')['status'] > 0:
+            self.add_error(
+                'texts_temporarily_unavailable',
+                'TEI files are being converted, try again soon.'
+            )
+            return
 
         self.is_print = is_print
         self.request = request

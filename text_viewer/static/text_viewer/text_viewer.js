@@ -735,12 +735,15 @@
                 },
             },
             methods: {
+                getPrintUrl: function() {
+                    // tried to cache this with 'computed' but it doesn't update...
+                    let ret = ''
+                    if (this.pane.address) ret = 'print/' + this.pane.address;
+                    return ret
+                },
                 clearLocationFilter: function(location_type) {
                     this.location_type_filters[location_type.slug] = '';
                     this.filterLocations(location_type);
-                },
-                getPrintUrl: function() {
-                    return 'print/' + this.pane.address;
                 },
                 filterLocations: function(location_type, event) {
                     var filter = this.location_type_filters[location_type.slug] || '';

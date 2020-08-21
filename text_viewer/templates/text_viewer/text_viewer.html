@@ -128,7 +128,7 @@ a vue directive:
                                 <span class="fa fa-columns" aria-label="icon columns"></span>
                             </a>
                         </li>
-                        <li>
+                        <li v-if="getPrintUrl()">
                             <a target="_blank" v-bind:href="getPrintUrl()" aria-label="Print view" title="Print view">
                                 <span class="fa fa-print" aria-label="icon print"></span>
                             </a>
