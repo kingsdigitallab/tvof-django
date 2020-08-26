@@ -254,18 +254,21 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 repr(blocks)))
 
     def set_chunk_not_found_error(self, xpath=None):
+        '''Set an error message
+        explaining why requested text chunk was not found'''
         message = 'Chunk not found: {}'.format(
             self.get_requested_address()
         )
 
         if self.synced_with:
-            address = '/'.join(
-                self.get_list_from_address_parts(self.synced_with)
-            )
             tv_errors = getattr(settings, 'TV_NOT_FOUND_ERRORS', [])
+
+            section = self.read_section_from_address(self.synced_with)
             for anerror in tv_errors:
-                if re.search(anerror[0], address):
-                    message = anerror[1]
+                if anerror[0](section, self.synced_with):
+                    message = anerror[1].format(
+                        DOCUMENT_IDS[self.get_address_parts()['document']]['label']
+                    )
                     break
 
         self.add_error(
@@ -330,6 +333,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
         '''
         For each section in Fr and Royal,
         returns the sections number, name and first para-number.
+        Slow: it reads this from the HTML files.
         '''
         ret = {}
 
@@ -346,6 +350,26 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     section['para'] = para.attrib.get('id', '')
                 sections.append(section)
             ret[doc['slug']] = sections
+
+        return ret
+
+    def read_section_from_address(self, address):
+        '''returns a dictionary about the section pointed by address
+        e.g. {number: '1', para: 'edRoyal20D1_00001', name: 'Thebes'}
+        Warning: this is SLOW, see read_all_sections_data()'''
+
+        ret = {}
+        # ['Royal', 'semi-diplomatic', 'paragraph', '54', '']
+        parts = self.get_list_from_address_parts(address)
+        # {Royal: [{number: 1, para: edRoyal20D1_00001, name: Thebes}, ...]}
+        sections = self.read_all_sections_data()
+        for ret in sections[parts[0]][::-1]:
+            if parts[2] == 'paragraph':
+                if int(ret['para'][-5:]) <= int(parts[3]):
+                    break
+            else:
+                if ret['number'] == parts[3]:
+                    break
 
         return ret
 

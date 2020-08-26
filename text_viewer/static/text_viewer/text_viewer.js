@@ -550,9 +550,17 @@
     };
 
     Pane.prototype.onRequestComplete = function(textStatus, jqXHR) {
-        //$('#text-viewer-glass').hide();
         $('#text-viewer-glass').stop().animate({'opacity': 0.0}, 100).hide();
-        // TODO
+        if (textStatus == 'error') {
+            let errors = [
+                {
+                    'code': 'server-error',
+                    'message': 'An error occurred on our server. We are sorry for the inconvenience.'
+                }
+            ]
+            this.uimodel.errors = errors;
+            this.uimodel.chunk = errors[0].message;
+        }
     };
 
     /*****************************************************

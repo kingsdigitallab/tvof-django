@@ -21,6 +21,7 @@
 {% block title %}<h1>{{ title }}</h1>{% endblock %}
 
 {% block main %}
+  {% if link_to_full_text %}<p><a href="{{ link_to_full_text }}">Load the full text</a></p>{% endif %}
   {% if res.errors %}
     {% for error in res.errors %}
       <p class="error">{{ error.message }}</p>
