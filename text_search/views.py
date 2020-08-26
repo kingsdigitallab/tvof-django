@@ -33,8 +33,6 @@ def get_ordered_queryset(view, queryset, result_type):
     orders = get_config(result_type)['orders']
     order = orders.get(order_key, list(orders.items())[0][1])
 
-    print(order['fields'])
-
     return queryset.order_by(*order['fields'])
 
 
@@ -378,6 +376,6 @@ class LemmaFacetSearchView(FacetMixin, HaystackViewSet):
         '''
         ret = super(LemmaFacetSearchView, self).get_queryset()
 
-        print(type(ret))
+        # print(type(ret))
 
         return get_ordered_queryset(self, ret, 'lemmata')

@@ -88,6 +88,7 @@ class LemmaIndex(indexes.SearchIndex, indexes.Indexable):
 
     # Facets
     lemma = indexes.CharField(model_attr='lemma', stored=True)
+    lemma_sort = indexes.CharField()
     forms = indexes.CharField(model_attr='forms', stored=True)
     pos = indexes.CharField(model_attr='pos', faceted=True)
     name_type = indexes.CharField(
@@ -96,6 +97,15 @@ class LemmaIndex(indexes.SearchIndex, indexes.Indexable):
     def get_model(self):
         '''We must override this method'''
         return Lemma
+
+    def prepare_lemma_sort(self, lemma_obj):
+        '''E.g. "maintas, a" => maintas
+        otherwise it will appear first b/c solr take any token'''
+        ret = lemma_obj.lemma or ''
+        if ret:
+            ret = ret.split(',')[0].strip()
+
+        return ret
 
     def index_queryset(self, using=None):
         '''We must override this method'''

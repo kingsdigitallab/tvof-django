@@ -595,15 +595,15 @@ SEARCH_CONFIG = OrderedDict([
         'orders': OrderedDict([
             ['lemma', {
                 'label': 'Lemma',
-                'fields': ['lemma'],
+                'fields': ['lemma_sort'],
             }],
             ['name_type', {
                 'label': 'Type',
-                'fields': ['name_type', 'lemma'],
+                'fields': ['name_type', 'lemma_sort'],
             }],
             ['pos', {
                 'label': 'Part of speech',
-                'fields': ['pos', 'lemma'],
+                'fields': ['pos', 'lemma_sort'],
             }],
         ]),
     }]
