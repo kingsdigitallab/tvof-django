@@ -1,4 +1,5 @@
 from data_release.jobs import job_action
+from text_search.utils import dlog
 from .kiln_requester import CachedRequesterKiln
 
 '''

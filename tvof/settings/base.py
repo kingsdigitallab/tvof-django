@@ -68,6 +68,11 @@ CACHES = {
         # 'TIMEOUT': 0,
         # 'MAX_ENTRIES': 600,
     },
+    'text_viewer': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'text_alignment'),
+        'TIMEOUT': 1 * 60 * 60,
+    },
 }
 
 CSRF_COOKIE_SECURE = True

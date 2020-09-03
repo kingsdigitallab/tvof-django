@@ -1,3 +1,4 @@
+from text_search.utils import dlog
 from .text_viewer import TextViewerAPI
 import xml.etree.ElementTree as ET
 from . import utils
@@ -12,6 +13,8 @@ class TextViewerAPIXML(TextViewerAPI):
 
     location_types = [
     ]
+
+    cached_xmls = {}
 
     def get_location_type(self, slug):
         ret = self.location_types[0]
@@ -69,7 +72,8 @@ class TextViewerAPIXML(TextViewerAPI):
 
             # add notational conventions
             view['conventions'] = self.get_notational_conventions(
-                view_xml, view['slug'])
+                view_xml, view['slug']
+            )
 
             # get all the location
             for location_type in self.location_types:
@@ -176,6 +180,7 @@ class TextViewerAPIXML(TextViewerAPI):
         from one project to another.
         '''
 
+
         ret = False
 
         # resolve address (e.g. 'default')
@@ -190,7 +195,11 @@ class TextViewerAPIXML(TextViewerAPI):
 
         # get the XML document
         xml = self.fetch_xml_from_kiln(document, view)
-        utils.remove_xml_elements(xml, './/div[@id="text-conventions"]')
+        if 0:
+            # change-freeze: commented this out as it's slow and modifies the
+            # the xml tree. Assume it is not needed as the chunk will never
+            # include that div
+            utils.remove_xml_elements(xml, './/div[@id="text-conventions"]')
 
         # resolve the rest of the address
         location_type = self.get_location_type(location_type_slug)
@@ -229,12 +238,13 @@ class TextViewerAPIXML(TextViewerAPI):
                 self.set_chunk_not_found_error(xpath)
             else:
                 location_from_chunk = location_type.get(
-                    'location_from_chunk')
+                    'location_from_chunk'
+                )
                 if location_from_chunk:
                     location = location_from_chunk(chunk)
 
                 if self.is_print:
-                    self.prepare_print_version(chunk, notes_info)
+                    chunk = self.prepare_print_version(chunk, notes_info, view)
 
                 chunks.append(utils.get_unicode_from_xml(chunk))
 
@@ -267,7 +277,8 @@ class TextViewerAPIXML(TextViewerAPI):
                 classes.append('tv-viewer-pane')
 
             sublocationid, chunk = self.get_sublocationid_from_address(
-                address, chunk)
+                address, chunk
+            )
 
             self.response = {
                 'chunk':
@@ -276,6 +287,7 @@ class TextViewerAPIXML(TextViewerAPI):
                 'address': address,
                 'generated': self.generated_date,
                 'sublocationid': sublocationid,
+                'section': self.read_section_from_address_parts(self.get_address_parts(address)),
             }
             ret = True
 
@@ -290,15 +302,23 @@ class TextViewerAPIXML(TextViewerAPI):
         text_path = 'texts/{}/{}/'.format(kilnid, view)
         url = '/backend/' + text_path
 
-        # Send the request to Kiln.
-        # print url
-        response = self.request_backend(url)
+        text_timestamp = self.requester.get_timestamp_from_url(url)
 
-        # Create a new XML tree from the response.
-        # TODO: this is very slow, we should move that to kiln_requester
-        # and cache it there. The catch though is that callers modify
-        # the tree... so we'd need to clone it.
-        root = ET.fromstring(response)
+        xml_info = self.cached_xmls.get(url, None)
+        if xml_info and xml_info[1] == text_timestamp:
+            root = xml_info[0]
+        else:
+            # Send the request to Kiln.
+            # print url
+            response = self.request_backend(url)
+
+            # Create a new XML tree from the response.
+            # TODO: this is very slow, we should move that to kiln_requester
+            # and cache it there. The catch though is that callers modify
+            # the tree... so we'd need to clone it.
+            root = ET.fromstring(response)
+
+            self.cached_xmls[url] = [root, text_timestamp]
 
         ret = root.find('.//text[@name="{}"]'.format(kilnid))
 

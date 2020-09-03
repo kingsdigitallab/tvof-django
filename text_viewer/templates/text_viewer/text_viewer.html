@@ -86,10 +86,13 @@ a vue directive:
                                 v-bind:title="getSyncTitle"></i>
                         </a>
                     </li>
-                    <!-- TODO: implement this menu (slider) -->
-                    <template v-if="!is_synced">
-                        <li v-for="alocation_type in location_types"
-                            v-bind:class="{active: (alocation_type.slug == location_type.slug), scrollable: 1}">
+
+                    <li v-if="!is_synced">
+                      <a href="#" @click.prevent="onClickPrevNextPara()" :title="'Previous '+location_type.slug" class="fa fa-chevron-left"></a>
+                    </li>
+
+                    <template v-for="alocation_type in location_types" v-if="!is_synced">
+                        <li v-bind:class="{active: (alocation_type.slug == location_type.slug), scrollable: 1}">
                             <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">
                                 <i v-bind:class="getFAIcon(alocation_type.slug)"></i>
                                 <span class="show-for-large">{{ alocation_type.label }}</span>
@@ -100,8 +103,8 @@ a vue directive:
                                     <a class="clear-filter fa fa-times-circle" href="#" v-on:click.prevent="clearLocationFilter(alocation_type)"></a>
                                 </div>
                                 <ul>
-                                    <li v-for="alocation in alocation_type.locations"
-                                        v-bind:class="{active: (alocation.slug == location.slug), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1, 'hidden': alocation.hidden}">
+                                    <li v-for="(alocation, i) in alocation_type.locations"
+                                        v-bind:class="{active: isLocationSelected(alocation_type, alocation, i), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1, 'hidden': alocation.hidden}">
                                         <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)"
                                             href="#" v-html="alocation.label_long">
                                         </a>
@@ -110,6 +113,10 @@ a vue directive:
                             </template>
                         </li>
                     </template>
+
+                    <li v-if="!is_synced">
+                      <a href="#" @click.prevent="onClickPrevNextPara(1)" :title="'Next '+location_type.slug" class="fa fa-chevron-right"></a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -191,7 +198,11 @@ a vue directive:
 
 {% block extra_js %}
     {{ block.super }}
-    <script src="{% static 'vue/dist/vue.min.js' %}"></script>
+    {% if debug %}
+      <script src="{% static 'vue/dist/vue.js' %}"></script>
+    {% else %}
+      <script src="{% static 'vue/dist/vue.min.js' %}"></script>
+    {% endif %}
     <script src="{% static 'leaflet/dist/leaflet.js' %}"></script>
     <script src="{% static 'leaflet-iiif/leaflet-iiif.js' %}"></script>
 
