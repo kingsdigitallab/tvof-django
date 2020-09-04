@@ -27,7 +27,7 @@ def write_kwic_index(force=False):
     into an xml file where all concordances are directly under the
     root element and sorted by their order of appearance in the text.
 
-    This order will allow grouping of consecutive "proper nouns" tokens
+    This order will allow the grouping of consecutive "proper nouns" tokens
     into a single string (see AC-370).
     '''
     dlog('write kwic index')
@@ -182,7 +182,7 @@ class KwicParser:
 
         kwic_path = write_kwic_index()
 
-        print('transformed {}'.format(kwic_path))
+        # print('transformed {}'.format(kwic_path))
 
         for event, elem in ET.iterparse(
             kwic_path, events=['start', 'end']
@@ -190,7 +190,8 @@ class KwicParser:
             if event == 'start' and elem.tag == 'item':
                 item = elem
             if event == 'end' and (elem.tag in ['string', 'kwicindex']):
-                item.text = elem.text or ''
+                if elem.tag != 'kwicindex':
+                    item.text = elem.text or ''
                 res = self.add_token_to_group(item)
                 if res:
                     for r in self.callback(res):
