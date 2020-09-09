@@ -2,7 +2,9 @@
 {% load staticfiles compress cms_tags wagtailcore_tags %}
 
 {% block extra_head %}
+  {% compress js %}
     <link rel="stylesheet" href="{% static 'leaflet/dist/leaflet.css' %}" />
+  {% endcompress %}
 {% endblock %}
 
 {% block title %}Textviewer{% endblock %}
@@ -198,14 +200,10 @@ a vue directive:
 
 {% block extra_js %}
     {{ block.super }}
-    {% if debug %}
-      <script src="{% static 'vue/dist/vue.js' %}"></script>
-    {% else %}
-      <script src="{% static 'vue/dist/vue.min.js' %}"></script>
-    {% endif %}
-    <script src="{% static 'leaflet/dist/leaflet.js' %}"></script>
-    <script src="{% static 'leaflet-iiif/leaflet-iiif.js' %}"></script>
-
-    <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
-    <script src="{% static 'text_viewer/text_viewer_events.js' %}"></script>
+    {% compress js %}
+      <script src="{% static 'leaflet/dist/leaflet.js' %}"></script>
+      <script src="{% static 'leaflet-iiif/leaflet-iiif.js' %}"></script>
+      <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
+      <script src="{% static 'text_viewer/text_viewer_events.js' %}"></script>
+    {% endcompress %}
 {% endblock %}

@@ -4,9 +4,9 @@
 {% block meta_title %}Text alignment visualization{% endblock %}
 
 {% block extra_head %}
-{% compress css %}
-<link rel="stylesheet" type="text/x-scss" href="{% static 'scss/text-alignment.scss' %}">
-{% endcompress %}
+  {% compress css %}
+    <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/text-alignment.scss' %}">
+  {% endcompress %}
 {% endblock %}
 
 {% block title %}Alignment{% endblock %}
@@ -40,11 +40,12 @@
 
 {% block extra_js %}
     {{ block.super }}
-    <script src="{% static 'vue/dist/vue.min.js' %}"></script>
-
     <script type="text/javascript">
         window.ALIGNMENT_CONFIG = {{config|json}};
         window.ALIGNMENT_LINKABLE_MSS = {{ ALIGNMENT_LINKABLE_MSS|json }};
     </script>
-    <script src="{% static 'text_alignment/alignment.js' %}"></script>
+
+    {% compress js %}
+      <script src="{% static 'text_alignment/alignment.js' %}"></script>
+    {% endcompress %}
 {% endblock %}
