@@ -45,6 +45,10 @@ action:
             known_action = True
             read_tokenised_name_types()
 
+        if action == 'index':
+            known_action = True
+            self.action_index()
+
         if not known_action:
             print('ERROR: unknown action "%s"' % action)
             print(self.help)
@@ -56,3 +60,8 @@ action:
 
     def action_clear(self):
         AnnotatedToken.objects.all().delete()
+
+    def action_index(self):
+        '''indexing with ES'''
+
+        pass
