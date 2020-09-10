@@ -68,6 +68,11 @@ CACHES = {
         # 'TIMEOUT': 0,
         # 'MAX_ENTRIES': 600,
     },
+    'text_viewer': {
+        'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'text_viewer'),
+        'TIMEOUT': 1 * 60 * 60,
+    },
 }
 
 CSRF_COOKIE_SECURE = True
@@ -460,7 +465,7 @@ TV_NOT_FOUND_ERRORS = [
     # 3. Specific explanation for Troy (5) Fr20125 + Prose 5 (5bis) Roy20
     # (display in parallel viewer when consulting either Fr20 Troy(5)
     # or Roy20 P5 (5bis))
-    [r'Fr20125/.*/section/5\b|Royal/.*/section/5bis\b',
+    [lambda section, address: section['number'] in ['5', '5bis'],
      '''Les récits de la guerre de Troie dans Fr20125 et dans Royal 20 D 1 ne
     correspondent pas. Alors que Fr20125 (manuscrit de la première rédaction)
     contient une traduction de l’Historia de Troiae excidio de Dares Phrygius,
@@ -475,13 +480,13 @@ TV_NOT_FOUND_ERRORS = [
     contient, en outre, treize des Héroïdes d’Ovide traduites en français et
     enchâssées à l’intérieur de la narration.'''
      ],
-    [r'/paragraph/',
-     '''Royal 20 D 1 ne contient pas ce paragraphe.'''
+    [lambda section, address: address['location_type'] == 'paragraph',
+     '''{} ne contient pas ce paragraphe.'''
      ],
     # Absent sections in Roy20 : Genesis (1), Orient I (2), Alexander (9),
     # Conquest of France by Caesar (11)
-    [r'/section/',
-     '''Royal 20 D 1 n’inclut pas cette section de l’Histoire ancienne.'''
+    [lambda section, address: address['location_type'] == 'section',
+     '''{} n’inclut pas cette section de l’Histoire ancienne.'''
      ],
 ]
 
@@ -595,15 +600,15 @@ SEARCH_CONFIG = OrderedDict([
         'orders': OrderedDict([
             ['lemma', {
                 'label': 'Lemma',
-                'fields': ['lemma'],
+                'fields': ['lemma_sort'],
             }],
             ['name_type', {
                 'label': 'Type',
-                'fields': ['name_type', 'lemma'],
+                'fields': ['name_type', 'lemma_sort'],
             }],
             ['pos', {
                 'label': 'Part of speech',
-                'fields': ['pos', 'lemma'],
+                'fields': ['pos', 'lemma_sort'],
             }],
         ]),
     }]

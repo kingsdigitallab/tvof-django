@@ -304,7 +304,6 @@ class AnnotatedToken(models.Model):
             in list(item.attrib.items())
             if hasattr(cls, k.lower())
         }
-        # print(ret, string.text)
         ret['string'] = (item.text or '').strip()
 
         ret['lemma'] = utils.normalise_lemma(ret.get('lemma', ''))

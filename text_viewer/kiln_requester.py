@@ -10,7 +10,7 @@ class CachedRequesterKiln(object):
     and cache the response on disk and in memory.
 
     Note that the memory cache is per request and it is recommended not to
-    share instances among threads.
+    share instances of this class among threads.
 
     Note that we assume that the Kiln documents are made static
 
@@ -21,8 +21,6 @@ class CachedRequesterKiln(object):
     * return the response
 
     The disk cache is obviously shared among all threads and processes.
-
-    Author: GN, 2017
     '''
 
     def __init__(self, cache_name='kiln',
@@ -110,5 +108,18 @@ class CachedRequesterKiln(object):
                 ret = f.read()
         else:
             self.dmsg('Request "%s" not found on disk "%s"' % (url, path))
+
+        return ret
+
+    def get_timestamp_from_url(self, url):
+        '''returns the timestamp of the content for the given kiln url'''
+        import os
+
+        ret = 0
+
+        urlid = self._get_urlid_from_url(url)
+        path = os.path.join(settings.KILN_STATIC_PATH, urlid)
+        if os.path.exists(path):
+            ret = os.path.getmtime(path)
 
         return ret

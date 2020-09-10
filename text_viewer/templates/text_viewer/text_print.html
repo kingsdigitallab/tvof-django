@@ -3,11 +3,6 @@
 
 {% block meta_title %}{{ title }} | Proof Reader{% endblock %}
 
-{% block extra_head %}
-    <style>
-    </style>
-{% endblock %}
-
 {% block body_classes %}text-print{% endblock %}
 
 {% block header_top_bar %}
@@ -21,20 +16,23 @@
 {% block title %}<h1>{{ title }}</h1>{% endblock %}
 
 {% block main %}
+  {% if link_to_full_text %}<p><a href="{{ link_to_full_text }}">Load the full text</a></p>{% endif %}
+  {% if res.errors %}
+    {% for error in res.errors %}
+      <p class="error">{{ error.message }}</p>
+    {% endfor %}
+  {% else %}
   {{ res.chunk|safe }}
 
   <div>
     {{ res.generated }}
   </div>
-{% endblock %}
-
-{% block footer_scripts %}
-    {{ block.super }}
+  {% endif %}
 {% endblock %}
 
 {% block extra_js %}
     {{ block.super }}
-    <script type="text/javascript">
-    </script>
-    <script src="{% static 'text_viewer/text_viewer_events.js' %}"></script>
+    {% compress js %}
+      <script src="{% static 'text_viewer/text_viewer_events.js' %}"></script>
+    {% endcompress %}
 {% endblock %}

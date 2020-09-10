@@ -1,3 +1,6 @@
+import copy
+
+from text_search.utils import dlog
 from .text_viewer_xml import (TextViewerAPIXML)
 import xml.etree.ElementTree as ET
 from django.conf import settings
@@ -227,7 +230,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     # now map the other way round
                     pair[0], pair[1] = pair[1], pair[0]
 
-        if 1:
+        if settings.DEBUG:
             self._report_gap_in_mappings(ret)
 
         return ret
@@ -254,18 +257,21 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 repr(blocks)))
 
     def set_chunk_not_found_error(self, xpath=None):
+        '''Set an error message
+        explaining why requested text chunk was not found'''
         message = 'Chunk not found: {}'.format(
             self.get_requested_address()
         )
 
         if self.synced_with:
-            address = '/'.join(
-                self.get_list_from_address_parts(self.synced_with)
-            )
             tv_errors = getattr(settings, 'TV_NOT_FOUND_ERRORS', [])
+
+            section = self.read_section_from_address_parts(self.synced_with)
             for anerror in tv_errors:
-                if re.search(anerror[0], address):
-                    message = anerror[1]
+                if anerror[0](section, self.synced_with):
+                    message = anerror[1].format(
+                        DOCUMENT_IDS[self.get_address_parts()['document']]['label']
+                    )
                     break
 
         self.add_error(
@@ -330,22 +336,51 @@ class TextViewerAPITvof(TextViewerAPIXML):
         '''
         For each section in Fr and Royal,
         returns the sections number, name and first para-number.
+        Slow: it reads this from the HTML files.
+        Cached on disk.
         '''
-        ret = {}
+        from django.core.cache import caches
+        cache = caches['text_viewer']
+        cache_key = 'read_all_sections_data'
 
-        for doc in DOCUMENT_IDS_ARRAY:
-            sections = []
-            xml = self.fetch_xml_from_kiln(doc['kiln_file'], 'semi-diplomatic')
-            for section_node in xml.findall('.//div[@class="section"]'):
-                section = {
-                    'number': section_node.attrib.get('data-n', ''),
-                    'name': section_node.attrib.get('data-type', '')
-                }
-                para = section_node.find('div[h4]')
-                if para is not None:
-                    section['para'] = para.attrib.get('id', '')
-                sections.append(section)
-            ret[doc['slug']] = sections
+        ret = cache.get(cache_key, None)
+        if ret is None:
+            ret = {}
+            for doc in DOCUMENT_IDS_ARRAY:
+                sections = []
+                xml = self.fetch_xml_from_kiln(doc['kiln_file'], 'semi-diplomatic')
+                for section_node in xml.findall('.//div[@class="section"]'):
+                    section = {
+                        'number': section_node.attrib.get('data-n', ''),
+                        'name': section_node.attrib.get('data-type', '')
+                    }
+                    para = section_node.find('div[h4]')
+                    if para is not None:
+                        section['para'] = para.attrib.get('id', '')
+                    sections.append(section)
+                ret[doc['slug']] = sections
+
+            cache.set(cache_key, ret)
+
+        return ret
+
+    def read_section_from_address_parts(self, address_parts):
+        '''returns a dictionary about the section pointed by address
+        e.g. {number: '1', para: 'edRoyal20D1_00001', name: 'Thebes'}
+        Warning: this is SLOW, see read_all_sections_data()'''
+
+        ret = {}
+        # ['Royal', 'semi-diplomatic', 'paragraph', '54', '']
+        parts = self.get_list_from_address_parts(address_parts)
+        # {Royal: [{number: 1, para: edRoyal20D1_00001, name: Thebes}, ...]}
+        sections = self.read_all_sections_data()
+        for ret in sections[parts[0]][::-1]:
+            if parts[2] == 'paragraph':
+                if int(ret['para'][-5:]) <= int(parts[3]):
+                    break
+            else:
+                if ret['number'] == parts[3]:
+                    break
 
         return ret
 
@@ -413,16 +448,24 @@ class TextViewerAPITvof(TextViewerAPIXML):
     def prepare_view_version(self, chunk, view):
         ret = chunk
 
-        if view == 'interpretive':
+        # not necessary for the view version as we hide it with css anyway.
+        # also we cannot modify the XML here because it's cached.
+        if 0 and view == 'interpretive':
             utils.remove_xml_elements(ret, './/span[@data-tei-type="gloss"]')
 
         return ret
 
-    def prepare_print_version(self, chunk, notes_info):
-        self.transform_to_print_version(chunk)
+    def prepare_print_version(self, chunk, notes_info, view):
+        # we need to clone the chunk because we are about to modify it
+        # chunk = copy.deepcopy(chunk)
+        chunk = copy.deepcopy(chunk)
+
+        self.transform_to_print_version(chunk, view)
         self.extract_notes_from_chunk(chunk, notes_info)
 
-    def transform_to_print_version(self, chunk):
+        return chunk
+
+    def transform_to_print_version(self, chunk, view):
         '''
         Minor conversions of the XML for the print version
         '''
@@ -431,6 +474,13 @@ class TextViewerAPITvof(TextViewerAPIXML):
         # =>
         # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
         # <span class="corr-sic">aidier aidier</span>
+        if view == 'interpretive':
+            utils.remove_xml_elements(chunk, './/span[@data-tei-type="gloss"]')
+
+        # remove the conventions otherwise a /whole/whole request will
+        # return them on screen
+        utils.remove_xml_elements(chunk, './/div[@id="text-conventions"]')
+
         from .utils import findall_in_etree
         for corr in findall_in_etree(chunk, './/span[@data-sic]'):
             sic = ET.Element('span')

@@ -242,8 +242,10 @@ var app = new window.Vue({
             this.call_api();
         },
         on_click_lemma: function(hit) {
-            // search for that lemma in the tokens/kwic result type
-            this.query.text = hit.lemma;
+            // search for that lemma in the tokens/kwic result type.
+            // exclude part after comma as it can disrupt the search
+            // (e.g. 'maintas, a' would return all the tokens with lemma 'a').
+            this.query.text = hit.lemma.split(',')[0];
             this.query.result_type = 'tokens';
             this.$set(this.query, 'facets', {});
             this.call_api();

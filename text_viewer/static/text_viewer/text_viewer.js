@@ -5,8 +5,9 @@
  *
  * - Viewer: manages the layout, lifecycle and synchronisation of multiple panes
  * - Pane: handles the navigation logic and server requests for a text pane
- * - Helper functions
  * - text-pane: a vue.js module for rendering a pane
+ *
+ * - Helper functions
  * - f-sticky: vue.js directive for a sticky div
  * - f-dropdown: vue.js directive for a Foundation dropdown menu
  * - initialisation of the interface
@@ -21,9 +22,11 @@
     function Viewer(options) {
         this.options = options;
         this.api_url = this.options.api_url || (window.location.pathname + 'api/');
+        // pane slug => a Pane instance
         this.panes = {};
         this.cache = {};
         this.uimodel = {
+            // list of pane slugs/keys (e.g. ['p1', 'p2']
             'panes': [
             ],
         };
@@ -194,6 +197,7 @@
      * Pane
      */
     function Pane(panes, slug, options) {
+        // This dictionary will be shared with the vue.js text-pane data model
         this.uimodel = {
             pane_slug: slug,
 
@@ -203,14 +207,14 @@
             },
             documents: [],
 
-            view: 'critical',
+            view: {},
             //views: ['critical'],
 
-            location_type: 'location',
+            location_type: {},
             //location_types: ['1', '2'],
 
-            location: '1',
-            //locations: ['1', '2'],
+            location: {},
+            location_index: 0,
 
             sublocation: '',
             sublocationid: '',
@@ -220,6 +224,8 @@
             conventions: '',
 
             chunk: 'chunk',
+
+            section: {},
 
             is_synced: 0,
 
@@ -309,7 +315,11 @@
     };
 
     Pane.prototype.getUIAddress = function() {
-        ret = [this.uimodel.document.slug, this.uimodel.view.slug, this.uimodel.location_type.slug, this.uimodel.location.slug].join('/');
+        let ret = [
+            this.uimodel.document.slug, this.uimodel.view.slug,
+            this.uimodel.location_type.slug,
+            this.uimodel.location.slug
+        ].join('/');
         if (this.uimodel.sublocation) {
             ret += '/' + this.uimodel.sublocation;
         }
@@ -317,7 +327,6 @@
     };
 
     Pane.prototype.changeAddressPart = function(part_name, value) {
-        //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
         var parts = this.getAddressParts(this.address);
         parts[part_name] = value;
         if (part_name !== 'sublocation') parts.sublocation = '';
@@ -325,7 +334,6 @@
     };
 
     Pane.prototype.changeAddressParts = function(aparts) {
-        //var parts = this.getAddressParts(this.isSynced() ? this.getUIAddress() : this.address);
         var parts = this.getAddressParts(this.address);
         $.extend(parts, aparts);
         parts.sublocation = aparts.sublocation || '';
@@ -380,6 +388,7 @@
     Pane.prototype.onRequestSuccessful = function(response, textStatus, jqXHR) {
         if (!response.errors) {
             this.uimodel.chunk = response.chunk;
+            this.uimodel.section = response.section;
             this.onReceivedAddress(response.address);
             this.uimodel.errors = [];
             this.uimodel.sublocationid = response.sublocationid;
@@ -499,30 +508,18 @@
                 // display_settings
                 self.uimodel.display_settings = aview.display_settings || [];
 
-                //var user_location_type = self.isSynced() ? 'synced': parts.location_type;
-
-                // location_types
-                //self.view.location_types = [];
-                // locations
-                //self.view.locations = [];
-
                 aview.location_types.map(function(location_type) {
-                    // location_types
-                    //self.view.location_types.push(self.getPartMeta(location_type));
-
                     if (location_type.slug == parts.location_type) {
 
                         // location_type
                         self.uimodel.location_type = self.getPartMeta(location_type);
 
-                        location_type.locations.map(function(location) {
-                            // locations
-                            //self.view.locations.push(self.getPartMeta(location));
-                            if (location.slug == parts.location) {
-                                // location
-                                self.uimodel.location = self.getPartMeta(location);
+                        for (i = 0; i < location_type.locations.length; i++) {
+                            if (location_type.locations[i].slug ==  parts.location) {
+                                self.uimodel.location_index = i;
+                                self.uimodel.location = location_type.locations[i];
                             }
-                        });
+                        }
                     }
                 });
             }
@@ -550,9 +547,17 @@
     };
 
     Pane.prototype.onRequestComplete = function(textStatus, jqXHR) {
-        //$('#text-viewer-glass').hide();
         $('#text-viewer-glass').stop().animate({'opacity': 0.0}, 100).hide();
-        // TODO
+        if (textStatus == 'error') {
+            let errors = [
+                {
+                    'code': 'server-error',
+                    'message': 'An error occurred on our server. We are sorry for the inconvenience.'
+                }
+            ]
+            this.uimodel.errors = errors;
+            this.uimodel.chunk = errors[0].message;
+        }
     };
 
     /*****************************************************
@@ -669,12 +674,10 @@
                     // keep p1 & p2 components but pass 3rd Pane to p3 component.
                     // We can't replace this.$data so instead we request the
                     // incoming address and update the slug of the pane.
+                    //
+                    // use case: user removes the first (left) pane
                     this.pane_slug = pane.uimodel.pane_slug;
                     this.pane.requestAddress(pane.getUIAddress());
-                },
-                'location.slug.bk': function(val) {
-                    // TODO: no longer used?
-                    this.pane.changeAddressPart('location', val);
                 },
                 'chunk': function(val) {
                     var self = this;
@@ -727,6 +730,14 @@
                     }
                     return ret;
                 },
+                locations: function() {
+                    for (let location_type of this.location_types) {
+                        if (location_type.slug == this.location_type.slug) {
+                            return location_type.locations;
+                        }
+                    }
+                    return [];
+                },
                 canBeSynced: function() {
                     return this.pane.canBeSynced();
                 },
@@ -735,12 +746,26 @@
                 },
             },
             methods: {
+                getPrintUrl: function() {
+                    // tried to cache this with 'computed' but it doesn't update...
+                    let ret = ''
+                    if (this.pane.address) ret = 'print/' + this.pane.address;
+                    return ret
+                },
+                isLocationSelected: function(location_type, location, idx) {
+                    let ret = (idx == this.location_index);
+                    if (location_type.slug == 'paragraph') {
+                        if (this.location_type.slug == 'section') {
+                            return false;
+                        }
+                    } else {
+                        ret = (location.slug == this.section.number);
+                    }
+                    return ret;
+                },
                 clearLocationFilter: function(location_type) {
                     this.location_type_filters[location_type.slug] = '';
                     this.filterLocations(location_type);
-                },
-                getPrintUrl: function() {
-                    return 'print/' + this.pane.address;
                 },
                 filterLocations: function(location_type, event) {
                     var filter = this.location_type_filters[location_type.slug] || '';
@@ -783,11 +808,9 @@
                     }
                 },
                 onClickDocument: function(document) {
-                    //this.pane.requestAddress(this.pane.getAddressFromParts(this.pane.getAddressParts(document)));
                     // We assume here that all docs support the same location_types,
                     // so we preserve it across doc change.
                     // But we can't make the same assumption about the view
-                    //this.pane.changeAddressParts({'document': document, 'view': 'default', 'location': 'default'});
                     this.pane.changeAddressParts({'document': document});
                 },
                 onClickView: function(view) {
@@ -801,6 +824,12 @@
                 },
                 onClickLocation: function(location, location_type) {
                     this.pane.changeAddressParts({location: location, location_type: location_type});
+                },
+                onClickPrevNextPara: function(is_next) {
+                    let index = this.location_index;
+                    index += (is_next ? 1 : -1);
+                    if (index < 0 || index >= this.locations.length) return;
+                    this.pane.changeAddressParts({location: this.locations[index].slug});
                 },
                 // TODO: that logic should move to Panel
                 // TODO: the list of available display settings should be
@@ -843,9 +872,6 @@
                 },
                 closePane: function(apane) {
                     return this.pane.closePane();
-                },
-                areLocationsHidden: function() {
-                    return (this.locations.length < 2 || this.is_synced);
                 },
             },
         });

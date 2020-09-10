@@ -2,7 +2,9 @@
 {% load staticfiles compress cms_tags wagtailcore_tags %}
 
 {% block extra_head %}
+  {% compress css %}
     <link rel="stylesheet" href="{% static 'leaflet/dist/leaflet.css' %}" />
+  {% endcompress %}
 {% endblock %}
 
 {% block title %}Textviewer{% endblock %}
@@ -86,10 +88,13 @@ a vue directive:
                                 v-bind:title="getSyncTitle"></i>
                         </a>
                     </li>
-                    <!-- TODO: implement this menu (slider) -->
-                    <template v-if="!is_synced">
-                        <li v-for="alocation_type in location_types"
-                            v-bind:class="{active: (alocation_type.slug == location_type.slug), scrollable: 1}">
+
+                    <li v-if="!is_synced">
+                      <a href="#" @click.prevent="onClickPrevNextPara()" :title="'Previous '+location_type.slug" class="fa fa-chevron-left"></a>
+                    </li>
+
+                    <template v-for="alocation_type in location_types" v-if="!is_synced">
+                        <li v-bind:class="{active: (alocation_type.slug == location_type.slug), scrollable: 1}">
                             <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">
                                 <i v-bind:class="getFAIcon(alocation_type.slug)"></i>
                                 <span class="show-for-large">{{ alocation_type.label }}</span>
@@ -100,8 +105,8 @@ a vue directive:
                                     <a class="clear-filter fa fa-times-circle" href="#" v-on:click.prevent="clearLocationFilter(alocation_type)"></a>
                                 </div>
                                 <ul>
-                                    <li v-for="alocation in alocation_type.locations"
-                                        v-bind:class="{active: (alocation.slug == location.slug), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1, 'hidden': alocation.hidden}">
+                                    <li v-for="(alocation, i) in alocation_type.locations"
+                                        v-bind:class="{active: isLocationSelected(alocation_type, alocation, i), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1, 'hidden': alocation.hidden}">
                                         <a v-on:click.prevent="onClickLocation(alocation.slug, alocation_type.slug)"
                                             href="#" v-html="alocation.label_long">
                                         </a>
@@ -110,6 +115,10 @@ a vue directive:
                             </template>
                         </li>
                     </template>
+
+                    <li v-if="!is_synced">
+                      <a href="#" @click.prevent="onClickPrevNextPara(1)" :title="'Next '+location_type.slug" class="fa fa-chevron-right"></a>
+                    </li>
                 </ul>
             </div>
         </div>
@@ -128,7 +137,7 @@ a vue directive:
                                 <span class="fa fa-columns" aria-label="icon columns"></span>
                             </a>
                         </li>
-                        <li>
+                        <li v-if="getPrintUrl()">
                             <a target="_blank" v-bind:href="getPrintUrl()" aria-label="Print view" title="Print view">
                                 <span class="fa fa-print" aria-label="icon print"></span>
                             </a>
@@ -191,10 +200,10 @@ a vue directive:
 
 {% block extra_js %}
     {{ block.super }}
-    <script src="{% static 'vue/dist/vue.min.js' %}"></script>
-    <script src="{% static 'leaflet/dist/leaflet.js' %}"></script>
-    <script src="{% static 'leaflet-iiif/leaflet-iiif.js' %}"></script>
-
-    <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
-    <script src="{% static 'text_viewer/text_viewer_events.js' %}"></script>
+    {% compress js %}
+      <script src="{% static 'leaflet/dist/leaflet.js' %}"></script>
+      <script src="{% static 'leaflet-iiif/leaflet-iiif.js' %}"></script>
+      <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
+      <script src="{% static 'text_viewer/text_viewer_events.js' %}"></script>
+    {% endcompress %}
 {% endblock %}

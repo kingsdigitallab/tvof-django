@@ -49,24 +49,35 @@ class Alignment(object):
         If ajax request, we read the dictionary from the cache.
         The response contains only the requested data from the dictionary.
         '''
+        is_print = request.GET.get('print', 0)
         is_fragment = request.GET.get('js', 0)
-        if is_fragment:
+
+        if is_print or is_fragment:
+            fragment = self.get_alignment_fragment(request, path)
+
+        if is_print:
+            ret = render(request, 'text_alignment/alignment_print.html', fragment)
+        elif is_fragment:
             # ajax request
-            return self.get_alignment_fragment(request, path)
+            from django.http import JsonResponse
+            ret = JsonResponse(fragment)
+        else:
+            alignment_data = self.fetch_all_alignment_data(True)
+            config = self.get_config(request, path, alignment_data)
+            context = {
+                'config': config.get_list(),
+                'ALIGNMENT_LINKABLE_MSS': settings.ALIGNMENT_LINKABLE_MSS,
+            }
 
-        alignment_data = self.fetch_all_alignment_data(True)
-        config = self.get_config(request, path, alignment_data)
-        context = {
-            'config': config.get_list(),
-            'ALIGNMENT_LINKABLE_MSS': settings.ALIGNMENT_LINKABLE_MSS,
-        }
-
-        ret = render(request, 'text_alignment/alignment.html', context)
+            ret = render(request, 'text_alignment/alignment.html', context)
 
         return ret
 
     def get_alignment_fragment(self, request, path):
         '''
+        Returns a dict with data & html of  a particular visualisation
+        of a slice of the data.
+
         ! None or empty value in request.GET means default value from <config>
         ! None or empty value in <config> means ALL
         '''
@@ -100,14 +111,11 @@ class Alignment(object):
         getattr(self, 'set_context_%s' % selected_view)(context)
 
         template_path = 'text_alignment/views/%s.html' % selected_view
-        json_res = {
+        return {
             'config': config.get_list(),
             'html': self.render_template(template_path, context),
             'qs': config.get_query_string(),
         }
-
-        from django.http import JsonResponse
-        return JsonResponse(json_res)
 
     def render_template(self, template_path, context):
         from django.template.loader import get_template
