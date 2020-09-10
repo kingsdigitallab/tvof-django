@@ -125,6 +125,15 @@
       - system
       - javascript
 
+  handlers:
+    - name: solr | restart solr
+      service:
+        name: solr
+        state: restarted
+      tags:
+        - system
+        - solr
+
 # Python and Javascript Package Managers
 # run as vagrant
 
