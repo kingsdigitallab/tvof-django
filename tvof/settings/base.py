@@ -70,7 +70,7 @@ CACHES = {
     },
     'text_viewer': {
         'BACKEND': 'django.core.cache.backends.filebased.FileBasedCache',
-        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'text_alignment'),
+        'LOCATION': os.path.join(DJANGO_CACHE_ROOT, 'text_viewer'),
         'TIMEOUT': 1 * 60 * 60,
     },
 }

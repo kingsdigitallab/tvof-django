@@ -3,11 +3,6 @@
 
 {% block meta_title %}Data release{% endblock %}
 
-{% block extra_head %}
-  {% compress css %}
-  {% endcompress %}
-{% endblock %}
-
 {% block title %}Data release{% endblock %}
 
 {% block main_wrapper %}
@@ -28,7 +23,7 @@
           {% if messages %}
             <ul class="messages">
               {% for message in messages %}
-                <li{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
+                <li>{% if message.tags %} class="{{ message.tags }}"{% endif %}>{{ message }}</li>
               {% endfor %}
             </ul>
           {% endif %}
@@ -60,7 +55,7 @@
                   <label><input name="{{ doc }}-{{ section }}" type="checkbox" {% if section in doc_filters|get_item:doc|get_item:'interpretive' %}checked{%endif%}>{{ section }}</label>
                 {% endfor %}
               {% endfor %}
-            <div>
+            </div>
 
             <div class="data-release-sections">
               <h3>MSS in alignment</h3>
@@ -70,7 +65,7 @@
                   <option value="{{ ms.1 }}" {% if ms.2 %}selected{% endif %}>{{ ms.0 }}</option>
                 {% endfor %}
               </select>
-            <div>
+            </div>
 
           {% else %}
             <p>
@@ -86,13 +81,9 @@
           {% endif %}
         </div>
 
+        <br>
       </div>
 
-      <br>
     </section>
-  </endform>
-{% endblock %}
-
-{% block extra_js %}
-  {{ block.super }}
+  </form>
 {% endblock %}

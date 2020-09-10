@@ -68,50 +68,51 @@
 </div>
 {% endblock %}
 
-{% block footer_scripts %}
-<script>
-    $('*[data-corresp]').hover(function() {
-        $(this).toggleClass('cursor-pointer underline');
-    });
+{% block extra_js %}
+  {{ block.super }}
+  <script>
+      $('*[data-corresp]').hover(function() {
+          $(this).toggleClass('cursor-pointer underline');
+      });
 
-    $('*[data-corresp]').click(function() {
-        var $this = $(this);
-        var $corresps = $this.data('corresp').split(' ');
-        var $target = null;
+      $('*[data-corresp]').click(function() {
+          var $this = $(this);
+          var $corresps = $this.data('corresp').split(' ');
+          var $target = null;
 
-        // highlight clicked div
-        $('.highlight').toggleClass('highlight');
+          // highlight clicked div
+          $('.highlight').toggleClass('highlight');
 
-        $this.toggleClass('highlight');
+          $this.toggleClass('highlight');
 
-        // find corresponding divs
-        $corresps.forEach(function(value) {
-            var $item = $('' + value);
+          // find corresponding divs
+          $corresps.forEach(function(value) {
+              var $item = $('' + value);
 
-            if ($item.length == 0) {
-                $corresps.pop(value);
-            }
-        });
+              if ($item.length == 0) {
+                  $corresps.pop(value);
+              }
+          });
 
-        // highlight corresponding divs
-        if ($corresps.length > 1) {
-            $target = $('' + $corresps[0]);
-            $target.nextUntil('' + $corresps[1]).andSelf().next($corresps[1]).andSelf().toggleClass('highlight');
-        } else {
-            $target = $('' + $corresps[0]);
-            $target.toggleClass('highlight');
-        }
+          // highlight corresponding divs
+          if ($corresps.length > 1) {
+              $target = $('' + $corresps[0]);
+              $target.nextUntil('' + $corresps[1]).andSelf().next($corresps[1]).andSelf().toggleClass('highlight');
+          } else {
+              $target = $('' + $corresps[0]);
+              $target.toggleClass('highlight');
+          }
 
-        // scroll to corresponding div
-        if ($target.length) {
-            var thisTop = $this.offset().top;
-            var targetTop = $target.offset().top;
-            var top = thisTop - Math.abs(targetTop - thisTop);
+          // scroll to corresponding div
+          if ($target.length) {
+              var thisTop = $this.offset().top;
+              var targetTop = $target.offset().top;
+              var top = thisTop - Math.abs(targetTop - thisTop);
 
-            $('html, body').animate({
-                scrollTop: top
-            }, 1000);
-        }
-    });
-</script>
+              $('html, body').animate({
+                  scrollTop: top
+              }, 1000);
+          }
+      });
+  </script>
 {% endblock %}

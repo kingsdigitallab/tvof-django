@@ -1,5 +1,5 @@
 {% extends "cms/rich_text_page.html" %}
-{% load staticfiles wagtailcore_tags cms_tags %}
+{% load staticfiles wagtailcore_tags cms_tags compress %}
 
 {% block meta_title %}Search{% endblock %}
 
@@ -206,7 +206,7 @@
   <script>
     var SEARCH_FACETS = {{search_facets|json}};
   </script>
-  <script src="{% static 'vue/dist/vue.js' %}"></script>
-  <script src="{% static 'vue-autosuggest/dist/vue-autosuggest.js' %}"></script>
-  <script src="{% static 'text_search/text_search.js' %}"></script>
+  {% compress js %}
+    <script src="{% static 'text_search/text_search.js' %}"></script>
+  {% endcompress %}
 {% endblock %}

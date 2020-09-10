@@ -159,8 +159,9 @@ Textviewer
 {% endverbatim %}
 {% endblock %}
 
-{% block footer_scripts %}
+{% block extra_js %}
     {{ block.super }}
-    <script src="{% static 'vendor/vue/vue.js' %}"></script>
-    <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
+    {% compress js %}
+      <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
+    {% endcompress %}
 {% endblock %}

@@ -17,6 +17,17 @@ $(function() {
     window.image_viewer_map_layer = null;
 
     $('body').on('click', 'figure', function() {
+        var $img = $(this).find('img');
+        var image_url = $img.attr('data-jp2');
+        var title = $img.attr('title') || 'Image Viewer';
+        var caption = $(this).find('figcaption').html() || '';
+        // caption = "The temple lies in the center of a vast sanctuary, whose extent and complexity was revealed by excavations conducted from 2013 to 2016, on a site whose history goes back to Neolithic times, and which experienced an important phase of monumental constructions in the 1st Century CE. The temple was abandoned at the onset of the Early Middle Ages, and its structures were later reused in the fashioning of a Medieval defensive work. The temple has retained two sides of its square cella, at a height of over 20 meters, as well as vestiges of its ambulatory and side structure foundations. The temple's supposed dedication to the Roman god Janus is not based on any archaeological or historic fact, and the deity that was venerated in the temple is unknown.";
+
+        if (!image_url) {
+            console.log('WARNING: <img> is missing the data-jp2 attribute');
+            return;
+        }
+
         destroy_tooltip();
 
         if (window.image_viewer_map) {
@@ -43,12 +54,6 @@ $(function() {
             crs: L.CRS.Simple,
             zoom: 1,
         });
-
-        var $img = $(this).find('img');
-        var image_url = $img.attr('data-jp2');
-        var title = $img.attr('title') || 'Image Viewer';
-        var caption = $(this).find('figcaption').html() || '';
-        // caption = "The temple lies in the center of a vast sanctuary, whose extent and complexity was revealed by excavations conducted from 2013 to 2016, on a site whose history goes back to Neolithic times, and which experienced an important phase of monumental constructions in the 1st Century CE. The temple was abandoned at the onset of the Early Middle Ages, and its structures were later reused in the fashioning of a Medieval defensive work. The temple has retained two sides of its square cella, at a height of over 20 meters, as well as vestiges of its ambulatory and side structure foundations. The temple's supposed dedication to the Roman god Janus is not based on any archaeological or historic fact, and the deity that was venerated in the temple is unknown.";
 
         $modal.find('h3').html(title);
         $modal.find('.image-viewer-caption').toggle(!!caption).html(caption);
