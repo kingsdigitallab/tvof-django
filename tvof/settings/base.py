@@ -557,7 +557,7 @@ SEARCH_CONFIG = OrderedDict([
     # config by result type
     ['tokens', {
         'label': 'Tokens',
-        'api': '/api/v1/tokens/search/facets/?format=json',
+        'api': '/api/v2/tokens/search/facets/?format=json',
         'phrase_title': 'Lemma or Form',
         'orders': OrderedDict([
             ['form', {

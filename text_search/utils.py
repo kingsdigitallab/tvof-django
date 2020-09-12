@@ -30,7 +30,7 @@ def write_kwic_index(force=False):
     This order will allow the grouping of consecutive "proper nouns" tokens
     into a single string (see AC-370).
     '''
-    dlog('write kwic index')
+    dlog('transform kwic index')
 
     import gc
 
@@ -47,27 +47,21 @@ def write_kwic_index(force=False):
         return ret
 
     import lxml.etree as ET
-    dlog('h2')
     xslt = ET.parse('text_search/kwic_idx.xsl')
-    dlog('h3')
     transform = ET.XSLT(xslt)
     del xslt
-    dlog('h4')
     # ac-373.4: this takes 1+GB to parse a 90MB xml file
     dom = ET.parse(kwic_path)
-    dlog('h5')
     newdom = transform(dom)
     del dom
-    dlog('h6')
 
     '''
     # ac-373.4: 180MB xml file will take 2GB to be transformed
     xsltproc -o o.xml text_search/kwic_idx.xsl kiln_out/received/kwic-out.xml
     '''
-
     newdom.write_output(ret)
 
-    dlog('h7')
+    dlog('written')
 
     return ret
 
@@ -147,7 +141,7 @@ class KwicParser:
             token_lemma = token.attrib.get('lemma', '')
             group_lemma = group.attrib.get('lemma', '')
             lemmas = group_lemma + token_lemma
-            if (token_lemma == group_lemma and lemmas.lower() != lemmas):
+            if token_lemma == group_lemma and lemmas.lower() != lemmas:
                 # same lemma => add this token to the last group
                 group.attrib['following'] = token.attrib.get('following', '')
                 group.text = (group.text + ' ' + token.text)
@@ -181,8 +175,6 @@ class KwicParser:
         self.reset()
 
         kwic_path = write_kwic_index()
-
-        # print('transformed {}'.format(kwic_path))
 
         for event, elem in ET.iterparse(
             kwic_path, events=['start', 'end']
@@ -301,3 +293,48 @@ def read_tokenised_data():
                         pass
 
     return ret
+
+
+def get_data_from_kwik_item(cls, item, mss_sections=None,
+                             tokenised_data=None):
+    '''
+    Returns a dictionary from a kwic item (XML Element).
+    The dictionary will be used to create a new AnnotatedToken.
+    '''
+
+    # Maps attributes to dictionary entries.
+    ret = {
+        k.lower().strip(): (v or '').strip()
+        for k, v
+        in list(item.attrib.items())
+        if hasattr(cls, k.lower())
+    }
+    ret['string'] = (item.text or '').strip()
+
+    ret['lemma'] = normalise_lemma(ret.get('lemma', ''))
+
+    # sets section_number from location attribute and mss_sections
+    if mss_sections:
+        ms = 'Royal'
+        if 'edfr' in ret['location']:
+            ms = 'Fr20125'
+        for section in mss_sections[ms]:
+            if section['para'] > ret['location']:
+                break
+            ret['section_number'] = section['number']
+
+    # augment the dictionary with metadata coming from tokenised XML
+    if tokenised_data:
+        ret['verse_cat'] = tokenised_data.get(
+            ret['location'], {}
+        ).get('verse_cat', 0)
+
+        ret['speech_cat'] = tokenised_data.get(
+            ret['location'] + '.' + ret['n'], {}
+        ).get('speech_cat', 0)
+
+    return ret
+
+
+def get_unique_id_from_token(token):
+    return '{}.{:03d}'.format(token.location, int(token.n))

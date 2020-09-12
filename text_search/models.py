@@ -285,55 +285,12 @@ class AnnotatedToken(models.Model):
 
     @classmethod
     def new_from_kwik_item(cls, item, mss_sections=None, tokenised_data=None):
-        return cls(**cls._get_data_from_kwik_item(
-            item, mss_sections, tokenised_data
+        return cls(**utils.get_data_from_kwik_item(
+            cls, item, mss_sections, tokenised_data
         ))
 
-    @classmethod
-    def _get_data_from_kwik_item(cls, item, mss_sections=None,
-                                 tokenised_data=None):
-        '''
-        Returns a dictionary from a kwic item (XML Element).
-        The dictionary will be used to create a new AnnotatedToken.
-        '''
-
-        # Maps attributes to dictionary entries.
-        ret = {
-            k.lower().strip(): (v or '').strip()
-            for k, v
-            in list(item.attrib.items())
-            if hasattr(cls, k.lower())
-        }
-        ret['string'] = (item.text or '').strip()
-
-        ret['lemma'] = utils.normalise_lemma(ret.get('lemma', ''))
-
-        # sets section_number from location attribute and mss_sections
-        if mss_sections:
-            ms = 'Royal'
-            if 'edfr' in ret['location']:
-                ms = 'Fr20125'
-            for section in mss_sections[ms]:
-                if section['para'] > ret['location']:
-                    break
-                ret['section_number'] = section['number']
-
-        # augment the dictionary with metadata coming from tokenised XML
-        if tokenised_data:
-            ret['verse_cat'] = tokenised_data.get(
-                ret['location'], {}
-            ).get('verse_cat', 0)
-
-            ret['speech_cat'] = tokenised_data.get(
-                ret['location'] + '.' + ret['n'], {}
-            ).get('speech_cat', 0)
-
-        return ret
-
     def get_unique_id(self):
-        ret = '{}.{:03d}'.format(self.location, int(self.n))
-        return ret
-
+        return utils.get_unique_id_from_token(self)
 
 # ----------------------------------------------------------------------
 # virtual model for Lemmas documents

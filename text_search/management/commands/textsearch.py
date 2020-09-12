@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand
+
+from text_search import utils
 from text_search.models import AnnotatedToken
 from argparse import RawTextHelpFormatter
 import os
@@ -63,5 +65,8 @@ action:
 
     def action_index(self):
         '''indexing with ES'''
+        from text_search.es_indexes import Indexer
 
-        pass
+        indexer = Indexer()
+        indexer.clear()
+        indexer.index()

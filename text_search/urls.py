@@ -6,6 +6,7 @@ from .views import (
     AutocompleteSearchViewSet,
     LemmaFacetSearchView
 )
+from . import es_views
 
 router = routers.DefaultRouter()
 router.register(
@@ -23,5 +24,6 @@ router.register(
 
 urlpatterns = [
     re_path(r'^api/v1/', include(router.urls)),
+    re_path(r'^api/v2/tokens/search/facets/', es_views.view_api_tokens_search_facets),
     re_path(r'^search/?$', views.search_view),
 ]
