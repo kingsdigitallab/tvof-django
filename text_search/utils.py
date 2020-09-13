@@ -1,6 +1,7 @@
 # TODO: use lxml everywhere in this module
 from xml.etree import ElementTree as ET
 
+KWIC_XSLT_PATH = 'text_search/kwic_idx.xsl'
 
 def haystack_id(obj):
     return obj.get_unique_id()
@@ -27,10 +28,12 @@ def write_kwic_index(force=False):
     into an xml file where all concordances are directly under the
     root element and sorted by their order of appearance in the text.
 
+    Returns the path of the output XML file.
+
     This order will allow the grouping of consecutive "proper nouns" tokens
     into a single string (see AC-370).
     '''
-    dlog('transform kwic index')
+    # dlog('transform kwic index')
 
     import gc
 
@@ -47,7 +50,7 @@ def write_kwic_index(force=False):
         return ret
 
     import lxml.etree as ET
-    xslt = ET.parse('text_search/kwic_idx.xsl')
+    xslt = ET.parse(KWIC_XSLT_PATH)
     transform = ET.XSLT(xslt)
     del xslt
     # ac-373.4: this takes 1+GB to parse a 90MB xml file
@@ -61,7 +64,10 @@ def write_kwic_index(force=False):
     '''
     newdom.write_output(ret)
 
-    dlog('written')
+    dlog('Transformed kwic index {} -> {}'.format(
+        kwic_path,
+        ret
+    ))
 
     return ret
 
@@ -190,6 +196,14 @@ class KwicParser:
                         self.next_mark += 1
                         yield r
 
+    @classmethod
+    def read_token_count(cls):
+        '''Returns the total number of tokens in the kwic XML file'''
+        ret = 0
+        for i in (cls(lambda e: [0])):
+            ret += 1
+        return ret
+
 
 def read_tokenised_name_types():
     '''
@@ -294,20 +308,34 @@ def read_tokenised_data():
 
     return ret
 
+mss_sections = None
+tokenised_data = None
 
-def get_data_from_kwik_item(cls, item, mss_sections=None,
-                             tokenised_data=None):
+def get_data_from_kwik_item(cls, item):
     '''
     Returns a dictionary from a kwic item (XML Element).
     The dictionary will be used to create a new AnnotatedToken.
     '''
+
+    global mss_sections, tokenised_data
+
+    if mss_sections is None:
+        # print('  REQUEST')
+        mss_sections = {}
+        from text_viewer.text_viewer_tvof import TextViewerAPITvof
+        tvof_viewer = TextViewerAPITvof()
+        mss_sections.update(tvof_viewer.read_all_sections_data())
+
+    if tokenised_data is None:
+        tokenised_data = {}
+        tokenised_data.update(read_tokenised_data())
 
     # Maps attributes to dictionary entries.
     ret = {
         k.lower().strip(): (v or '').strip()
         for k, v
         in list(item.attrib.items())
-        if hasattr(cls, k.lower())
+        if cls is None or hasattr(cls, k.lower())
     }
     ret['string'] = (item.text or '').strip()
 

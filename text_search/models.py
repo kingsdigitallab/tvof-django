@@ -156,18 +156,8 @@ class KwicQuerySet(models.QuerySet):
 
     def _new_parser(self):
         def callback(item):
-            if not self.mss_sections:
-                # print('  REQUEST')
-                tvof_viewer = TextViewerAPITvof()
-                self.mss_sections.update(tvof_viewer.read_all_sections_data())
-
-            if not self.tokenised_data:
-                self.tokenised_data.update(utils.read_tokenised_data())
-
             token = AnnotatedToken.new_from_kwik_item(
                 item,
-                self.mss_sections,
-                self.tokenised_data,
             )
 
             return [token]
@@ -284,10 +274,8 @@ class AnnotatedToken(models.Model):
         return '{} [{}]'.format(self.string, self.lemma)
 
     @classmethod
-    def new_from_kwik_item(cls, item, mss_sections=None, tokenised_data=None):
-        return cls(**utils.get_data_from_kwik_item(
-            cls, item, mss_sections, tokenised_data
-        ))
+    def new_from_kwik_item(cls, item):
+        return cls(**utils.get_data_from_kwik_item(cls, item))
 
     def get_unique_id(self):
         return utils.get_unique_id_from_token(self)

@@ -10,11 +10,22 @@ from text_search.utils import read_tokenised_name_types
 
 
 class Command(BaseCommand):
-    help = '''Toolbox for the Text Viewer app
+    help = '''Text Search toolbox. Mainly about ElasticSearch indexing.
 
 action:
+  rebuild_index (ri)
+    rebuild the index
+    (transform the kwic first if needed)
+  clear_index (ci)
+    delete the index
+  transform_kwic (tk)
+    tranform the kwic-out XML file exported from Lemming
+    into another XML file that can be directly indexed
+
+deprecated actions:
   clear
     remove all records in AnnotatedToken table
+  import
     '''
 
     def create_parser(self, *args, **kwargs):
@@ -35,38 +46,50 @@ action:
 
         known_action = False
 
+        from time import time
+        t0 = time()
+
+        from text_search.es_indexes import Indexer
+        self.indexer = Indexer()
+
+        if action in ['rebuild_index', 'ri']:
+            known_action = True
+            self.action_rebuild_index()
+
+        if action in ['clear_index', 'ci']:
+            known_action = True
+            self.action_clear_index()
+
+        if action in ['transform_kwic', 'tk']:
+            known_action = True
+            self.action_transform_kwic()
+
         if action == 'import':
             print('ERROR: Deprecated, use rebuild_index command instead.')
-            known_action = True
 
         if action == 'clear':
-            known_action = True
-            self.action_clear()
+            print('ERROR: Deprecated, use clear_index command instead.')
 
         if action == 'test_names':
             known_action = True
             read_tokenised_name_types()
 
-        if action == 'index':
-            known_action = True
-            self.action_index()
-
         if not known_action:
             print('ERROR: unknown action "%s"' % action)
             print(self.help)
+            exit(1)
         else:
-            print('done')
+            d = time() - t0
+            print('done ("textsearch {}" in {:.0f} s.)'.format(action, d))
 
     def get_args(self):
         return self.args
 
-    def action_clear(self):
-        AnnotatedToken.objects.all().delete()
+    def action_rebuild_index(self):
+        self.indexer.rebuild()
 
-    def action_index(self):
-        '''indexing with ES'''
-        from text_search.es_indexes import Indexer
+    def action_clear_index(self):
+        self.indexer.clear()
 
-        indexer = Indexer()
-        indexer.clear()
-        indexer.index()
+    def action_transform_kwic(self):
+        utils.write_kwic_index(True)

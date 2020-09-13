@@ -3,10 +3,15 @@ from django.conf import settings
 
 # todo: remove duplication
 from django.http import JsonResponse
+from elasticsearch_dsl import FacetedSearch, TermsFacet
+from elasticsearch_dsl.connections import connections
+
+from text_search.es_indexes import AnnotatedToken
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
 ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
 
+connections.create_connection(hosts=['localhost'])
 
 def get_config(result_type):
     return settings.SEARCH_CONFIG[result_type]
@@ -19,7 +24,8 @@ def view_api_tokens_search_facets(request):
     :return:
     '''
 
-    # compatible schema with v1, which came from drf-haystack
+    # compatible schema with API v1, which came from drf-haystack.
+    # so we don't have to change the UI at all; drop in replacement.
     ret = {
         'fields': {},
         'objects': {
@@ -37,21 +43,36 @@ def view_api_tokens_search_facets(request):
     text = request.GET.get('text', '')
 
     from elasticsearch import Elasticsearch
-    from elasticsearch_dsl import Search
-    from elasticsearch_dsl import Q
-
     client = Elasticsearch()
 
-    s = Search(using=client, index='tokens')
-    if text:
-        q = Q('multi_match', query=text, fields=['string', 'lemma'])
-        s = s.query(q)
-    s = s[(page-1)*page_size:(page)*page_size]
-    r = s.execute()
+    search = AnnotatedTokenSearch(text)
+    search = search[(page-1)*page_size:(page)*page_size]
+    res = search.execute()
 
-    for hit in r:
+    # facets
+    for facet_key, options in res.facets.to_dict().items():
+        ret['fields'][facet_key] = [
+            {
+                'text': option[0],
+                'count': option[1],
+            }
+            for option
+            in options
+        ]
+
+    # hits
+    for hit in res:
         ret['objects']['results'].append(hit.to_dict())
 
-    ret['objects']['count'] = r.hits.total.value
+    ret['objects']['count'] = res.hits.total.value
 
     return JsonResponse(ret)
+
+
+class AnnotatedTokenSearch(FacetedSearch):
+    doc_types = [AnnotatedToken, ]
+    fields = ['form', 'lemma']
+
+    facets = {
+        'lemma': TermsFacet(field='lemma'),
+    }

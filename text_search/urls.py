@@ -11,15 +11,15 @@ from . import es_views
 router = routers.DefaultRouter()
 router.register(
     'tokens/search', AnnotatedTokenFacetSearchView,
-    base_name='tokens-search'
+    basename='tokens-search'
 )
 router.register(
     'lemma/search', LemmaFacetSearchView,
-    base_name='lemma-search'
+    basename='lemma-search'
 )
 router.register(
     'tokens/autocomplete', AutocompleteSearchViewSet,
-    base_name='tokens-autocomplete'
+    basename='tokens-autocomplete'
 )
 
 urlpatterns = [

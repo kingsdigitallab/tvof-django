@@ -20,7 +20,7 @@ Vagrant.configure(VAGRANTFILE_API_VERSION) do |config|
   config.ssh.forward_agent = true
 
   config.vm.provider "virtualbox" do |provider|
-    provider.customize ["modifyvm", :id, "--memory", "2048"]
+    provider.customize ["modifyvm", :id, "--memory", "4096"]
     provider.name = "tvof"
   end
 
