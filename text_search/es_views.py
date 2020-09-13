@@ -20,8 +20,6 @@ def get_config(result_type):
 def view_api_tokens_search_facets(request):
     '''
     ?format=json&result_type=tokens&page=1&text=le&selected_facets=lemma_exact%3Ale&page_size=10&order=form
-    :param request:
-    :return:
     '''
 
     # compatible schema with API v1, which came from drf-haystack.
@@ -37,15 +35,24 @@ def view_api_tokens_search_facets(request):
     }
 
     # todo: error management
+
+    # parse the request
     page = int(request.GET.get('page', 1))
     page_size = int(request.GET.get('page_size', 10))
     # search for lemma or form
     text = request.GET.get('text', '')
+    selected_facets = {}
+    # {'manuscript_number': '1', 'lemma': 'et'}
+    for f in request.GET.getlist('selected_facets', []):
+        parts = f.split(':')
+        if len(parts) == 2:
+            facet_key = parts[0].replace('_exact', '')
+            if facet_key not in selected_facets:
+                selected_facets[facet_key] = []
+            selected_facets[facet_key].append(parts[1])
 
-    from elasticsearch import Elasticsearch
-    client = Elasticsearch()
-
-    search = AnnotatedTokenSearch(text)
+    # actual search
+    search = AnnotatedTokenSearch(text, filters=selected_facets)
     search = search[(page-1)*page_size:(page)*page_size]
     res = search.execute()
 
@@ -71,8 +78,15 @@ def view_api_tokens_search_facets(request):
 
 class AnnotatedTokenSearch(FacetedSearch):
     doc_types = [AnnotatedToken, ]
+    # todo search should be case insensitive
     fields = ['form', 'lemma']
 
     facets = {
-        'lemma': TermsFacet(field='lemma'),
+        facet['key']: TermsFacet(field=facet['key'])
+        for facet
+        in settings.SEARCH_FACETS
     }
+
+    def search(self, *args, **kwargs):
+        s = super().search(*args, **kwargs)
+        return s

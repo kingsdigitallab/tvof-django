@@ -157,7 +157,7 @@ var app = new window.Vue({
                 ret = id_to_label[ret];
             }
             if (facet_key == 'is_rubric') {
-                ret = ret == 'true' ? 'Rubric' : 'Text body';
+                ret = (ret === true || ret == 'true') ? 'Rubric' : 'Text body';
             }
             if (facet_key == 'section_number') {
                 ret = window.SETTINGS_JS.SECTIONS_NAME[ret];
