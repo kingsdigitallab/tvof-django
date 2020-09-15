@@ -2,9 +2,33 @@
 from xml.etree import ElementTree as ET
 
 KWIC_XSLT_PATH = 'text_search/kwic_idx.xsl'
+ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
+
 
 def haystack_id(obj):
     return obj.get_unique_id()
+
+
+def get_search_config(result_type):
+    from django.conf import settings
+    return settings.SEARCH_CONFIG[result_type]
+
+
+def get_order_fields(request, result_type, replace_id=False):
+    '''returns a list of field names the result should be sorted by.'''
+    order_key = request.GET.get(
+        ORDER_BY_QUERY_STRING_PARAMETER_NAME, ''
+    )
+    orders = get_search_config(result_type)['orders']
+    order = orders.get(order_key, list(orders.items())[0][1])
+
+    ret = order['fields']
+
+    if replace_id:
+        # solr id field -> seq_order in ES
+        ret = [('seq_order' if f == 'id' else f) for f in ret]
+
+    return ret
 
 
 def normalise_lemma(lemma):
@@ -113,14 +137,8 @@ class KwicParser:
 
     Usage:
 
-    p = KwickParser(cb)
-    pg = p.get_generator()
-    ri = pg.next()
-
-    for ri in pq:
-      ...
-
-    p.next_mark
+    for token_element in KwickParser(cb):
+        ...
 
     DO NOT USE iter(p)
     '''
@@ -134,35 +152,19 @@ class KwicParser:
         self.next_mark = 0
         self.group = None
 
-    def add_token_to_group(self, token):
-        '''Group consecutive kwic items which belong to the same form
-        E.g. Julius + Cesar => Julius Cesar
-        '''
-        ret = None
-
-        if self.group is None:
-            self.group = token
-        else:
-            group = self.group
-            token_lemma = token.attrib.get('lemma', '')
-            group_lemma = group.attrib.get('lemma', '')
-            lemmas = group_lemma + token_lemma
-            if token_lemma == group_lemma and lemmas.lower() != lemmas:
-                # same lemma => add this token to the last group
-                group.attrib['following'] = token.attrib.get('following', '')
-                group.text = (group.text + ' ' + token.text)
-            else:
-                # release the last group
-                ret = group
-                self.group = token
-
-        return ret
-
     def get_generator(self, from_mark):
         if not self.generator or self.next_mark > (from_mark or 0):
             assert(self.generator is None)
             self.generator = iter(self)
         return self.generator
+
+    @classmethod
+    def read_token_count(cls):
+        '''Returns the total number of tokens in the kwic XML file'''
+        ret = 0
+        for i in (cls(lambda e: [0])):
+            ret += 1
+        return ret
 
     def __iter__(self):
         '''
@@ -190,19 +192,39 @@ class KwicParser:
             if event == 'end' and (elem.tag in ['string', 'kwicindex']):
                 if elem.tag != 'kwicindex':
                     item.text = elem.text or ''
-                res = self.add_token_to_group(item)
+                res = self._add_token_to_group(item)
                 if res:
                     for r in self.callback(res):
                         self.next_mark += 1
                         yield r
 
-    @classmethod
-    def read_token_count(cls):
-        '''Returns the total number of tokens in the kwic XML file'''
-        ret = 0
-        for i in (cls(lambda e: [0])):
-            ret += 1
+    def _add_token_to_group(self, token):
+        '''Group consecutive kwic items which belong to the same form
+        E.g. Julius + Cesar => Julius Cesar
+
+        returns an ET.Element
+        '''
+        ret = None
+
+        if self.group is None:
+            self.group = token
+        else:
+            group = self.group
+            token_lemma = token.attrib.get('lemma', '')
+            group_lemma = group.attrib.get('lemma', '')
+            lemmas = group_lemma + token_lemma
+            if token_lemma == group_lemma and lemmas.lower() != lemmas:
+                # same lemma => add this token to the last group
+                group.attrib['following'] = token.attrib.get('following', '')
+                group.text = (group.text + ' ' + token.text)
+            else:
+                # release the last group
+                ret = group
+                ret.attrib['seq_order'] = self.next_mark
+                self.group = token
+
         return ret
+
 
 
 def read_tokenised_name_types():
@@ -308,8 +330,10 @@ def read_tokenised_data():
 
     return ret
 
+
 mss_sections = None
 tokenised_data = None
+
 
 def get_data_from_kwik_item(cls, item):
     '''
@@ -332,7 +356,7 @@ def get_data_from_kwik_item(cls, item):
 
     # Maps attributes to dictionary entries.
     ret = {
-        k.lower().strip(): (v or '').strip()
+        k.lower().strip(): clean_value(v)
         for k, v
         in list(item.attrib.items())
         if cls is None or hasattr(cls, k.lower())
@@ -366,3 +390,14 @@ def get_data_from_kwik_item(cls, item):
 
 def get_unique_id_from_token(token):
     return '{}.{:03d}'.format(token.location, int(token.n))
+
+
+def clean_value(value):
+    if value is None:
+        ret = ''
+    elif isinstance(value, str):
+        ret = value.strip()
+    else:
+        ret = value
+    return ret
+

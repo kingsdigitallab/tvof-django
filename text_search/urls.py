@@ -25,5 +25,7 @@ router.register(
 urlpatterns = [
     re_path(r'^api/v1/', include(router.urls)),
     re_path(r'^api/v2/tokens/search/facets/', es_views.view_api_tokens_search_facets),
+    re_path(r'^api/v2/lemma/search/facets/', es_views.view_api_lemma_search_facets),
+    re_path(r'^api/v2/tokens/autocomplete/', es_views.view_api_tokens_autocomplete),
     re_path(r'^search/?$', views.search_view),
 ]

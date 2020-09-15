@@ -16,24 +16,14 @@ from drf_haystack.serializers import HaystackSerializer
 from drf_haystack.viewsets import HaystackViewSet
 import re
 from text_search.search_indexes import LemmaIndex
-
+from .utils import get_search_config, get_order_fields
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
-ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
-
-
-def get_config(result_type):
-    return settings.SEARCH_CONFIG[result_type]
 
 
 def get_ordered_queryset(view, queryset, result_type):
-    order_key = view.request.GET.get(
-        ORDER_BY_QUERY_STRING_PARAMETER_NAME, ''
-    )
-    orders = get_config(result_type)['orders']
-    order = orders.get(order_key, list(orders.items())[0][1])
-
-    return queryset.order_by(*order['fields'])
+    fields = get_order_fields(view.request, result_type)
+    return queryset.order_by(*fields)
 
 
 def transform_search_facets(content):

@@ -551,9 +551,9 @@ Used by front end and backend to sort the search results.
 '''
 
 '''
-Search page configuration, shared by server and client-side.
+Search page configuration, shared by server and client code.
 '''
-SEARCH_CONFIG = OrderedDict([
+SEARCH_CONFIG = [
     # config by result type
     ['tokens', {
         'label': 'Tokens',
@@ -580,7 +580,7 @@ SEARCH_CONFIG = OrderedDict([
     }],
     ['names', {
         'label': 'Names',
-        'api': '/api/v1/lemma/search/facets/?format=json&selected_facets=pos_exact%3Anom%20propre',
+        'api': '/api/v2/lemma/search/facets/?format=json&selected_facets=pos_exact%3Anom%20propre',
         'phrase_title': 'Name or Form',
         'orders': OrderedDict([
             ['lemma', {
@@ -595,7 +595,7 @@ SEARCH_CONFIG = OrderedDict([
     }],
     ['lemmata', {
         'label': 'Lemmata',
-        'api': '/api/v1/lemma/search/facets/?format=json',
+        'api': '/api/v2/lemma/search/facets/?format=json',
         'phrase_title': 'Lemma or Form',
         'orders': OrderedDict([
             ['lemma', {
@@ -612,26 +612,10 @@ SEARCH_CONFIG = OrderedDict([
             }],
         ]),
     }]
-])
+]
 
-SEARCH_PAGE_ORDERS_2 = OrderedDict([
-    ['form', {
-        'label': 'Form',
-        'fields': ['form', 'next_word', 'id'],
-    }],
-    ['location', {
-        'label': 'Location',
-        'fields': ['id', 'form'],
-    }],
-    ['previous', {
-        'label': 'Previous word',
-        'fields': ['previous_word', 'form', 'id'],
-    }],
-    ['next', {
-        'label': 'Next word',
-        'fields': ['next_word', 'form', 'id'],
-    }],
-])
+SEARCH_CONFIG = OrderedDict(SEARCH_CONFIG)
+
 
 HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'
 

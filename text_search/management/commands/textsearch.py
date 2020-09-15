@@ -13,6 +13,8 @@ class Command(BaseCommand):
     help = '''Text Search toolbox. Mainly about ElasticSearch indexing.
 
 action:
+  list (ls)
+    list the indexes
   rebuild_index (ri)
     rebuild the index
     (transform the kwic first if needed)
@@ -35,6 +37,8 @@ deprecated actions:
 
     def add_arguments(self, parser):
         parser.add_argument('action', nargs=1, type=str)
+        parser.add_argument('-idx', nargs='?', type=str, help='comma separated list of index names the action applies to. All if not specified.')
+        parser.add_argument('-cap', nargs='?', type=int, default=-1, help='maximum number of item to index. All if -1 or not specified.')
         parser.add_argument('args', nargs='*', type=str)
 
     def handle(self, *args, **options):
@@ -43,6 +47,16 @@ deprecated actions:
         self.args = args
         actions = options.get('action', [])
         action = actions[0]
+
+        self.indexes = []
+        index_names = (options.get('idx', '') or '')
+        if index_names:
+            self.indexes = [
+                idx.strip()
+                for idx in index_names.split(',')
+            ]
+
+        self.cap = options.get('cap', -1)
 
         known_action = False
 
@@ -63,6 +77,10 @@ deprecated actions:
         if action in ['transform_kwic', 'tk']:
             known_action = True
             self.action_transform_kwic()
+
+        if action in ['list', 'ls']:
+            known_action = True
+            self.action_list_index()
 
         if action == 'import':
             print('ERROR: Deprecated, use rebuild_index command instead.')
@@ -86,10 +104,13 @@ deprecated actions:
         return self.args
 
     def action_rebuild_index(self):
-        self.indexer.rebuild()
+        self.indexer.rebuild(self.indexes, self.cap)
 
     def action_clear_index(self):
-        self.indexer.clear()
+        self.indexer.clear(self.indexes)
+
+    def action_list_index(self):
+        self.indexer.list(self.indexes)
 
     def action_transform_kwic(self):
         utils.write_kwic_index(True)
