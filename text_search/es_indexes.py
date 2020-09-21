@@ -2,12 +2,13 @@ from collections import deque, OrderedDict
 
 from django.conf import settings
 from elasticsearch import Elasticsearch
-from elasticsearch_dsl import Document, Date, Integer, Keyword, Text, Search, Index, Boolean
+from elasticsearch_dsl import Document, Date, Integer, Keyword, Text, Search, Index, Boolean, Completion, \
+    SearchAsYouType
 from elasticsearch_dsl.connections import connections
 from tqdm import tqdm
 from elasticsearch.helpers import bulk, parallel_bulk, BulkIndexError
 
-from text_search.utils import normalise_lemma
+from text_search.utils import normalise_lemma, normalise_form, get_ascii_from_unicode
 
 '''
 http://localhost:9200/_cat/indices
@@ -155,6 +156,47 @@ class LemmaDocument(Document):
         return ret
 
 
+class AutocompleteDocument(Document):
+    '''Indexing model for a form or lemma
+    TODO: check if there's a more standard or efficient way
+    of doing such suggestions.
+    '''
+
+    # autocomplete = Completion()
+    # For searching only, not displayed
+    # Basically we want a field with multiple tokens that can be search
+    # by prefix (e.g. par*) and we can sort by the first token.
+    autocomplete = SearchAsYouType()
+    autocomplete_sort = Keyword()
+    # for display
+    form = Keyword()
+    lemma = Keyword()
+
+    class Index:
+        name = 'autocomplete'
+
+    @classmethod
+    def new_from_token_element(cls, token_element, parsing_context):
+        ret = []
+        lemma = normalise_lemma(token_element.attrib.get('lemma', ''))
+        if lemma:
+            form = normalise_form(token_element)
+            for i in [0, 2]:
+                autocomplete = '{} {}'.format(form or lemma, lemma)
+                doc = cls(
+                    lemma=lemma,
+                    form=form,
+                    autocomplete=get_ascii_from_unicode(autocomplete).lower(),
+                    autocomplete_sort=get_ascii_from_unicode(autocomplete).lower(),
+                    #autocomplete=autocomplete
+                )
+                doc.meta.id = autocomplete + ' ' + str(i)
+                ret.append(doc)
+                form = ''
+
+        return ret
+
+
 class Indexer:
     '''
     Manages the search indexes.
@@ -171,6 +213,9 @@ class Indexer:
         }],
         ['lemmata', {
             'document_class': LemmaDocument,
+        }],
+        ['autocomplete', {
+            'document_class': AutocompleteDocument,
         }]
     ])
 
@@ -186,13 +231,14 @@ class Indexer:
             'created': 'Created',
             'disk': 'MBytes',
         }
-        print('{name:15} | {size:8} | {disk:10} | {created:15}'.format(**titles))
-        print('-' * 60)
+        print('{name:15} | {size:7} | {disk:8} | {created:19}'.format(**titles))
+        print('-' * 62)
         for index_name, index_data in self._get_selected_indexes(index_names):
             info = {
                 'name': index_name,
-                'size': 'not found',
-                'created': '',
+                'size': 0,
+                'disk': 0,
+                'created': 'absent',
             }
             index = Index(using=client, name=index_name)
             if index.exists():
@@ -204,7 +250,7 @@ class Indexer:
                 info['size'] = stats['_all']['total']['docs']['count']
                 info['disk'] = stats['_all']['total']['store']['size_in_bytes'] / 1024 / 1024
 
-            print('{name:15} | {size:>8} | {disk:>10.2f} | {created:>15}'.format(**info))
+            print('{name:15} | {size:>7} | {disk:>8.2f} | {created:>19}'.format(**info))
 
     def clear(self, index_names=None):
         '''Recreate the tokens index'''

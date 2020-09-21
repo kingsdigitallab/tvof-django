@@ -1,4 +1,4 @@
-var autocomplete_url = '/api/v1/tokens/autocomplete/?format=json&page_size=50';
+var autocomplete_url = '/api/v2/tokens/autocomplete/?format=json&page_size=50';
 var text_viewer_url = '/textviewer/?p1=';
 var id_to_viewer_slug = {
     0: 'Fr20125',

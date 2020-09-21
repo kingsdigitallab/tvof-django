@@ -671,6 +671,7 @@ SEARCH_FACETS = [
     {
         'key': 'manuscript_number',
         'label': 'Manuscript',
+        'use_for_count': True,
     },
     {
         'key': 'lemma',
@@ -709,8 +710,11 @@ SEARCH_FACETS = [
     {
         'key': 'name_type',
         'label': 'Lemma type',
+        'use_for_count': True,
     },
 ]
+
+ELASTICSEARCH_FACET_OPTIONS_LIMIT = 1000
 
 # List of settings vars exposed on client side as windows.SETTINGS_JS
 # see base.html and cms_tags.py

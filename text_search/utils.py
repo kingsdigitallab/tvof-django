@@ -31,6 +31,29 @@ def get_order_fields(request, result_type, replace_id=False):
     return ret
 
 
+def get_ascii_from_unicode(s):
+    import unicodedata
+    return ''.join(
+        c
+        for c
+        in unicodedata.normalize('NFD', s)
+        if unicodedata.category(c) != 'Mn'
+    )
+
+
+def normalise_form(token_element):
+    ret = (token_element.text or '').strip()
+    if token_element.attrib.get('pos', '') != 'nom propre':
+        # capital in first letter may be due to:
+        # . proper name (form should preserve it)
+        # . capital at begining of sentence (we lowercase it)
+        ret = ret.lower()
+    else:
+        # TODO: may not be right, e.g. d', and other determinants
+        ret = ret.title()
+
+    return ret
+
 def normalise_lemma(lemma):
     # ac-368
 
