@@ -14,19 +14,24 @@ from text_search.utils import get_order_fields, get_ascii_from_unicode
 
 '''
 TODO
-DONE exact number of hits
-    . limited to 10000 hits
-DONE number of options per facet
-    . limited to 10 by default
-. text search should be case insensitive (Aayaus)
-. can't search Names by isle
-. speech_cat & verse_cat
-. test grouping of tokens for names
+DONE case insensitive sorting on Tokens
+    http://localhost:8000/search/?result_type=tokens&page=1&page_size=100&order=form
+DONE accent-insensitive search
+    http://localhost:8000/search/?result_type=tokens&page=1&text=apres&page_size=100&order=form
+    http://localhost:8000/search/?result_type=tokens&page=1&text=Hercules&page_size=100&order=form
+DONE speech_cat
+DONE verse_cat
+. normalise_lemma, make sure it's used everywhere (same with form)
+DONE test grouping of tokens for names
     https://tvof.ac.uk/search/?result_type=tokens&page=1&text=cesar&page_size=10&order=form
     
     http://localhost:8000/search/?result_type=tokens&page=1&text=cesar&page_size=20&order=location
     vs
     https://tvof.ac.uk/search/?result_type=tokens&page=1&text=cesar&selected_facets=manuscript_number_exact%3A0&page_size=10&order=location
+. OPT: don't return fields we don't need to show
+. OPT: don't index fields we don't search on (e.g. following) 
+DONE text search should be case insensitive (Aayaus)
+DONE can't search Names by isle
 '''
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
@@ -47,7 +52,8 @@ def view_api_tokens_search_facets(request):
 
 
 def view_api_lemma_search_facets(request):
-    return _view_api_documents_search_facets(request, 'lemmata', LemmaSearch)
+    result_type = request.GET.get('result_type', 'lemmata')
+    return _view_api_documents_search_facets(request, result_type, LemmaSearch)
 
 
 def view_api_tokens_autocomplete(request):
@@ -61,7 +67,7 @@ def view_api_tokens_autocomplete(request):
     search = search.query('prefix', autocomplete=q)
     # search = search.query(Q("prefix", lemma=q) | Q("prefix", form=q))
     search = search[(page-1)*page_size:(page)*page_size]
-    search = search.sort('autocomplete_sort')
+    search = search.sort('autocomplete_sortable')
     res = search.execute()
 
     hit_counts = _get_hits_count_from_es_response(res)
@@ -109,18 +115,19 @@ class TVOFFacetedSearch(FacetedSearch):
 class AnnotatedTokenSearch(TVOFFacetedSearch):
     doc_types = [AnnotatedToken]
     # todo search should be case insensitive
-    fields = ['form', 'lemma']
+    # fields = ['form', 'lemma']
+    fields = ['searchable']
     facets = _get_terms_facets()
 
 
 class LemmaSearch(TVOFFacetedSearch):
     doc_types = [LemmaDocument]
     # todo search should be case insensitive
-    fields = ['lemma_sort']
+    fields = ['lemma.searchable']
     facets = _get_terms_facets(['name_type', 'pos'])
 
 
-def _view_api_documents_search_facets(request, index_name, search_class):
+def _view_api_documents_search_facets(request, result_type, search_class):
     '''
     ?format=json&result_type=tokens&page=1&text=le&selected_facets=lemma_exact%3Ale&page_size=10&order=form
     '''
@@ -162,7 +169,7 @@ def _view_api_documents_search_facets(request, index_name, search_class):
     search = search_class(
         text,
         filters=selected_facets,
-        sort=get_order_fields(request, index_name, True),
+        sort=get_order_fields(request, result_type, True),
     )
     search = search[(page-1)*page_size:(page)*page_size]
     res = search.execute()

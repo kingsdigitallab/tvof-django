@@ -3,7 +3,7 @@ from collections import deque, OrderedDict
 from django.conf import settings
 from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Document, Date, Integer, Keyword, Text, Search, Index, Boolean, Completion, \
-    SearchAsYouType
+    SearchAsYouType, normalizer, analyzer
 from elasticsearch_dsl.connections import connections
 from tqdm import tqdm
 from elasticsearch.helpers import bulk, parallel_bulk, BulkIndexError
@@ -21,14 +21,49 @@ from text_search import utils
 # TODO: review all the connection calls
 connections.create_connection(hosts=['localhost'])
 
+# https://github.com/elastic/elasticsearch-dsl-py/issues/669
+# https://sunscrapers.com/blog/elasticsearch-with-python-7-tips-and-best-practices/
+normalizer_insensitive = normalizer(
+    'insensitive_normalizer',
+    filter=['lowercase', 'asciifolding']
+)
+
+analyzer_insensitive = analyzer(
+    'insensitive_analyzer',
+    tokenizer='standard',
+    filter=['lowercase', 'asciifolding']
+)
+
+class KeywordInsensitive(Keyword):
+    '''A ES Keyword field with a .insensitive subfield
+    which is case-insensitive'''
+    def __init__(self, *args, **kwargs):
+        kwargs['fields'] = {
+            'insensitive': Keyword(normalizer=normalizer_insensitive)
+        }
+        super().__init__(*args, **kwargs)
+
 
 class AnnotatedToken(Document):
     '''An ElasticSearch document for an annotated token in the text.
-    The tokens and annotations come from the kwic file.'''
+    The tokens and annotations come from the kwic file.
+    Constraints:
+      Text():
+        searchable (any token), case-insensitive
+        but can't be sorted
+        (unless we use fielddata=True which is not recommended)
+        accent-sensitive by default
+      Keyword():
+        exact search only ('julius cesar' won't match 'cesar')
+        accent-sensitive & case-sensitive search
+    '''
+
     # string
     token = Keyword()
-    form = Keyword()
+    form = KeywordInsensitive()
     lemma = Keyword()
+    # searchable
+    searchable = Text(analyzer=analyzer_insensitive)
 
     pos = Keyword()
     lemmapos = Keyword()
@@ -48,8 +83,8 @@ class AnnotatedToken(Document):
     # n
     token_number = Integer()
 
-    previous_word = Keyword()
-    next_word = Keyword()
+    previous_word = KeywordInsensitive()
+    next_word = KeywordInsensitive()
 
     # the seq order of appearance in the text
     # for efficient sorting.
@@ -60,8 +95,15 @@ class AnnotatedToken(Document):
 
     def set_derived_fields(self):
         self.form = self.token
-        if self.pos == 'nom propre':
+        if self.pos != 'nom propre':
+            # capital in first letter may be due to:
+            # . proper name (form should preserve it)
+            # . capital at beginning of sentence (we lowercase it)
             self.form = self.form.lower()
+        self.searchable = '{} {}'.format(
+            self.form,
+            self.lemma
+        )
 
     @classmethod
     def new_from_token_element(cls, token_element, parsing_context):
@@ -112,8 +154,15 @@ class AnnotatedToken(Document):
 class LemmaDocument(Document):
     '''Indexing model for a lemma'''
 
-    lemma = Keyword()
-    lemma_sort = Keyword()
+    # for as-is
+    lemma = Keyword(
+        fields={
+            # for search
+            'searchable': Text(analyzer=analyzer_insensitive),
+            # for sorting
+            'insensitive': Keyword(normalizer=normalizer_insensitive)
+        }
+    )
     # TODO?
     forms = Keyword()
     pos = Keyword()
@@ -138,7 +187,7 @@ class LemmaDocument(Document):
             ])
             doc = cls(
                 lemma=lemma,
-                lemma_sort=lemma.split(',')[0].strip().lower(),
+                # lemma_sort=lemma.split(',')[0].strip().lower(),
                 pos=token_element.attrib.get('pos', 'Unspecified').strip(),
                 name_type=tokenised_names.get(
                     location_full,
@@ -167,7 +216,9 @@ class AutocompleteDocument(Document):
     # Basically we want a field with multiple tokens that can be search
     # by prefix (e.g. par*) and we can sort by the first token.
     autocomplete = SearchAsYouType()
-    autocomplete_sort = Keyword()
+    # I don't think SearchAsYouType can be sorted or accepts sub-fields
+    # so we define a sortable version separately just for sorting purpose
+    autocomplete_sortable = Keyword()
     # for display
     form = Keyword()
     lemma = Keyword()
@@ -187,8 +238,7 @@ class AutocompleteDocument(Document):
                     lemma=lemma,
                     form=form,
                     autocomplete=get_ascii_from_unicode(autocomplete).lower(),
-                    autocomplete_sort=get_ascii_from_unicode(autocomplete).lower(),
-                    #autocomplete=autocomplete
+                    autocomplete_sortable=get_ascii_from_unicode(autocomplete).lower(),
                 )
                 doc.meta.id = autocomplete + ' ' + str(i)
                 ret.append(doc)

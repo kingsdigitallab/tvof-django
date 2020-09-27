@@ -562,19 +562,19 @@ SEARCH_CONFIG = [
         'orders': OrderedDict([
             ['form', {
                 'label': 'Form',
-                'fields': ['form', 'next_word', 'id'],
+                'fields': ['form.insensitive', 'next_word.insensitive', 'id'],
             }],
             ['location', {
                 'label': 'Location',
-                'fields': ['id', 'form'],
+                'fields': ['id', 'form.insensitive'],
             }],
             ['previous', {
                 'label': 'Previous word',
-                'fields': ['previous_word', 'form', 'id'],
+                'fields': ['previous_word.insensitive', 'form.insensitive', 'id'],
             }],
             ['next', {
                 'label': 'Next word',
-                'fields': ['next_word', 'form', 'id'],
+                'fields': ['next_word.insensitive', 'form.insensitive', 'id'],
             }],
         ]),
     }],
@@ -585,11 +585,11 @@ SEARCH_CONFIG = [
         'orders': OrderedDict([
             ['lemma', {
                 'label': 'Lemma',
-                'fields': ['lemma'],
+                'fields': ['lemma.insensitive'],
             }],
             ['name_type', {
                 'label': 'Type',
-                'fields': ['name_type', 'lemma'],
+                'fields': ['name_type', 'lemma.insensitive'],
             }],
         ]),
     }],
@@ -600,15 +600,15 @@ SEARCH_CONFIG = [
         'orders': OrderedDict([
             ['lemma', {
                 'label': 'Lemma',
-                'fields': ['lemma_sort'],
+                'fields': ['lemma.insensitive'],
             }],
             ['name_type', {
                 'label': 'Type',
-                'fields': ['name_type', 'lemma_sort'],
+                'fields': ['name_type', 'lemma.insensitive'],
             }],
             ['pos', {
                 'label': 'Part of speech',
-                'fields': ['pos', 'lemma_sort'],
+                'fields': ['pos', 'lemma.insensitive'],
             }],
         ]),
     }]

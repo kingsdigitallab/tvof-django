@@ -14,7 +14,7 @@ def get_search_config(result_type):
     return settings.SEARCH_CONFIG[result_type]
 
 
-def get_order_fields(request, result_type, replace_id=False):
+def get_order_fields(request, result_type, es_search_class=None):
     '''returns a list of field names the result should be sorted by.'''
     order_key = request.GET.get(
         ORDER_BY_QUERY_STRING_PARAMETER_NAME, ''
@@ -24,7 +24,7 @@ def get_order_fields(request, result_type, replace_id=False):
 
     ret = order['fields']
 
-    if replace_id:
+    if es_search_class:
         # solr id field -> seq_order in ES
         ret = [('seq_order' if f == 'id' else f) for f in ret]
 
