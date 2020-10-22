@@ -9,8 +9,8 @@ ipython = "*"
 django_debug_toolbar = "*"
 
 [packages]
-django = "*"
-wagtail = "<2.9"
+django = "<3.1"
+wagtail = "<3"
 django-kdl-ldap = "*"
 django-compressor = "*"
 django-haystack = "*"
@@ -26,4 +26,4 @@ lxml = "*"
 elasticsearch-dsl = "<8"
 
 [requires]
-python_version = "3.5"
+python_version = "3.6"

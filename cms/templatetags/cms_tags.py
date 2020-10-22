@@ -64,7 +64,9 @@ def get_site_root(context):
 
     :rtype: `wagtail.core.models.Page`
     """
-    return context['request'].site.root_page
+    # return context['request'].site.root_page
+    from wagtail.core.models import Site
+    return Site.find_for_request(context['request']).root_page
 
 
 @register.simple_tag(takes_context=True)
