@@ -3,6 +3,7 @@ Base settings to build other settings files upon.
 """
 import os
 from pathlib import Path
+from collections import OrderedDict
 
 import environ
 
@@ -83,11 +84,19 @@ THIRD_PARTY_APPS = [
     "wagtail.core",
     "modelcluster",
     "taggit",
-    "kdl_wagtail.core",
+    #"kdl_wagtail.core",
 ]
 
 LOCAL_APPS = [
-    "tvof.users.apps.UsersConfig",
+    # TODO: check if still needed
+    # "tvof.users.apps.UsersConfig",
+    "cms",
+    "core",
+    "text_viewer",
+    "text_alignment",
+    "text_patterns",
+    "text_search",
+    "data_release",
     # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
@@ -96,7 +105,7 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS
 # MIGRATIONS
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#migration-modules
-MIGRATION_MODULES = {"sites": "tvof.contrib.sites.migrations"}
+#MIGRATION_MODULES = {"sites": "tvof.contrib.sites.migrations"}
 
 # AUTHENTICATION
 # ------------------------------------------------------------------------------
@@ -106,7 +115,7 @@ AUTHENTICATION_BACKENDS = [
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
-AUTH_USER_MODEL = "users.User"
+# AUTH_USER_MODEL = "users.User"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
 LOGIN_REDIRECT_URL = "users:redirect"
 # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
@@ -300,5 +309,482 @@ ELASTICSEARCH_DSL = {"default": {"hosts": "elasticsearch:9200"}}
 # https://docs.wagtail.io/en/v2.7.1/getting_started/integrating_into_django.html
 WAGTAIL_SITE_NAME = "The Values of French"
 
-# Your stuff...
+# TVOF
 # ------------------------------------------------------------------------------
+
+WAGTAIL_APPEND_SLASH = False
+
+# AUTH_LDAP_REQUIRE_GROUP = (
+#     (
+#         LDAPGroupQuery('cn=kdl-staff,' + LDAP_BASE_OU) |
+#         LDAPGroupQuery('cn=tvof,' + LDAP_BASE_OU)
+#     )
+# )
+
+PROJECT_TITLE = WAGTAIL_SITE_NAME
+ITEMS_PER_PAGE = 10
+WAGTAILSEARCH_BACKENDS = {
+    'default': {
+        'BACKEND': 'wagtail.contrib.postgres_search.backend',
+    }
+}
+
+# Change as required
+# https://django-haystack.readthedocs.io/en/stable/settings.html
+HAYSTACK_CONNECTIONS = {
+    'default': {
+        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
+        'URL': 'http://localhost:8983/solr/default',
+        'TIMEOUT': 60 * 5,
+        'INCLUDE_SPELLING': False,
+        'BATCH_SIZE': 100,
+    },
+    #     'default': {
+    #         'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
+    #         'URL': 'http://localhost:9200/',
+    #         'INDEX_NAME': 'tvof_haystack',
+    #     }
+}
+
+# -----------------------------------------------------------------------------
+# TVOF
+# -----------------------------------------------------------------------------
+
+#
+CMS_LANGUAGES = [
+    {
+        'code': 'en',
+        'label': 'English',
+        'label_en': 'English',
+    },
+    {
+        'code': 'fr',
+        'label': 'Français',
+        'label_en': 'French',
+    }
+]
+
+# The list of MSS which will be on the public website
+# Go to http://localhost:8000/lab/alignment/
+# Click settings and select the desired MSS
+# then copy &ms=...& from the querystring
+# and paste it here
+# ALIGNMENT_MSS = 'add-15268,add-19669,fr-17177,fr-20125,royal-20-d-1'\
+#     .split(',')
+# DEPRECATED, the list is saved as json in ALIGNMENT_FILTERS_PATH
+ALIGNMENT_MSS = []
+
+# Filter which MSS and sections are visible
+# Don't modify it here, copy and change it in your 'local.py'
+# TODO: change to json extension (!make sure change is applied on servers)
+TEXT_VIEWER_FILTERS_PATH = 'tvof/settings/text_viewer_filters.py'
+ALIGNMENT_FILTERS_PATH = 'tvof/settings/alignment_filters.py'
+
+#     'textviewer': {
+#         'Fr20125': {
+#             'semi-diplomatic': [],
+#             'interpretive': [
+#                 '6', '6bis'
+#             ],
+#         },
+#         'Royal': {
+#             'semi-diplomatic': [
+#                 '6', '6bis'
+#             ],
+#             'interpretive': [
+#                 '6', '6bis'
+#             ],
+#         },
+#     }
+# }
+
+'''
+List of pairs (path, message).
+When the text viewer cannot find a chunk of text to sync with a given
+path, the message is shown to the user on in the panel.
+
+Each path is a Python regular expression pattern.
+See AC-184.
+'''
+TV_NOT_FOUND_ERRORS = [
+    # 3. Specific explanation for Troy (5) Fr20125 + Prose 5 (5bis) Roy20
+    # (display in parallel viewer when consulting either Fr20 Troy(5)
+    # or Roy20 P5 (5bis))
+    [lambda section, address: section['number'] in ['5', '5bis'],
+     '''Les récits de la guerre de Troie dans Fr20125 et dans Royal 20 D 1 ne
+    correspondent pas. Alors que Fr20125 (manuscrit de la première rédaction)
+    contient une traduction de l’Historia de Troiae excidio de Dares Phrygius,
+    le manuscrit Royal 20 D 1 inclut une version beaucoup plus longue,
+    reproduisant
+    la cinquième mise en prose du Roman de Troie de Benoît de Sainte-Maure.
+    Cette version, dite Prose 5 (voir Jung (1996), pp. 505-562), mélange des
+    matériaux procédant pour la plupart de la première et de la troisième mise
+    en prose de l’œuvre de Benoît (Prose 1 et Prose 3), et, bien que dans une
+    moindre mesure, de la version transmise par la première rédaction de
+    l’Histoire ancienne (notamment, des sections Genèse et Troie). Prose 5
+    contient, en outre, treize des Héroïdes d’Ovide traduites en français et
+    enchâssées à l’intérieur de la narration.'''
+     ],
+    [lambda section, address: address['location_type'] == 'paragraph',
+     '''{} ne contient pas ce paragraphe.'''
+     ],
+    # Absent sections in Roy20 : Genesis (1), Orient I (2), Alexander (9),
+    # Conquest of France by Caesar (11)
+    [lambda section, address: address['location_type'] == 'section',
+     '''{} n’inclut pas cette section de l’Histoire ancienne.'''
+     ],
+]
+
+# tells which MSS can be linked from the visualisation to the Text Editor
+# Override the value in local.py
+ALIGNMENT_LINKABLE_MSS = ['fr20125', 'royal20d1']
+
+# Override the value in local.py
+ALIGNMENT_SHOW_INTERNAL_NOTES = True
+
+#
+ALIGNMENT_FEATURE_LABELS = {
+    'loc': 'location',
+    'var': 'variation',
+    'rub': 'rubric',
+}
+
+# -----------------------------------------------------------------------------
+# Kiln
+# https://github.com/kcl-ddh/django-kiln
+# -----------------------------------------------------------------------------
+
+KILN_CONTEXT_PATH = 'k/'
+# IF you are using vagrant, this address will not work.
+# you'll need to change it in your local.py (NOT HERE).
+# From your VM, run the following:
+# netstat -rn
+# Take the first value in the Gateway column which is not 0.0.0.0
+# (e.g. 10.0.2.2) and replace localhost with it.
+# e.g. 'http://10.0.2.2:8180'
+KILN_BASE_URL = 'http://localhost:8180'
+
+# See kiln_requester.py
+# We know request the docs from Kiln by reading them from disk
+# they must be generated by tvof-kiln download_and_publish.sh command
+BASE_DIR = APPS_DIR
+
+KILN_STATIC_PATH = os.path.join(BASE_DIR, 'kiln_out')
+if not os.path.exists(KILN_STATIC_PATH):
+    os.makedirs(KILN_STATIC_PATH)
+
+# labels for the codes used in TEI to describe the text "hands"
+SHORT_HANDS = {
+    'S':  'copiste',
+    'E':  'rédacteur médiéval',
+    'CE': 'rédacteur médiéval en cursive',
+    'R':  'rubricateur',
+    'D':  'annotateur D',
+    'LH': 'annotateur catalan?',
+    'LH2': 'annotateur X',
+    'U':  'inconnue',
+    '':   'indeterminée',
+}
+
+SEARCH_PAGE_SIZES = [10, 20, 50, 100]
+AUTOCOMPLETE_PAGE_SIZES = [10, 20, 50, 100]
+
+'''
+Used by front end and backend to sort the search results.
+    [KEY, {
+        'label': DISPLAY_LABEL,
+        'fields': LIST_OF_HAYSTACK_FIELDS_TO_SORT_BY,
+    }],
+'''
+
+'''
+Search page configuration, shared by server and client code.
+'''
+SEARCH_CONFIG = [
+    # config by result type
+    ['tokens', {
+        'label': 'Tokens',
+        'api': '/api/v2/tokens/search/facets/?format=json',
+        'phrase_title': 'Lemma or Form',
+        'orders': OrderedDict([
+            ['form', {
+                'label': 'Form',
+                'fields': ['form.insensitive', 'next_word.insensitive', 'id'],
+            }],
+            ['location', {
+                'label': 'Location',
+                'fields': ['id', 'form.insensitive'],
+            }],
+            ['previous', {
+                'label': 'Previous word',
+                'fields': ['previous_word.insensitive', 'form.insensitive', 'id'],
+            }],
+            ['next', {
+                'label': 'Next word',
+                'fields': ['next_word.insensitive', 'form.insensitive', 'id'],
+            }],
+        ]),
+    }],
+    ['names', {
+        'label': 'Names',
+        'api': '/api/v2/lemma/search/facets/?format=json&selected_facets=pos_exact%3Anom%20propre',
+        'phrase_title': 'Name or Form',
+        'orders': OrderedDict([
+            ['lemma', {
+                'label': 'Lemma',
+                'fields': ['lemma.insensitive'],
+            }],
+            ['name_type', {
+                'label': 'Type',
+                'fields': ['name_type', 'lemma.insensitive'],
+            }],
+        ]),
+    }],
+    ['lemmata', {
+        'label': 'Lemmata',
+        'api': '/api/v2/lemma/search/facets/?format=json',
+        'phrase_title': 'Lemma or Form',
+        'orders': OrderedDict([
+            ['lemma', {
+                'label': 'Lemma',
+                'fields': ['lemma.insensitive'],
+            }],
+            ['name_type', {
+                'label': 'Type',
+                'fields': ['name_type', 'lemma.insensitive'],
+            }],
+            ['pos', {
+                'label': 'Part of speech',
+                'fields': ['pos', 'lemma.insensitive'],
+            }],
+        ]),
+    }]
+]
+
+SEARCH_CONFIG = OrderedDict(SEARCH_CONFIG)
+
+
+HAYSTACK_IDENTIFIER_METHOD = 'text_search.utils.haystack_id'
+
+# ./manage.py textviewer sections
+SECTIONS_NAME = {
+    '1': 'Genesis',
+    '2': 'Orient I',
+    '3': 'Thebes',
+    '4': 'Greeks and Amazons',
+    '5': 'Troy',
+    '5bis': 'Prose 5',
+    '6': 'Eneas',
+    '6bis': 'Assyrian Kings',
+    '7': 'Rome I',
+    '8': 'Orient II',
+    '9': 'Alexander',
+    '10': 'Rome II',
+    '11': 'Conquest of France by Caesar',
+}
+
+
+# kiln_out/received/kwic-out.xml
+TOKENISED_FILES_BASE_PATH = 'kiln_out/'
+TOKENISED_FILES = {
+    'fr': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'fr_tokenised.xml'),
+    'royal': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'royal_tokenised.xml'),
+}
+
+KWIC_OUT_FILE_PATH = os.path.join(
+    TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
+KWIC_IDX_FILE_PATH = os.path.join(
+    TOKENISED_FILES_BASE_PATH, 'prepared', 'kwic-idx.xml')
+
+# maximum number of kwic entries to index
+# -1: no limit
+# 0: none
+SEARCH_INDEX_LIMIT = -1
+SEARCH_INDEX_LIMIT_AUTOCOMPLETE = -1
+SEARCH_INDEX_CHUNK_SIZE = 500
+
+SEARCH_FACET_LIMIT_DEFAULT = 1000
+
+SEARCH_FACETS_INFO_PATH = '/about/search'
+
+# If True, show the the token number on the search result page
+SEARCH_SHOW_TOKEN_NUMBER = False
+
+# The facets o the search page.
+# Note that entries in this array can be overridden by
+# instances in models.SearchFacet.
+# The key should match the field name in AnnotatedTokenIndex
+SEARCH_FACETS = [
+    {
+        'key': 'manuscript_number',
+        'label': 'Manuscript',
+        'use_for_count': True,
+    },
+    {
+        'key': 'lemma',
+        'label': 'Lemma',
+        'limit': 10,
+    },
+    {
+        'key': 'form',
+        'label': 'Form',
+        'limit': 70,
+    },
+    {
+        'key': 'section_number',
+        'label': 'Section',
+    },
+    {
+        'key': 'pos',
+        'label': 'Part of speech',
+    },
+    {
+        'key': 'lemmapos',
+        'label': 'TVOF POS',
+    },
+    {
+        'key': 'is_rubric',
+        'label': 'Text body/rubrics',
+    },
+    {
+        'key': 'verse_cat',
+        'label': 'Textual form',
+    },
+    {
+        'key': 'speech_cat',
+        'label': 'Speech',
+    },
+    {
+        'key': 'name_type',
+        'label': 'Lemma type',
+        'use_for_count': True,
+    },
+]
+
+ELASTICSEARCH_FACET_OPTIONS_LIMIT = 1000
+
+# List of settings vars exposed on client side as windows.SETTINGS_JS
+# see base.html and cms_tags.py
+SETTINGS_JS = [
+    'SHORT_HANDS',
+    'SEARCH_PAGE_SIZES',
+    'SEARCH_PAGE_ORDERS',
+    'SECTIONS_NAME',
+    'SEARCH_SHOW_TOKEN_NUMBER',
+    'SEARCH_CONFIG',
+    'IMAGE_SERVER_URL',
+]
+
+# IMAGE_SERVER_URL = '//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'
+IMAGE_SERVER_URL = '//loris.kdl.kcl.ac.uk/tvof2/webroot/images/jp2/'
+
+WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
+    'text_search.views.transform_search_facets'
+]
+
+# See data_release app
+DATA_RELEASE = {
+    'sites': {
+        # Don't edit the first entry, it's a special one for the current site.
+        'source': {
+            'name': 'This website',
+            'path': BASE_DIR,
+        },
+        'dev': {
+            'name': 'Development site',
+            'path': '/vol/tvof2/webroot/dev/django/tvof-django',
+        },
+        'liv': {
+            'name': 'Public live site',
+            'path': '/vol/tvof2/webroot/liv/django/tvof-django',
+        },
+        # for testing in vagrant only.
+        # you'll need to create this folder:
+        # /home/vagrant/tvof_dev/kiln_out
+        'vagrant_mirror': {
+            'name': 'Vagrant mirror',
+            'path': '/home/vagrant/tvof_dev',
+        },
+    },
+    'files': OrderedDict([
+        ['fr_semi_diplomatic', {
+            'name': 'Fr semi-diplomatic',
+            'path': 'kiln_out/backend-texts-fr20125-semi-diplomatic',
+            'group': 'tei',
+        }],
+        ['fr_interpretive', {
+            'name': 'Fr interpretive',
+            'path': 'kiln_out/backend-texts-fr20125-interpretive',
+            'group': 'tei',
+        }],
+        ['royal_semi_diplomatic', {
+            'name': 'Royal semi-diplomatic',
+            'path': 'kiln_out/backend-texts-royal-semi-diplomatic',
+            'group': 'tei',
+        }],
+        ['royal_interpretive', {
+            'name': 'Royal interpretive',
+            'path': 'kiln_out/backend-texts-royal-interpretive',
+            'group': 'tei',
+        }],
+
+        ['bibliography', {
+            'name': 'Bibliography',
+            'path': 'kiln_out/backend-bibliography',
+            'group': 'tei',
+        }],
+        ['alignment', {
+            'name': 'Alignment',
+            'path': 'kiln_out/backend-preprocess-alists-tvofparaalignmentxml',
+            'group': 'tei',
+        }],
+
+        ['kwic_out', {
+            'name': 'Kwic out',
+            'path': 'kiln_out/received/kwic-out.xml',
+            'group': 'search',
+        }],
+        ['fr_tokenised', {
+            'name': 'Fr Tokenised',
+            'path': 'kiln_out/prepared/fr_tokenised.xml',
+            'group': 'search',
+        }],
+        ['royal_tokenised', {
+            'name': 'Royal Tokenised',
+            'path': 'kiln_out/prepared/royal_tokenised.xml',
+            'group': 'search',
+        }],
+    ]),
+    'file_groups': OrderedDict([
+        ['tei', {
+            'name': 'TEI files',
+            'job': 'convert',
+        }],
+        ['search', {
+            'name': 'Search index',
+            'job': 'index',
+        }]
+    ]),
+    'jobs': OrderedDict([
+        ['convert', {
+            'class_name': 'JobConvert',
+            'label': 'Conversion',
+            # 'command': 'cd /vagrant/tmp && bash t.sh',
+            'command': 'cd /vol/tvof2/webroot/stg/tvof-kiln && bash download_and_publish.sh',
+            'help': 'download source TEI files from Dropbox and convert them to HTML (using Kiln)',
+        }],
+        ['index', {
+            'class_name': 'JobIndex',
+            'label': 'Indexing',
+            'help': 'rebuild the concordance index for the search page',
+        }],
+    ]),
+}
+
+# List of available targets for data release web page.
+# Each entry refers to a key in DATA_RELEASE['sites'].
+# First entry is the default target.
+#
+# LEAVE THIS BLANK HERE - customise it in local.py on stg and your vagrant
+#
+DATA_RELEASE_AVAILABLE_TARGETS = []

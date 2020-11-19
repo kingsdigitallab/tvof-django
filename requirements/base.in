@@ -24,3 +24,11 @@ elasticsearch-dsl>=7.0.0,<8.0.0  # https://github.com/elastic/elasticsearch-dsl-
 
 wagtail>=2.9,<3  # https://github.com/wagtail/wagtail
 django-kdl-wagtail==0.9.1  # https://github.com/kingsdigitallab/django-kdl-wagtail
+
+# TVOF
+# ------------------------------------------------------------------------------
+# TODO: comments
+regex # ? for ?
+tqdm # ? for?
+lxml #
+
