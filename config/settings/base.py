@@ -17,6 +17,7 @@ if READ_DOT_ENV_FILE:
     # OS environment variables take precedence over variables from .env
     env.read_env(str(ROOT_DIR / ".env"))
 
+
 # GENERAL
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#debug
@@ -84,7 +85,6 @@ THIRD_PARTY_APPS = [
     "wagtail.core",
     "modelcluster",
     "taggit",
-    #"kdl_wagtail.core",
 ]
 
 LOCAL_APPS = [
@@ -95,9 +95,9 @@ LOCAL_APPS = [
     "text_viewer",
     "text_alignment",
     "text_patterns",
-    "text_search",
+    # TODO: check why this is necessary, tvof.text_search should be enough
+    "text_search.apps.TextSearchConfig",
     "data_release",
-    # Your stuff: custom apps go here
 ]
 # https://docs.djangoproject.com/en/dev/ref/settings/#installed-apps
 INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + LOCAL_APPS

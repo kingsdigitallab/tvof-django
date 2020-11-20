@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from django.db import models
-from text_viewer.text_viewer_tvof import TextViewerAPITvof
+from tvof.text_viewer.text_viewer_tvof import TextViewerAPITvof
 from django.conf import settings
 from . import utils
 import re
-
 from wagtail.core.fields import RichTextField
 from wagtail.admin.edit_handlers import FieldPanel
-from builtins import super
 
 # ./manage.py rebuild_index -b 10000 --noinput
 
@@ -75,6 +73,7 @@ class SearchFacet(models.Model):
 
     class Meta:
         ordering = ['display_rank']
+        app_label = 'text_search'
 
     def __str__(self):
         return self.label

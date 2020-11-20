@@ -11,7 +11,7 @@ DATABASES = {
         'NAME': 'tvof',
         'USER': 'tvof',
         'PASSWORD': 'tvof',
-        'ADMINUSER': 'postgres',
+        # 'ADMINUSER': 'postgres',
         'HOST': 'localhost'
     },
 }

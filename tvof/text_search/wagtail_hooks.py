@@ -1,7 +1,7 @@
 """Hooks module."""
 from wagtail.contrib.modeladmin.options import (
     ModelAdmin, modeladmin_register)
-from text_search.models import SearchFacet
+from .models import SearchFacet
 
 
 class BookAdmin(ModelAdmin):
