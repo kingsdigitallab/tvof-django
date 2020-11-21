@@ -28,7 +28,7 @@ django-kdl-wagtail==0.9.1  # https://github.com/kingsdigitallab/django-kdl-wagta
 # TVOF
 # ------------------------------------------------------------------------------
 # TODO: comments
-regex # ? for ?
-tqdm # ? for?
-lxml #
-
+regex # for text_patterns
+tqdm<5 # for text_search indexing commands
+lxml<5 # for text_viewer ?
+django-libsass<1 # for compress and *.scss

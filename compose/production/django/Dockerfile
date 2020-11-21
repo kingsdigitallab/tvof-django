@@ -1,3 +1,10 @@
+FROM node:10-stretch-slim as client-builder
+
+WORKDIR /app
+COPY ./package.json /app
+RUN npm install && npm cache clean --force
+COPY . /app
+RUN npm run build
 
 FROM python:3.8-slim-buster
 

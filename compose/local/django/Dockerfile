@@ -1,3 +1,14 @@
+FROM node:10-stretch-slim as image-npm
+
+WORKDIR /app
+# COPY ./package.json /app
+# RUN npm install && npm cache clean --force
+# COPY . /app
+# RUN npm run build
+COPY ./package*.json /app/
+RUN npm ci && npm cache clean --force
+RUN tar czf node_modules.tar.gz node_modules
+
 FROM python:3.8-slim-buster
 
 ENV PYTHONUNBUFFERED 1
@@ -32,5 +43,7 @@ RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 
 WORKDIR /app
+
+COPY --from=image-npm /app/node_modules.tar.gz /
 
 ENTRYPOINT ["/entrypoint"]
