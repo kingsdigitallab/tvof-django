@@ -1,12 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.core.management.base import BaseCommand
-
-from text_search import utils
-from text_search.models import AnnotatedToken
+from ... import utils
 from argparse import RawTextHelpFormatter
-import os
-
-from text_search.utils import read_tokenised_name_types
 
 
 class Command(BaseCommand):
@@ -63,7 +58,7 @@ deprecated actions:
         from time import time
         t0 = time()
 
-        from text_search.es_indexes import Indexer
+        from tvof.text_search.es_indexes import Indexer
         self.indexer = Indexer()
 
         if action in ['rebuild_index', 'ri']:
@@ -90,7 +85,7 @@ deprecated actions:
 
         if action == 'test_names':
             known_action = True
-            read_tokenised_name_types()
+            utils.read_tokenised_name_types()
 
         if not known_action:
             print('ERROR: unknown action "%s"' % action)

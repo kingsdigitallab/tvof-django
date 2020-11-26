@@ -339,8 +339,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
         Slow: it reads this from the HTML files.
         Cached on disk.
         '''
-        from django.core.cache import caches
-        cache = caches['text_viewer']
+        from django.core.cache import cache
         cache_key = 'read_all_sections_data'
 
         ret = cache.get(cache_key, None)

@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.shortcuts import render
-from text_viewer.kiln_requester import CachedRequesterKiln
-from django.core.cache import caches
 from .api_vars import API_Vars
-from cms.templatetags.cms_tags import json
-from text_alignment import utils
+from . import utils
 import re
 
 
@@ -163,7 +160,7 @@ class Alignment(object):
             sections: []
         }
         '''
-        cache = caches['text_alignment']
+        from django.core.cache import cache
 
         # get from cache
         ret = None

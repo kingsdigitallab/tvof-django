@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 from django.conf import settings
 from django.shortcuts import render
-from .models import SearchFacet, Lemma
+from .models import SearchFacet
 import re
 from .utils import get_search_config, get_order_fields
 

@@ -1,7 +1,8 @@
 # TODO: use lxml everywhere in this module
 from xml.etree import ElementTree as ET
+import os
 
-KWIC_XSLT_PATH = 'text_search/kwic_idx.xsl'
+KWIC_XSLT_PATH = os.path.join(os.path.dirname(__file__), 'kwic_idx.xsl')
 ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
 
 

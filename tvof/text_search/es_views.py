@@ -5,12 +5,10 @@ from django.conf import settings
 
 # todo: remove duplication
 from django.http import JsonResponse
-from elasticsearch import Elasticsearch
 from elasticsearch_dsl import FacetedSearch, TermsFacet, Search, Q
-from elasticsearch_dsl.connections import connections
 
-from text_search.es_indexes import AnnotatedToken, LemmaDocument
-from text_search.utils import get_order_fields, get_ascii_from_unicode
+from .es_indexes import AnnotatedToken, LemmaDocument
+from .utils import get_order_fields, get_ascii_from_unicode
 
 '''
 TODO
@@ -24,20 +22,18 @@ DONE verse_cat
 . normalise_lemma, make sure it's used everywhere (same with form)
 DONE test grouping of tokens for names
     https://tvof.ac.uk/search/?result_type=tokens&page=1&text=cesar&page_size=10&order=form
-    
+
     http://localhost:8000/search/?result_type=tokens&page=1&text=cesar&page_size=20&order=location
     vs
     https://tvof.ac.uk/search/?result_type=tokens&page=1&text=cesar&selected_facets=manuscript_number_exact%3A0&page_size=10&order=location
 . OPT: don't return fields we don't need to show
-. OPT: don't index fields we don't search on (e.g. following) 
+. OPT: don't index fields we don't search on (e.g. following)
 DONE text search should be case insensitive (Aayaus)
 DONE can't search Names by isle
 '''
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
 ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
-
-connections.create_connection(hosts=['localhost'])
 
 
 def get_config(result_type):
@@ -62,8 +58,7 @@ def view_api_tokens_autocomplete(request):
     page_size = int(request.GET.get('page_size', 10))
     q = get_ascii_from_unicode(request.GET.get('q', '').strip()).lower()
 
-    client = Elasticsearch()
-    search = Search(using=client, index='autocomplete')
+    search = Search(index='autocomplete')
     search = search.query('prefix', autocomplete=q)
     # search = search.query(Q("prefix", lemma=q) | Q("prefix", form=q))
     search = search[(page-1)*page_size:(page)*page_size]

@@ -1,14 +1,13 @@
 from collections import deque, OrderedDict
 
 from django.conf import settings
-from elasticsearch import Elasticsearch
 from elasticsearch_dsl import Document, Date, Integer, Keyword, Text, Search, Index, Boolean, Completion, \
     SearchAsYouType, normalizer, analyzer
 from elasticsearch_dsl.connections import connections
 from tqdm import tqdm
 from elasticsearch.helpers import bulk, parallel_bulk, BulkIndexError
 
-from text_search.utils import normalise_lemma, normalise_form, get_ascii_from_unicode
+from .utils import normalise_lemma, normalise_form, get_ascii_from_unicode
 
 '''
 http://localhost:9200/_cat/indices
@@ -16,10 +15,9 @@ http://localhost:9200/_cat/indices
 '''
 
 # Define a default Elasticsearch client
-from text_search import utils
+from . import utils
 
-# TODO: review all the connection calls
-connections.create_connection(hosts=['localhost'])
+c = connections.configure(**settings.ELASTICSEARCH_DSL)
 
 # https://github.com/elastic/elasticsearch-dsl-py/issues/669
 # https://sunscrapers.com/blog/elasticsearch-with-python-7-tips-and-best-practices/
@@ -273,7 +271,6 @@ class Indexer:
         '''Retrieves stats about indexes'''
         # todo: return list and move actual display to textsearch
         import time
-        client = Elasticsearch()
 
         titles = {
             'name': 'Name',
@@ -290,7 +287,7 @@ class Indexer:
                 'disk': 0,
                 'created': 'absent',
             }
-            index = Index(using=client, name=index_name)
+            index = Index(name=index_name)
             if index.exists():
                 info['size'] = 'exists'
                 get_res = index.get()
@@ -304,10 +301,9 @@ class Indexer:
 
     def clear(self, index_names=None):
         '''Recreate the tokens index'''
-        client = Elasticsearch()
 
         for index_name, index_data in self._get_selected_indexes(index_names):
-            index = Index(using=client, name=index_name)
+            index = Index(name=index_name)
             if index.exists():
                 index.delete()
 
