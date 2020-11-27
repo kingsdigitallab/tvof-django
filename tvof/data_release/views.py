@@ -84,6 +84,10 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
     def get_file_stats(self, site, file):
         ret = 'not found'
+
+        if site is None:
+            return ret
+
         path = os.path.join(site['path'], file['path'])
 
         if os.path.exists(path):
@@ -105,9 +109,12 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         ret = None
 
         targets = settings.DATA_RELEASE_AVAILABLE_TARGETS
+        print(targets)
         if targets:
             default = targets[0]
             selected_key = self.request.GET.get('target', default)
+            print(targets, selected_key)
+
             if selected_key in targets:
                 ret = self.config['sites'][selected_key]
 

@@ -46,6 +46,9 @@ def job_action(job_key, action, project_root=None):
     '''
     ret = INVALID_ACTION
 
+    if project_root == '':
+        return ret
+
     job_info = settings.DATA_RELEASE['jobs'].get(job_key, None)
 
     if not job_info:

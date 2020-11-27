@@ -64,3 +64,5 @@ INSTALLED_APPS += ["django_extensions"]  # noqa F405
 
 # Your stuff...
 # ------------------------------------------------------------------------------
+
+DATA_RELEASE_AVAILABLE_TARGETS = ['lcl2']

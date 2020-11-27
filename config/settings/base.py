@@ -116,12 +116,18 @@ AUTHENTICATION_BACKENDS = [
     "django.contrib.auth.backends.ModelBackend",
     "allauth.account.auth_backends.AuthenticationBackend",
 ]
-# https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
-# AUTH_USER_MODEL = "users.User"
-# https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
-LOGIN_REDIRECT_URL = "users:redirect"
-# https://docs.djangoproject.com/en/dev/ref/settings/#login-url
-LOGIN_URL = "account_login"
+
+if 0:
+    # GN: disabled this for the moment as not needed by legacy app.
+    # TODO: to be reviewed
+    # https://docs.djangoproject.com/en/dev/ref/settings/#auth-user-model
+    AUTH_USER_MODEL = "users.User"
+    # https://docs.djangoproject.com/en/dev/ref/settings/#login-redirect-url
+    LOGIN_REDIRECT_URL = "users:redirect"
+    # https://docs.djangoproject.com/en/dev/ref/settings/#login-url
+    LOGIN_URL = "account_login"
+else:
+    LOGIN_URL = '/wagtail/login/'
 
 # PASSWORDS
 # ------------------------------------------------------------------------------
@@ -344,27 +350,6 @@ WAGTAILSEARCH_BACKENDS = {
         'BACKEND': 'wagtail.contrib.postgres_search.backend',
     }
 }
-
-# Change as required
-# https://django-haystack.readthedocs.io/en/stable/settings.html
-HAYSTACK_CONNECTIONS = {
-    'default': {
-        'ENGINE': 'haystack.backends.solr_backend.SolrEngine',
-        'URL': 'http://localhost:8983/solr/default',
-        'TIMEOUT': 60 * 5,
-        'INCLUDE_SPELLING': False,
-        'BATCH_SIZE': 100,
-    },
-    #     'default': {
-    #         'ENGINE': 'haystack_es.backends.Elasticsearch5SearchEngine',
-    #         'URL': 'http://localhost:9200/',
-    #         'INDEX_NAME': 'tvof_haystack',
-    #     }
-}
-
-# -----------------------------------------------------------------------------
-# TVOF
-# -----------------------------------------------------------------------------
 
 #
 CMS_LANGUAGES = [
@@ -714,11 +699,11 @@ DATA_RELEASE = {
             'name': 'Public live site',
             'path': '/vol/tvof2/webroot/liv/django/tvof-django',
         },
-        # for testing in vagrant only.
+        # for testing locally only.
         # you'll need to create this folder:
-        # /home/vagrant/tvof_dev/kiln_out
-        'vagrant_mirror': {
-            'name': 'Vagrant mirror',
+        # ./kiln_out under path
+        'lcl2': {
+            'name': 'Local target instance (TEST)',
             'path': '/home/vagrant/tvof_dev',
         },
     },
