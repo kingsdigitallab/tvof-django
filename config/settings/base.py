@@ -222,6 +222,7 @@ TEMPLATES = [
                 "django.template.context_processors.tz",
                 "django.contrib.messages.context_processors.messages",
                 "tvof.utils.context_processors.settings_context",
+                "cms.context_processor.cms_lang",
             ],
         },
     }
