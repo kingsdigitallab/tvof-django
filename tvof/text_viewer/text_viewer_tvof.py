@@ -286,7 +286,8 @@ class TextViewerAPITvof(TextViewerAPIXML):
         according to the filters set in settings.TEXT_VIEWER_FILTERS_PATH'''
         ret = True
 
-        filters = utils.get_text_viewer_filters()
+        from ..data_release.utils import read_text_viewer_filters
+        filters = read_text_viewer_filters()
         if filters:
             filter = filters.get(doc_slug, None)
             if filter is not None:

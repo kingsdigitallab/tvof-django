@@ -17,3 +17,6 @@ RUN wget https://github.com/kingsdigitallab/tvof-kiln/archive/master.zip \
 COPY ./compose/production/kiln/settings.py /app/preprocess/download/settings.py
 
 RUN mkdir webapps/ROOT/content/xml/tei/alists webapps/ROOT/content/xml/tei/texts
+
+COPY ./compose/production/kiln/start /start
+RUN chmod +x /start

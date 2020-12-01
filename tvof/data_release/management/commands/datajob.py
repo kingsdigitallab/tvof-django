@@ -2,7 +2,7 @@
 '''
 
 from django.core.management.base import BaseCommand, DjangoHelpFormatter
-from data_release.jobs import job_action, INVALID_ACTION
+from ...jobs import job_action, INVALID_ACTION
 from django.conf import settings
 
 

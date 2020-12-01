@@ -272,7 +272,11 @@ tvof/media/
 .envs/*
 !.envs/.local/
 
+# tvof
+
 /legacy/static
 /legacy/kiln_out
 /legacy/*.sql
 /legacy/tvof/settings/local.py
+.kiln
+

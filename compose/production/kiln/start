@@ -1,0 +1,5 @@
+#!/bin/bash
+
+# We just want the container to remain available.
+# Less wasteful to use docker exec than docker run.
+sleep infinity

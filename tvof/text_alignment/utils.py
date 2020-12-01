@@ -1,8 +1,5 @@
 from text_viewer.kiln_requester import CachedRequesterKiln
 import re
-import json
-from django.conf import settings
-import os
 
 
 def read_alignment_html():
@@ -16,14 +13,14 @@ def read_alignment_html():
     return ret
 
 
-def read_alignment_ms_names(root=None):
+def read_alignment_ms_names(site_key=None):
     '''returns a list of MSS from the alignment html
     [
         [NORMALISED_NAME, SLUG, VISIBLE]
     ]
     '''
 
-    visible_slugs = read_alignment_visible_ms_slugs(root)
+    visible_slugs = read_alignment_visible_ms_slugs(site_key)
 
     normalised_names = get_normalised_ms_names(
         re.findall(
@@ -42,34 +39,21 @@ def read_alignment_ms_names(root=None):
     ]
 
 
-def read_alignment_visible_ms_slugs(project_root_path=None):
+def read_alignment_visible_ms_slugs(site_key=None):
     '''Returns the list of MSS slugs that a user can see and select
     on the alignment visualisation settings screen.
     Empty list means ALL.
 
-    root is a the base path, used to read config from other instance.
+    site_key: see settings.DATA_RELEASE['sites']
+    default is the current instance
     '''
-    ret = []
-
-    path = settings.ALIGNMENT_FILTERS_PATH
-    if project_root_path:
-        path = os.path.join(project_root_path, path)
-
-    if os.path.exists(path):
-        with open(path, 'rt') as fh:
-            s = fh.read()
-        ret = json.loads(s)
-
-    return ret
+    from ..data_release.utils import read_settings_file
+    return read_settings_file('alignment_filters', [], site_key)
 
 
-def write_alignment_visible_ms_slugs(ms_slugs, project_root_path=None):
-    path = settings.ALIGNMENT_FILTERS_PATH
-    if project_root_path:
-        path = os.path.join(project_root_path, path)
-
-    with open(path, 'wt') as fh:
-        fh.write(json.dumps(ms_slugs))
+def write_alignment_visible_ms_slugs(ms_slugs, site_key=None):
+    from ..data_release.utils import write_settings_file
+    write_settings_file('alignment_filters', ms_slugs, site_key)
 
 
 def get_normalised_ms_names(ms_names):

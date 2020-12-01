@@ -4,6 +4,7 @@ from django.urls.base import reverse
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.conf import settings
 from shutil import copy2
+from . import utils
 import os
 
 from .jobs import job_action, STATUS_SCHEDULED
@@ -109,14 +110,13 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         ret = None
 
         targets = settings.DATA_RELEASE_AVAILABLE_TARGETS
-        print(targets)
         if targets:
             default = targets[0]
             selected_key = self.request.GET.get('target', default)
-            print(targets, selected_key)
 
             if selected_key in targets:
                 ret = self.config['sites'][selected_key]
+                ret['key'] = selected_key
 
         return ret
 
@@ -151,40 +151,41 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
     def process_sections(self):
         req = self.request.POST
-        path = self.get_selected_target()['path']
-        from text_viewer.utils import update_text_viewer_filters, get_text_viewer_filters
+        target = self.get_selected_target()
 
         # read
         content = {
-            'textviewer': get_text_viewer_filters(
-                client='textviewer',
-                project_root_path=path
+            'textviewer': utils.read_text_viewer_filters(
+                'textviewer',
+                target['key']
             )
         }
 
-        # update
-        for doc, views in content['textviewer'].items():
-            views['interpretive'] = [
-                section
-                for section
-                in settings.SECTIONS_NAME.keys()
-                if req.get('{}-{}'.format(doc, section), None)
-            ]
+        if content['textviewer']:
+            # update
+            for doc, views in content['textviewer'].items():
+                views['interpretive'] = [
+                    section
+                    for section
+                    in settings.SECTIONS_NAME.keys()
+                    if req.get('{}-{}'.format(doc, section), None)
+                ]
 
-        # write
-        update_text_viewer_filters(
-            project_root_path=path,
-            content=content
-        )
+            # write
+            utils.write_settings_file(
+                'text_viewer_filters',
+                content,
+                target['key']
+            )
 
     def process_alignment_mss(self):
         '''update the list of visible mss on the alignment viz pages
         e.g. POST: 'alignment_mss': ['add-15268', 'add-25884']
         '''
-        from text_alignment.utils import write_alignment_visible_ms_slugs
-        write_alignment_visible_ms_slugs(
+        utils.write_settings_file(
+            'alignment_filters',
             self.request.POST.getlist('alignment_mss', []),
-            self.get_selected_target()['path']
+            self.get_selected_target()['key']
         )
 
     def process_index_input_file(self):
@@ -199,14 +200,14 @@ class DataReleaseView(LoginRequiredMixin, FormView):
             return
 
         # write the file to disk
-        upload_path = os.path.join(settings.MEDIA_UPLOAD_DIR, 'search.zip')
+        unzip_path = settings.MEDIA_UPLOAD_DIR
+        upload_path = os.path.join(unzip_path, 'search.zip')
         with open(upload_path, 'wb+') as destination:
             for chunk in index_input_file.chunks():
                 destination.write(chunk)
 
         import zipfile
         # unzip it
-        unzip_path = settings.MEDIA_UPLOAD_DIR
         with zipfile.ZipFile(upload_path, 'r') as zip_ref:
             zip_ref.extractall(unzip_path)
 
@@ -228,6 +229,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
             )
         else:
             import re
+            dest_path = self.get_source_site()['path']
             for file_name in file_names:
                 recognised = False
                 for pattern, new_name in patterns.items():
@@ -236,7 +238,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                         os.replace(
                             os.path.join(unzip_path, file_name),
                             os.path.join(
-                                settings.KILN_STATIC_PATH, new_name
+                                dest_path, new_name
                             )
                         )
                         recognised = True
@@ -249,7 +251,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
             if recognised:
                 # schedule the indexing
-                job_action('index', 'schedule', settings.BASE_DIR)
+                job_action('index', 'schedule', settings.APPS_DIR)
 
     def add_error(self, message):
         from django.contrib import messages
@@ -278,16 +280,16 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         ret['source_groups'] = self.get_site_groups()
         ret['target_groups'] = self.get_site_groups(True)
 
-        from text_viewer.utils import get_text_viewer_filters
         ret['section_docs'] = ['Fr20125', 'Royal']
-        ret['doc_filters'] = get_text_viewer_filters(
-            project_root_path=ret['selected_target']['path']
+        ret['doc_filters'] = utils.read_text_viewer_filters(
+            site_key=ret['selected_target']['key']
         )
         ret['sections'] = sorted(settings.SECTIONS_NAME.keys())
 
-        from text_alignment.utils import read_alignment_ms_names
-        ret['alignment_mss'] = read_alignment_ms_names(
-            self.get_selected_target()['path']
+        ret['alignment_mss'] = utils.read_settings_file(
+            'alignment_filters',
+            None,
+            self.get_selected_target()['key']
         )
 
         ret['editable'] = \

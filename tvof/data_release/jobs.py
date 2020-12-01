@@ -63,9 +63,9 @@ def job_action(job_key, action, project_root=None):
             print('ERROR: unknown job class name "{}"'.format(job_class_name))
         else:
             job = job_class(project_root)
-            job_action = getattr(job, action, None)
-            if job_action:
-                ret = job_action()
+            ajob_action = getattr(job, action, None)
+            if ajob_action:
+                ret = ajob_action()
             else:
                 print('ERROR: unknown action {}'.format(action))
 
@@ -78,10 +78,10 @@ class Job:
     '''
     slug = 'unnamed'
 
-    def __init__(self, project_root=None):
-        if project_root is None:
-            project_root = settings.BASE_DIR
-        self.project_root = project_root
+    def __init__(self, job_parent=None):
+        if job_parent is None:
+            job_parent = settings.KILN_STATIC_PATH
+        self.job_parent = job_parent
 
     def log(self):
         '''return the content of current/last execution log'''
@@ -209,7 +209,7 @@ class Job:
         self.run_fh.flush()
 
     def get_job_path(self, file_type):
-        jobs_path = os.path.join(self.project_root, 'kiln_out', 'jobs')
+        jobs_path = os.path.join(self.job_parent, 'jobs')
         if not os.path.exists(jobs_path):
             os.makedirs(jobs_path)
 

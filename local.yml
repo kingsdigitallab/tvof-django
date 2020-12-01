@@ -3,6 +3,9 @@ version: '3'
 volumes:
   local_postgres_data: {}
   local_postgres_data_backups: {}
+  # this allows us to test the data_release app locally
+  media_target:
+      name: tvof-django_media_target
 
 services:
   django:
@@ -15,6 +18,7 @@ services:
       - elasticsearch
     volumes:
       - .:/app:z
+      - media_target:/media_target
     env_file:
       - ./.envs/.local/.django
       - ./.envs/.local/.postgres
@@ -42,22 +46,10 @@ services:
     image: tvof_local_kiln
     volumes:
       - ./tvof/media/kiln_out:/app/kiln_out:Z
+    env_file:
+      - ./.envs/.local/.kiln
+    command: /start
     restart: unless-stopped
-
-#  docs:
-#    image: tvof_local_docs
-#    container_name: docs
-#    build:
-#      context: .
-#      dockerfile: ./compose/local/docs/Dockerfile
-#    env_file:
-#      - ./.envs/.local/.django
-#    volumes:
-#      - ./docs:/docs:z
-#      - ./config:/app/config:z
-#      - ./tvof:/app/tvof:z
-#    ports:
-#      - "7000:7000"
 
   elasticsearch:
     image: elasticsearch:7.9.1
