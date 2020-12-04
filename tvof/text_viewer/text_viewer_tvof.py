@@ -283,10 +283,10 @@ class TextViewerAPITvof(TextViewerAPIXML):
     def is_location_visible(self, location_xml, doc_slug, view_slug,
                             location_type_slug):
         '''Returns True if the location can be shown on the site
-        according to the filters set in settings.TEXT_VIEWER_FILTERS_PATH'''
+        according to the filters set in settings.DATA_RELEASE['settings']'''
         ret = True
 
-        from ..data_release.utils import read_text_viewer_filters
+        from tvof.data_release.utils import read_text_viewer_filters
         filters = read_text_viewer_filters()
         if filters:
             filter = filters.get(doc_slug, None)

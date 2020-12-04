@@ -4,7 +4,7 @@ from datetime import datetime
 import os
 import signal
 from django.core.management import call_command
-from subprocess import PIPE, run, STDOUT
+from subprocess import run, STDOUT
 
 '''
 Minimalistic job scheduling system for the text processing tasks.
@@ -24,6 +24,12 @@ STATUS_KILLED = -1009
 INVALID_ACTION = -1010
 STATUS_INVALID_STATUS_CODE = -1011
 STATUS_PYTHON_EXCEPTION = -1012
+# Special status for a process running on a remote container / machine
+# the actual number = STATUS_RUNNING_REMOTELY - PID
+# Unlike same-machine execution we don't use the positive PID,
+# because it could be confusing.
+# (e.g. test if process died based on that is not correct).
+STATUS_RUNNING_REMOTELY = -100000000 # Exception: this is NOT an error!
 
 
 def job_action(job_key, action, project_root=None):
@@ -43,6 +49,7 @@ def job_action(job_key, action, project_root=None):
     status
     info
     log
+    reset
     '''
     ret = INVALID_ACTION
 
@@ -108,6 +115,8 @@ class Job:
             message = 'error (invalid status code)'
         elif status == STATUS_PYTHON_EXCEPTION:
             message = 'python exception'
+        elif status < STATUS_RUNNING_REMOTELY:
+            message = 'running (remotely)'
         elif status < 0:
             message = 'unknown error ({})'.format(status)
         elif status > 0:
@@ -199,6 +208,9 @@ class Job:
 
         return ret
 
+    def reset(self):
+        return self.set_job_status(0)
+
     # ------------------------------------
 
     def _log(self, message, show_date=False):
@@ -269,9 +281,21 @@ class JobConvert(Job):
     slug = 'convert'
 
     def _run(self):
-        command = settings.DATA_RELEASE['jobs'][self.slug]['command']
-        ret = run_shell_command(command, self.run_fh)
-        return ret.returncode
+        # Used to be False, before dockerisation. As Kiln conversion
+        # could be called from the machine as the this django code.
+        # We still use this job to schedule conversion. But the actual
+        # job should be running from the kiln container.
+        in_docker = True
+        if in_docker:
+            print (
+                'With Docker this job is no longer synchronous. '
+                'Execution should be initiated from the kiln container.'
+            )
+            return 2
+        else:
+            command = settings.DATA_RELEASE['jobs'][self.slug]['command']
+            ret = run_shell_command(command, self.run_fh)
+            return ret.returncode
 
 
 class JobIndex(Job):

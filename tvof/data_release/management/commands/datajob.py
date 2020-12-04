@@ -23,7 +23,7 @@ class Command(BaseCommand):
         )
 
         choices = ['run', 'schedule', 'run_if_scheduled',
-                   'unschedule', 'kill', 'status', 'info', 'log']
+                   'unschedule', 'kill', 'status', 'info', 'log', 'reset']
 
         parser.add_argument(
             'action', nargs=1, type=str,

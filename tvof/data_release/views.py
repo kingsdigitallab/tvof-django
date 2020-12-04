@@ -7,8 +7,11 @@ from shutil import copy2
 from . import utils
 import os
 
-from .jobs import job_action, STATUS_SCHEDULED
+from .jobs import job_action, STATUS_SCHEDULED, STATUS_RUNNING_REMOTELY
 from django.views.generic.base import TemplateView
+
+
+SECTION_DOCS = ['Fr20125', 'Royal']
 
 
 class DataReleaseForm(forms.Form):
@@ -69,7 +72,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
                 job_status = group_dict['job']['info']['status']
                 class_css = ''
-                if job_status > 0:
+                if job_status > 0 or job_status < STATUS_RUNNING_REMOTELY:
                     self.running_or_scheduled_job_count += 1
                     class_css = 'job-running'
                 elif job_status == STATUS_SCHEDULED:
@@ -161,22 +164,24 @@ class DataReleaseView(LoginRequiredMixin, FormView):
             )
         }
 
-        if content['textviewer']:
-            # update
-            for doc, views in content['textviewer'].items():
-                views['interpretive'] = [
-                    section
-                    for section
-                    in settings.SECTIONS_NAME.keys()
-                    if req.get('{}-{}'.format(doc, section), None)
-                ]
+        # update
+        for doc in SECTION_DOCS:
+            content_text_viewer = content['textviewer']
+            if doc not in content_text_viewer:
+                content_text_viewer[doc] = {}
+            content_text_viewer[doc]['interpretive'] = [
+                section
+                for section
+                in settings.SECTIONS_NAME.keys()
+                if req.get('{}-{}'.format(doc, section), None)
+            ]
 
-            # write
-            utils.write_settings_file(
-                'text_viewer_filters',
-                content,
-                target['key']
-            )
+        # write
+        utils.write_settings_file(
+            'text_viewer_filters',
+            content,
+            target['key']
+        )
 
     def process_alignment_mss(self):
         '''update the list of visible mss on the alignment viz pages
@@ -280,15 +285,19 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         ret['source_groups'] = self.get_site_groups()
         ret['target_groups'] = self.get_site_groups(True)
 
-        ret['section_docs'] = ['Fr20125', 'Royal']
+        ret['section_docs'] = SECTION_DOCS
         ret['doc_filters'] = utils.read_text_viewer_filters(
             site_key=ret['selected_target']['key']
         )
         ret['sections'] = sorted(settings.SECTIONS_NAME.keys())
 
-        ret['alignment_mss'] = utils.read_settings_file(
-            'alignment_filters',
-            None,
+        # ret['alignment_mss'] = utils.read_settings_file(
+        #     'alignment_filters',
+        #     [],
+        #     self.get_selected_target()['key']
+        # )
+        from tvof.text_alignment.utils import read_alignment_ms_names
+        ret['alignment_mss'] = read_alignment_ms_names(
             self.get_selected_target()['key']
         )
 

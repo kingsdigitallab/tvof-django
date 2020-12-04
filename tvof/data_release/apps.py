@@ -22,6 +22,5 @@ class DataReleaseConfig(AppConfig):
             if site_key in site_keys:
                 for folder in data_release['folders']:
                     path = get_abs_data_path(folder, site_key)
-                    print('CREATE ' + path)
                     if not os.path.exists(path):
                         os.makedirs(path)

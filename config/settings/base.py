@@ -447,13 +447,12 @@ KILN_STATIC_PATH = os.path.join(MEDIA_ROOT_REL, 'kiln_out')
 # ALIGNMENT_MSS = 'add-15268,add-19669,fr-17177,fr-20125,royal-20-d-1'\
 #     .split(',')
 # DEPRECATED, the list is saved as json in ALIGNMENT_FILTERS_PATH
-ALIGNMENT_MSS = []
 
 # Filter which MSS and sections are visible
 # Don't modify it here, copy and change it in your 'local.py'.
 # Paths are relative to KILN_STATIC_PATH.
 # TODO: change to json extension (!make sure change is applied on servers)
-# TEXT_VIEWER_FILTERS_PATH = os.path.join(KILN_STATIC_PATH, 'text_viewer_filters.py')
+# TEXT_VIEWER_FILTERS_PATH = os.path.join(KILN_STATIC_PATH, 'settings/text_viewer_filters.py')
 # ALIGNMENT_FILTERS_PATH = os.path.join(KILN_STATIC_PATH, 'settings/alignment_filters.py')
 
 # kiln_out/received/kwic-out.xml
@@ -467,25 +466,6 @@ KWIC_OUT_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
 KWIC_IDX_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'prepared', 'kwic-idx.xml')
-
-
-#     'textviewer': {
-#         'Fr20125': {
-#             'semi-diplomatic': [],
-#             'interpretive': [
-#                 '6', '6bis'
-#             ],
-#         },
-#         'Royal': {
-#             'semi-diplomatic': [
-#                 '6', '6bis'
-#             ],
-#             'interpretive': [
-#                 '6', '6bis'
-#             ],
-#         },
-#     }
-# }
 
 
 # labels for the codes used in TEI to describe the text "hands"
