@@ -5,8 +5,7 @@ volumes:
   postgres_data: {}
   postgres_data_backups: {}
   traefik: {}
-  media_target:
-    name: liv-django_media
+  liv-django_media:
     external: true
 
 services:
@@ -17,6 +16,7 @@ services:
     image: tvof_stg_django
     volumes:
       - django_media:/app/tvof/media
+      - liv-django_media:/media_target
     depends_on:
       - postgres
       - redis

@@ -1,8 +1,7 @@
 version: '3'
 
 volumes:
-  django_media:
-    name: liv-django_media
+  django_media: {}
   postgres_data: {}
   postgres_data_backups: {}
   traefik: {}
