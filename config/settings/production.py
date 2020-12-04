@@ -120,10 +120,13 @@ COMPRESS_URL = STATIC_URL  # noqa F405
 # https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_OFFLINE
 COMPRESS_OFFLINE = True  # Offline compression is required when using Whitenoise
 # https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_FILTERS
+
+del COMPRESS_CSS_FILTERS
+
 COMPRESS_FILTERS = {
     "css": [
         "compressor.filters.css_default.CssAbsoluteFilter",
-        "compressor.filters.cssmin.rCSSMinFilter",
+        "compressor.filters.cssmin.CSSMinFilter",
     ],
     "js": ["compressor.filters.jsmin.JSMinFilter"],
 }
