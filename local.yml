@@ -5,7 +5,7 @@ volumes:
   local_postgres_data_backups: {}
   # this allows us to test the data_release app locally
   media_target:
-      name: tvof-django_media_target
+    name: tvof-django_media_target
 
 services:
   django:

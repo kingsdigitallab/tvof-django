@@ -5,6 +5,9 @@ volumes:
   postgres_data: {}
   postgres_data_backups: {}
   traefik: {}
+  media_target:
+    name: liv-django_media
+    external: true
 
 services:
   django:
@@ -63,7 +66,7 @@ services:
     image: redis:5.0
     restart: unless-stopped
 
-  
+
 
   elasticsearch:
     image: elasticsearch:7.9.1
