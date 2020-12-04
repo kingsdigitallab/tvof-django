@@ -39,6 +39,8 @@ RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
 COPY --chown=django:django . /app
 
+RUN mkdir -p /app/tvof/media && chmod -R ugo+rwx /app/tvof/media && chown -R django:django /app/tvof/media
+
 USER django
 
 WORKDIR /app
