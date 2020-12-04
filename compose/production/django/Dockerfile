@@ -1,10 +1,9 @@
-FROM node:10-stretch-slim as client-builder
+FROM node:10-stretch-slim as image-npm
 
 WORKDIR /app
-COPY ./package.json /app
-RUN npm install && npm cache clean --force
-COPY . /app
-RUN npm run build
+COPY ./package*.json /app/
+RUN npm ci && npm cache clean --force
+RUN tar czf node_modules.tar.gz node_modules
 
 FROM python:3.8-slim-buster
 
@@ -35,7 +34,6 @@ COPY --chown=django:django ./compose/production/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
 RUN chmod +x /entrypoint
 
-
 COPY --chown=django:django ./compose/production/django/start /start
 RUN sed -i 's/\r$//g' /start
 RUN chmod +x /start
@@ -44,5 +42,7 @@ COPY --chown=django:django . /app
 USER django
 
 WORKDIR /app
+
+COPY --from=image-npm /app/node_modules.tar.gz /
 
 ENTRYPOINT ["/entrypoint"]

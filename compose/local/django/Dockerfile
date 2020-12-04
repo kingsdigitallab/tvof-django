@@ -1,10 +1,6 @@
 FROM node:10-stretch-slim as image-npm
 
 WORKDIR /app
-# COPY ./package.json /app
-# RUN npm install && npm cache clean --force
-# COPY . /app
-# RUN npm run build
 COPY ./package*.json /app/
 RUN npm ci && npm cache clean --force
 RUN tar czf node_modules.tar.gz node_modules
