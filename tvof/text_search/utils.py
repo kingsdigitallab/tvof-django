@@ -217,7 +217,7 @@ class KwicParser:
                 if elem.tag != 'kwicindex':
                     item.text = elem.text or ''
                 res = self._add_token_to_group(item)
-                if res:
+                if res is not None:
                     for r in self.callback(res):
                         self.next_mark += 1
                         yield r
