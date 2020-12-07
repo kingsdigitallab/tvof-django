@@ -116,22 +116,29 @@ COMPRESS_ENABLED = env.bool("COMPRESS_ENABLED", default=True)
 # https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_STORAGE
 # GN: got error during collectstatic when enabled
 # see https://stackoverflow.com/questions/44160666/valueerror-missing-staticfiles-manifest-entry-for-favicon-ico
-# COMPRESS_STORAGE = "compressor.storage.GzipCompressorFileStorage"
+if 0:
+    # GN: disabled this cookie-cutter default settings while debugging
+    # compress. Not sure if needed.
+    # TODO: to be reviewed
+    COMPRESS_STORAGE = "compressor.storage.GzipCompressorFileStorage"
 # https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_URL
 COMPRESS_URL = STATIC_URL  # noqa F405
 # https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_OFFLINE
 COMPRESS_OFFLINE = env.bool('COMPRESS_OFFLINE', default=True)
 # https://django-compressor.readthedocs.io/en/latest/settings/#django.conf.settings.COMPRESS_FILTERS
 
-del COMPRESS_CSS_FILTERS
-
-COMPRESS_FILTERS = {
-    "css": [
-        "compressor.filters.css_default.CssAbsoluteFilter",
-        "compressor.filters.cssmin.CSSMinFilter",
-    ],
-    "js": ["compressor.filters.jsmin.JSMinFilter"],
-}
+if 0:
+    # GN: disabled this cookie-cutter default settings while debugging
+    # compress. Not sure if needed.
+    # TODO: to be reviewed
+    del COMPRESS_CSS_FILTERS
+    COMPRESS_FILTERS = {
+        "css": [
+            "compressor.filters.css_default.CssAbsoluteFilter",
+            "compressor.filters.cssmin.CSSMinFilter",
+        ],
+        "js": ["compressor.filters.jsmin.JSMinFilter"],
+    }
 
 # LOGGING
 # ------------------------------------------------------------------------------
