@@ -4,7 +4,7 @@ from wagtail.contrib.modeladmin.options import (
 from .models import SearchFacet
 
 
-class BookAdmin(ModelAdmin):
+class SearchFacetAdmin(ModelAdmin):
     model = SearchFacet
     menu_label = 'Search facets'
     menu_icon = 'pilcrow'
@@ -16,4 +16,4 @@ class BookAdmin(ModelAdmin):
 
 
 # Now you just need to register your customised ModelAdmin class with Wagtail
-modeladmin_register(BookAdmin)
+modeladmin_register(SearchFacetAdmin)
