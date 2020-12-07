@@ -47,12 +47,12 @@ def read_alignment_visible_ms_slugs(site_key=None):
     site_key: see settings.DATA_RELEASE['sites']
     default is the current instance
     '''
-    from ..data_release.utils import read_settings_file
+    from tvof.data_release.utils import read_settings_file
     return read_settings_file('alignment_filters', [], site_key)
 
 
 def write_alignment_visible_ms_slugs(ms_slugs, site_key=None):
-    from ..data_release.utils import write_settings_file
+    from tvof.data_release.utils import write_settings_file
     write_settings_file('alignment_filters', ms_slugs, site_key)
 
 
