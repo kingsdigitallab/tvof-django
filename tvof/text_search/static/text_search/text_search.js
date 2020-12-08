@@ -127,6 +127,15 @@ var app = new window.Vue({
                 ret += ' #' + hit.token_number + '';
             }
             return ret;
+        },
+        pluralize: function(count, word) {
+            if (count !== 1) {
+                if (count === 0) {
+                    count = 'no'
+                }
+                word += 's'
+            }
+            return count + ' ' + word
         }
     },
     mounted: function() {

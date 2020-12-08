@@ -298,7 +298,10 @@ LOGGING = {
             "formatter": "verbose",
         }
     },
-    "root": {"level": "INFO", "handlers": ["console"]},
+    "root": {
+        "level": env("LOGGING_ROOT_LEVEL", default="WARNING"),
+        "handlers": ["console"]
+    },
 }
 
 

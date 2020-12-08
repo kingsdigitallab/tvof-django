@@ -12,24 +12,9 @@ from .utils import get_order_fields, get_ascii_from_unicode
 
 '''
 TODO
-DONE case insensitive sorting on Tokens
-    http://localhost:8000/search/?result_type=tokens&page=1&page_size=100&order=form
-DONE accent-insensitive search
-    http://localhost:8000/search/?result_type=tokens&page=1&text=apres&page_size=100&order=form
-    http://localhost:8000/search/?result_type=tokens&page=1&text=Hercules&page_size=100&order=form
-DONE speech_cat
-DONE verse_cat
 . normalise_lemma, make sure it's used everywhere (same with form)
-DONE test grouping of tokens for names
-    https://tvof.ac.uk/search/?result_type=tokens&page=1&text=cesar&page_size=10&order=form
-
-    http://localhost:8000/search/?result_type=tokens&page=1&text=cesar&page_size=20&order=location
-    vs
-    https://tvof.ac.uk/search/?result_type=tokens&page=1&text=cesar&selected_facets=manuscript_number_exact%3A0&page_size=10&order=location
 . OPT: don't return fields we don't need to show
 . OPT: don't index fields we don't search on (e.g. following)
-DONE text search should be case insensitive (Aayaus)
-DONE can't search Names by isle
 '''
 
 ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
@@ -199,17 +184,31 @@ def _get_hits_count_from_es_response(res):
 
     ES won't return exact number > 10000
     res.hits.total = {'relation': 'gte', 'value': 10000}
+
+    Note that one or more facet options can be selected.
+    If none selected: we sum them up.
+    Otherwise we only sum the selected ones.
+
+    For this algorithm to work, we need to make sure that:
+        1. ALL options > 0 in that facet are always returned.
+            I.e. no truncation of options.
+        2. ALL options are mutually exclusive.
     '''
     ret = res.hits.total.value
 
-    facets = getattr(res, 'facets', None)
-    if facets:
-        for meta in settings.SEARCH_FACETS:
-            if meta.get('use_for_count', False):
-                facet = getattr(facets, meta['key'], None)
-                if facet:
-                    # facet = [(0, 195644, False), (1, 168412, False)]
-                    ret = sum([o[1] for o in facet])
+    if res.hits.total.relation != 'eq':
+        facets = getattr(res, 'facets', None)
+        if facets:
+            for meta in settings.SEARCH_FACETS:
+                if meta.get('use_for_count', False):
+                    facet = getattr(facets, meta['key'], None)
+                    if facet:
+                        # facet = [(0, 195644, False), (1, 168412, False)]
+                        ret = sum([o[1] for o in facet if o[2]])
+                        if ret == 0:
+                            # no option selected => we add all options
+                            ret = sum([o[1] for o in facet])
+                        break
 
     return ret
 

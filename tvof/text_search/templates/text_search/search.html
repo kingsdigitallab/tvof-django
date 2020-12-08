@@ -18,7 +18,7 @@
           <div class="search-results columns small-12 large-9 large-order-2">
 
             <ul class="pagination">
-              <li>{{ response.objects.count }} instances</li>
+              <li>{{ response.objects.count|pluralize('instance') }}</li>
               <li :class="{'pagination-previous': 1, 'disabled': !response.objects.previous}">
                 <a href="#" v-on:click.prevent="on_click_prev" aria-label="Previous page" v-if="response.objects.previous">Previous</a>
                 <template v-else>Previous</template>
