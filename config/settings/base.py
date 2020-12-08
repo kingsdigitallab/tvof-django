@@ -607,6 +607,7 @@ SEARCH_FACETS = [
         'key': 'manuscript_number',
         'label': 'Manuscript',
         'use_for_count': True,
+        'type': int,
     },
     {
         'key': 'lemma',

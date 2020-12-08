@@ -143,7 +143,10 @@ def _view_api_documents_search_facets(request, result_type, search_class):
             if facet_key in search_class.facets:
                 if facet_key not in selected_facets:
                     selected_facets[facet_key] = []
-                selected_facets[facet_key].append(parts[1])
+
+                selected_facets[facet_key].append(
+                    _cast_facet_option(facet_key, parts[1])
+                )
 
     # actual search
     search = search_class(
@@ -175,6 +178,31 @@ def _view_api_documents_search_facets(request, result_type, search_class):
     ret['objects']['next'] = _get_pagination_url(request, hits_count, page, page_size, 1)
 
     return JsonResponse(ret)
+
+
+def _cast_facet_option(facet_key, option):
+    '''converts the given option into the right type
+    for the given facet.
+    Why?
+    elasticsearch_dsl won't set the selected options to True
+    in the search response if the filter option is not the right type.
+    E.g. faceted field is Integer but we use an str in the filters
+    that we pass to the search function => correct results and filtering
+    but selected entry remains False.
+    '''
+    ret = option
+    for facet_info in settings.SEARCH_FACETS:
+        if facet_info['key'] == facet_key:
+            facet_type = facet_info.get('type', None)
+            if facet_type is not None:
+                try:
+                    ret = facet_type(option)
+                except:
+                    pass
+
+            break
+
+    return ret
 
 
 def _get_hits_count_from_es_response(res):
