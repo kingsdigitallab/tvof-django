@@ -34,7 +34,8 @@ services:
     image: tvof_local_postgres
     volumes:
       - local_postgres_data:/var/lib/postgresql/data:Z
-      - local_postgres_data_backups:/backups:z
+      # - local_postgres_data_backups:/backups:z
+      - ./.volumes/local_postgres_data_backups:/backups:z
     env_file:
       - ./.envs/.local/.postgres
     restart: unless-stopped
