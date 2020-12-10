@@ -594,7 +594,7 @@ SEARCH_INDEX_CHUNK_SIZE = 500
 
 SEARCH_FACET_LIMIT_DEFAULT = 1000
 
-SEARCH_FACETS_INFO_PATH = '/about/search'
+SEARCH_FACETS_INFO_PATH = '/histoire-ancienne/search-help'
 
 # If True, show the the token number on the search result page
 SEARCH_SHOW_TOKEN_NUMBER = False

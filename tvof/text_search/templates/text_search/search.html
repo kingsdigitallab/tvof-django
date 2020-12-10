@@ -103,7 +103,7 @@
                     <!-- AC-392 8/7/2020 -->
                     <!-- td v-if="query.result_type == 'names'">{{ hit.name_type }}</td -->
                     <!-- td v-else>{{ hit.pos }}</td -->
-                    <td>{{ hit.name_type }}</td>
+                    <td>{{ hit.name_type|hide_unspecified }}</td>
                   </tr>
                 </tbody>
               </template>

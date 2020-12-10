@@ -128,6 +128,9 @@ var app = new window.Vue({
             }
             return ret;
         },
+        hide_unspecified: function(value) {
+            return (value == 'Unspecified' || value == 'Other') ? '' : value;
+        },
         pluralize: function(count, word) {
             if (count !== 1) {
                 if (count === 0) {
@@ -254,9 +257,20 @@ var app = new window.Vue({
             // search for that lemma in the tokens/kwic result type.
             // exclude part after comma as it can disrupt the search
             // (e.g. 'maintas, a' would return all the tokens with lemma 'a').
-            this.query.text = hit.lemma.split(',')[0];
             this.query.result_type = 'tokens';
-            this.$set(this.query, 'facets', {});
+            if (0) {
+                // nicer b/c we get exactly what we want
+                // BUT only lemma with top freq are displayed.
+                // So selected lemma isn't visible!
+                this.query.text = '';
+                let facet_option = ['lemma', hit.lemma];
+                let facet_key = facet_option.join('__');
+                this.$set(this.query, 'facets', {facet_key: facet_option});
+            } else {
+                this.query.text = hit.lemma.split(',')[0];
+                this.$set(this.query, 'facets', {});
+            }
+            this.query.page = 1;
             this.call_api();
         },
         on_click_token: function(hit) {

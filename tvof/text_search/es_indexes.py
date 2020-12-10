@@ -186,10 +186,10 @@ class LemmaDocument(Document):
             doc = cls(
                 lemma=lemma,
                 # lemma_sort=lemma.split(',')[0].strip().lower(),
-                pos=token_element.attrib.get('pos', 'Unspecified').strip(),
+                pos=token_element.attrib.get('pos', 'Other').strip(),
                 name_type=tokenised_names.get(
                     location_full,
-                    'Unspecified'
+                    'Other'
                 )
             )
 
