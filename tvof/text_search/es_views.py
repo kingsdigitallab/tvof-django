@@ -17,7 +17,6 @@ TODO
 . OPT: don't index fields we don't search on (e.g. following)
 '''
 
-ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
 ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
 
 
@@ -131,7 +130,9 @@ def _view_api_documents_search_facets(request, result_type, search_class):
 
     # parse the request
     page = int(request.GET.get('page', 1))
-    page_size = int(request.GET.get('page_size', 10))
+    page_size = int(request.GET.get(
+        'page_size', settings.SEARCH_PAGE_SIZE_DEFAULT
+    ))
     # search for lemma or form
     text = request.GET.get('text', '')
     selected_facets = {}

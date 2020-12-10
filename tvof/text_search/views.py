@@ -5,8 +5,6 @@ from .models import SearchFacet
 import re
 from .utils import get_search_config, get_order_fields
 
-ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
-
 
 def get_ordered_queryset(view, queryset, result_type):
     fields = get_order_fields(view.request, result_type)

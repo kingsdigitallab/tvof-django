@@ -13,7 +13,7 @@ var RESULT_TYPE_DEFAULT = 'tokens';
 // This is a list of a facets to show on the front end
 // the order is important and it contains a mapping
 // between facet keys and display labels.
-var CONFIG = window.SETTINGS_JS.SEARCH_CONFIG;
+var SEARCH_CONFIG = window.SETTINGS_JS.SEARCH_CONFIG;
 
 window.Vue.use(window.VueAutosuggest);
 
@@ -68,7 +68,7 @@ var app = new window.Vue({
             text: '',
             page: 1,
             facets: {},
-            page_size: 10,
+            page_size: window.SETTINGS_JS.SEARCH_PAGE_SIZE_DEFAULT,
             order: '',
             result_type: 'names',
         },
@@ -97,7 +97,7 @@ var app = new window.Vue({
         },
         config: function() {
             var result_type = this.query.result_type || RESULT_TYPE_DEFAULT;
-            return CONFIG[result_type];
+            return SEARCH_CONFIG[result_type];
         },
         ui_facets: function() {
             var self = this;
@@ -202,7 +202,7 @@ var app = new window.Vue({
             var ret = [];
 
             if (ui_facet.key == 'result_type') {
-                var config = CONFIG;
+                var config = SEARCH_CONFIG;
                 ret = [];
                 Object.keys(config).forEach(function(key) {
                     ret.push({
@@ -360,7 +360,7 @@ var app = new window.Vue({
             if (result_type == qs) result_type = RESULT_TYPE_DEFAULT;
 
             var self = this;
-            var req = $.getJSON(CONFIG[result_type].api, qs);
+            var req = $.getJSON(SEARCH_CONFIG[result_type].api, qs);
             req.done(function(response) {
                 self.filter_response(response);
 
@@ -416,7 +416,7 @@ var app = new window.Vue({
             this.query.text = qs_params.get('text') || '';
             // TODO: deal with non-integer in the qs
             this.query.page = parseInt(qs_params.get('page') || 1);
-            this.query.page_size = parseInt(qs_params.get('page_size') || this.page_sizes[0]);
+            this.query.page_size = parseInt(qs_params.get('page_size') || window.SETTINGS_JS.SEARCH_PAGE_SIZE_DEFAULT);
 
             // result_type
             this.query.result_type = qs_params.get('result_type') || RESULT_TYPE_DEFAULT;

@@ -9,7 +9,6 @@ RUN apt-get update \
 
 RUN mkdir /app
 WORKDIR /app
-RUN mkdir kiln_out
 RUN wget https://github.com/kingsdigitallab/tvof-kiln/archive/master.zip \
     && unzip -q master.zip && mv tvof-kiln-master/* . \
     && rm -rf tvof-kiln-master master.zip
