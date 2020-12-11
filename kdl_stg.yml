@@ -69,7 +69,7 @@ services:
   elasticsearch:
     image: elasticsearch:7.9.1
     env_file:
-      - ./.envs/.stg/.elasticsearch
+      - ./.envs/.production/.elasticsearch
 #    ports:
 #      - '127.0.0.1:9200:9200'
 #      - '127.0.0.1:9300:9300'
