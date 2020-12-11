@@ -2,7 +2,11 @@
 
 KILN_OUT_PATH="/django_media/kiln_out"
 
-mkdir -p $KILN_OUT_PATH
+# The django app will create the kiln_out folder.
+# Because it has the right django user.
+# If we create it here, we'll cause permission issues.
+# mkdir -p $KILN_OUT_PATH
+
 cd /app
 if [ ! -f "kiln_out" ]; then
   ln -s $KILN_OUT_PATH
