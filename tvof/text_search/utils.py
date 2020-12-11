@@ -287,7 +287,7 @@ def read_tokenised_name_types():
                 if parent_tag == 'div':
                     seg = seg.find('head')
                     if seg is None:
-                        print('WARNING: no head under {}'.format(seg_id))
+                        # print('WARNING: no head under {}'.format(seg_id))
                         continue
                 for tag in tags:
                     for name in seg.findall('.//{}'.format(tag)):
