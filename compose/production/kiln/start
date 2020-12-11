@@ -4,8 +4,8 @@ KILN_OUT_PATH="/django_media/kiln_out"
 
 mkdir -p $KILN_OUT_PATH
 cd /app
-if [ ! -f "$KILN_OUT_PATH" ]; then
-  ln -s $KILN_OUT_PATH kiln_out
+if [ ! -f "kiln_out" ]; then
+  ln -s $KILN_OUT_PATH
 fi
 
 # We just want the container to remain available.
