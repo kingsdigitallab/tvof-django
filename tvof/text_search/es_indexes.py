@@ -193,6 +193,9 @@ class LemmaDocument(Document):
                 )
             )
 
+            if 0 and lemma == 'Ester':
+                print(location_full, doc.name_type)
+
             # ES won't produce duplicates thanks to that id
             doc.meta.id = lemma
 

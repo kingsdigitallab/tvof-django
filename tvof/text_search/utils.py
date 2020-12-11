@@ -253,7 +253,10 @@ class KwicParser:
 
 def read_tokenised_name_types():
     '''
-    :return: returns all the 'names' found in all the tokenised XML files.
+    :return: returns all the 'name' instances
+    found among all the tokenised XML files.
+
+    {SEGID__N: NAME_TYPE}
     '''
 
     from django.conf import settings
@@ -276,15 +279,23 @@ def read_tokenised_name_types():
         root = ET.fromstring(content)
         xmlns = 'http://www.w3.org/XML/1998/namespace'
 
-        for seg in root.findall('.//seg'):
-            seg_id = seg.attrib.get('{%s}id' % xmlns)
-            for tag in tags:
-                for name in seg.findall('.//{}'.format(tag)):
-                    # we cna have more than one w in a persname (e.g. choice)
-                    for w in name.findall('.//w'):
-                        name_type = name.attrib.get('type', tags[tag])
-                        akey = '{}__{}'.format(seg_id, w.attrib.get('n', '0'))
-                        ret[akey] = name_type.title()
+        for parent_tag in ['div', 'seg']:
+            for seg in root.findall('.//{}'.format(parent_tag)):
+                seg_id = seg.attrib.get('{%s}id' % xmlns, None)
+                if seg_id is None:
+                    continue
+                if parent_tag == 'div':
+                    seg = seg.find('head')
+                    if seg is None:
+                        print('WARNING: no head under {}'.format(seg_id))
+                        continue
+                for tag in tags:
+                    for name in seg.findall('.//{}'.format(tag)):
+                        # we can have more than one w in a persname (e.g. choice)
+                        for w in name.findall('.//w'):
+                            name_type = name.attrib.get('type', tags[tag])
+                            akey = '{}__{}'.format(seg_id, w.attrib.get('n', '0'))
+                            ret[akey] = name_type.title()
 
     return ret
 
