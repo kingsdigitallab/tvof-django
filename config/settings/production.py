@@ -235,4 +235,4 @@ AUTH_LDAP_USER_FLAGS_BY_GROUP = {
 # Your stuff...
 # ------------------------------------------------------------------------------
 
-DATA_RELEASE_AVAILABLE_TARGETS = ['liv']
+DATA_RELEASE_AVAILABLE_TARGETS = env.list("DATA_RELEASE_AVAILABLE_TARGETS", default=[])
