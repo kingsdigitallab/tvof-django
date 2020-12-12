@@ -684,11 +684,12 @@ DATA_RELEASE = {
     'sites': {
         # Don't edit the first entry, it's a special one for the current site.
         'source': {
-            'name': 'This website',
+            'name': 'Preview Staging site (tvof3-stg)',
             'path': KILN_STATIC_PATH,
         },
         'liv': {
-            'name': 'Public live site',
+            # 'name': 'Public live site',
+            'name': 'Preview Live Site (tvof3)',
             'path': '/media_target/kiln_out',
         },
         # for testing locally only.
