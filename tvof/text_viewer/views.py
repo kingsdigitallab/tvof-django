@@ -12,7 +12,6 @@ def view_text_viewer(request, path):
     return render(request, 'text_viewer/text_viewer.html', context)
 
 
-# TODO: convert to django rest framework?
 def view_text_viewer_api(request, path):
     viewer = TextViewerAPITvof()
     viewer.process_request(request, path)
@@ -31,8 +30,12 @@ def view_text_print(request, path):
 
     if 'whole' not in path:
         # add a link to the full text in print version
-        path_full = re.sub(r'/[^/]+/[^/]+$', '/whole/whole', path.rstrip('/'))
-        link_to_full_text = reverse('text_print', args=['']) + path_full
+        path_parts = viewer.get_list_from_address_parts(viewer.get_address_parts())
+        path_parts = path_parts[:2] + ['whole', 'whole']
+        link_to_full_text = reverse('text_print', args=['']) + '/'.join(path_parts)
+    else:
+        # Unlike, print view, the text viewer doesn't support /whole/whole
+        path = re.sub('/whole', '', path)
 
     context = {
         'res': res,
@@ -40,5 +43,5 @@ def view_text_print(request, path):
         'link_text_viewer': reverse('text_viewer', args=['']) + '?p1=' + path,
         'link_to_full_text': link_to_full_text,
     }
-    # print(context)
+
     return render(request, 'text_viewer/text_print.html', context)
