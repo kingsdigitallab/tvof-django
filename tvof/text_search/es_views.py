@@ -94,7 +94,6 @@ class TVOFFacetedSearch(FacetedSearch):
 class AnnotatedTokenSearch(TVOFFacetedSearch):
     doc_types = [AnnotatedToken]
     # todo search should be case insensitive
-    # fields = ['form', 'lemma']
     fields = ['searchable']
     facets = _get_terms_facets()
 
@@ -133,10 +132,12 @@ def _view_api_documents_search_facets(request, result_type, search_class):
     page_size = int(request.GET.get(
         'page_size', settings.SEARCH_PAGE_SIZE_DEFAULT
     ))
+
     # search for lemma or form
     text = request.GET.get('text', '')
+
     selected_facets = {}
-    # {'manuscript_number': '1', 'lemma': 'et'}
+    # {'manuscript_number': ['1'], 'lemma': ['et']}
     for f in request.GET.getlist('selected_facets', []):
         parts = f.split(':')
         if len(parts) == 2:
@@ -158,7 +159,15 @@ def _view_api_documents_search_facets(request, result_type, search_class):
     search = search[(page-1)*page_size:(page)*page_size]
     res = search.execute()
 
+    # hits
+    for hit in res:
+        ret['objects']['results'].append(hit.to_dict())
+
+    hits_count = _get_hits_count_from_es_response(res)
+
     # facets
+    # if len(selected_facets) == 1 and len(list(selected_facets.values())[0]) == 1:
+    truncated_option_count = hits_count
     for facet_key, options in res.facets.to_dict().items():
         ret['fields'][facet_key] = [
             {
@@ -168,12 +177,16 @@ def _view_api_documents_search_facets(request, result_type, search_class):
             for option
             in options
         ]
+        # Add the option we are filtering on in case it has been truncated.
+        # Facets options are sorted by frequency and truncated.
+        # e.g. filter by an rare lemma, like quem
+        for option in selected_facets.get(facet_key, []):
+            if option not in [o[0] for o in options]:
+                ret['fields'][facet_key].append({
+                    'text': option,
+                    'count': truncated_option_count,
+                })
 
-    # hits
-    for hit in res:
-        ret['objects']['results'].append(hit.to_dict())
-
-    hits_count = _get_hits_count_from_es_response(res)
     ret['objects']['count'] = hits_count
     ret['objects']['previous'] = _get_pagination_url(request, hits_count, page, page_size, -1)
     ret['objects']['next'] = _get_pagination_url(request, hits_count, page, page_size, 1)
@@ -199,6 +212,7 @@ def _cast_facet_option(facet_key, option):
                 try:
                     ret = facet_type(option)
                 except:
+                    # TODO: why are we silencing exception here?
                     pass
 
             break

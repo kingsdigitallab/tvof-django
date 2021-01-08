@@ -22,7 +22,7 @@ def transform_search_facets(content):
         ret = ''
         for f in SearchFacet.objects.all():
             if f.description:
-                # TODO: the id shoudl be asssigned to first heading instead...
+                # TODO: the id should be asssigned to first heading instead...
                 ret += '<span id="{}">&nbsp;</span>'.format(f.key)
                 ret += f.description
 

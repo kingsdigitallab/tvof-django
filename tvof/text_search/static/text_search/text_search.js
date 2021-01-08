@@ -258,10 +258,11 @@ var app = new window.Vue({
             // exclude part after comma as it can disrupt the search
             // (e.g. 'maintas, a' would return all the tokens with lemma 'a').
             this.query.result_type = 'tokens';
-            if (0) {
+            if (1) {
                 // nicer b/c we get exactly what we want
                 // BUT only lemma with top freq are displayed.
                 // So selected lemma isn't visible!
+                // http://localhost:8000/search/?result_type=tokens&page=1&selected_facets=lemma_exact%3Aquem&page_size=20&order=form
                 this.query.text = '';
                 let facet_option = ['lemma', hit.lemma];
                 let facet_key = facet_option.join('__');

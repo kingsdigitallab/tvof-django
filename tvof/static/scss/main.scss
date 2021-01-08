@@ -1097,7 +1097,8 @@ footer {
         }
 
         .card-section {
-            max-height: 16.5rem;
+            // enough for 11 elements
+            max-height: 18.5rem;
             overflow-y: auto;
             padding: .5rem 1rem .5rem .5rem;
         }
