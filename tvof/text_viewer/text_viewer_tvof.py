@@ -469,11 +469,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
         '''
         Minor conversions of the XML for the print version
         '''
-        # ac-337: make ms reading inline
-        # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
-        # =>
-        # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
-        # <span class="corr-sic">aidier aidier</span>
+        # remove gloss in interpretive
         if view == 'interpretive':
             utils.remove_xml_elements(chunk, './/span[@data-tei-type="gloss"]')
 
@@ -481,6 +477,11 @@ class TextViewerAPITvof(TextViewerAPIXML):
         # return them on screen
         utils.remove_xml_elements(chunk, './/div[@id="text-conventions"]')
 
+        # ac-337: make ms reading inline
+        # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
+        # =>
+        # <span class="tei-corr" data-sic=" aidier aidier">aidier</span>
+        # <span class="corr-sic">aidier aidier</span>
         from .utils import findall_in_etree
         for corr in findall_in_etree(chunk, './/span[@data-sic]'):
             sic = ET.Element('span')
@@ -615,6 +616,14 @@ class TextViewerAPITvof(TextViewerAPIXML):
                 # make sure the note text appears after the inserted elements
                 note_prefix.tail = note_text.text or ''
                 note_text.text = ''
+
+                # Partners, Jan 2021: Remove hyperlink to references/bibliography in
+                # print screen as currently links to the short name of the reference
+                # on a new page.
+                for biblink in note.findall('.//a[@class="bibliography"]', note):
+                    if 'href' in biblink.attrib:
+                        biblink.tag = 'span'
+                        del biblink.attrib['href']
 
                 # print(ET.tostring(note_text))
 
