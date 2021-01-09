@@ -45,3 +45,4 @@ def view_text_print(request, path):
     }
 
     return render(request, 'text_viewer/text_print.html', context)
+

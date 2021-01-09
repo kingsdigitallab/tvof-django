@@ -598,9 +598,20 @@ class TextViewerAPITvof(TextViewerAPIXML):
                     hand_code = note.attrib.get('data-tei-resp', '?')
                     hand_name = settings.SHORT_HANDS.get(hand_code, hand_code)
                     if note_text.text:
-                        note_text.text = ' « {} »'.format(
+                        note_text.text = ' « {}'.format(
                             note_text.text.replace('\n', ' ')
                         )
+
+                        # ac-410.6: Bug: In print screen viewing option,
+                        # semi-dip text, the marginal notes listed at the end:
+                        # the use of <unclear> makes the words in the marginal
+                        # annotations appear outside of the guillemets:
+                        note_text_children = list(note_text)
+                        if note_text_children:
+                            note_text_children[-1].tail = (note_text_children[-1].tail or '').replace('\n', ' ') + ' »'
+                        else:
+                            note_text.text = note_text.text + ' »'
+
                     note_title = 'Note de lecteur médiéval ' + \
                         '(main: {}):'.format(
                             hand_name,
