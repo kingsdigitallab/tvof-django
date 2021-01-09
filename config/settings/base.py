@@ -504,7 +504,7 @@ Search page configuration, shared by server and client code.
 SEARCH_CONFIG = [
     # config by result type
     ['tokens', {
-        'label': 'Tokens',
+        'label': 'Words in context',
         'api': '/api/v2/tokens/search/facets/?format=json',
         'phrase_title': 'Lemma or Form',
         'orders': OrderedDict([
