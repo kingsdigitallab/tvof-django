@@ -260,7 +260,7 @@ def _get_pagination_url(request, hits_count, page, page_size, diff):
     qs = request.META['QUERY_STRING'].lstrip('?')
     qs = re.sub(r'\bpage=\d+', '', qs).rstrip('&')
 
-    if page+diff < 1 or (page+diff-1)*page_size >= hits_count:
+    if page+diff < 1 or (page+diff-1)*page_size >= min(hits_count, settings.SEARCH_RESULT_MAX_SIZE):
         url = None
     else:
         url = '{}://{}{}?{}'.format(

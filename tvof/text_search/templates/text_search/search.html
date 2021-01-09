@@ -7,6 +7,21 @@
 
 {% block main %}
 
+  <svg style="display: none">
+    <!-- https://www.svgrepo.com/svg/1477/beginning-media-button-arrow -->
+    <symbol id="first-page-icon" viewbox="0 0 402.917 402.917">
+      <path d="M386.004,20.848v361.213c0,7.447-3.972,14.333-10.427,18.063c-6.46,3.724-14.398,3.724-20.853,0L138.281,219.515
+			c-6.452-3.719-10.436-10.604-10.436-18.058c0-7.451,3.978-14.34,10.436-18.061L354.725,2.79C357.952,0.928,361.551,0,365.151,0
+			c3.605,0,7.199,0.934,10.427,2.79C382.033,6.508,386.004,13.397,386.004,20.848z M94.066,0.201H25.261
+			c-4.613,0-8.349,3.735-8.349,8.34v385.808c0,4.604,3.735,8.34,8.349,8.34h68.805c4.607,0,8.34-3.735,8.34-8.34V8.547
+			C102.406,3.943,98.673,0.201,94.066,0.201z"/>
+    </symbol>
+    <!-- https://www.svgrepo.com/svg/160194/triangular-black-right-arrow -->
+    <symbol id="next-page-icon" viewbox="0 0 123.958 123.959">
+      <path d="M38.217,1.779c-3.8-3.8-10.2-1.1-10.2,4.2v112c0,5.3,6.4,8,10.2,4.2l56-56c2.3-2.301,2.3-6.101,0-8.401L38.217,1.779z"/>
+    </symbol>
+  </svg>
+
   {% verbatim %}
     <div id="tvof-search">
 
@@ -19,17 +34,27 @@
 
             <ul class="pagination">
               <li>{{ response.objects.count|pluralize('instance') }}</li>
-              <li :class="{'pagination-previous': 1, 'disabled': !response.objects.previous}">
-                <a href="#" v-on:click.prevent="on_click_prev" aria-label="Previous page" v-if="response.objects.previous">Previous</a>
-                <template v-else>Previous</template>
+              <li :class="{'pagination-first': 1, 'disabled': !response.objects.previous}">
+                <a href="#" v-on:click.prevent="on_click_first" title="First page" aria-label="First page" v-if="response.objects.previous"><svg class="svg-icon" aria-hidden="true"><use href="#first-page-icon"/></svg></a>
+                <span v-else><svg class="svg-icon" aria-hidden="true"><use href="#first-page-icon"/></svg></span>
+              </li>
+              <li :class="{'pagination-prev': 1, 'disabled': !response.objects.previous}">
+                <a href="#" v-on:click.prevent="on_click_prev" aria-label="Previous page" v-if="response.objects.previous"><svg class="svg-icon flipx" aria-hidden="true"><use href="#next-page-icon"/></svg></a>
+                <span v-else><svg class="svg-icon flipx" aria-hidden="true"><use href="#next-page-icon"/></svg></span>
               </li>
               <li>
-                Page {{ query.page }} / {{ last_page_index }}
+                Page <input class="page-number" type="number" v-model="query.page" @change="on_change_page_number()">
+                / <span :title="'The search returns the first ' + max_hits + ' instances.'">{{ last_page_index }}<template v-if="is_result_truncated">+</template></span>
               </li>
-              <li :class="{'pagination-next': 1, 'disabled': !response.objects.next}">
-                <a href="#" v-on:click.prevent="on_click_next" aria-label="Next page" v-if="response.objects.next">Next</a>
-                <template v-else>Next</template>
+              <li :class="{'pagination-nex': 1, 'disabled': !response.objects.next}">
+                <a href="#" v-on:click.prevent="on_click_next" aria-label="Next page" v-if="response.objects.next"><svg class="svg-icon" aria-hidden="true"><use href="#next-page-icon"/></svg></a>
+                <span v-else><svg class="svg-icon" aria-hidden="true"><use href="#next-page-icon"/></svg></span>
               </li>
+              <li :class="{'pagination-last': 1, 'disabled': !response.objects.next}">
+                <a href="#" v-on:click.prevent="on_click_last" aria-label="Last page" v-if="response.objects.next"><svg class="svg-icon flipx" aria-hidden="true"><use href="#first-page-icon"/></svg></a>
+                <span v-else><svg class="svg-icon flipx" aria-hidden="true"><use href="#first-page-icon"/></svg></span>
+              </li>
+
               <li>
                 <select class="page-sizes" v-model="query.page_size" v-on:change="on_change_page_size" aria-label="page size">
                   <option v-for="size in page_sizes" :value="size">{{ size }}</option>

@@ -593,6 +593,9 @@ SEARCH_INDEX_LIMIT_AUTOCOMPLETE = -1
 SEARCH_INDEX_CHUNK_SIZE = 500
 
 SEARCH_FACET_LIMIT_DEFAULT = 1000
+# Default elasticsearch limitation.
+# todo: scroll or track_total_hits to go beyond?
+SEARCH_RESULT_MAX_SIZE = 10000
 
 SEARCH_FACETS_INFO_PATH = '/histoire-ancienne/search-help'
 
@@ -657,13 +660,14 @@ ELASTICSEARCH_FACET_OPTIONS_LIMIT = 1000
 # see base.html and cms_tags.py
 SETTINGS_JS = [
     'SHORT_HANDS',
+    'SECTIONS_NAME',
+    'IMAGE_SERVER_URL',
     'SEARCH_PAGE_SIZES',
     'SEARCH_PAGE_SIZE_DEFAULT',
+    'SEARCH_RESULT_MAX_SIZE',
     'SEARCH_PAGE_ORDERS',
-    'SECTIONS_NAME',
     'SEARCH_SHOW_TOKEN_NUMBER',
     'SEARCH_CONFIG',
-    'IMAGE_SERVER_URL',
 ]
 
 # IMAGE_SERVER_URL = '//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'

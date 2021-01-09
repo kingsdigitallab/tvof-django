@@ -1116,7 +1116,38 @@ footer {
     }
 
     .pagination {
-      margin-bottom: 0;
+        margin-bottom: 0;
+
+        .svg-icon {
+            width: 1em;
+            height: 1em;
+            &.flipx {
+              transform: scaleX(-1);
+            }
+        }
+
+        .pagination-prev, .pagination-nex, .pagination-first, .pagination-last {
+            &> a, &>span {
+              padding: 8px 5px;
+            }
+        }
+
+        a .svg-icon {
+          fill: scale-color($secondary-color, $lightness:10%);
+        }
+
+        .disabled {
+            padding: 0;
+
+          .svg-icon {
+            fill: #aaa;
+          }
+        }
+
+        .page-number {
+            width: 5rem;
+            display: inline;
+        }
     }
 }
 

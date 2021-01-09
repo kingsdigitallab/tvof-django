@@ -89,7 +89,16 @@ var app = new window.Vue({
           return [{data: sort_suggestions(this.suggestions, this.query.text)}];
         },
         last_page_index: function() {
-            return Math.ceil(this.response.objects.count / this.query.page_size);
+            return Math.ceil(
+                Math.min(
+                    window.SETTINGS_JS.SEARCH_RESULT_MAX_SIZE,
+                    this.response.objects.count
+                ) / this.query.page_size
+            );
+        },
+        is_result_truncated: function() {
+            // returns true if elasticsearch can't return all hits
+            return (this.response.objects.count > window.SETTINGS_JS.SEARCH_RESULT_MAX_SIZE);
         },
         orders: function() {
           // returns dictionary ORDER_KEY: {label: ORDER_LABEL}
@@ -111,6 +120,9 @@ var app = new window.Vue({
                 }
                 return false;
             });
+        },
+        max_hits: function() {
+            return window.SETTINGS_JS.SEARCH_RESULT_MAX_SIZE;
         }
     },
     filters: {
@@ -286,12 +298,23 @@ var app = new window.Vue({
               win.focus();
             }
         },
+        on_click_first: function() {
+            this.query.page = 1;
+            this.call_api();
+        },
         on_click_prev: function() {
             this.query.page -= 1;
             this.call_api();
         },
         on_click_next: function() {
             this.query.page += 1;
+            this.call_api();
+        },
+        on_click_last: function() {
+            this.query.page = this.last_page_index;
+            this.call_api();
+        },
+        on_change_page_number: function() {
             this.call_api();
         },
         on_change_search_text: function() {
