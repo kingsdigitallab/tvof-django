@@ -343,9 +343,11 @@ var app = new window.Vue({
             this.call_api();
         },
         on_change_search_text: function() {
-            for (facet_key of Object.keys(this.query.facets)) {
-                if (['form', 'lemma'].indexOf(this.query.facets[facet_key][0]) > -1) {
-                    delete this.query.facets[facet_key];
+            if (this.query.text) {
+                for (facet_key of Object.keys(this.query.facets)) {
+                    if (['form', 'lemma'].indexOf(this.query.facets[facet_key][0]) > -1) {
+                        delete this.query.facets[facet_key];
+                    }
                 }
             }
 
