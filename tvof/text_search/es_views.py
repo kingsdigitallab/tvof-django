@@ -41,6 +41,8 @@ def view_api_tokens_autocomplete(request):
     page = int(request.GET.get('page', 1))
     page_size = int(request.GET.get('page_size', 10))
     q = get_ascii_from_unicode(request.GET.get('q', '').strip()).lower()
+    if not q:
+        q = 'a'
 
     search = Search(index='autocomplete')
     search = search.query('prefix', autocomplete=q)
@@ -86,9 +88,31 @@ def _get_terms_facets(keys=None):
 
 
 class TVOFFacetedSearch(FacetedSearch):
-    def search(self, *args, **kwargs):
-        s = super().search(*args, **kwargs)
-        return s
+
+    # https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
+    # See AC-410.5 Agrippa Silvius
+    # # exact phrase should match
+    # match_type = 'phrase'
+    # # a match on any word in the query will be returned
+    match_type = None
+
+    def query(self, search, query):
+        """
+        Add query part to ``search``.
+
+        Override this if you wish to customize the query used.
+        """
+        if query:
+            options = {}
+            if self.match_type:
+                options['type'] = self.match_type
+
+            return search.query(
+                "multi_match", fields=self.fields,
+                query=query, **options
+            )
+
+        return search
 
 
 class AnnotatedTokenSearch(TVOFFacetedSearch):

@@ -30,6 +30,33 @@
           <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
         </div>
         <div class="row">
+          <div class="search-summary search-facets columns">
+            <template v-if="applied_filters_count > 0">
+              Selected filter(s):
+              <ul class="applied-filters">
+                <li v-if="query.text" class="applied-filter">
+                  <a class="selected" href="#" @click.prevent="on_reset_search_text()">
+                    {{ config.phrase_title }}: {{ query.text }} X
+                  </a>
+                </li>
+                <li v-for="filter in query.facets" class="applied-filter">
+                  <a class="selected" href="#" @click.prevent="on_click_option(filter[0], {text:filter[1]})">
+                    {{get_facet_label_from_key(filter[0])}}: {{get_option_label_from_text(filter[1], filter[0])}} X
+                  </a>
+                </li>
+                <li v-if="applied_filters_count > 1" class="applied-filter">
+                  <a class="" href="#" @click.prevent="remove_all_filters()">
+                    (Unselect all)
+                  </a>
+                </li>
+              </ul>
+            </template>
+            <template v-else>
+              &nbsp;
+            </template>
+          </div>
+        </div>
+        <div class="row">
           <div class="search-results columns small-12 large-9 large-order-2">
 
             <ul class="pagination">
@@ -39,7 +66,7 @@
                 <span v-else><svg class="svg-icon" aria-hidden="true"><use href="#first-page-icon"/></svg></span>
               </li>
               <li :class="{'pagination-prev': 1, 'disabled': !response.objects.previous}">
-                <a href="#" v-on:click.prevent="on_click_prev" aria-label="Previous page" v-if="response.objects.previous"><svg class="svg-icon flipx" aria-hidden="true"><use href="#next-page-icon"/></svg></a>
+                <a href="#" v-on:click.prevent="on_click_prev" title="Previous page" aria-label="Previous page" v-if="response.objects.previous"><svg class="svg-icon flipx" aria-hidden="true"><use href="#next-page-icon"/></svg></a>
                 <span v-else><svg class="svg-icon flipx" aria-hidden="true"><use href="#next-page-icon"/></svg></span>
               </li>
               <li>
@@ -47,11 +74,11 @@
                 / <span :title="'The search returns the first ' + max_hits + ' instances.'">{{ last_page_index }}<template v-if="is_result_truncated">+</template></span>
               </li>
               <li :class="{'pagination-nex': 1, 'disabled': !response.objects.next}">
-                <a href="#" v-on:click.prevent="on_click_next" aria-label="Next page" v-if="response.objects.next"><svg class="svg-icon" aria-hidden="true"><use href="#next-page-icon"/></svg></a>
+                <a href="#" v-on:click.prevent="on_click_next" title="Next page" aria-label="Next page" v-if="response.objects.next"><svg class="svg-icon" aria-hidden="true"><use href="#next-page-icon"/></svg></a>
                 <span v-else><svg class="svg-icon" aria-hidden="true"><use href="#next-page-icon"/></svg></span>
               </li>
               <li :class="{'pagination-last': 1, 'disabled': !response.objects.next}">
-                <a href="#" v-on:click.prevent="on_click_last" aria-label="Last page" v-if="response.objects.next"><svg class="svg-icon flipx" aria-hidden="true"><use href="#first-page-icon"/></svg></a>
+                <a href="#" v-on:click.prevent="on_click_last" title="Last page" aria-label="Last page" v-if="response.objects.next"><svg class="svg-icon flipx" aria-hidden="true"><use href="#first-page-icon"/></svg></a>
                 <span v-else><svg class="svg-icon flipx" aria-hidden="true"><use href="#first-page-icon"/></svg></span>
               </li>
 

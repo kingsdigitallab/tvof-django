@@ -123,6 +123,14 @@ var app = new window.Vue({
         },
         max_hits: function() {
             return window.SETTINGS_JS.SEARCH_RESULT_MAX_SIZE;
+        },
+        applied_filters_count: function() {
+            let ret = Object.keys(this.query.facets).length;
+            if (this.query_text_trimmed) ret += 1;
+            return ret;
+        },
+        query_text_trimmed: function() {
+            return (this.query.text || '').trim();
         }
     },
     filters: {
@@ -173,6 +181,23 @@ var app = new window.Vue({
 
     },
     methods: {
+        remove_all_filters: function() {
+            // unselect all facet options and clear the search phrase/text
+            this.query.facets = {};
+            this.on_reset_search_text();
+        },
+        get_facet_label_from_key: function(facet_key) {
+            let ret = facet_key;
+
+            for (facet of window.SEARCH_FACETS) {
+                if (facet.key == facet_key) {
+                    ret = facet.label;
+                    break;
+                }
+            }
+
+            return ret;
+        },
         get_option_label_from_text: function(text, facet_key) {
             var ret = text;
 
@@ -318,8 +343,13 @@ var app = new window.Vue({
             this.call_api();
         },
         on_change_search_text: function() {
+            for (facet_key of Object.keys(this.query.facets)) {
+                if (['form', 'lemma'].indexOf(this.query.facets[facet_key][0]) > -1) {
+                    delete this.query.facets[facet_key];
+                }
+            }
+
             this.query.page = 1;
-            this.query.facets = {};
             this.call_api();
         },
         on_keyup_search_text: function(e) {
