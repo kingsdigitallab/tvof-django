@@ -79,6 +79,9 @@ THIRD_PARTY_APPS = [
     "wagtail.contrib.redirects",
     "wagtail.contrib.settings",
     "wagtail.contrib.modeladmin",
+    # needed for postgres_search
+    "wagtail.search",
+    "wagtail.contrib.postgres_search",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -92,8 +95,6 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    # TODO: check if still needed
-    # "tvof.users.apps.UsersConfig",
     "cms",
     "core",
     # this app could be simplified now and bib. view merged into core
@@ -101,8 +102,6 @@ LOCAL_APPS = [
     "text_viewer",
     "text_alignment",
     "text_patterns",
-    # TODO: check why this is necessary, tvof.text_search should be enough
-    # "text_search.apps.TextSearchConfig",
     "text_search",
     "data_release",
 ]
@@ -594,6 +593,7 @@ SEARCH_INDEX_CHUNK_SIZE = 500
 
 SEARCH_FACET_LIMIT_DEFAULT = 1000
 # Default elasticsearch limitation.
+# Can't be changed here.
 # todo: scroll or track_total_hits to go beyond?
 SEARCH_RESULT_MAX_SIZE = 10000
 
