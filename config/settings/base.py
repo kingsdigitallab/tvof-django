@@ -466,8 +466,10 @@ TOKENISED_FILES = {
     'royal': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'royal_tokenised.xml'),
 }
 
+# the kwic file we receive from Lemmings
 KWIC_OUT_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
+# the same kwic file but sorted by appearance in the text
 KWIC_IDX_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'prepared', 'kwic-idx.xml')
 

@@ -1,6 +1,9 @@
 # TODO: use lxml everywhere in this module
+import sys
 from xml.etree import ElementTree as ET
 import os
+
+from tqdm import tqdm
 
 KWIC_XSLT_PATH = os.path.join(os.path.dirname(__file__), 'kwic_idx.xsl')
 ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
@@ -97,20 +100,100 @@ def write_kwic_index(force=False):
     ):
         return ret
 
-    import lxml.etree as ET
-    xslt = ET.parse(KWIC_XSLT_PATH)
-    transform = ET.XSLT(xslt)
-    del xslt
-    # ac-373.4: this takes 1+GB to parse a 90MB xml file
-    dom = ET.parse(kwic_path)
-    newdom = transform(dom)
-    del dom
+    optimised = True
 
-    '''
-    # ac-373.4: 180MB xml file will take 2GB to be transformed
-    xsltproc -o o.xml text_search/kwic_idx.xsl kiln_out/received/kwic-out.xml
-    '''
-    newdom.write_output(ret)
+    if optimised:
+        '''
+        <item type="seg_item" location="edfr20125_00017_04" n="3" preceding="ainz que l' estoire faille . Matusalan vesqui" following="et ·lxxx· ans et ·vii· , si" sp="">
+          <string>·c·</string>
+        </item>
+        '''
+        # baseline: 64MB
+        # strategy:
+        #   1. we read file line by line and build an array of pointers
+        #     for each encountered item: [location, n, file-position, length]
+        #   2. sort the pointers by location
+        #   3. re-read the items in the order of the pointers and add them to
+        #   the output file. One item at a time.
+        total_items = 0
+        with open(kwic_path, 'rt') as fi:
+            for line in fi:
+                if '<item ' in line:
+                    total_items += 1
+
+        with tqdm(total=total_items) as tq:
+            # edRoyal20D1_00001_01
+            # [b'edfr20125_00868_05', 34, 91, 252]
+            items = [[b'', 0, 0, 0] for i in range(total_items)]
+            item_idx = 0
+            pos = 0
+            import re
+            chunk_size = 1024
+            content = b''
+            end_marker = b'</item>'
+            pattern = re.compile(rb'(?s)^.*?location="([^"]+)"\s+n="([^"]+)"')
+            with open(kwic_path, 'rb') as fi:
+                while True:
+                    try:
+                        end = content.index(end_marker)
+                    except ValueError:
+                        new_content = fi.read(chunk_size)
+                        if len(new_content) == 0:
+                            break
+                        content += new_content
+                        continue
+
+                    start = content.index(b'<item ')
+                    length = end - start + len(end_marker)
+                    sortkey = pattern.findall(content)[0]
+                    pos += start
+
+                    # assign an item in our big list
+                    item = items[item_idx]
+                    item[0] = sortkey[0].replace(b'edRoyal20D1', b'R').replace(b'edfr20125', b'f')
+                    item[1] = int(sortkey[1])
+                    item[2] = pos
+                    item[3] = length
+                    tq.update(0.5)
+
+                    pos += length
+                    content = content[length+start:]
+                    item_idx += 1
+
+                # sort the items by location and n number
+                items = sorted(items, key=lambda item: [item[0], item[1]])
+
+                # write the output
+
+                with open(ret, 'wb') as fo:
+                    fo.write(b'<?xml version="1.0" encoding="utf-8"?>\n')
+                    fo.write(b'<kwicindex>')
+                    for item in items:
+                        tq.update(0.5)
+                        fi.seek(item[2])
+                        content = fi.read(item[3])
+                        fo.write(b'\n  ')
+                        fo.write(content)
+                    fo.write(b'\n</kwicindex>\n')
+
+    else:
+        # strategy: use a XSLT file
+        # drawback: uses > 2.5GB of RAM, too expensive for our VMs
+        # and risk of process being killed if exhausts all the RAM.
+        import lxml.etree as ET
+        xslt = ET.parse(KWIC_XSLT_PATH)
+        transform = ET.XSLT(xslt)
+        del xslt
+        # ac-373.4: takes 2.5GB to parse and transform a 140MB xml file
+        dom = ET.parse(kwic_path)
+        newdom = transform(dom)
+        del dom
+
+        '''
+        # ac-373.4: 140MB xml file will require 2.3GB to be transformed
+        xsltproc -o o.xml text_search/kwic_idx.xsl kiln_out/received/kwic-out.xml
+        '''
+        newdom.write_output(ret)
 
     dlog('Transformed kwic index {} -> {}'.format(
         kwic_path,
