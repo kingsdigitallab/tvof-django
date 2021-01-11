@@ -285,10 +285,13 @@ var app = new window.Vue({
             if (this.is_option_selected(facet, option)) {
                 delete (this.query.facets)[facet+'__'+option.text];
             } else {
-                this.query.facets[facet+'__'+option.text] = [facet, option.text];
+                this.set_facet_option(facet, option.text);
             }
             this.query.page = 1;
             this.call_api();
+        },
+        set_facet_option: function(facet_key, option_text) {
+            this.query.facets[facet_key+'__'+option_text] = [facet_key, option_text];
         },
         on_click_lemma: function(hit) {
             // search for that lemma in the tokens/kwic result type.
@@ -297,8 +300,9 @@ var app = new window.Vue({
             this.query.result_type = 'tokens';
             if (1) {
                 // nicer b/c we get exactly what we want
-                // BUT only lemma with top freq are displayed.
-                // So selected lemma isn't visible!
+                // (BUT only lemma with top freq are displayed.
+                // So selected lemma isn't visible!)
+                // Now we always display the selected lemma option in the facet.
                 // http://localhost:8000/search/?result_type=tokens&page=1&selected_facets=lemma_exact%3Aquem&page_size=20&order=form
                 this.query.text = '';
                 let facet_option = ['lemma', hit.lemma];
@@ -344,15 +348,19 @@ var app = new window.Vue({
         },
         on_change_search_text: function() {
             if (this.query.text) {
-                for (facet_key of Object.keys(this.query.facets)) {
-                    if (['form', 'lemma'].indexOf(this.query.facets[facet_key][0]) > -1) {
-                        delete this.query.facets[facet_key];
-                    }
-                }
+                this.unselect_lemma_and_form_facets()
             }
 
             this.query.page = 1;
             this.call_api();
+        },
+        unselect_lemma_and_form_facets: function() {
+            // we clear all selected lemma and form options
+            for (facet_key of Object.keys(this.query.facets)) {
+                if (['form', 'lemma'].indexOf(this.query.facets[facet_key][0]) > -1) {
+                    delete this.query.facets[facet_key];
+                }
+            }
         },
         on_keyup_search_text: function(e) {
             this.fetch_suggestions(e.target.value);
@@ -363,10 +371,24 @@ var app = new window.Vue({
             // suggestion is null if user press enter in input
             // instead of selecting a suggestion.
             window.console.log('SELECT');
-            window.console.log(suggestion);
             if (suggestion) {
                 var item = suggestion.item;
-                this.query.text = item.form || item.lemma;
+                window.console.log(item);
+                var CLICK_SUGGESTION_SETS_QUERY_TEXT = 0;
+                if (CLICK_SUGGESTION_SETS_QUERY_TEXT) {
+                    this.query.text = item.form || item.lemma;
+                } else {
+                    // we select the lemma / form from the suggestion
+                    // and clear the text
+                    this.query.text = '';
+                    this.unselect_lemma_and_form_facets();
+                    if (item.lemma) {
+                        this.set_facet_option('lemma', item.lemma);
+                    }
+                    if (item.form) {
+                        this.set_facet_option('form', item.form);
+                    }
+                }
             }
             // window.console.log(suggestion);
             this.on_change_search_text();
