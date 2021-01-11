@@ -92,9 +92,9 @@ class TVOFFacetedSearch(FacetedSearch):
     # https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
     # See AC-410.5 Agrippa Silvius
     # # exact phrase should match
-    # match_type = 'phrase'
+    match_type = 'phrase'
     # # a match on any word in the query will be returned
-    match_type = None
+    # match_type = None
 
     def query(self, search, query):
         """
