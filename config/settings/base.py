@@ -676,7 +676,8 @@ SETTINGS_JS = [
 IMAGE_SERVER_URL = '//loris.kdl.kcl.ac.uk/tvof2/webroot/images/jp2/'
 
 WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
-    'text_search.views.transform_search_facets'
+    'text_search.views.transform_search_facets',
+    'core.views.transform_absolute_self_links',
 ]
 
 # See data_release app
