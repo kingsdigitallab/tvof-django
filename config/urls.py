@@ -18,7 +18,6 @@ kiln_root = settings.KILN_CONTEXT_PATH
 urlpatterns = [
     path(r'admin/', admin.site.urls),
 
-    # path(r'digger/', include('activecollab_digger.urls')),
     path(r'{path}'.format(path=kiln_root), include('kiln.urls')),
 
     path(r'textviewer/', include('text_viewer.urls'), name='textviewer'),
@@ -31,6 +30,8 @@ urlpatterns = [
         r'^documents/(\d+)/(.*)$',
         tvof_views.serve_wagtail_doc, name='wagtaildocs_serve'
     ),
+
+    re_path(r'^test/([^/]+)/?', tvof_views.view_test),
 
     path(r'', include('text_search.urls')),
     path(r'', include('data_release.urls')),
