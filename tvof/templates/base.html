@@ -28,15 +28,18 @@
   <div role="complementary" class="skip-main" aria-label="option to skip to the main content">
     <a href="#maincontent">Skip to main content</a>
   </div>
-  {% block header %}
-  <header>
-    {% include 'includes/header.html' %}
-  </header>
-  <div id="maincontent" tabindex="0"></div>
 
-  <nav>
-    {% include 'includes/navigation.html' %}
-  </nav>
+  {% block header %}
+    <header>
+      {% include 'includes/header.html' %}
+    </header>
+    <div id="maincontent" tabindex="0"></div>
+
+    {% block primary_navigation %}
+      <nav>
+        {% include 'includes/navigation.html' %}
+      </nav>
+    {% endblock %}
   {% endblock %}
 
   {% block main_wrapper %}
