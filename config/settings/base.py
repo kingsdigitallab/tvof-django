@@ -44,6 +44,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 
+# True for the REF2021 site. So we can show the REF banner.
+IS_REF_SITE = env.bool("IS_REF_SITE", False)
+
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
