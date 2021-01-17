@@ -89,7 +89,7 @@ EMAIL_HOST = env("DJANGO_EMAIL_HOST", default="smtp.cch.kcl.ac.uk")
 SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
 EMAIL_SUBJECT_PREFIX = env(
-    "DJANGO_EMAIL_SUBJECT_PREFIX", default="[The Values of French]"
+    "DJANGO_EMAIL_SUBJECT_PREFIX", default="[TVOF3] "
 )
 
 # ADMIN
