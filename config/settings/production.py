@@ -81,8 +81,10 @@ TEMPLATES[-1]["OPTIONS"]["loaders"] = [  # type: ignore[index] # noqa F405
 # https://docs.djangoproject.com/en/dev/ref/settings/#default-from-email
 DEFAULT_FROM_EMAIL = env(
     "DJANGO_DEFAULT_FROM_EMAIL",
-    default="The Values of French <noreply@tvof.ac.uk>",
+    default="The Values of French <noreply@kcl.ac.uk>",
 )
+# https://docs.djangoproject.com/en/dev/ref/settings/#email-host
+EMAIL_HOST = env("DJANGO_EMAIL_HOST", default="smtp.cch.kcl.ac.uk")
 # https://docs.djangoproject.com/en/dev/ref/settings/#server-email
 SERVER_EMAIL = env("DJANGO_SERVER_EMAIL", default=DEFAULT_FROM_EMAIL)
 # https://docs.djangoproject.com/en/dev/ref/settings/#email-subject-prefix
@@ -97,17 +99,25 @@ ADMIN_URL = env("DJANGO_ADMIN_URL")
 
 # Anymail
 # ------------------------------------------------------------------------------
-# https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
-INSTALLED_APPS += ["anymail"]  # noqa F405
-# https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
-# https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
-# https://anymail.readthedocs.io/en/stable/esps/mailgun/
-EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
-ANYMAIL = {
-    "MAILGUN_API_KEY": env("MAILGUN_API_KEY"),
-    "MAILGUN_SENDER_DOMAIN": env("MAILGUN_DOMAIN"),
-    "MAILGUN_API_URL": env("MAILGUN_API_URL", default="https://api.mailgun.net/v3"),
-}
+USE_ANY_EMAIL = False
+
+if USE_ANY_EMAIL:
+    # https://anymail.readthedocs.io/en/stable/installation/#installing-anymail
+    INSTALLED_APPS += ["anymail"]  # noqa F405
+    # https://docs.djangoproject.com/en/dev/ref/settings/#email-backend
+    # https://anymail.readthedocs.io/en/stable/installation/#anymail-settings-reference
+    # https://anymail.readthedocs.io/en/stable/esps/mailgun/
+    EMAIL_BACKEND = "anymail.backends.mailgun.EmailBackend"
+    ANYMAIL = {
+        "MAILGUN_API_KEY": env("MAILGUN_API_KEY"),
+        "MAILGUN_SENDER_DOMAIN": env("MAILGUN_DOMAIN"),
+        "MAILGUN_API_URL": env("MAILGUN_API_URL", default="https://api.mailgun.net/v3"),
+    }
+else:
+    EMAIL_BACKEND = env(
+        "DJANGO_EMAIL_BACKEND",
+        default="django.core.mail.backends.smtp.EmailBackend"
+    )
 
 # django-compressor
 # ------------------------------------------------------------------------------
