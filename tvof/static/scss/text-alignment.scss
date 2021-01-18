@@ -156,9 +156,15 @@ body {
     .var-actions {
         font-size: small;
 
-        a {
+        a,
+        button {
+            font-size: .9125rem;
+            margin-top: .625rem;
+            padding: .25rem;
+
             &:hover {
-                text-decoration: underline;
+                background: scale-color($primary-color, $lightness: 20%);
+                color: $white !important;
             }
         }
     }
