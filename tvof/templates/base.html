@@ -28,15 +28,18 @@
   <div role="complementary" class="skip-main" aria-label="option to skip to the main content">
     <a href="#maincontent">Skip to main content</a>
   </div>
-  {% block header %}
-  <header>
-    {% include 'includes/header.html' %}
-  </header>
-  <div id="maincontent" tabindex="0"></div>
 
-  <nav>
-    {% include 'includes/navigation.html' %}
-  </nav>
+  {% block header %}
+    <header>
+      {% include 'includes/header.html' %}
+    </header>
+    <div id="maincontent" tabindex="0"></div>
+
+    {% block primary_navigation %}
+      <nav>
+        {% include 'includes/navigation.html' %}
+      </nav>
+    {% endblock %}
   {% endblock %}
 
   {% block main_wrapper %}
@@ -50,6 +53,20 @@
     </div>
   </section>
   {% endblock %}
+
+  {% if IS_REF_SITE %}
+    <div id="ref-banner" role="banner">
+      <input type="checkbox" id="ref">
+      <label aria-label="2021 REF clone site" class="ref" for="ref">
+        <h2>2021 <span>REF</span></h2>
+          <div class="message">
+            <p>
+              This site is a snapshot edition of <a href="https://tvof.ac.uk">The Values of French</a> taken on 18th January 2021 for the <a href="https://www.ref.ac.uk"> 2021 Research Excellence Framework (REF)</a> submission - implemented by <a href="http://kdl.kcl.ac.uk">King’s Digital Lab</a>.
+            </p>
+          </div>
+     </label>
+    </div>
+  {% endif %}
 
   <footer id="footer">
     {% include 'includes/footer.html' %}

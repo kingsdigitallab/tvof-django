@@ -6,6 +6,8 @@ volumes:
   postgres_data_backups: {}
   traefik: {}
 
+
+
 services:
   django:
     build:
@@ -68,9 +70,6 @@ services:
     image: elasticsearch:7.9.1
     env_file:
       - ./.envs/.liv/.elasticsearch
-    ports:
-      - '127.0.0.1:9200:9200'
-      - '127.0.0.1:9300:9300'
     restart: unless-stopped
 
 #  kibana:

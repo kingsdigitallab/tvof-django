@@ -17,7 +17,6 @@ TODO
 . OPT: don't index fields we don't search on (e.g. following)
 '''
 
-ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
 ORDER_BY_QUERY_STRING_PARAMETER_NAME = 'order'
 
 
@@ -42,6 +41,8 @@ def view_api_tokens_autocomplete(request):
     page = int(request.GET.get('page', 1))
     page_size = int(request.GET.get('page_size', 10))
     q = get_ascii_from_unicode(request.GET.get('q', '').strip()).lower()
+    if not q:
+        q = 'a'
 
     search = Search(index='autocomplete')
     search = search.query('prefix', autocomplete=q)
@@ -87,15 +88,36 @@ def _get_terms_facets(keys=None):
 
 
 class TVOFFacetedSearch(FacetedSearch):
-    def search(self, *args, **kwargs):
-        s = super().search(*args, **kwargs)
-        return s
+
+    # https://www.elastic.co/guide/en/elasticsearch/reference/current/query-dsl-multi-match-query.html
+    # See AC-410.5 Agrippa Silvius
+    # # exact phrase should match
+    match_type = 'phrase'
+    # # a match on any word in the query will be returned
+    # match_type = None
+
+    def query(self, search, query):
+        """
+        Add query part to ``search``.
+
+        Override this if you wish to customize the query used.
+        """
+        if query:
+            options = {}
+            if self.match_type:
+                options['type'] = self.match_type
+
+            return search.query(
+                "multi_match", fields=self.fields,
+                query=query, **options
+            )
+
+        return search
 
 
 class AnnotatedTokenSearch(TVOFFacetedSearch):
     doc_types = [AnnotatedToken]
     # todo search should be case insensitive
-    # fields = ['form', 'lemma']
     fields = ['searchable']
     facets = _get_terms_facets()
 
@@ -131,11 +153,15 @@ def _view_api_documents_search_facets(request, result_type, search_class):
 
     # parse the request
     page = int(request.GET.get('page', 1))
-    page_size = int(request.GET.get('page_size', 10))
+    page_size = int(request.GET.get(
+        'page_size', settings.SEARCH_PAGE_SIZE_DEFAULT
+    ))
+
     # search for lemma or form
     text = request.GET.get('text', '')
+
     selected_facets = {}
-    # {'manuscript_number': '1', 'lemma': 'et'}
+    # {'manuscript_number': ['1'], 'lemma': ['et']}
     for f in request.GET.getlist('selected_facets', []):
         parts = f.split(':')
         if len(parts) == 2:
@@ -157,7 +183,15 @@ def _view_api_documents_search_facets(request, result_type, search_class):
     search = search[(page-1)*page_size:(page)*page_size]
     res = search.execute()
 
+    # hits
+    for hit in res:
+        ret['objects']['results'].append(hit.to_dict())
+
+    hits_count = _get_hits_count_from_es_response(res)
+
     # facets
+    # if len(selected_facets) == 1 and len(list(selected_facets.values())[0]) == 1:
+    truncated_option_count = hits_count
     for facet_key, options in res.facets.to_dict().items():
         ret['fields'][facet_key] = [
             {
@@ -167,12 +201,16 @@ def _view_api_documents_search_facets(request, result_type, search_class):
             for option
             in options
         ]
+        # Add the option we are filtering on in case it has been truncated.
+        # Facets options are sorted by frequency and truncated.
+        # e.g. filter by an rare lemma, like quem
+        for option in selected_facets.get(facet_key, []):
+            if option not in [o[0] for o in options]:
+                ret['fields'][facet_key].append({
+                    'text': option,
+                    'count': truncated_option_count,
+                })
 
-    # hits
-    for hit in res:
-        ret['objects']['results'].append(hit.to_dict())
-
-    hits_count = _get_hits_count_from_es_response(res)
     ret['objects']['count'] = hits_count
     ret['objects']['previous'] = _get_pagination_url(request, hits_count, page, page_size, -1)
     ret['objects']['next'] = _get_pagination_url(request, hits_count, page, page_size, 1)
@@ -198,6 +236,7 @@ def _cast_facet_option(facet_key, option):
                 try:
                     ret = facet_type(option)
                 except:
+                    # TODO: why are we silencing exception here?
                     pass
 
             break
@@ -245,7 +284,7 @@ def _get_pagination_url(request, hits_count, page, page_size, diff):
     qs = request.META['QUERY_STRING'].lstrip('?')
     qs = re.sub(r'\bpage=\d+', '', qs).rstrip('&')
 
-    if page+diff < 1 or (page+diff-1)*page_size >= hits_count:
+    if page+diff < 1 or (page+diff-1)*page_size >= min(hits_count, settings.SEARCH_RESULT_MAX_SIZE):
         url = None
     else:
         url = '{}://{}{}?{}'.format(

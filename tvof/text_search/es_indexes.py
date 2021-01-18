@@ -131,7 +131,6 @@ class AnnotatedToken(Document):
             elif k == 'preceding':
                 field = k
                 ret.previous_word = v.split(' ')[-1]
-            # TODO: verse_cat, speech_cat
 
             if field is None and hasattr(ret, k):
                 field = k
@@ -145,6 +144,10 @@ class AnnotatedToken(Document):
         ret.meta.id = '{}.{:03d}'.format(attrib['location'], int(attrib['n']))
 
         ret.set_derived_fields()
+
+        if not str(getattr(ret, 'lemma', '') or '').strip():
+            # we don't index unlemmatised tokens (asked by partners, 01/2021)
+            return []
 
         return [ret]
 
@@ -186,12 +189,15 @@ class LemmaDocument(Document):
             doc = cls(
                 lemma=lemma,
                 # lemma_sort=lemma.split(',')[0].strip().lower(),
-                pos=token_element.attrib.get('pos', 'Unspecified').strip(),
+                pos=token_element.attrib.get('pos', 'Other').strip(),
                 name_type=tokenised_names.get(
                     location_full,
-                    'Unspecified'
+                    'Other'
                 )
             )
+
+            if 0 and lemma == 'Ester':
+                print(location_full, doc.name_type)
 
             # ES won't produce duplicates thanks to that id
             doc.meta.id = lemma
@@ -369,7 +375,7 @@ class Indexer:
             print('WARNING: {} indexed != {} expected'.format(count, total))
 
     def _get_selected_indexes(self, index_names=None):
-        '''Returns a list of index inforamtion.
+        '''Returns a list of index information.
         One item per name in index_names.
         Thrown Exception if name not found.'''
         ret = [

@@ -30,7 +30,7 @@
                     </div>
                 </div>
              {% endif %}
-        {% elif child.block_type == 'image_and_caption' %}                         
+        {% elif child.block_type == 'image_and_caption' %}
                 <div class="row">
                         <div class="small-12 columns">
                                 <!--<img src="{{ child.value.images.file.url }}"></img>-->
@@ -38,14 +38,14 @@
                                 <br>
                                 <span class="richtext-caption">{{ child.value.caption }}</span>
                         </div>
-                </div>               
+                </div>
         {% else %}
                 <div class="row">
                         <div class="small-12 columns rich-text">
                             {{ child }}
                         </div>
-                </div>   
-        {% endif %}    
+                </div>
+        {% endif %}
     {% endfor %}
 </div>
 
@@ -63,13 +63,13 @@
                                                 <span class="richtext-caption">{{ child.value.caption }}</span>
                                         </div>
                                         <div class="small-12 large-8 columns rich-text">
-                                                {{ child.value.text }} 
+                                                {{ child.value.text }}
                                         </div>
                                 </div>
                         {% elif child.value.alignment == 'right' %}
                                 <div class="row">
                                         <div class="small-12 large-8 columns rich-text">
-                                                {{ child.value.text }} 
+                                                {{ child.value.text }}
                                         </div>
                                         <div class="richtext-image small-12 large-4 columns">
                                                 {% image child.value.image width-500 %}
@@ -78,20 +78,20 @@
                                         </div>
                                 </div>
                          {% endif %}
-                {% elif child.block_type == 'image_and_caption' %}                         
+                {% elif child.block_type == 'image_and_caption' %}
                                 <div class="row">
                                         <div class="richtext-image small-12 columns">
                                                 {% image child.value.images original %}
                                                 <br>
                                                 <span class="richtext-caption">{{ child.value.caption }}</span>
                                         </div>
-                                </div>                
-                {% else %}            
+                                </div>
+                {% else %}
                                 <div class="row">
                                          <div class="rich-text small-12 columns">
                                         {{ child }}
                                         </div>
-                                </div>   
+                                </div>
                 {% endif %}
         {% endfor %}
 </div>

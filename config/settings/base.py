@@ -44,6 +44,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/dev/ref/settings/#locale-paths
 LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 
+# True for the REF2021 site. So we can show the REF banner.
+IS_REF_SITE = env.bool("IS_REF_SITE", False)
+
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -79,6 +82,9 @@ THIRD_PARTY_APPS = [
     "wagtail.contrib.redirects",
     "wagtail.contrib.settings",
     "wagtail.contrib.modeladmin",
+    # needed for postgres_search
+    "wagtail.search",
+    "wagtail.contrib.postgres_search",
     "wagtail.embeds",
     "wagtail.sites",
     "wagtail.users",
@@ -92,8 +98,6 @@ THIRD_PARTY_APPS = [
 ]
 
 LOCAL_APPS = [
-    # TODO: check if still needed
-    # "tvof.users.apps.UsersConfig",
     "cms",
     "core",
     # this app could be simplified now and bib. view merged into core
@@ -101,8 +105,6 @@ LOCAL_APPS = [
     "text_viewer",
     "text_alignment",
     "text_patterns",
-    # TODO: check why this is necessary, tvof.text_search should be enough
-    # "text_search.apps.TextSearchConfig",
     "text_search",
     "data_release",
 ]
@@ -167,9 +169,10 @@ MIDDLEWARE = [
     "django.middleware.csrf.CsrfViewMiddleware",
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
-    "django.middleware.common.BrokenLinkEmailsMiddleware",
+    # TODO: uncomment when we have a favicon.ico
+    # "django.middleware.common.BrokenLinkEmailsMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
-    #"wagtail.core.middleware.SiteMiddleware",
+    # "wagtail.core.middleware.SiteMiddleware",
     "wagtail.contrib.redirects.middleware.RedirectMiddleware",
 ]
 
@@ -467,8 +470,10 @@ TOKENISED_FILES = {
     'royal': os.path.join(TOKENISED_FILES_BASE_PATH, 'prepared', 'royal_tokenised.xml'),
 }
 
+# the kwic file we receive from Lemmings
 KWIC_OUT_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'received', 'kwic-out.xml')
+# the same kwic file but sorted by appearance in the text
 KWIC_IDX_FILE_PATH = os.path.join(
     TOKENISED_FILES_BASE_PATH, 'prepared', 'kwic-idx.xml')
 
@@ -487,6 +492,7 @@ SHORT_HANDS = {
 }
 
 SEARCH_PAGE_SIZES = [10, 20, 50, 100]
+SEARCH_PAGE_SIZE_DEFAULT = 20
 AUTOCOMPLETE_PAGE_SIZES = [10, 20, 50, 100]
 
 '''
@@ -503,7 +509,7 @@ Search page configuration, shared by server and client code.
 SEARCH_CONFIG = [
     # config by result type
     ['tokens', {
-        'label': 'Tokens',
+        'label': 'Words in context',
         'api': '/api/v2/tokens/search/facets/?format=json',
         'phrase_title': 'Lemma or Form',
         'orders': OrderedDict([
@@ -592,8 +598,12 @@ SEARCH_INDEX_LIMIT_AUTOCOMPLETE = -1
 SEARCH_INDEX_CHUNK_SIZE = 500
 
 SEARCH_FACET_LIMIT_DEFAULT = 1000
+# Default elasticsearch limitation.
+# Can't be changed here.
+# todo: scroll or track_total_hits to go beyond?
+SEARCH_RESULT_MAX_SIZE = 10000
 
-SEARCH_FACETS_INFO_PATH = '/about/search'
+SEARCH_FACETS_INFO_PATH = '/histoire-ancienne/search-help'
 
 # If True, show the the token number on the search result page
 SEARCH_SHOW_TOKEN_NUMBER = False
@@ -656,19 +666,22 @@ ELASTICSEARCH_FACET_OPTIONS_LIMIT = 1000
 # see base.html and cms_tags.py
 SETTINGS_JS = [
     'SHORT_HANDS',
-    'SEARCH_PAGE_SIZES',
-    'SEARCH_PAGE_ORDERS',
     'SECTIONS_NAME',
+    'IMAGE_SERVER_URL',
+    'SEARCH_PAGE_SIZES',
+    'SEARCH_PAGE_SIZE_DEFAULT',
+    'SEARCH_RESULT_MAX_SIZE',
+    'SEARCH_PAGE_ORDERS',
     'SEARCH_SHOW_TOKEN_NUMBER',
     'SEARCH_CONFIG',
-    'IMAGE_SERVER_URL',
 ]
 
 # IMAGE_SERVER_URL = '//loris.cch.kcl.ac.uk/tvof/webroot/images/jp2/'
 IMAGE_SERVER_URL = '//loris.kdl.kcl.ac.uk/tvof2/webroot/images/jp2/'
 
 WAGTAIL_PAGE_CONTENT_TRANSFORMS = [
-    'text_search.views.transform_search_facets'
+    'text_search.views.transform_search_facets',
+    'core.views.transform_absolute_self_links',
 ]
 
 # See data_release app
@@ -682,11 +695,12 @@ DATA_RELEASE = {
     'sites': {
         # Don't edit the first entry, it's a special one for the current site.
         'source': {
-            'name': 'This website',
+            'name': 'Preview Staging site (tvof3-stg)',
             'path': KILN_STATIC_PATH,
         },
         'liv': {
-            'name': 'Public live site',
+            # 'name': 'Public live site',
+            'name': 'Preview Live Site (tvof3)',
             'path': '/media_target/kiln_out',
         },
         # for testing locally only.

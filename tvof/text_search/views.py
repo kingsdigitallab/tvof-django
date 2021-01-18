@@ -5,8 +5,6 @@ from .models import SearchFacet
 import re
 from .utils import get_search_config, get_order_fields
 
-ITEMS_PER_PAGE = settings.SEARCH_PAGE_SIZES[0]
-
 
 def get_ordered_queryset(view, queryset, result_type):
     fields = get_order_fields(view.request, result_type)
@@ -24,7 +22,7 @@ def transform_search_facets(content):
         ret = ''
         for f in SearchFacet.objects.all():
             if f.description:
-                # TODO: the id shoudl be asssigned to first heading instead...
+                # TODO: the id should be asssigned to first heading instead...
                 ret += '<span id="{}">&nbsp;</span>'.format(f.key)
                 ret += f.description
 

@@ -660,6 +660,10 @@ ul.sticky {
                 content: '}';
             }
         }
+
+        figure {
+          display: none;
+        }
     }
 
     .tv-viewer-pane, .text-conventions {
@@ -1093,14 +1097,33 @@ footer {
         }
 
         .card-section {
-            max-height: 16.5rem;
+            // enough for 11 elements
+            max-height: 18.5rem;
             overflow-y: auto;
             padding: .5rem 1rem .5rem .5rem;
         }
 
     }
-    .search-results {
+    .search-summary {
+        margin-bottom: 1.5rem;
 
+        .applied-filters {
+            list-style: none;
+            margin-left: 0;
+            display: inline;
+
+            // padding-bottom: 1.5rem;
+            .applied-filter {
+                margin-right: 0.7em;
+                display: inline;
+                a.selected:hover {
+                  text-decoration: line-through;
+                }
+
+            }
+        }
+    }
+    .search-results {
         .token-preceding {
             text-align: right;
         }
@@ -1111,7 +1134,38 @@ footer {
     }
 
     .pagination {
-      margin-bottom: 0;
+        margin-bottom: 0;
+
+        .svg-icon {
+            width: 1em;
+            height: 1em;
+            &.flipx {
+              transform: scaleX(-1);
+            }
+        }
+
+        .pagination-prev, .pagination-nex, .pagination-first, .pagination-last {
+            &> a, &>span {
+              padding: 8px 5px;
+            }
+        }
+
+        a .svg-icon {
+          fill: scale-color($secondary-color, $lightness:10%);
+        }
+
+        .disabled {
+            padding: 0;
+
+          .svg-icon {
+            fill: #aaa;
+          }
+        }
+
+        .page-number {
+            width: 5rem;
+            display: inline;
+        }
     }
 }
 
@@ -1264,3 +1318,141 @@ input#autosuggest-input {
   font-size: 0.6em;
 }
 
+// REF2021
+
+#ref-banner label {
+  display: block;
+  -webkit-transition: all 400ms ease-in;
+  -moz-transition: all 400ms ease-in;
+  -ms-transition: all 400ms ease-in;
+  -o-transition: all 400ms ease-in;
+  transition: all 400ms ease-in;
+  position: fixed;
+  right: 60px; // GN: moved to left of the language switch
+  font-size:0.9em;
+  color: white;
+  width: 160px;
+  top: -275px;
+  z-index:9999;
+}
+
+#ref-banner label:hover,
+#ref-banner label:focus,
+#ref-banner label:active {
+  top: -250px;
+  cursor: pointer;
+  -webkit-transition:all 300ms ease-in;
+  -moz-transition:all 300ms ease-in;
+  -ms-transition:all 300ms ease-in;
+  -o-transition:all 300ms ease-in;
+  transition:all 300ms ease-in;
+}
+
+#ref-banner label h2 {
+  font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+  font-size: 1.1em;
+  padding: 60px 0 20px 7px;
+  letter-spacing: 0.1em;
+  position: absolute;
+  background: black;
+  width: 50px;
+  top: 237px;
+  left: 58px;
+  height: 80px;
+  line-height: 1;
+  font-weight: normal;
+  -webkit-transition: all 300ms ease-in;
+  -moz-transition: all 300ms ease-in;
+  -ms-transition: all 300ms ease-in;
+  -o-transition: all 300ms ease-in;
+  transition: all 300ms ease-in;
+  z-index:9;
+}
+
+#ref-banner label h2 span {
+  font-size: 1.27em;
+  display:block;
+  font-weight:bold;
+  letter-spacing: 0;
+}
+
+#ref-banner label h2:before {
+  content:"";
+  position:absolute;
+  bottom:-40px;
+  left:0;
+  width:0;
+  height:0;
+  border-top:25px solid black;
+  border-right:25px solid black;
+  border-left:25px solid black;
+  border-bottom:25px solid transparent;
+  z-index:-1
+}
+#ref-banner label h2:after {
+  content:"▾";
+  position:absolute;
+  right:19px;
+  bottom:28px;
+  font-size:1.2em;
+  -moz-transition:all 400ms ease-in;
+  -ms-transition:all 400ms ease-in;
+  -o-transition:all 400ms ease-in;
+  -webkit-transition:all 400ms ease-in
+}
+#ref-banner label .message {
+  padding:20px 12px 30px 12px;
+  border:.1em solid black;
+  border-top:none;
+  background:#e2e0dd;
+  background:white;
+  line-height:1.3;
+  font-weight:normal
+}
+#ref-banner label .message p {
+  color:black;
+  margin:0
+}
+#ref-banner label .message p a {
+  font-style:italic;
+  color:black;
+  cursor:pointer;
+  text-decoration:underline
+}
+#ref-banner label .message p a:hover,
+#ref-banner label .message p a:focus,
+#ref-banner label .message p a:active {
+  opacity:.7
+}
+#ref-banner input#ref[type="checkbox"] {
+  display:none
+}
+#ref-banner input#ref[type="checkbox"]:checked ~ label.ref {
+  top:0
+}
+#ref-banner input#ref[type="checkbox"]:checked ~ label.ref:hover:before,
+#ref-banner input#ref[type="checkbox"]:checked ~ label.ref:focus:before,
+#ref-banner input#ref[type="checkbox"]:checked ~ label.ref:active:before {
+  cursor:pointer
+}
+#ref-banner input#ref[type="checkbox"]:checked ~ label.ref h2 {
+  top:255px
+}
+#ref-banner input#ref[type="checkbox"]:checked ~ label.ref h2:after {
+  content:"▾";
+  right:20px;
+  -webkit-transform:rotate(180deg);
+  -moz-transform:rotate(180deg);
+  -ms-transform:rotate(180deg);
+  -o-transform:rotate(180deg);
+  transform:rotate(180deg)
+}
+
+@media only screen and (max-width:800px) {
+  #ref-banner label:hover,
+  #ref-banner label:focus,
+  #ref-banner label:active {
+      top: -240px;
+      cursor: pointer;
+  }
+}

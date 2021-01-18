@@ -1,7 +1,7 @@
 {% extends "base_minimal.html" %}
 {% load static compress cms_tags wagtailcore_tags %}
 
-{% block meta_title %}{{ title }} | Proof Reader{% endblock %}
+{% block meta_title %}{{ title }} | Printable Version{% endblock %}
 
 {% block body_classes %}text-print{% endblock %}
 
@@ -10,7 +10,7 @@
 
 {% block minimal_breadcrumb %}
     <small>/ <a href="{{ link_text_viewer }}">Text Viewer</a></small>
-    <small>/ Proof Reader </small>
+    <small>/ Printable Version </small>
 {% endblock %}
 
 {% block title %}<h1>{{ title }}</h1>{% endblock %}

@@ -303,7 +303,8 @@ class JobIndex(Job):
 
     def _run(self):
         ret = call_command(
-            'rebuild_index', '--noinput',
+            #'rebuild_index', '--noinput',
+            'textsearch', 'ri',
             stdout=self.run_fh, stderr=self.run_fh
         )
         if ret is None:
