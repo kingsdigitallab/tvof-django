@@ -256,7 +256,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
             if recognised:
                 # schedule the indexing
-                job_action('index', 'schedule', settings.APPS_DIR)
+                job_action('index', 'schedule')
 
     def add_error(self, message):
         from django.contrib import messages

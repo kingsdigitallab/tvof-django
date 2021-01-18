@@ -7,6 +7,7 @@ volumes:
   media_target:
     name: tvof-django_media_target
 
+
 services:
   django:
     build:
@@ -46,7 +47,7 @@ services:
       dockerfile: ./compose/production/kiln/Dockerfile
     image: tvof_local_kiln
     volumes:
-      - ./tvof/media/kiln_out:/app/kiln_out:Z
+      - ./tvof/media:/django_media:Z
     env_file:
       - ./.envs/.local/.kiln
     command: /start

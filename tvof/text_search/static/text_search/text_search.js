@@ -13,7 +13,7 @@ var RESULT_TYPE_DEFAULT = 'tokens';
 // This is a list of a facets to show on the front end
 // the order is important and it contains a mapping
 // between facet keys and display labels.
-var CONFIG = window.SETTINGS_JS.SEARCH_CONFIG;
+var SEARCH_CONFIG = window.SETTINGS_JS.SEARCH_CONFIG;
 
 window.Vue.use(window.VueAutosuggest);
 
@@ -68,7 +68,7 @@ var app = new window.Vue({
             text: '',
             page: 1,
             facets: {},
-            page_size: 10,
+            page_size: window.SETTINGS_JS.SEARCH_PAGE_SIZE_DEFAULT,
             order: '',
             result_type: 'names',
         },
@@ -89,7 +89,16 @@ var app = new window.Vue({
           return [{data: sort_suggestions(this.suggestions, this.query.text)}];
         },
         last_page_index: function() {
-            return Math.ceil(this.response.objects.count / this.query.page_size);
+            return Math.ceil(
+                Math.min(
+                    window.SETTINGS_JS.SEARCH_RESULT_MAX_SIZE,
+                    this.response.objects.count
+                ) / this.query.page_size
+            );
+        },
+        is_result_truncated: function() {
+            // returns true if elasticsearch can't return all hits
+            return (this.response.objects.count > window.SETTINGS_JS.SEARCH_RESULT_MAX_SIZE);
         },
         orders: function() {
           // returns dictionary ORDER_KEY: {label: ORDER_LABEL}
@@ -97,7 +106,7 @@ var app = new window.Vue({
         },
         config: function() {
             var result_type = this.query.result_type || RESULT_TYPE_DEFAULT;
-            return CONFIG[result_type];
+            return SEARCH_CONFIG[result_type];
         },
         ui_facets: function() {
             var self = this;
@@ -111,6 +120,17 @@ var app = new window.Vue({
                 }
                 return false;
             });
+        },
+        max_hits: function() {
+            return window.SETTINGS_JS.SEARCH_RESULT_MAX_SIZE;
+        },
+        applied_filters_count: function() {
+            let ret = Object.keys(this.query.facets).length;
+            if (this.query_text_trimmed) ret += 1;
+            return ret;
+        },
+        query_text_trimmed: function() {
+            return (this.query.text || '').trim();
         }
     },
     filters: {
@@ -127,6 +147,9 @@ var app = new window.Vue({
                 ret += ' #' + hit.token_number + '';
             }
             return ret;
+        },
+        hide_unspecified: function(value) {
+            return (value == 'Unspecified' || value == 'Other') ? '' : value;
         },
         pluralize: function(count, word) {
             if (count !== 1) {
@@ -158,6 +181,23 @@ var app = new window.Vue({
 
     },
     methods: {
+        remove_all_filters: function() {
+            // unselect all facet options and clear the search phrase/text
+            this.query.facets = {};
+            this.on_reset_search_text();
+        },
+        get_facet_label_from_key: function(facet_key) {
+            let ret = facet_key;
+
+            for (facet of window.SEARCH_FACETS) {
+                if (facet.key == facet_key) {
+                    ret = facet.label;
+                    break;
+                }
+            }
+
+            return ret;
+        },
         get_option_label_from_text: function(text, facet_key) {
             var ret = text;
 
@@ -202,7 +242,7 @@ var app = new window.Vue({
             var ret = [];
 
             if (ui_facet.key == 'result_type') {
-                var config = CONFIG;
+                var config = SEARCH_CONFIG;
                 ret = [];
                 Object.keys(config).forEach(function(key) {
                     ret.push({
@@ -245,18 +285,34 @@ var app = new window.Vue({
             if (this.is_option_selected(facet, option)) {
                 delete (this.query.facets)[facet+'__'+option.text];
             } else {
-                this.query.facets[facet+'__'+option.text] = [facet, option.text];
+                this.set_facet_option(facet, option.text);
             }
             this.query.page = 1;
             this.call_api();
+        },
+        set_facet_option: function(facet_key, option_text) {
+            this.query.facets[facet_key+'__'+option_text] = [facet_key, option_text];
         },
         on_click_lemma: function(hit) {
             // search for that lemma in the tokens/kwic result type.
             // exclude part after comma as it can disrupt the search
             // (e.g. 'maintas, a' would return all the tokens with lemma 'a').
-            this.query.text = hit.lemma.split(',')[0];
             this.query.result_type = 'tokens';
-            this.$set(this.query, 'facets', {});
+            if (1) {
+                // nicer b/c we get exactly what we want
+                // (BUT only lemma with top freq are displayed.
+                // So selected lemma isn't visible!)
+                // Now we always display the selected lemma option in the facet.
+                // http://localhost:8000/search/?result_type=tokens&page=1&selected_facets=lemma_exact%3Aquem&page_size=20&order=form
+                this.query.text = '';
+                let facet_option = ['lemma', hit.lemma];
+                let facet_key = facet_option.join('__');
+                this.$set(this.query, 'facets', {facet_key: facet_option});
+            } else {
+                this.query.text = hit.lemma.split(',')[0];
+                this.$set(this.query, 'facets', {});
+            }
+            this.query.page = 1;
             this.call_api();
         },
         on_click_token: function(hit) {
@@ -271,6 +327,10 @@ var app = new window.Vue({
               win.focus();
             }
         },
+        on_click_first: function() {
+            this.query.page = 1;
+            this.call_api();
+        },
         on_click_prev: function() {
             this.query.page -= 1;
             this.call_api();
@@ -279,10 +339,28 @@ var app = new window.Vue({
             this.query.page += 1;
             this.call_api();
         },
-        on_change_search_text: function() {
-            this.query.page = 1;
-            this.query.facets = {};
+        on_click_last: function() {
+            this.query.page = this.last_page_index;
             this.call_api();
+        },
+        on_change_page_number: function() {
+            this.call_api();
+        },
+        on_change_search_text: function() {
+            if (this.query.text) {
+                this.unselect_lemma_and_form_facets()
+            }
+
+            this.query.page = 1;
+            this.call_api();
+        },
+        unselect_lemma_and_form_facets: function() {
+            // we clear all selected lemma and form options
+            for (facet_key of Object.keys(this.query.facets)) {
+                if (['form', 'lemma'].indexOf(this.query.facets[facet_key][0]) > -1) {
+                    delete this.query.facets[facet_key];
+                }
+            }
         },
         on_keyup_search_text: function(e) {
             this.fetch_suggestions(e.target.value);
@@ -293,10 +371,24 @@ var app = new window.Vue({
             // suggestion is null if user press enter in input
             // instead of selecting a suggestion.
             window.console.log('SELECT');
-            window.console.log(suggestion);
             if (suggestion) {
                 var item = suggestion.item;
-                this.query.text = item.form || item.lemma;
+                window.console.log(item);
+                var CLICK_SUGGESTION_SETS_QUERY_TEXT = 0;
+                if (CLICK_SUGGESTION_SETS_QUERY_TEXT) {
+                    this.query.text = item.form || item.lemma;
+                } else {
+                    // we select the lemma / form from the suggestion
+                    // and clear the text
+                    this.query.text = '';
+                    this.unselect_lemma_and_form_facets();
+                    if (item.lemma) {
+                        this.set_facet_option('lemma', item.lemma);
+                    }
+                    if (item.form) {
+                        this.set_facet_option('form', item.form);
+                    }
+                }
             }
             // window.console.log(suggestion);
             this.on_change_search_text();
@@ -360,7 +452,7 @@ var app = new window.Vue({
             if (result_type == qs) result_type = RESULT_TYPE_DEFAULT;
 
             var self = this;
-            var req = $.getJSON(CONFIG[result_type].api, qs);
+            var req = $.getJSON(SEARCH_CONFIG[result_type].api, qs);
             req.done(function(response) {
                 self.filter_response(response);
 
@@ -416,7 +508,7 @@ var app = new window.Vue({
             this.query.text = qs_params.get('text') || '';
             // TODO: deal with non-integer in the qs
             this.query.page = parseInt(qs_params.get('page') || 1);
-            this.query.page_size = parseInt(qs_params.get('page_size') || this.page_sizes[0]);
+            this.query.page_size = parseInt(qs_params.get('page_size') || window.SETTINGS_JS.SEARCH_PAGE_SIZE_DEFAULT);
 
             // result_type
             this.query.result_type = qs_params.get('result_type') || RESULT_TYPE_DEFAULT;
