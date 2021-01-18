@@ -56,7 +56,9 @@ a vue directive:
                             <a><h2 class="ms-title">{{ document.label }}</h2></a>
                             <ul>
                                 <li v-for="adocument in documents" v-bind:class="{active: adocument.slug == document.slug, 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
-                                    <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
+                                    <h3>
+                                        <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
+                                    </h3>
                                 </li>
                             </ul>
                         </li>
@@ -66,9 +68,9 @@ a vue directive:
                             <a>{{ view.label }}</a>
                             <ul>
                                 <li v-for="aview in views" v-bind:class="{active: aview.slug == view.slug, 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
-                                    <a v-on:click.prevent="onClickView(aview.slug)" href="#">
-                                        {{ aview.label }}
-                                    </a>
+                                    <h3>
+                                        <a v-on:click.prevent="onClickView(aview.slug)" href="#">{{ aview.label }}</a>
+                                    </h3>
                                 </li>
                             </ul>
                         </li>
