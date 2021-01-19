@@ -4,3 +4,4 @@ USE_DOCKER=yes
 IPYTHONDIR=/app/.ipython
 
 # IS_REF_SITE=True
+# ALLOW_ROBOTS = True
