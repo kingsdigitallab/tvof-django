@@ -41,10 +41,14 @@ urlpatterns = [
     ),
     re_path(r'^test/500/?', server_error),
 
-    path(r'robots.txt', TemplateView.as_view(
-        template_name="robots.txt",
-        content_type='text/plain'
-    )),
+    path(
+        r'robots.txt',
+        TemplateView.as_view(
+            template_name="robots.txt",
+            content_type='text/plain',
+            extra_context={'ALLOW_ROBOTS': settings.ALLOW_ROBOTS},
+        ),
+    ),
 
     path(r'', include('text_search.urls')),
     path(r'', include('data_release.urls')),
