@@ -1328,7 +1328,7 @@ input#autosuggest-input {
   -o-transition: all 400ms ease-in;
   transition: all 400ms ease-in;
   position: fixed;
-  right: 60px; // GN: moved to left of the language switch
+  right: 110px; // GN: moved to left of the language switch & settings btn
   font-size:0.9em;
   color: white;
   width: 160px;
