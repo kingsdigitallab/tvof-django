@@ -17,8 +17,8 @@ SECTION_DOCS = ['Fr20125', 'Royal']
 class DataReleaseForm(forms.Form):
     index_input_file = forms.FileField(required=False)
 
-# class DataReleaseView(LoginRequiredMixin, FormView):
-class DataReleaseView(FormView):
+
+class DataReleaseView(LoginRequiredMixin, FormView):
     template_name = 'data_release.html'
     form_class = DataReleaseForm
     success_url = None
