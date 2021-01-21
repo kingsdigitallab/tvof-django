@@ -1482,11 +1482,13 @@ input#autosuggest-input {
     color: #fff;
 }
 
-.header a.float-right{
+.header a.float-right {
     position: absolute;
+    right: 100px;
 }
 
-nav #toggle-settings{
-    position: absolute; 
-    right: 100px;
+nav #toggle-settings {
+    position: absolute;
+    right: 0;
+    width: 150px;
 }
