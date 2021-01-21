@@ -470,8 +470,8 @@ var app = new window.Vue({
             });
         },
         filter_response: function(response) {
-            // transofrm the response from the search API
-            // mainly facet option ordering and filtering
+            // transform the response from the search API.
+            // mainly facet option ordering and filtering.
             var fields = response.fields;
 
             this.ui_facets.map(function(ui_facet) {
