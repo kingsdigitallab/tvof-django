@@ -1,0 +1,167 @@
+{% extends "base.html" %}
+{% load static compress cms_tags %}
+
+{% block title %}
+Textviewer
+{% endblock %}
+
+{% block main_wrapper %}
+{% verbatim %}
+<section id="text-viewer" class="main text-viewer">
+    <div v-for="pane in panes" is="text-pane" v-bind:apane="getPane(pane.slug)"></div>
+</section>
+{% endverbatim %}
+
+{% verbatim %}
+<div class="vue-templates">
+    <div id="vue-template-text-pane" class="text-pane">
+        <div class="row">
+            <div class="small-12 columns">
+
+                <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()" class="close-panel-button float-right">
+                    <i class="fa fa-trash has-tip" aria-hidden="true"
+                        data-tooltip aria-haspopup="true" data-hover-delay="0"
+                        title="Close this panel">
+                    </i>
+                </a>
+
+                <div class="controls">
+                    <ul v-f-dropdown v-bind:class="['boxed']">
+                        <li class="is-dropdown-submenu-parent">
+                            <a><h2 class="ms-title">{{ document.label }}</h2></a>
+                            <ul class="menu">
+                                <li v-for="adocument in documents" v-bind:class="[adocument.slug == document.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                    <a v-on:click.prevent="onClickDocument(adocument.slug)" href="#">{{ adocument.label }}</a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                    <ul v-f-dropdown v-bind:class="['boxed']">
+                        <li class="is-dropdown-submenu-parent dropdown-views">
+                            <a>{{ view.label }}</a>
+                            <ul class="menu">
+                                <li v-for="aview in views" v-bind:class="[aview.slug == view.slug ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                    <a v-on:click.prevent="onClickView(aview.slug)" href="#">
+                                        {{ aview.label }}
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="row collapse" id="section-menu">
+            <div class="small-12 columns">
+                <ul class="dropdown menu" data-dropdown-menu>
+                    <!-- TODO: implement this menu -->
+                    <!--
+                    <li v-for="alocation_type in location_types" v-bind:class="[alocation_type.slug == location_type.slug ? 'active' : '']">
+                        <a v-on:click.prevent="onClickLocationType(alocation_type.slug)" href="#">{{ alocation_type.label }}</a>
+                    </li>
+                    -->
+                    <li>
+                        <a href="#"><i class="fa fa-book"></i><span class="show-for-large"> Whole text</span></a>
+                    </li>
+
+                    <li>
+                        <a href="#"><span class="fa fa-file-text-o"></span><span class="show-for-large"> Folios</span></a>
+                        <ul class="menu">
+                            <li><a href="#">[148ra]</a></li>
+                            <li><a href="#">[148rb]</a></li>
+                            <li><a href="#">[149va]</a></li>
+                            <li><a href="#">[149rb]</a></li>
+                            <li><a href="#">[150va]</a></li>
+                            <li><a href="#">...</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="#"><span class="fa fa-folder"></span><span class="show-for-large"> Sections</span></a>
+                        <ul class="menu">
+                            <li>
+                                <!-- TODO: Fix URL link -->
+                                <a v-bind:href="alocation.slug" class="tei" v-for="alocation in locations" v-html="alocation.label_long"></a>
+                            </li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="#"><i class="fa fa-paragraph"></i><span class="show-for-large"> Paragraphs</span></a>
+                        <ul class="menu">
+                            <li><a href="#">Para 1</a></li>
+                            <li><a href="#">Para 2</a></li>
+                            <li><a href="#">Para 3</a></li>
+                            <li><a href="#">...</a></li>
+                        </ul>
+                    </li>
+
+                    <li>
+                        <a href="#">="fa fa-picture-o"></i><span class="show-for-large"> Images</span></a>
+                        <ul class="menu">
+                            <li><a href="#">Image 1</a></li>
+                            <li><a href="#">Image 2</a></li>
+                            <li><a href="#">Image 3</a></li>
+                            <li><a href="#">...</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <div class="row">
+            <div class="small-10 medium-11 columns">
+                <div class="text-chunk" v-html="chunk" v-bind:class="getClassesFromDisplaySettings()">
+                </div>
+            </div>
+            <div class="small-2 medium-1 columns" data-sticky-container>
+                <div class="sticky" data-sticky data-stick-to="bottom"
+                    data-top-anchor="section-menu:bottom"
+                    data-btm-anchor="footer:top">
+                    <ul class="text-center pane-sidebar vertical dropdown menu" data-dropdown-menu
+                        data-disable-hover="true" data-click-open="true"
+                        data-alignment="right">
+                        <!-- TODO: need to fix the view button. By default it should duplicate only -->
+                        <!-- <li v-for="aview in views"> -->
+                        <li>
+                            <a href="#" v-on:click.stop.prevent="onClickViewExternal(views.slug)"
+                                data-tooltip aria-haspopup="true" class="has-tip" data-disable-hover="false"
+                                data-hover-delay="0" title="Open a new panel">
+                                <i class="fa fa-columns"></i>
+                            </a>
+                        </li>
+                        <li v-bind:class="['toolbar is-dropdown-submenu-parent', display_settings.length ? '': 'hidden']">
+                            <a href="#"><i class="fa fa-pencil"></i></a>
+                            <ul class="menu text-left">
+                                <h3>Display</h3>
+                                <li v-for="setting in display_settings" v-bind:class="[isDisplaySettingActive(setting) ? 'active' : '', 'is-submenu-item is-dropdown-submenu-item']">
+                                    <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
+                                        {{ setting.label }}
+                                    </a>
+                                </li>
+                            </ul>
+                        </li>
+                        <li class="key is-dropdown-submenu-parent">
+                            <a href="#"><i class="fa fa-key"></i></a>
+                            <ul class="menu text-left">
+                                <li>
+                                    <h3>Notations</h3>
+                                    <div v-html="conventions">
+                                    </div>
+                                </li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endverbatim %}
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    {% compress js %}
+      <script src="{% static 'text_viewer/text_viewer.js' %}"></script>
+    {% endcompress %}
+{% endblock %}

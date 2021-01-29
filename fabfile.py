@@ -1,511 +1,460 @@
-#!/usr/bin/env python
-import os.path
+import configparser
+import getpass
 import sys
-from functools import wraps
+from configparser import ConfigParser, SectionProxy
+from typing import Optional
 
-from django.conf import settings as django_settings
-from django.core.management.utils import get_random_secret_key
-from fabric.api import (
-    cd, env, prompt, put, quiet, require, run, settings, sudo, task
-)
-from fabric.colors import green, yellow
-from fabric.contrib import django
-from fabric.contrib.files import exists
-from fabric.utils import abort
+from fabric import Connection, task
+from fabric.util import get_local_user
+from invoke.context import Context
+from invoke.exceptions import Failure, ThreadException, UnexpectedExit
+from paramiko.ssh_exception import AuthenticationException
 
-# put project directory in path
-project_root = os.path.abspath(os.path.dirname(__file__))
-sys.path.append(project_root)
-
-# -------------------------------
-''' SETTINGS VARIABLES: read from your Django settings files.
-All optional.
-
-Please keep this file generic, all hard-coded values should go to settings.
-
-FABRIC_SERVER_NAME: short name of the server to deploy to (e.g. ncse2)
-    default: PROJECT_NAME
-FABRIC_GATEWAY: e.g. myusername@my.ssh.proxy.com
-    default: don't use a gateway, acces remote server directly
-FABRIC_USER: name of user used to execute command on remote server
-    default: name of user who started fab
-FABRIC_DEV_PACKAGES: dev python packages from github to install outside venv
-    default: empty
-    example:
-    {
-        'git': 'https://github.com/kingsdigitallab/django-kdl-wagtail.git',
-        'folder_git': 'django-kdl-wagtail',
-        'folder_package': 'kdl_wagtail',
-        'branch': 'develop',
-        # which fab servers should use this?
-        'servers': ['lcl', 'dev'],
-    }
-]
-    Note: to let pipenv manage your package instead, you'll need to:
-        - delete the two package folders in your project dir
-        - pipenv uninstall PACKAGE && pipenv install PACKAGE
-
-'''
+COLOUR_OFF: str = "\033[0m"
 
 
-def find_project_name():
-    '''
-    The name of the Django app for this project
-    Folder that contains settings/local.py
-    '''
-    ret = None
-    for name in os.listdir(project_root):
-        path = os.path.join(project_root, name, 'settings', 'local.py')
-        if os.path.exists(path):
-            if ret is not None:
-                raise Exception('Ambiguous project name')
-            ret = name
-    if not ret:
-        raise Exception('Could not find your Django project folder')
-    return ret
+def error(message: str):
+    red: str = "\033[31m"
+
+    print()
+    print(f"{red}{message}{COLOUR_OFF}")
 
 
-PROJECT_NAME = find_project_name()
-django.project(PROJECT_NAME)
+def info(message: str):
+    blue: str = "\033[34m"
 
-SERVER_NAME = getattr(django_settings, 'FABRIC_SERVER_NAME', PROJECT_NAME)
-
-# Git repository pointer
-REPOSITORY = 'https://github.com/kingsdigitallab/{}-django.git'.format(
-    PROJECT_NAME)
-
-env.gateway = 'ssh.kdl.kcl.ac.uk'
-# Host names used as deployment targets
-env.hosts = ['{}.kdl.kcl.ac.uk'.format(SERVER_NAME)]
-# Absolute filesystem path to project 'webroot'
-env.root_path = '/vol/{}/webroot/'.format(SERVER_NAME)
-# Absolute filesystem path to project Django root
-env.django_root_path = '/vol/{}/webroot/'.format(SERVER_NAME)
-# Absolute filesystem path to Python virtualenv for this project
-# TODO: create symlink to .venv within project folder
-# env.envs_path = os.path.join(env.root_path, 'envs')
-# -------------------------------
-
-# Set FABRIC_GATEWAY = 'username@proxy.x' in local.py
-# if you are behind a proxy.
-FABRIC_GATEWAY = getattr(django_settings, 'FABRIC_GATEWAY', None)
-if FABRIC_GATEWAY:
-    env.gateway = FABRIC_GATEWAY
-
-# Name of linux user who deploys on the remote server
-env.user = django_settings.FABRIC_USER
-env.forward_agent = True
-
-env.dev_packages = getattr(django_settings, 'FABRIC_DEV_PACKAGES', [])
+    print()
+    print(f"{blue}{message}{COLOUR_OFF}")
 
 
-def server(func):
-    """Wraps functions that set environment variables for servers"""
+cfg: ConfigParser = configparser.ConfigParser()
+cfg.read("setup.cfg")
 
-    @wraps(func)
-    def decorated(*args, **kwargs):
-        try:
-            env.servers.append(func)
-        except AttributeError:
-            env.servers = [func]
+try:
+    fabric_cfg: SectionProxy = cfg["fabric"]
 
-        return func(*args, **kwargs)
+    BRANCH = fabric_cfg["default_branch"]
+    COMPOSE_CMD = fabric_cfg["compose_cmd"]
+    GATEWAY = fabric_cfg["gateway"]
+    HOST = fabric_cfg["host"]
+    HOST_PATH = fabric_cfg["host_path"]
+    INSTANCE = fabric_cfg["default_instance"]
+    PROJECT = fabric_cfg["project"]
+    REPOSITORY = fabric_cfg["repository"]
+    STACK = fabric_cfg["default_stack"]
+except KeyError:
+    error("Invalid fabric configuration in `setup.cfg`")
+    sys.exit(-1)
 
-    return decorated
-
-
-@task
-@server
-def lcl():
-    env.srvr = 'lcl'
-    env.user = 'vagrant'
-    env.gateway = None
-    env.hosts = ['127.0.0.1']
-    set_srvr_vars()
-
-
-@task
-@server
-def dev():
-    env.srvr = 'dev'
-    set_srvr_vars()
-
-
-@task
-@server
-def stg():
-    env.srvr = 'stg'
-    set_srvr_vars()
-
-
-@task
-@server
-def liv():
-    env.srvr = 'liv'
-    set_srvr_vars()
+HELP = {
+    "app": "App to run the tests. Omit to run all the project tests.",
+    "backup": "Backup file name.",
+    "branch": "Source control branch to checkout.",
+    "command": "Django management command.",
+    "coverage": "Set to `True` to run test coverage.",
+    "Images": "Images to be removed, by default all images are removed.",
+    "initial": "Set to `True` for first time deployments.",
+    "instance": (
+        "Server instance where to run the task, can be left empty when running "
+        "local tasks."
+    ),
+    "remote": "Set to `True` to run the command on the remote host.",
+    "service": "Service name to run the task.",
+    "services": "Service names to run the task. Separate multiple services with space.",
+    "stack": "Docker stack for docker commands.",
+    "volumes": "Set to `True` to remove volumes.",
+    "orphans": "Set to `True` to remove orphan containers.",
+}
 
 
-def set_srvr_vars():
-    # Absolute filesystem path to the django project root
-    # Contains manage.py
-    if is_vagrant():
-        env.path = '/vagrant'
+connection: Connection = None
+password: str = None
+
+
+@task(help=HELP)
+def deploy(
+    context,
+    instance,
+    user=get_local_user(),
+    initial=False,
+    stack=None,
+    branch=BRANCH,
+):
+    """
+    Deploy the project. By default it creates a database backup before updating from
+    source control and rebuilding the docker stack.
+    """
+    remote = True
+
+    if initial:
+        clone(context, instance, user, branch)
     else:
-        env.path = os.path.join(
-            env.root_path, env.srvr, 'django', '{}-django'.format(PROJECT_NAME)
+        backup(context, user, remote, instance, stack)
+
+    update(context, user, remote, instance, branch)
+    up(context, user, remote, instance, stack)
+
+
+@task(help=HELP)
+def clone(context, instance, user=get_local_user(), branch=BRANCH):
+    """
+    Clone the project repository into a host instance.
+    """
+    local = False
+    no_stack = None
+    no_compose = False
+
+    env_path = f"{HOST_PATH}/{instance}/.envs"
+    env_file = f"{instance}.tar.gz"
+
+    command = f"tar czvf .envs/{env_file} .envs/.{instance}"
+    run_command(context, user, local, instance, no_stack, command, no_compose)
+
+    with get_connection(user, HOST) as c:
+        with c.cd(f"{HOST_PATH}"):
+            c.run(f"mkdir -p {HOST_PATH}/{instance}")
+
+    remote = True
+
+    command = f"git clone {REPOSITORY} . && git checkout {branch}"
+    run_command(context, user, remote, instance, no_stack, command, no_compose)
+
+    with get_connection(user, HOST) as c:
+        c.put(f".envs/{env_file}", env_path)
+
+    command = f"tar zxvf {env_path}/{env_file} && rm {env_path}/{env_file}"
+    run_command(context, user, remote, instance, no_stack, command, no_compose)
+
+    command = f"mkdir -p {PROJECT}/media"
+    run_command(context, user, remote, instance, no_stack, command, no_compose)
+
+
+def run_command(
+    context: Context,
+    user: str,
+    remote: bool,
+    instance: Optional[str],
+    stack: Optional[str],
+    command: str,
+    compose: bool = True,
+):
+    host = get_host(remote)
+    instance = get_instance(remote, instance)
+    stack = get_stack(remote, instance, stack)
+
+    if compose:
+        command = f"{COMPOSE_CMD} -f {stack} {command}"
+
+    info(f"{host}/{instance}/{stack}\n{command}")
+
+    try:
+        if remote:
+            with get_connection(user, HOST) as c:
+                with c.cd(f"{HOST_PATH}/{instance}"):
+                    c.run(command, pty=True)
+        else:
+            context.run(command, replace_env=False, pty=True)
+    except (AuthenticationException, ValueError) as e:
+        error(f"{e}")
+    except (Failure, ThreadException, UnexpectedExit):
+        error(f"{host}/{instance}\nFailed to run command: `{command}`")
+
+
+def get_host(remote: bool):
+    if remote:
+        return HOST
+
+    return "local"
+
+
+def get_instance(remote: bool, instance: Optional[str]):
+    if instance:
+        return instance
+
+    if remote:
+        return INSTANCE
+
+    return "local"
+
+
+def get_stack(remote: bool, instance: str, stack: Optional[str]) -> str:
+    if stack:
+        return f"{stack}.yml"
+
+    if instance != "local":
+        return f"kdl_{instance}.yml"
+
+    if remote:
+        return STACK
+
+    return "local.yml"
+
+
+def get_connection(user: str, host: str) -> Connection:
+    global connection
+
+    if connection:
+        return connection
+
+    try:
+        connection = Connection(host, user=user, gateway=get_gateway(user))
+        if not connection.is_connected:
+            raise AuthenticationException
+    except AuthenticationException:
+        password = get_password(user, host)
+
+        connection = Connection(
+            host,
+            user=user,
+            connect_kwargs={"password": password},
+            gateway=get_gateway(user, password),
         )
 
-    env.within_virtualenv = 'pipenv run '
-
-
-@task
-def setup_environment(version=None):
-    require('srvr', provided_by=env.servers)
-
-    clone_repo()
-    fix_permissions()
-    update(version)
-    install_requirements()
-
-
-@task
-def clone_repo():
-    require('srvr', 'path', provided_by=env.servers)
-
-    git_path = os.path.join(env.path, '.git')
-    if remote_path_exists(git_path):
-        print(green(('repository at [{}] exists').format(env.path)))
-        return
-
-    print(yellow('cloning repository to [{}]'.format(env.path)))
-    run('git clone {} {}'.format(REPOSITORY, env.path))
-
-
-@task
-def install_requirements():
-    require('srvr', 'path', provided_by=env.servers)
-
-    create_virtualenv()
-
-    dev_flag = ''
-    if is_vagrant():
-        dev_flag = '-d'
-
-    with cd(env.path):
-        check_pipenv()
-        run('pipenv sync {}'.format(dev_flag))
-        run('pipenv clean')
-
-        run('npm ci')
-
-        # npm ci recreates the node_modules folder
-        # so we have to fix its permissions
-        run('chmod -R g+rwx node_modules')
-
-
-@task
-def create_virtualenv():
-    '''
-    Create the pipenv venv if it is not there yet.
-    If within vagrant we create it in vagrant home folder.
-    If remote server, we create it within the project folder.
-    '''
-    require('srvr', 'path', provided_by=env.servers)
-
-    check_pipenv()
-    with cd(env.path):
-        venv_path = get_virtual_env_path()
-        if venv_path is not None:
-            print(green('virtual environment already exists'))
-        else:
-            print(yellow('setting up virtual environment'))
-
-            dev_flag = ''
-            if is_vagrant():
-                dev_flag = '-d'
-
-            # with pipenv we don't really need to set up the venv
-            # it will be done automatically when we call pipenv install / sync
-            if not is_vagrant() and not exists('.venv'):
-                run('mkdir .venv')
-            if not exists('Pipfile'):
-                run('pipenv install --three {}'.format(dev_flag))
-            if not exists('Pipfile.lock'):
-                run('pipenv lock {}'.format(dev_flag))
-
-
-@task
-def reinstall_requirement():
-    require('srvr', 'path', provided_by=env.servers)
-
-    with cd(env.path):
-        check_pipenv()
-        run('pipenv uninstall --all --clear')
-
-    install_requirements()
-
-
-@task
-def deploy(version=None):
-    '''
-    GN: permission-fixing has been removed from this process.
-    Because the new version should be more sustainable.
-    Only call fab dev fix_permissions when you have issues.
-    Now the deploy process can be run entirely without sudo.
-    '''
-    update(version)
-    install_requirements()
-    upload_local_settings()
-    migrate()
-    collect_static()
-    # update_index()
-    # clear_cache()
-    touch_wsgi()
-    check_deploy()
-
-
-@task
-def update(version=None):
-    require('srvr', 'path', provided_by=env.servers)
-
-    if version:
-        # try specified version first
-        to_version = version
-    elif env.srvr in ['local', 'vagrant', 'dev', 'lcl']:
-        # if local, vagrant or dev deploy to develop branch
-        to_version = 'develop'
-    else:
-        # else deploy to master branch
-        to_version = 'master'
-
-    with cd(env.path):
-        # keep this sequence as it will cope well with change of branch
-        # during deployment.
-        run('git fetch')
-        run('git checkout {}'.format(to_version))
-        run('git merge')
-
-    update_dev_packages()
-
-
-@task
-def update_dev_packages():
-    '''pull all the dev packages'''
-
-    for package in env.dev_packages:
-        if env.srvr.lower() in package['servers']:
-            path_git = os.path.join(env.path, package['folder_git'])
-            path_package = os.path.join(env.path, package['folder_package'])
-
-            # clone package
-            with cd(env.path):
-                if not exists(path_git):
-                    run('git clone -b {} --single-branch {}'.format(
-                        package['branch'], package['git']
-                    ))
-
-            # pull package
-            with cd(os.path.join(env.path, package['folder_git'])):
-                run('git pull')
-
-            # create symlink
-            with cd(env.path):
-                if not exists(path_package):
-                    run('ln -s {}'.format(os.path.join(
-                        path_git, package['folder_package']
-                    )))
-
-
-@task
-def upload_local_settings():
-    if is_vagrant():
-        return
-
-    require('srvr', 'path', provided_by=env.servers)
-
-    with cd(env.path):
-        with settings(warn_only=True):
-            if run('ls {}/settings/local.py'.format(PROJECT_NAME)).failed:
-                db_host = prompt('Database host: ')
-                db_pwd = prompt('Database password: ')
-
-                put('{}/settings/local_{}.py'.format(PROJECT_NAME, env.srvr),
-                    '{}/settings/local.py'.format(PROJECT_NAME), mode='0664')
-
-                run('echo >> {}/settings/local.py'.format(PROJECT_NAME))
-                run('echo '
-                    '"DATABASES[\'default\'][\'PASSWORD\'] = \'{}\'" >>'
-                    '{}/settings/local.py'.format(db_pwd, PROJECT_NAME))
-                run('echo '
-                    '"DATABASES[\'default\'][\'HOST\'] = \'{}\'" >>'
-                    '{}/settings/local.py'.format(db_host, PROJECT_NAME))
-                run('echo '
-                    '"SECRET_KEY = \'{}\'" >>'
-                    '{}/settings/local.py'.format(
-                        get_random_secret_key(), PROJECT_NAME))
-
-
-@task
-def own_django_log():
-    """ make sure logs/django.log is owned by www-data"""
-    if is_vagrant():
-        return
-
-    require('srvr', 'path', provided_by=env.servers)
-
-    with quiet():
-        log_path = os.path.join(env.path, 'logs', 'django.log')
-        if exists(log_path):
-            sudo('chown www-data:www-data {}'.format(log_path))
-            sudo('chmod g+rw {}'.format(log_path))
-
-
-@task
-def fix_permissions():
-    '''
-    Reset all permissions in the django project.
-    Uses facl for www-data, with defaults for newly created files.
-    This permission configuration should cope with changes
-    from www-data and kdl-staff users and support multiple deployments
-    from various kdl-staff.
-    '''
-    if is_vagrant():
-        return
-
-    require('srvr', 'path', provided_by=env.servers)
-
-    with cd(env.path), quiet():
-        # write access to kdl-staff and current user
-        # read access to www-data
-        paths = '.'
-        path_venv = get_virtual_env_path()
-        if path_venv is not None:
-            paths += ' ' + path_venv
-
-        sudo('setfacl -R -b {}'.format(paths))
-        sudo('chown -Rf {}:kdl-staff {}'.format(env.user, paths))
-        sudo('chmod -Rf u+rw,g+rw,o-rwx {}'.format(paths))
-        sudo((
-            'setfacl -R -d -m u:www-data:rx,g:kdl-staff:rwx,o::---,m::rwx {}'
-        ).format(paths))
-        sudo('setfacl -R -m u:www-data:rx {}'.format(paths))
-
-        # write access for www-data only where needed
-        paths = [
-            'logs',
-            'static',
-            'media',
-            'django_cache',
-            'kiln_out',
-        ]
-
-        paths = ' '.join([
-            path
-            for path
-            in paths
-            if path and exists(path)
-        ])
-
-        sudo('setfacl -R -d -m u:www-data:rwx {}'.format(paths))
-        sudo('setfacl -R -m u:www-data:rwx {}'.format(paths))
-
-        # kiln_out needs to be owned by www-data
-        # because data_release sets the file metadata...
-        sudo('chown -Rf www-data:kdl-staff kiln_out')
-
-
-@task
-def touch_wsgi():
-    if is_vagrant():
-        return
-
-    require('srvr', 'path', provided_by=env.servers)
-
-    with cd(os.path.join(env.path, PROJECT_NAME)):
-        run('touch wsgi.py')
-
-
-# =======================================================================
-# Django commands
-
-@task
-def migrate(app=None):
-    run_django_command('migrate {}'.format(app if app else ''))
-
-
-@task
-def collect_static(process=False):
-    if is_vagrant():
-        return
-
-    cmd = 'collectstatic {process} --noinput'.format(
-        process=('--no-post-process' if not process else '')
+    return connection
+
+
+def get_gateway(user: str, password: Optional[str] = None) -> Connection:
+    if password:
+        return Connection(GATEWAY, user=user, connect_kwargs={"password": password})
+
+    return Connection(GATEWAY, user=user)
+
+
+def get_password(user: str, host: str) -> str:
+    global password
+
+    if password:
+        return password
+
+    password = getpass.getpass(prompt=f"Password for {user}@{host}: ")
+
+    return password
+
+
+@task(help=HELP)
+def backup(context, user=get_local_user(), remote=False, instance=None, stack=None):
+    """
+    Create a database backup.
+    """
+    command = "run --rm postgres backup"
+    run_command(context, user, remote, instance, stack, command)
+
+
+@task(help=HELP)
+def update(context, user=get_local_user(), remote=False, instance=None, branch=BRANCH):
+    """
+    Update the host instance from source control.
+    """
+    no_stack = None
+    no_compose = False
+
+    command = f"git checkout {branch} || git pull && git checkout {branch}"
+    run_command(context, user, remote, instance, no_stack, command, no_compose)
+
+    command = "git pull"
+    run_command(context, user, remote, instance, no_stack, command, no_compose)
+
+
+@task(help=HELP)
+def up(
+    context,
+    user=get_local_user(),
+    remote=False,
+    instance=None,
+    stack=None,
+    services=None,
+):
+    """
+    Build the stack for the host instance.
+    """
+    command = "up --build"
+
+    if remote:
+        command = f"{command} --detach"
+
+    run_command_with_services(context, user, remote, instance, stack, command, services)
+
+
+def run_command_with_services(
+    context: Context,
+    user: str,
+    remote: bool,
+    instance: str,
+    stack: str,
+    command: str,
+    services: Optional[str],
+):
+    if services:
+        command = f"{command} {services}"
+
+    run_command(context, user, remote, instance, stack, command)
+
+
+@task(help=HELP)
+def down(
+    context,
+    user=get_local_user(),
+    remote=False,
+    instance=None,
+    stack=None,
+    images="all",
+    volumes=True,
+    orphans=False,
+):
+    """
+    Stop and remove stack components.
+    """
+    command = f"down --rmi {images}"
+
+    if volumes:
+        command = f"{command} --volumes"
+
+    if orphans:
+        command = f"{command} --remove-orphans"
+
+    run_command(context, user, remote, instance, stack, command)
+
+
+@task(help=HELP)
+def start(
+    context,
+    user=get_local_user(),
+    remote=False,
+    instance=None,
+    stack=None,
+    services=None,
+):
+    """
+    Start one or more services.
+    """
+    command = "start"
+    run_command_with_services(context, user, remote, instance, stack, command, services)
+
+
+@task(help=HELP)
+def stop(
+    context,
+    user=get_local_user(),
+    remote=False,
+    instance=None,
+    stack=None,
+    services=None,
+):
+    """
+    Stop one or more services.
+    """
+    command = "stop"
+    run_command_with_services(context, user, remote, instance, stack, command, services)
+
+
+@task(help=HELP)
+def restart(
+    context,
+    user=get_local_user(),
+    remote=False,
+    instance=None,
+    stack=None,
+    services=None,
+):
+    """
+    Restart one or more services.
+    """
+    command = "restart"
+    run_command_with_services(context, user, remote, instance, stack, command, services)
+
+
+@task(help=HELP)
+def restore(
+    context,
+    backup,
+    user=get_local_user(),
+    remote=False,
+    instance=None,
+    stack=None,
+):
+    """
+    Restore a database backup.
+    """
+    command = f"exec postgres pkill -f {PROJECT}"
+    run_command(context, user, remote, instance, stack, command)
+
+    command = f"run --rm postgres restore {backup}"
+    run_command(context, user, remote, instance, stack, command)
+
+
+@task(help=HELP)
+def shell(
+    context,
+    user=get_local_user(),
+    remote=False,
+    instance=None,
+    stack=None,
+    service="django",
+):
+    """
+    Connect to a running service.
+    """
+    command = f"run --rm {service} bash"
+    run_command(context, user, remote, instance, stack, command)
+
+
+@task(help=HELP)
+def django(
+    context, command, user=get_local_user(), remote=False, instance=None, stack=None
+):
+    """
+    Run a Django management command.
+    """
+    command = f"run --rm django python manage.py {command}"
+    run_command(context, user, remote, instance, stack, command)
+
+
+@task(help=HELP)
+def test(
+    context,
+    user=get_local_user(),
+    remote=False,
+    instance=None,
+    stack=None,
+    app=None,
+    coverage=False,
+):
+    """
+    Run tests with pytest.
+    """
+    command = "pytest"
+
+    if app:
+        command = f"{command} {app}"
+
+    if coverage:
+        command = f"coverage run -m {command}"
+
+    command = f"run --rm django {command}"
+    run_command(context, user, remote, instance, stack, command)
+
+
+@task(help=HELP)
+def requirements(context):
+    """
+    Run piptools pip-compile to update requirements.
+    """
+    pip_compile = "pip-compile --annotate --quiet"
+
+    command = (
+        f"{pip_compile} requirements/base.in "
+        f"&& {pip_compile} requirements/local.in "
+        f"&& {pip_compile} requirements/production.in"
     )
-
-    run_django_command(cmd)
-
-
-@task
-def update_index():
-    run_django_command('update_index')
+    command = f"run --rm django bash -c '{command}'"
+    run_command(context, get_local_user(), False, None, None, command)
 
 
-@task
-def clear_cache():
-    run_django_command('clear_cache')
-
-
-@task
-def check_deploy():
-    require('srvr', provided_by=env.servers)
-
-    if env.srvr in ['stg', 'liv']:
-        run_django_command('check --deploy')
-
-# =======================================================================
-# Helper functions
-
-
-def is_vagrant():
-    '''Return True if the task runs within local vagrant env.
-    Return False if the task runs within a remote server.
-    '''
-    return env.srvr in ['local', 'vagrant', 'lcl']
-
-
-def remote_path_exists(path):
-    '''Returns True if remote path exists (folder or file)
-    path can be relative or absolute.
-    '''
-    return exists(path)
-
-
-def run_django_command(command):
-    require('srvr', 'path', 'within_virtualenv', provided_by=env.servers)
-
-    with cd(env.path):
-        run('{} python manage.py {}'.format(env.within_virtualenv, command))
-
-
-def get_virtual_env_path():
-    '''Returns the absolute path to the python virtualenv for the server
-    (dev, stg, live) we are working on.
-    E.g. /vol/tvof/webroot/.../.venv
-
-    return None if no venv is associated to the project folder.
-    '''
-    require('srvr', 'path')
-
-    with cd(env.path), settings(warn_only=True):
-        ret = run('PIPENV_VERBOSITY=-1 pipenv --venv')
-        if not ret.succeeded:
-            ret = None
-
-    return ret
-
-
-def check_pipenv():
-    with quiet():
-        if run('which pipenv').failed:
-            abort('pipenv is missing, '
-                  'please install it as root with "pip install pipenv"')
+@task(help=HELP)
+def compose(
+    context, command, user=get_local_user(), remote=False, instance=None, stack=None
+):
+    """
+    Run a raw compose command.
+    """
+    run_command(context, user, remote, instance, stack, command)

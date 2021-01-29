@@ -1,0 +1,33 @@
+{% extends "base_minimal.html" %}
+{% load static compress cms_tags wagtailcore_tags %}
+
+{% block meta_title %}Text alignment visualization{% endblock %}
+
+{% block extra_head %}
+  {% compress css %}
+    <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/text-alignment.scss' %}">
+  {% endcompress %}
+{% endblock %}
+
+{% block title %}Alignment{% endblock %}
+
+{% block body_classes %}body-alignment{% endblock %}
+
+{% block minimal_breadcrumb %}
+{% endblock %}
+
+{% block header_top_bar %}
+{% endblock %}
+
+{% block main_wrapper %}
+  <section id="alignment-fragment" class="main">
+    {{ html|safe }}
+  </section>
+{% endblock %}
+
+{% block default_js %}
+{% endblock %}
+
+{% block foundation_init %}
+{% endblock %}
+

@@ -1,0 +1,51 @@
+{% extends "base_minimal.html" %}
+{% load static compress cms_tags wagtailcore_tags %}
+
+{% block meta_title %}Text alignment visualization{% endblock %}
+
+{% block extra_head %}
+  {% compress css %}
+    <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/text-alignment.scss' %}">
+  {% endcompress %}
+{% endblock %}
+
+{% block title %}Alignment{% endblock %}
+
+{% block body_classes %}body-alignment{% endblock %}
+
+{% block minimal_breadcrumb %}
+    <small>/ <a href=".">Alignment</a></small>
+{% endblock %}
+
+{% block header_top_bar %}
+    <ul class="horizontal menu float-right" data-sticky>
+        <li>
+            <a id="toggle-settings" href="#settings" class="toggle-settings">Settings <span class="fa fa-cog"></span></a>
+        </li>
+    </ul>
+{% endblock %}
+
+{% block main_wrapper %}
+
+<!-- #text-viewer height is adjusted automatically with JS  -->
+<section id="alignment-fragment" class="main">
+
+</section>
+
+<a href="#" target="_blank" id="plink" class="button">Read</a>
+
+{% include 'text_alignment/settings.html' %}
+
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    <script type="text/javascript">
+        window.ALIGNMENT_CONFIG = {{config|json}};
+        window.ALIGNMENT_LINKABLE_MSS = {{ ALIGNMENT_LINKABLE_MSS|json }};
+    </script>
+
+    {% compress js %}
+      <script src="{% static 'text_alignment/alignment.js' %}"></script>
+    {% endcompress %}
+{% endblock %}
