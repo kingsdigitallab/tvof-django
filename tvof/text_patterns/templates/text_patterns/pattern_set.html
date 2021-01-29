@@ -1,0 +1,529 @@
+{% extends "base_minimal.html" %}
+{% load static %}
+
+{% block meta_title %}Patterns detection{% endblock %}
+{% block meta_title_site %}{% endblock %}
+
+{% block minimal_breadcrumb %}
+    <small>/ <a href="{% url 'pattern_sets' %}">Pattern sets</a> / {{ namespace }} </small>
+{% endblock %}
+
+{% block extra_head %}
+    {{ block.super }}
+    <link rel="stylesheet" type="text/css" href="{% static 'text_patterns/text_patterns.css' %}">
+{% endblock %}
+
+{% block main %}
+    <!-- a href="https://confluence.dighum.kcl.ac.uk/display/EXON/Text+Segmentation+Tool">Help about this tool</a -->
+
+    <div id="patterns-ui-screen">
+        {% verbatim %}
+        
+        <div id="patterns-ui" class="form-inline">
+            <div class="messages" v-if="response.messages && response.messages.length">
+                <ul v-for="message in response.messages">
+                    <li v-bind:class="'message message-'+message.type">
+                        {{ message.message }}
+                    </li>
+                </ul>
+            </div>
+        
+            <ul class="tabs" id="example-tabs">
+                <li v-on:click.stop.prevent="set_tab_editor('definitions')" v-bind:class="{'tabs-title':1, 'is-active': (session.tab_editor == 'definitions')}"><a href="#panel1" v-bind:aria-selected="(session.tab_editor == 'definitions') ? 'true' : 'false'">Definitions</a></li>
+                <li v-on:click.stop.prevent="set_tab_editor('settings')" v-bind:class="{'tabs-title':1, 'is-active': (session.tab_editor == 'settings')}"><a href="#panel2" v-bind:aria-selected="(session.tab_editor == 'settings') ? 'true' : 'false'">Settings</a></li>
+            </ul>
+            
+            <div class="tabs-content">
+                <div class="tabs-panel" v-if="session.tab_editor == 'definitions'">
+                    <div class="panel patterns">
+                        <ul class="patterns-list" id="patterns_list">
+                            <template v-for="pattern in response.patterns">
+                                <li v-if="is_first_in_group(pattern.key)" v-on:click="toggle_group(pattern.key)" v-bind:data-key="get_group_label(pattern.key)">
+                                    <span v-bind:class="'fa fa-'+(is_pattern_visible(pattern.key) ? 'compress' : 'expand')"></span>
+                                    {{ get_group_label(pattern.key) }}
+                                    <span>{{ response.stats.groups ? '[' + (response.stats.groups[get_group_label(pattern.key)] || 0) + ']' : '' }}</span>
+                                </li>
+                                
+                                <li v-if="is_pattern_visible(pattern.key)" v-on:click.stop.prevent="select_pattern" v-bind:data-patternid="pattern.id" v-bind:class="(session.selected == pattern.id) ? 'picked' : ''"  v-bind:data-key="pattern.key">
+                                    <span v-bind:class="'pattern-condition pattern-condition-'+session.conditions[pattern.id]">
+                                        <span class="fa fa-exclamation-triangle pattern-error" v-if="pattern.error"></span>
+                                        <span class="pattern-key">{{pattern.key}}</span>
+                                        <span v-if="!pattern.error">{{ response.stats.patterns ? '[' + (response.stats.patterns[pattern.id] || 0) + ']' : '' }}</span>
+                                    </span>
+                                </li>
+                            </template>
+                        </ul>
+                    </div>
+                
+                    <div v-for="pattern in response.patterns">
+                        <div v-if="(pattern.id == session.selected)"  class="pattern" v-bind:data-patternid="pattern.id">
+                            <div class="form-group">
+                                <label for="p_key">Key</label>
+                                <input class="form-control input-sm" type="text" name="p_key" id="p_key" v-on:change="save_pattern(pattern.id)" v-model="pattern.key" autocomplete="off" autocorrect="off" autocapitalize="off" />
+                            </div>
+                            <div class="form-group">
+                                <label for="p_title">Title</label>
+                                <input class="form-control input-sm pattern-title" type="text" name="p_title" id="p_title" v-on:change="save_pattern(pattern.id)" v-model="pattern.title" autocomplete="off" autocorrect="off" autocapitalize="off" />
+                            </div>
+                            <div class="form-group">
+                                <label for="p_condition">Condition</label>
+                                <select class="form-control input-sm" name="p_condition" id="p_condition" v-model="session.conditions[pattern.id]" v-on:change="save_session">
+                                    <option v-bind:value="ckey" v-for="(label, ckey) in conditions">{{ label }}</option>
+                                </select>
+                            </div>
+                            <span class="small legend" title="number of units NOT matching this pattern" data-toggle="tooltip" v-if="session.conditions[pattern.id] != 'ignore'">
+                                {{ pattern.unhits }}
+                            </span>
+                            <a class="pull-right btn btn-xs btn-danger delete-pattern" v-on:click="delete_pattern(pattern.id)" href="#" data-target="managed" title="Remove this pattern" data-toggle="tooltip">
+                                <span class="fa fa-trash"></span>
+                            </a>
+                            <br/>
+                            <div class="form-group form-group-full-width" style="display:table">
+                                <label for="p_pattern">Pattern</label>
+                                <input class="form-control pattern-input input-sm" type="text" name="p_pattern" id="p_pattern" v-on:change="save_pattern(pattern.id)" v-model="pattern.pattern" autocomplete="off" autocorrect="off" autocapitalize="off" />
+                            </div>
+                            <div v-if="pattern.error" class="pattern-error">Syntax error: {{ pattern.error }}</div>
+                        </div>
+                    </div>
+                </div>
+            
+                <div class="tabs-panel actions" v-if="session.tab_editor == 'settings'">
+                    <template v-for="(part_slug, part_key) in session.address">
+                        <div class="form-group">
+                            <label :for="'address_'+part_key">{{ get_part_label(part_key) }}</label>
+                            <select class="form-control input-sm" :id="'address_'+part_key" v-model="session.address[part_key]" v-on:change="save_session">
+                                <option v-bind:value="ckey" v-for="(label, ckey) in address[part_key]">{{ label }}</option>
+                            </select>
+                        </div>
+                        <span>&nbsp;</span>
+                    </template>
+                    
+                    <br/>
+
+                    <div class="form-group " v-if="0">
+                        <label for="units_range">Text range</label>
+                        <input class="form-control input-sm" type="text" name="units_range" id="units_range" v-on:change="save_session" v-model="session.urange" autocomplete="off" autocorrect="off" autocapitalize="off" />
+                    </div>
+                
+                    <div class="form-group ">
+                        <label for="units_limit">Show first</label>
+                        <input class="form-control input-sm" type="number" name="units_limit" id="units_limit" v-on:change="save_session" v-model="session.ulimit"  autocomplete="off" autocorrect="off" autocapitalize="off" />
+                    </div>
+                    <div class="form-group">
+                        <label for="p_ignore">Ignore</label>
+                        <select class="form-control input-sm" name="p_ignore" id="p_ignore" v-model="session.ignore" v-on:change="save_session">
+                            <option v-bind:value="ckey" v-for="(label, ckey) in ignore">{{ label }}</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label for="p_exclude">Exclude</label>
+                        <select class="form-control input-sm" name="p_exclude" id="p_exclude" v-model="session.exclude" v-on:change="save_session">
+                            <option v-bind:value="ckey" v-for="(label, ckey) in exclude">{{ label }}</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div v-if="0">
+                <button class="form-control button primary" type="submit" v-on:click="on_click_update_button" name="update">Parse</button>
+                <button class="form-control button primary" type="submit" v-on:click="download_patterns" name="download">Download</button>
+            </div>
+            
+            <div class="stats panel" v-if="response.stats.result_size">
+                {{response.stats.result_size}} units found among {{response.stats.range_size}} in the selected range ({{ response.stats.result_size_pc }}%).
+                <span class="pull-right small greyed">{{ response.stats.duration_response }} s.</span>
+            </div>
+            <ul class="tabs" id="example-tabs2">
+                <li v-for="(label, ckey) in toreturn" 
+                    v-on:click.stop.prevent="set_toreturn(ckey)" 
+                    v-bind:class="{'tabs-title':1, 'is-active': (session.toreturn == ckey)}">
+                    <a href="#" v-bind:aria-selected="(session.toreturn == ckey) ? 'true' : 'false'">
+                        {{ label }}
+                    </a>
+                </li>
+            </ul>
+        </div><div class="tabs-content">
+            <div class="tabs-panel" id="results-ui">
+                <div id="tab-variants" class="tab-pane2 fade2">
+                    <ul>
+                        <li v-for="variant in response.variants">
+                            {{ variant.hits }}: {{ variant.text }}
+                        </li>
+                    </ul>
+                </div>
+                <div id="tab-units" class="tab-pane2 fade2 in active2">
+                    <div class="units" v-for="unit in response.segunits">
+                        <div class="unit">
+                            # {{ unit.label }}
+                            <div class="unit-content" v-html="unit.unit"></div>
+                            <br/>
+                            <div v-for="pattern in unit.patterns">
+                                <span v-bind:class="{'pattern-label': 1, 'missing-pattern': !pattern.instance}">
+                                    {{ get_pattern_key_from_id(pattern.id) }}
+                                </span>:
+                                {{ pattern.instance }}
+                            </div>
+                            <hr/>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endverbatim %}
+    </div>
+
+{% endblock %}
+
+{% block extra_js %}
+    {{ block.super }}
+    {# TODO: include min on production #}
+    {% comment %}
+    <script type="text/javascript" src="{{ STATIC_URL }}digipal/scripts/dpbootstrap.js"></script>
+        {% compress js %}
+            <script type="text/javascript" src="{{ STATIC_URL }}js/chosen.jquery.js"></script>
+            <script src="{{ STATIC_URL }}digipal/bs-dd-cb/bootstrap-dropdown-checkbox.min.js"></script>
+        {% endcompress %}
+    {% endcomment %}
+
+    <script src="//cdnjs.cloudflare.com/ajax/libs/jquery-sortable/0.9.13/jquery-sortable-min.js"></script>
+    
+    <script type="text/javascript">
+        //enum: ["patterns", "stats", "units", "variants"]
+        (function() {
+            // default data model used for Vue.js 
+            var model = {
+                'response': {{ context_js|safe }},
+                'session': {
+                    'selected': 'woodland-4',
+                    'address': {
+                        'document': 'Fr20125',
+                        'view': 'interpretive',
+                        'type_loc': 'whole/default',
+                    },
+                    'urange': '',
+                    'ulimit': 10,
+                    'conditions': {'woodland-4': 'ignore'},
+                    'expanded': {},
+                    'toreturn': 'segunits,segunits.patterns,segunits.unit',
+                    'tab_editor': 'definitions',
+                },
+                'address': {
+                    'document': {
+                        'Fr20125': 'Fr20125',
+                        'Royal': 'Royal 20 D I',
+                    },
+                    'view': {
+                        'interpretive': 'Interpretive',
+                        'semi-diplomatic': 'Semi-diplomatic',
+                    },
+                    'type_loc': {
+                        'whole/default': 'Whole',
+                        'section/1': '1. Genesis',
+                        'section/2': '2. Orient I',
+                        'section/3': '3. Thebes',
+                        'section/4': '4. Greeks and Amazons',
+                        'section/5': '5. Troy',
+                        'section/6': '6. Eneas',
+                        'section/6bis': '6bis. Assyrian Kings',
+                        'section/7': '7. Rome I',
+                        'section/8': '8. Orient II',
+                        'section/9': '9. Alexander',
+                        'section/10': '10. Rome II',
+                        'section/11': '11. Conquest of France by Caesar',
+                    },
+                },
+                'toreturn': {
+                    'segunits,segunits.patterns,segunits.unit': 'Units & Patterns',
+                    'segunits,segunits.unit': 'Units',
+                    'variants': 'Variants',
+                },
+                'conditions': {
+                    '': 'May have',
+                    'include': 'Must have',
+                    'exclude': 'Must not have',
+                    'ignore': 'Ignore',
+                },
+                'ignore': {
+                    '': 'Custom settings',
+                    'other_patterns': 'Other patterns',
+                    'other_groups': 'Other groups',
+                },
+                'exclude': {
+                    '': 'Custom settings',
+                    'this_group': 'Other patterns in this group',
+                },
+                'last_forced_update': Date(),
+            }
+            
+            // Load user settings from the locaStorage
+            var namespace = '{{ namespace }}';
+            var api_webpath = '{{ api_webpath }}';
+            var storage_key = 'textseg.'+namespace;
+            var session = window.localStorage.getItem(storage_key);
+            if (session) {
+                // TODO: move session.options.* under session.
+                // so everything at the same level and code becomes simpler
+                var asession = JSON.parse(session);
+                delete asession.address;
+                model.session = $.extend(model.session, asession);
+            }
+            // create empty response in the data model so Vue can detect changes
+            // and we can assume full structure in the code
+            ['messages', 'patterns', 'segunits', 'stats', 'variants'].map(function(val) {
+                model.response[val] = model.response[val] || [];
+            });
+            // inputs and outputs are managed by two separate views to prevent 
+            // huge lags when typing above long results.
+            // TODO: try to optimise the long result rendering.
+            var results_ui = new Vue({
+                el: '#results-ui',
+                
+                data: {
+                    'response': {},
+                },
+                
+                methods: {
+                    get_pattern_key_from_id: function(patternid) {
+                        for (i in this.response.patterns) {
+                            if (this.response.patterns[i].id != patternid) continue; 
+                            return this.response.patterns[i].key; 
+                        }
+                        return '?';
+                    },
+                }
+            });
+
+            var patterns_ui = new Vue({
+                el: '#patterns-ui',
+                
+                data: model,
+                
+                watch: {
+                },
+                
+                mounted: function() {
+                    var self = this;
+                    $('#patterns_list').sortable({
+                        placeholder: '<li class="ui-state-highlight"></li>',
+                        onDragStart: function ($item, container, _super, event) {
+                            // create a hidden clone, used later to cancel the action
+                            window.after_dragged = $item.clone().insertAfter($item).addClass("hidden");
+                            _super($item, container, _super, event);
+                        },
+                        onDrop: function ($item, container, _super, event) {
+                            // send change to server
+                            self.changed_order(event, $item);
+                            // clean up dragging styles
+                            _super($item, container, _super, event);
+                            // revert to previous position.
+                            // otherwise the Vue.js change after server respond
+                            // will mess up the order.
+                            window.after_dragged.before($item).remove();
+                        },
+                        distance: 20,
+                    });
+                    this.rendered();
+                },
+                
+                updated: function() {
+                    this.rendered();
+                },
+
+                computed: {
+                },
+                
+                methods: {
+                	
+                    rendered: function() {
+                        //console.log('rendered');
+                        // Dragging the selected li is managed outside the Vue.
+                        // Just make sure the selected li is draggable after each rendering.
+                        // Remember that selection can happen without a click.
+                        var self = this;
+                        var li = this.$el.querySelector('.picked');
+                        //window.lisort(li, function(ul) {self.change_order(ul)});
+                    },
+                    
+                    get_part_label: function(part_key) {
+                        if (part_key == 'type_loc') part_key = 'Extent';
+                        var ret = part_key.charAt(0).toUpperCase() + part_key.slice(1);
+                        return ret;
+                    },
+                    save_session: function() {
+                        window.localStorage.setItem(storage_key, JSON.stringify(this.session));
+                    },
+                    
+                    set_tab_editor: function(tab_key) {
+                        this.session.tab_editor = tab_key;
+                        this.save_session();
+                    },
+                    set_toreturn: function(tab_key) {
+                        this.session.toreturn = tab_key;
+                        this.save_session();
+                        this.apply_patterns();
+                    },
+                    select_pattern: function(event) {
+                        var li = event.currentTarget;
+                        this.select_pattern_by_id(li.getAttribute('data-patternid'))
+                    },
+                    select_pattern_by_id: function(patternid) {
+                        this.session.selected = patternid;
+                        
+                        // make sure vue.js listens to the condition
+                        // problem = conditions[id] doesn't exist in advance
+                        // so vue.js doesn't detect change and therefore doesn't
+                        // redraw after the first time a condition is added.
+                        this.$set(this.session.conditions, this.session.selected, this.session.conditions[this.session.selected] || '');
+                        
+                        this.save_session();
+                    },
+                    
+                    changed_order: function (event, $item) {
+                        var pattern_key = $item.attr('data-key').trim();
+                        var prev = $item.prev('li');
+                        prev = prev.length ? prev.attr('data-key').trim() : '';
+                        this.call_api('move_pattern', 'post', {pattern: pattern_key, previous: prev}, ['patterns']);
+                    },
+                    
+                    delete_pattern: function (patternid) {
+                        var pattern = null;
+                        $(this.response.patterns).each(function(i, apattern) {
+                            if (apattern.id == patternid) {
+                                return false;
+                            }
+                            pattern = apattern;
+                        });
+                        if (pattern) {
+                            this.select_pattern_by_id(pattern.id)
+                        }
+                        this.change_pattern(patternid, 'delete')
+                    },
+                    save_pattern: function (patternid) {
+                        this.change_pattern(patternid, 'put')
+                    },
+                    
+                    change_pattern: function (patternid, method) {
+                        var pattern = null;
+                        $(this.response.patterns).each(function(i, apattern) {
+                            if (apattern.id == patternid) {
+                                pattern = apattern;
+                            }
+                        });
+                        if (pattern) {
+                            this.call_api('patterns/'+pattern.id, method, pattern);
+                        }
+                    },
+                    
+                    is_first_in_group: function(pattern_key) {
+                        return (pattern_key.substring(pattern_key.length-2) === '-1' || pattern_key.substring(pattern_key.length-1) === '_'); 
+                    },
+                    toggle_group: function(pattern_key) {
+                        var group_key = this.get_group_label(pattern_key);
+                        this.$set(this.session.expanded, group_key, !(this.session.expanded[group_key]));
+                        this.save_session();
+                    },
+                    is_pattern_visible: function(pattern_key) {
+                        if (pattern_key.substring(pattern_key.length-1) === '_') return false;
+                        var group_label = this.get_group_label(pattern_key);
+                        if (pattern_key == group_label) return true;
+                        if (0 && pattern_key == 'new-pattern') {
+                            console.log(Date());
+                        }
+                        var ret = !!(this.session.expanded[group_label]);
+                        return ret;
+                    },
+                    get_group_label: function(pattern_key) {
+                        return pattern_key.replace(/(-\d+|_[^_]*)$/, '');
+                    },
+                    
+                    download_patterns: function() {
+                        this.apply_patterns('csv');
+                    },
+                    
+                    on_click_update_button: function() {
+                        this.apply_patterns();
+                    },
+
+                    apply_patterns: function(format) {
+                        $('#patterns-ui-screen').stop().animate({
+                            opacity: 0.50,
+                        }, 500);
+
+                        var self = this;
+                        var options = {
+                            'ulimit': this.session.ulimit,
+                            'urange': this.session.urange,
+                            'hilite': this.session.selected || '',
+                            'ignore': this.session.ignore,
+                            'exclude': this.session.exclude,
+                            'address': (['document', 'view', 'type_loc'].map(function(k) {return self.session.address[k] })).join('/'),
+                            'format': format,
+                        }
+
+                        // send this in the body as it can be too long for URL
+                        var data = {'conditions': this.session.conditions};
+                        // which means that we have to use POST (GET is not meant to carry a body)
+                        // http://stackoverflow.com/q/14202257/3748764
+                        var toreturn = ['patterns', 'stats'];
+                        this.session.toreturn.split(',').map(function(v) {toreturn.push(v);});
+                        this.call_api('segunits', 'post', data, toreturn, options, function() {
+                            $('#patterns-ui-screen').stop().animate({opacity: 1,});
+                        });
+                    },
+
+                    call_api: function (path, method, data, toreturn, qs, after) {
+                        var self = this;
+                        path = path.replace(/(^\/|\/$)/g, '') + '/';
+                        toreturn = toreturn || [path.replace(/\/.*$/, '')];
+                        qsa = '';
+                        if (qs) {
+                            var qsa = [];
+                            for (var k in qs) {
+                                if (qs[k]) qsa.push(k+'='+qs[k]);
+                            }
+                            if (qsa) qsa = '&'+qsa.join('&');
+                        }
+                        var req = $.ajax({
+                            //url: '/digipal_text/api/'+path+'?ret='+(toreturn.join(','))+qsa,
+                            // TODO: default should be a variable
+                            url: api_webpath+path+'?ret='+(toreturn.join(','))+qsa,
+                            type: method,
+                            data: data ? JSON.stringify(data) : null,
+                            /*dataType: 'json',*/
+                        }).success(function(data, textStatus, jqXHR) {
+                            var content_type = jqXHR.getResponseHeader('content-type');
+                            if (/^text\/csv/.test(content_type)) {
+                                var $a = $('<a>link</a>');
+                                $a.attr('href', 'data:attachment/csv,' + (content_type, encodeURIComponent(data)));
+                                $a.attr('target', '_blank');
+                                $a.attr('download', 'segments.csv');
+                                $(body).append($a);
+                                $a.get(0).click();
+                                $a.remove();
+                            } else {
+                                // merge with out previous responses.
+                                // so we can get partial response, more efficient.
+                                self.response.messages = [];
+                                // send response to our different views
+                                for (key in data) {
+                                    self.response[key] = data[key];
+                                }
+                                if (data.variants || data.segunits) {
+                                    results_ui.response = data;
+                                }
+                            }
+                        }).fail(function(jqXHR, textStatus) {
+                            self.response.messages = [{
+                                'type': 'error',
+                                'message': 'Request failed: ' + textStatus,
+                            }];
+                        });
+                        if (after) {
+                            req.always(after);
+                        }
+                    },
+                }
+            });
+        })();
+    </script>
+{% endblock %}

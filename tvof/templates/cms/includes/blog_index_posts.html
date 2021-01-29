@@ -1,0 +1,53 @@
+{% load static wagtailcore_tags wagtailimages_tags %}
+
+<role="top navigation">{% include "cms/includes/pagination.html" with page=page_of_posts %}</role>
+
+<ul class="{{ class }} no-bullet">
+    {% for apost in page_of_posts %}
+        {% with apost.specific as post %}
+            {% with post.thumbnail as thumb %}
+                <li class="item">
+                    <div class="row">
+                        {% if thumb %}
+                            <div class="medium-3 large-2 columns">
+                                {# the feed image should display here instead of the placeholder #}
+                                <div class="thumbnail">
+                                    <!-- img src="{% static 'images/placeholder-190x110.png' %}" alt="{# replace with title from image #}" -->
+                                    <a href="{{ post.url }}">
+                                    {% image thumb fill-190x110 %}
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div class="{% if thumb %}medium-9 large-10{% else %} small-12{% endif %} columns">
+                            {% block blog_post_title %}
+                                <h2 class="posttitle">
+                                    <a href="{{ post.url }}">{{ post.title }}</a>
+                                </h2>
+                                <p class="bydate">by {{ post.owner.first_name }} {{ post.owner.last_name }}, {{ post.first_published_at|date:"j M Y" }}</p>
+                                <section class="postcontent">
+                                    {% for child in post.blogpost.content %} 
+                                        <p>
+                                            {% if child.block_type == 'paragraph' %}
+                                                {% if forloop.first %}
+                                                {{ child.value|richtext|truncatewords:15 }}
+                                                <a href="{{ post.url }}"><strong>Read more about {{post.title}} &raquo;</strong></a>
+                                                {% endif %}
+                                            {% endif %}
+                                        </p>
+                                    {% endfor %}
+                                    </section>
+                            {% endblock %}
+                        </div>
+                    </div>
+                </li>
+            {% endwith %}
+        {% endwith %}
+    
+    {% empty %}
+        <li>Sorry, nothing to show here.</li>
+    {% endfor %}
+    
+</ul>
+
+<role="bottom navigation">{% include "cms/includes/pagination.html" with page=page_of_posts %}</role>

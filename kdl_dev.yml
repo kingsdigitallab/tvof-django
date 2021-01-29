@@ -1,0 +1,82 @@
+version: '3'
+
+volumes:
+  django_media: {}
+  postgres_data: {}
+  postgres_data_backups: {}
+  traefik: {}
+
+services:
+  django:
+    build:
+      context: .
+      dockerfile: ./compose/production/django/Dockerfile
+    image: tvof_dev_django
+    volumes:
+      - django_media:/app/tvof/media
+    depends_on:
+      - postgres
+      - redis
+      - elasticsearch
+    env_file:
+      - ./.envs/.dev/.django
+      - ./.envs/.dev/.postgres
+    command: /start
+    restart: unless-stopped
+  nginx:
+    build:
+      context: .
+      dockerfile: ./compose/production/nginx/Dockerfile
+    image: tvof_dev_nginx
+    depends_on:
+      - django
+    volumes:
+      - django_media:/usr/share/nginx/media:ro
+    restart: unless-stopped
+
+  postgres:
+    build:
+      context: .
+      dockerfile: ./compose/production/postgres/Dockerfile
+    image: tvof_dev_postgres
+    volumes:
+      - postgres_data:/var/lib/postgresql/data:Z
+      - postgres_data_backups:/backups:z
+    env_file:
+      - ./.envs/.dev/.postgres
+    restart: unless-stopped
+
+  traefik:
+    build:
+      context: .
+      dockerfile: ./compose/dev/traefik/Dockerfile
+    image: tvof_dev_traefik
+    depends_on:
+      - django
+    volumes:
+      - traefik:/etc/traefik/acme:z
+    ports:
+      - '127.0.0.1:8203:80'
+    restart: unless-stopped
+
+  redis:
+    image: redis:5.0
+    restart: unless-stopped
+
+
+
+  elasticsearch:
+    image: elasticsearch:7.9.1
+    env_file:
+      - ./.envs/.dev/.elasticsearch
+    restart: unless-stopped
+
+#  kibana:
+#    image: kibana:7.9.1
+#    depends_on:
+#      - elasticsearch
+#    env_file:
+#      - ./.envs/.dev/.kibana
+#    ports:
+#      - '5601:5601'
+#    restart: unless-stopped
