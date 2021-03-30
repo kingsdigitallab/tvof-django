@@ -47,6 +47,19 @@ LOCALE_PATHS = [str(ROOT_DIR / "locale")]
 # True for the REF2021 site. So we can show the REF banner.
 IS_REF_SITE = env.bool("IS_REF_SITE", False)
 
+# True for public site only. It will still bar access to search and edition.
+# False for disallowing all user agents for the entire site.
+ALLOW_ROBOTS = env.bool("ALLOW_ROBOTS", False)
+
+# Override the value in local.py
+ALIGNMENT_SHOW_INTERNAL_NOTES = env.bool(
+    "ALIGNMENT_SHOW_INTERNAL_NOTES",
+    False
+)
+
+# If True, show the the token number on the search result page
+SEARCH_SHOW_TOKEN_NUMBER = False
+
 # DATABASES
 # ------------------------------------------------------------------------------
 # https://docs.djangoproject.com/en/dev/ref/settings/#databases
@@ -423,9 +436,6 @@ TV_NOT_FOUND_ERRORS = [
 # Override the value in local.py
 ALIGNMENT_LINKABLE_MSS = ['fr20125', 'royal20d1']
 
-# Override the value in local.py
-ALIGNMENT_SHOW_INTERNAL_NOTES = True
-
 #
 ALIGNMENT_FEATURE_LABELS = {
     'loc': 'location',
@@ -604,9 +614,6 @@ SEARCH_FACET_LIMIT_DEFAULT = 1000
 SEARCH_RESULT_MAX_SIZE = 10000
 
 SEARCH_FACETS_INFO_PATH = '/histoire-ancienne/search-help'
-
-# If True, show the the token number on the search result page
-SEARCH_SHOW_TOKEN_NUMBER = False
 
 # The facets o the search page.
 # Note that entries in this array can be overridden by

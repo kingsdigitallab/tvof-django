@@ -70,6 +70,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
 
                 # print(group_dict['job'])
 
+                can_reset = 0
                 job_status = group_dict['job']['info']['status']
                 class_css = ''
                 if job_status > 0 or job_status < STATUS_RUNNING_REMOTELY:
@@ -80,7 +81,9 @@ class DataReleaseView(LoginRequiredMixin, FormView):
                     class_css = 'job-scheduled'
                 elif job_status != 0:
                     class_css = 'job-error'
+                    can_reset = 1
                 group_dict['job']['class'] = class_css
+                group_dict['job']['can_reset'] = can_reset
 
                 ret.append(group_dict)
 
@@ -129,6 +132,7 @@ class DataReleaseView(LoginRequiredMixin, FormView):
         target = self.get_selected_target()
 
         if ret and source and target:
+            self.process_reset_jobs()
             self.process_index_input_file()
 
             search_file_copied = False
@@ -192,6 +196,19 @@ class DataReleaseView(LoginRequiredMixin, FormView):
             self.request.POST.getlist('alignment_mss', []),
             self.get_selected_target()['key']
         )
+
+    def process_reset_jobs(self):
+        reset = self.request.POST.get('reset', '')
+
+        parts = reset.split('/')
+        if len(parts) == 2:
+            job_slug = parts[1]
+            if parts[0] == 'source':
+                site = self.get_source_site()
+            else:
+                site = self.get_selected_target()
+
+            res = job_action(job_slug, 'reset', site['path'])
 
     def process_index_input_file(self):
         patterns = {

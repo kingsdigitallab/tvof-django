@@ -9,10 +9,14 @@
   {% if group.job %}
     {% with group.job as job %}
       <p class="job-info {{job.class}}" title="Last activity: {{ job.info.modified|date:'D j M - P'|default:'never run' }}">
-        {{ job.label }}:
+        {{ job.label }}
         <a href="{% url 'data_release_job' job_site_key job.slug %}" target="_blank" >
           {{ job.info.message }}
         </a>
+        {% if job.can_reset %}
+          <br>
+          <button class="button" name="reset" value="{{ job_site_key }}/{{ job.slug }}">Reset</button>
+        {% endif %}
       </p>
     {% endwith %}
   {% endif %}

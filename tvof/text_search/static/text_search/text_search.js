@@ -21,7 +21,7 @@ window.Vue.use(window.VueAutosuggest);
 function sort_suggestions(suggestions, phrase) {
   // ac-368: comparison places exact matches on top
   // then consider length difference
-  // then take alaphebetical difference into account (see compare_suggestions)
+  // then take alphabetical difference into account (see compare_suggestions)
   if (suggestions) {
     suggestions.map(function(sug) {
       sug.cmp = 0;
@@ -470,23 +470,23 @@ var app = new window.Vue({
             });
         },
         filter_response: function(response) {
-            // transofrm the response from the search API
-            // mainly facet option ordering and filtering
+            // transform the response from the search API.
+            // mainly facet option ordering and filtering.
             var fields = response.fields;
 
-            this.ui_facets.map(function(ui_facet) {
+            window.SEARCH_FACETS.map(function(ui_facet) {
                 var key = ui_facet.key;
                 var ret = fields[key];
 
                 if (ret) {
-                    if (ret && ui_facet.whitelist) {
+                    if (ui_facet.whitelist) {
                         ret = ret.filter(function(v) {
                             return (ui_facet.whitelist.indexOf(v.text.toLowerCase()) > -1);
                         });
                         fields[key] = ret;
                     }
 
-                    if (ret && key == 'section_number') {
+                    if (key == 'section_number') {
                         // sections should be in order of their numbers
                         ret.sort(function(a, b) {
                             var na = parseInt(a.text);

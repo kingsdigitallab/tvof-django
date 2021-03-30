@@ -280,4 +280,5 @@ tvof/media/
 /legacy/*.sql
 /legacy/tvof/settings/local.py
 .kiln
+.volumes
 

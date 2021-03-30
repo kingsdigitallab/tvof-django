@@ -1,0 +1,11 @@
+User-agent: *
+{% if ALLOW_ROBOTS %}
+Disallow: /search
+Disallow: /search/
+Disallow: /lab
+Disallow: /lab/
+Disallow: /textviewer
+Disallow: /textviewer/
+{% else %}
+Disallow: /
+{% endif %}
