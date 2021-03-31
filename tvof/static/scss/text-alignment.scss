@@ -34,9 +34,9 @@
     background-color: darkgrey;
 }
 
-.para-ms-verse {
-    background-color: lightblue;
-}
+// .para-ms-verse {
+//     background-color: lightblue;
+// }
 
 /* GN */
 .rubric-dest {
@@ -156,9 +156,15 @@ body {
     .var-actions {
         font-size: small;
 
-        a {
+        a,
+        button {
+            font-size: .9125rem;
+            margin-top: .625rem;
+            padding: .25rem;
+
             &:hover {
-                text-decoration: underline;
+                background: scale-color($primary-color, $lightness: 20%);
+                color: $white !important;
             }
         }
     }
@@ -225,7 +231,6 @@ $viz-grey: #d8d8d8;
 
     @mixin viz-class-color($class, $color, $darkenpc: 20%) {
         .#{$class} {
-            // background: $color;
             @include viz-shared-color($class, $color);
 
             &:hover,
@@ -287,9 +292,9 @@ $viz-grey: #d8d8d8;
     // @include viz-class-color("variation.location.rubric", #9c89b8);
     @include viz-class-color("variation", #ffaa00, 10%); // ML
     @include viz-class-color("variation.location", #757eff); //
-    @include viz-class-color("variation.location.rubric", #6742b5, 10%); // PML
+    @include viz-class-color("variation.location.rubric", #452093, 10%); // PML
 
-    @include viz-class-color("para-ms-verse", #6fbad3);
+    @include viz-class-color("para-ms-verse", #afdcf5);
 
     // GN: used only on the bars viz so far, correspond to the color of the
     // rubir stacks / layers
@@ -311,9 +316,7 @@ $viz-grey: #d8d8d8;
     }
 
     .column {
-        border-bottom: 2px solid #f2f2f2;
-        border-left: 5px solid #f2f2f2;
-        border-right: 5px solid #f2f2f2;
+        border: 0 5px 2px solid #f2f2f2;
 
         &.first {
             border-top: 2px solid $viz-grey;
@@ -326,7 +329,6 @@ $viz-grey: #d8d8d8;
     }
 
     .connect {
-        // color: scale-color(black, $lightness: 20%);
         margin-bottom: 0;
 
         &:hover {
@@ -394,23 +396,4 @@ $viz-grey: #d8d8d8;
             list-style: none;
         }
     }
-
-    // table vizualisation
-
-    &.viz-table {
-
-//         .para-ms, label {
-//             color: #252525;
-//         }
-//
-//         .para-ms {
-//             &:hover, &:active {
-//                 color: white;
-//                 label {
-//                     color: white;
-//                 }
-//             }
-//         }
-    }
-
 }

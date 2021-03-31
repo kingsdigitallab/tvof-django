@@ -43,7 +43,7 @@
   {% endblock %}
 
   {% block main_wrapper %}
-  <section class="main">
+  <div class="main">
     <div class="row">
       <div class="large-12 columns">
         {% block title %}{% if self.title %}<h1>{{ self.title }}</h1>{% endif %}{% endblock %}
@@ -51,7 +51,7 @@
         {% endblock %}
       </div>
     </div>
-  </section>
+  </div>
   {% endblock %}
 
   {% if IS_REF_SITE %}

@@ -112,20 +112,22 @@ a.ext-links {
     a {
         color: $white;    
     }
-
-    h1 {
-        font-weight: 700;
-        margin-top: 2rem;
-        text-shadow: 0 0 5px #000;
-    }
 }
 
 .mini-header {
-    h1 {
+    .site-title {
         a {
             display: inline-block;
+            font-weight: 400;
         }
     }
+}
+
+.site-title {
+    font-size: 3em;
+    font-weight: 700;
+    margin-top: 2rem;
+    text-shadow: 0 0 5px #000;
 }
 
 /* Navigation */
@@ -743,7 +745,7 @@ ul.sticky {
 
     // GN, ugly inherit, we should use span instead of sup in lineated verses
     .lineated .verse-number,
-    // ac-358.1 : cont is now dislayed line by line
+    // ac-358.1: cont is now dislayed line by line
     .cont .verse-number {
         position: absolute;
         right: 0;
@@ -962,6 +964,10 @@ footer {
             }
         }
     }
+
+    .site-title {
+        font-size: 1.75rem;
+    }
 }
 
 @media screen and (max-width: 768px) {
@@ -1082,8 +1088,7 @@ footer {
 
         .selected {
           padding: 0.2rem;
-          background-color: burlywood;
-          // font-weight: bold;
+          background-color: rgba(222,184,135, 0.5);
         }
 
         .card-divider {
@@ -1112,7 +1117,6 @@ footer {
             margin-left: 0;
             display: inline;
 
-            // padding-bottom: 1.5rem;
             .applied-filter {
                 margin-right: 0.7em;
                 display: inline;
