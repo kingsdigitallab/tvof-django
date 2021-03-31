@@ -47,7 +47,6 @@ a vue directive:
 
                 <a v-if="canClosePane()" href="#" v-on:click.stop.prevent="closePane()" class="close-panel-button float-right">
                     <span class="fa fa-trash" aria-label="Close this panel" title="Close this panel"></span>
-                    </span>
                 </a>
 
                 <div class="controls">
@@ -132,7 +131,6 @@ a vue directive:
                         data-disable-hover="true" data-click-open="true"
                         data-alignment="right">
                         <!-- TODO: need to fix the view button. By default it should duplicate only -->
-                        <!-- <li v-for="aview in views"> -->
                         <li>
                             <a href="#" v-on:click.stop.prevent="onClickViewExternal(view.slug)"
                                 aria-label="Open a new panel" title="Open a new panel">
@@ -147,10 +145,10 @@ a vue directive:
                         <li v-bind:class="{toolbar: 1, hidden: display_settings.length == 0}">
                             <a><span class="fa fa-pencil"></span></a>
                             <ul class="text-left">
-                                <h3>Display</h3>
+                                <!-- <h3>Display</h3> -->
                                 <li v-for="setting in display_settings" v-bind:class="{active: isDisplaySettingActive(setting), 'is-submenu-item': 1, 'is-dropdown-submenu-item': 1}">
                                     <a href="#" v-on:click.stop.prevent="onClickDisplaySetting(setting)">
-                                        {{ setting.label }}
+                                        Show/{{ setting.label }}
                                     </a>
                                 </li>
                             </ul>
