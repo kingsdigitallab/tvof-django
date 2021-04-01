@@ -327,6 +327,14 @@
     }
 }
 
+// GF: Hiding all but the first text-pane on small screens
+
+@media screen and (max-width: 640px) {
+    div[class*="text-pane p"]:not(:nth-child(2)) {
+        display: none;
+    }
+}
+
 .text-chunk {
 
     &.tv-error {
