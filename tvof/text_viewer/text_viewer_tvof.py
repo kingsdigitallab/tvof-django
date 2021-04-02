@@ -164,10 +164,12 @@ class TextViewerAPITvof(TextViewerAPIXML):
         },
     ]
 
-    def get_sublocationid_from_address(self, address, chunk):
+    def get_sublocationid_from_address(self, address, chunk, set_class=False):
         '''
         :param address: e.g. 'Fr20125/interpretive/paragraph/588/2'
         :param chunk: chunk of xml content that contains the id
+        :param set_class: if True sets a class="sublocated" to the element
+            with that address and remove the id
         :return: 'edfr20125_00588_02'
         '''
         ret = ''
@@ -177,11 +179,16 @@ class TextViewerAPITvof(TextViewerAPIXML):
         seg = parts.get('sublocation', '')
         if para and seg:
             pattern = 'id="([^"]+0*{}_0*{})"'.format(para, seg)
-            m = re.search(pattern, chunk)
-            if m:
-                ret = m.group(1)
-                # attrib = 'id="'+ret+'"'
-                # chunk = chunk.replace(attrib, attrib+' cla')
+
+            def sub_id(match):
+                nonlocal ret
+                ret = match.group(1)
+                if set_class:
+                    return 'data-sublocated="1"'
+                else:
+                    return match.group(0)
+
+            chunk = re.sub(pattern, sub_id, chunk, 1)
 
         return ret, chunk
 
@@ -450,8 +457,9 @@ class TextViewerAPITvof(TextViewerAPIXML):
 
         # not necessary for the view version as we hide it with css anyway.
         # also we cannot modify the XML here because it's cached.
-        if 0 and view == 'interpretive':
-            utils.remove_xml_elements(ret, './/span[@data-tei-type="gloss"]')
+
+        # if 0 and view == 'interpretive':
+        #     utils.remove_xml_elements(ret, './/span[@data-tei-type="gloss"]')
 
         return ret
 

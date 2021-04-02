@@ -702,7 +702,7 @@
 
                         // scroll to sublocationid
                         if (self.sublocationid) {
-                            $text_chunk.find('#'+self.sublocationid).each(function() {
+                            $text_chunk.find('[data-sublocated="1"]').each(function() {
                                 var $seg = $(this);
                                 $seg.addClass('sublocated');
                                 $text_chunk.scrollTop($text_chunk.scrollTop() + $seg.position().top);
