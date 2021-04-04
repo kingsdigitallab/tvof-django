@@ -1100,6 +1100,10 @@ footer {
 
         .card-divider {
           padding: 0.5rem 1rem;
+
+          label {
+            font-size: 1rem;
+          }
         }
 
         .facet-info {
@@ -1158,6 +1162,12 @@ footer {
         .pagination-prev, .pagination-nex, .pagination-first, .pagination-last {
             &> a, &>span {
               padding: 8px 5px;
+            }
+        }
+
+        .pagination-page {
+            label {
+               display: inline-block;
             }
         }
 

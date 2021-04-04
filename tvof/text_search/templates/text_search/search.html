@@ -29,6 +29,7 @@
           <input class="search-text" type="search" aria-label="search box" v-model="query.text" v-on:change="on_change_search_text" placeholder="e.g. dire or dirai">
           <a href="#" class="close-icon" v-on:click.prevent="on_reset_search_text"></a>
         </div>
+
         <div class="row">
           <div class="search-summary search-facets columns">
             <template v-if="applied_filters_count > 0">
@@ -56,6 +57,7 @@
             </template>
           </div>
         </div>
+
         <div class="row">
           <div class="search-results columns small-12 large-9 large-order-2">
 
@@ -69,8 +71,8 @@
                 <a href="#" v-on:click.prevent="on_click_prev" title="Previous page" aria-label="Previous page" v-if="response.objects.previous"><svg class="svg-icon flipx" aria-hidden="true"><use href="#next-page-icon"/></svg></a>
                 <span v-else><svg class="svg-icon flipx" aria-hidden="true"><use href="#next-page-icon"/></svg></span>
               </li>
-              <li>
-                Page <input class="page-number" type="number" v-model="query.page" @change="on_change_page_number()">
+              <li class="pagination-page">
+                <label>Page <input class="page-number" type="number" v-model="query.page" @change="on_change_page_number()"></label>
                 / <span :title="'The search returns the first ' + max_hits + ' instances.'">{{ last_page_index }}<template v-if="is_result_truncated">+</template></span>
               </li>
               <li :class="{'pagination-nex': 1, 'disabled': !response.objects.next}">
@@ -192,7 +194,7 @@
             <!-- Search phrase -->
             <div class="card show-for-large">
               <div class="card-divider">
-                <h2>{{ config.phrase_title }}</h2>
+                <label for="autosuggest-input"><strong>{{ config.phrase_title }}</strong></label>
               </div>
               <div class="card-section">
                 <vue-autosuggest

@@ -40,7 +40,7 @@
     <header>
       {% include 'includes/header.html' %}
     </header>
-    
+
     <div id="maincontent" tabindex="0"></div>
 
     {% block primary_navigation %}
@@ -51,7 +51,7 @@
   {% endblock %}
 
   {% block main_wrapper %}
-  <div class="main">
+  <div class="main" role="main">
     <div class="row">
       <div class="large-12 columns">
         {% block title %}{% if self.title %}<h1>{{ self.title }}</h1>{% endif %}{% endblock %}
