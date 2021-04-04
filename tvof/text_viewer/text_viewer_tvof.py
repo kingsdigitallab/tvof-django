@@ -178,7 +178,7 @@ class TextViewerAPITvof(TextViewerAPIXML):
         para = parts.get('location', '')
         seg = parts.get('sublocation', '')
         if para and seg:
-            pattern = 'id="([^"]+0*{}_0*{})"'.format(para, seg)
+            pattern = 'id="([^"]+_0*{}_0*{})"'.format(para, seg)
 
             def sub_id(match):
                 nonlocal ret
