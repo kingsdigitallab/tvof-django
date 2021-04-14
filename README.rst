@@ -1,7 +1,8 @@
-The Values of French
-====================
+The Values of French (TVOF)
+===========================
 
-Web site for the TVOF project
+Source code of `Web Application for the TVOF research project <tvof.ac.uk>`_. (ERC Funded).
+
 
 .. image:: https://img.shields.io/badge/License-MIT-yellow.svg
     :target: https://opensource.org/licenses/MIT
