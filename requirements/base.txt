@@ -92,10 +92,8 @@ oauthlib==3.1.0
     # via requests-oauthlib
 openpyxl==3.0.7
     # via tablib
-pillow==7.2.0
-    # via
-    #   -r requirements/base.in
-    #   wagtail
+pillow==8.2.0
+    # via wagtail
 pycparser==2.20
     # via cffi
 python-dateutil==2.8.1
