@@ -110,7 +110,7 @@ a.ext-links {
     color: white;
 
     a {
-        color: $white;    
+        color: $white;
     }
 }
 
@@ -745,13 +745,20 @@ ul.sticky {
 
     // GN, ugly inherit, we should use span instead of sup in lineated verses
     .lineated .verse-number,
-    // ac-358.1: cont is now dislayed line by line
+    // ac-358.1: cont is now displayed line by line
     .cont .verse-number {
         position: absolute;
         right: 0;
         font-size: inherit;
         line-height: 1rem;
         top: inherit;
+    }
+
+    // GN, bugfix: Fr para 31, semi-dip
+    // -> cont verse numbers wrongly appear in the right margin
+    // We hide them.
+    .tv-view-semi-diplomatic .cont .verse-number {
+        display: none;
     }
 
     .verse-number {
@@ -1093,6 +1100,10 @@ footer {
 
         .card-divider {
           padding: 0.5rem 1rem;
+
+          label {
+            font-size: 1rem;
+          }
         }
 
         .facet-info {
@@ -1151,6 +1162,12 @@ footer {
         .pagination-prev, .pagination-nex, .pagination-first, .pagination-last {
             &> a, &>span {
               padding: 8px 5px;
+            }
+        }
+
+        .pagination-page {
+            label {
+               display: inline-block;
             }
         }
 

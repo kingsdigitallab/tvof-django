@@ -5,8 +5,15 @@
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge">
   <title>{% block meta_title %}{{ self.title }}{% endblock %} | The Values of French</title>
-  <meta name="description" content="">
+  <meta name="description" content="The Values of French Language and Literature in the European Middle Ages is a five-year research project running from 2015 to 2020 in the Department of French at King’s College London, funded by the European Research Council (ERC) under the European Union’s Horizon 2020 research and innovation programme">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- HTML5 shim, for IE6-8 support of HTML5 elements -->
+    <!--[if lt IE 9]>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/html5shiv/3.7.3/html5shiv.min.js"></script>
+    <![endif]-->
+
+    <link rel="icon" href="{% static 'images/favicon.png' %}">
 
   {% compress css %}
     <link rel="stylesheet" type="text/x-scss" href="{% static 'scss/main.scss' %}">
@@ -33,6 +40,7 @@
     <header>
       {% include 'includes/header.html' %}
     </header>
+
     <div id="maincontent" tabindex="0"></div>
 
     {% block primary_navigation %}
@@ -43,7 +51,7 @@
   {% endblock %}
 
   {% block main_wrapper %}
-  <div class="main">
+  <div class="main" role="main">
     <div class="row">
       <div class="large-12 columns">
         {% block title %}{% if self.title %}<h1>{{ self.title }}</h1>{% endif %}{% endblock %}

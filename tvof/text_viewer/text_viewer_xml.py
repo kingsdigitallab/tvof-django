@@ -165,6 +165,10 @@ class TextViewerAPIXML(TextViewerAPI):
         ret = re.sub(r'\s+([:;!?»])', r'&nbsp;\1', ret)
         ret = re.sub(r'([«])\s+', r'\1&nbsp;', ret)
 
+        # GN: March 2021, remove all ids as not needed
+        # and create duplicates when text open in two panes.
+        ret = re.sub(r'id="ed[^"]+"', '', ret)
+
         return ret
 
     def request_chunk(self, address_parts=None, synced_with=None):
@@ -179,8 +183,6 @@ class TextViewerAPIXML(TextViewerAPI):
         the document backend and the document format. Both of which can vary
         from one project to another.
         '''
-
-
         ret = False
 
         # resolve address (e.g. 'default')
@@ -268,6 +270,10 @@ class TextViewerAPIXML(TextViewerAPI):
                         '\n'.join(notes_info['notes'])
                     )
 
+            sublocationid, chunk = self.get_sublocationid_from_address(
+                address, chunk, True
+            )
+
             chunk = self.compress_html(chunk)
 
             classes = ['tv-view-{}'.format(view)]
@@ -275,10 +281,6 @@ class TextViewerAPIXML(TextViewerAPI):
                 classes.append('tv-viewer-proofreader')
             else:
                 classes.append('tv-viewer-pane')
-
-            sublocationid, chunk = self.get_sublocationid_from_address(
-                address, chunk
-            )
 
             self.response = {
                 'chunk':

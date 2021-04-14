@@ -77,7 +77,7 @@ $(function() {
         var current_height = $element.outerHeight();
         if (noscrollbar) {
             // ! only works if body height is NOT 100% !
-            height = $(window).outerHeight() - $('body').outerHeight() + current_height;
+            height = $(window).outerHeight() - $('.text-viewer-wrapper').outerHeight() + current_height;
             height = (height <= min) ? min : height;
         } else {
             // Heights calculations:
@@ -101,7 +101,7 @@ $(function() {
     window.elastic_element = function($target, callback, min, margin) {
         var on_resize = function(e) {
             var height = get_elastic_height($target, min, margin);
-            $target.css('height', height);
+            $target.css('height', height + 120);
             callback($target);
         };
         $(window).on('resize scroll', function(e) {on_resize(e);});

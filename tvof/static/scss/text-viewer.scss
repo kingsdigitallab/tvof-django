@@ -14,15 +14,22 @@
 // TODO: we should use Foundation flexbox instead. But without enabling the flex
 // grid. Only the foundation flex helper classes.
 
-.body-text-viewer {
-    // Content should fit the viewport, always.
-    // So hide the scrollbars. Without this the JS height calculations may fail.
+// .body-text-viewer {
+//     // Content should fit the viewport, always.
+//     // So hide the scrollbars. Without this the JS height calculations may fail.
+//     overflow: hidden;
+// }
+
+// GF: Adding a wrapper to the text viewer, so that we allow for page scrolling,
+// don't interfere with the body and can push down the footer without making it
+// inaccessible.
+
+.text-viewer-wrapper {
     overflow: hidden;
 }
 
 .text-viewer-header {
     display: block;
-    // height: 50px;
     position: relative;
 
     h1 {
@@ -317,6 +324,14 @@
 
     .pane-content {
         position: relative;
+    }
+}
+
+// GF: Hiding all but the first text-pane on small screens
+
+@media screen and (max-width: 640px) {
+    div[class*="text-pane p"]:not(:nth-child(2)) {
+        display: none;
     }
 }
 

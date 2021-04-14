@@ -19,7 +19,7 @@
 
 {% verbatim %}
 
-<div id="maincontent" tabindex="0" aria-label="option to skip to the top"></div>
+<div id="maincontent" tabindex="0"></div>
 <!-- #text-viewer height is adjusted automatically with JS  -->
 <section id="text-viewer" class="main text-viewer">
     <div id="text-viewer-glass"></div>
@@ -41,7 +41,7 @@ a vue directive:
 {% endcomment %}
 {% verbatim %}
 <div class="vue-templates">
-    <div id="vue-template-text-pane" class="text-pane">
+    <div id="vue-template-text-pane" v-bind:class="'text-pane ' +pane_slug">
         <div class="row">
             <div class="small-12 columns">
 
