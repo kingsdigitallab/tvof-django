@@ -1,4 +1,5 @@
-version: "3"
+version: "3.1"
+name: tvof
 
 services:
   nginx-proxy:
@@ -16,7 +17,6 @@ services:
     build:
       context: ..
       dockerfile: ./compose/nginx/Dockerfile
-    image: tvof-nginx
     environment:
       VIRTUAL_PATH: "~^/(media|static)/"
       VIRTUAL_PORT: 8001
@@ -29,14 +29,13 @@ services:
       - "8001:8001"
     depends_on:
       django:
-        condition: service_started
+        condition: service_healthy
     restart: unless-stopped
 
   django:
     build:
       context: ..
       dockerfile: ./compose/django/Dockerfile
-    image: tvof-django
     environment:
       VIRTUAL_PATH: "/"
       VIRTUAL_PORT: 8000
@@ -60,6 +59,11 @@ services:
     ports:
       - "8000:8000"
     restart: unless-stopped
+    healthcheck:
+      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null http://127.0.0.1:8000/"
+      interval: 20s
+      timeout: 4s
+      retries: 10
     depends_on:
       db:
         condition: service_healthy
@@ -70,10 +74,9 @@ services:
     build:
       context: ..
       dockerfile: ./compose/postgres/Dockerfile
-    image: tvof-db
     volumes:
-      - ../volumes/local_postgres_data:/var/lib/postgresql/data
-      - ../volumes/local_postgres_data_backups:/backups
+      - ../volumes/local_postgres_data:/var/lib/postgresql/data:Z
+      - ../volumes/local_postgres_data_backups:/backups:z
     env_file:
       - ../.envs/.postgres
     ports:

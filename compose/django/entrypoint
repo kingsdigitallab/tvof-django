@@ -4,7 +4,9 @@ set -o errexit
 set -o pipefail
 set -o nounset
 
-tar xzf node_modules.tar.gz
+# needed?
+cd /app
+tar xzf /node_modules.tar.gz
 
 python manage.py migrate
 python manage.py update_index

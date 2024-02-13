@@ -1,7 +1,8 @@
 FROM node:10-stretch-slim as image-npm
 
-WORKDIR /app
-COPY ./package*.json /app/
+RUN mkdir /node
+WORKDIR /node
+COPY ./package*.json /node/
 RUN npm ci && npm cache clean --force
 RUN tar czf node_modules.tar.gz node_modules
 
@@ -42,6 +43,6 @@ RUN chmod +x /entrypoint
 
 WORKDIR /app
 
-COPY --from=image-npm /app/node_modules.tar.gz /
+COPY --from=image-npm /node/node_modules.tar.gz /
 
 ENTRYPOINT ["/entrypoint"]

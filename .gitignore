@@ -282,3 +282,5 @@ tvof/media/
 .kiln
 .volumes
 
+# docker config & data
+/volumes
