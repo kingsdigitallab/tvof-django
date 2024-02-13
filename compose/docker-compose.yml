@@ -25,8 +25,8 @@ services:
     volumes:
       - ../static:/usr/share/nginx/static:ro
       - ../media:/usr/share/nginx/media:ro
-    ports:
-      - "8001:8001"
+    expose:
+      - 8001
     depends_on:
       django:
         condition: service_healthy
@@ -56,8 +56,8 @@ services:
       - ../.envs/.postgres
     volumes:
       - ../:/app
-    ports:
-      - "8000:8000"
+    expose:
+      - 8000
     restart: unless-stopped
     healthcheck:
       test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null http://127.0.0.1:8000/"
@@ -79,8 +79,8 @@ services:
       - ../volumes/local_postgres_data_backups:/backups:z
     env_file:
       - ../.envs/.postgres
-    ports:
-      - "5432:5432"
+    expose:
+      - 5432
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "django", "-U", "django_app"]
       interval: 1s
@@ -94,9 +94,9 @@ services:
     image: elasticsearch:7.10.1
     environment:
       - discovery.type=single-node
-    ports:
-      - "9200:9200"
-      - "9300:9300"
+    expose:
+      - 9200
+      - 9300
     healthcheck:
        test: curl -s -f http://localhost:9200 > /dev/null || exit 1
        interval: 5s
