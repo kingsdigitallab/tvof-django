@@ -23,8 +23,8 @@ services:
     env_file:
       - ../.envs/.shared
     volumes:
-      - ../static:/usr/share/nginx/static:ro
-      - ../media:/usr/share/nginx/media:ro
+      - ../staticfiles:/usr/share/nginx/static:ro
+      - ../tvof/media:/usr/share/nginx/media:ro
     expose:
       - 8001
     depends_on:
@@ -60,10 +60,10 @@ services:
       - 8000
     restart: unless-stopped
     healthcheck:
-      test: "curl --fail --silent --write-out 'HTTP CODE : %{http_code}\n' --output /dev/null http://127.0.0.1:8000/"
-      interval: 20s
-      timeout: 4s
-      retries: 10
+      test: "cat /proc/net/tcp | grep 1F40 > /dev/null"
+      interval: 3s
+      timeout: 3s
+      retries: 100
     depends_on:
       db:
         condition: service_healthy
@@ -83,7 +83,7 @@ services:
       - 5432
     healthcheck:
       test: ["CMD", "pg_isready", "-d", "django", "-U", "django_app"]
-      interval: 1s
+      interval: 3s
       timeout: 3s
       retries: 10
     restart: unless-stopped
