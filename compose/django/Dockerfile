@@ -1,7 +1,8 @@
 FROM node:10-stretch-slim as image-npm
 
-WORKDIR /app
-COPY ./package*.json /app/
+RUN mkdir /node
+WORKDIR /node
+COPY ./package*.json /node/
 RUN npm ci && npm cache clean --force
 RUN tar czf node_modules.tar.gz node_modules
 
@@ -17,29 +18,31 @@ RUN apt-get update \
   && apt-get install -y libpq-dev \
   # Translations dependencies
   && apt-get install -y gettext \
+  && apt-get install -y libldap2-dev libsasl2-dev ldap-utils \
   # cleaning up unused files
   && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
   && rm -rf /var/lib/apt/lists/*
 
+#RUN addgroup --system django \
+#  && adduser --system --ingroup django django
+
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
-RUN pip install -U pip
-RUN pip install -U pip-tools \
-  && pip-compile --annotate --quiet /requirements/base.in \
-  && pip-compile --annotate --quiet /requirements/local.in \
-  && pip-compile --annotate --quiet /requirements/production.in
-RUN pip install -r /requirements/local.txt
+RUN pip install -U pip \
+  && pip install -r /requirements/requirements.txt
 
-COPY ./compose/production/django/entrypoint /entrypoint
+COPY ./compose/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
 RUN chmod +x /entrypoint
 
-COPY ./compose/local/django/start /start
-RUN sed -i 's/\r$//g' /start
-RUN chmod +x /start
+#COPY --chown=django:django . /app
+
+#RUN mkdir -p /app/tvof/media && chmod -R ugo+rwx /app/tvof/media && chown -R django:django /app/tvof/media
+
+# USER django
 
 WORKDIR /app
 
-COPY --from=image-npm /app/node_modules.tar.gz /
+COPY --from=image-npm /node/node_modules.tar.gz /
 
 ENTRYPOINT ["/entrypoint"]

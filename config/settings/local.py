@@ -1,3 +1,5 @@
+raise Exception('in local.py')
+
 from .base import *  # noqa
 from .base import env
 
