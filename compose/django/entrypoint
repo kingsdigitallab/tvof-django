@@ -13,7 +13,7 @@ python manage.py update_index
 # needed?
 python manage.py wagtail_update_index
 
-if [ "$PRODUCTION" = "true" ]; then
+if [ "$PRODUCTION" = "True" ]; then
     python manage.py collectstatic --no-input
 fi
 
