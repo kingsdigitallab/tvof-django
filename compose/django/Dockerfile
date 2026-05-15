@@ -6,7 +6,7 @@ COPY ./package*.json /node/
 RUN npm ci && npm cache clean --force
 RUN tar czf node_modules.tar.gz node_modules
 
-FROM python:3.8-slim-buster
+FROM python:3.8-slim-bookworm
 
 ENV PYTHONUNBUFFERED 1
 ENV PYTHONDONTWRITEBYTECODE 1
@@ -28,8 +28,7 @@ RUN apt-get update \
 
 # Requirements are installed here to ensure they will be cached.
 COPY ./requirements /requirements
-RUN pip install -U pip \
-  && pip install -r /requirements/requirements.txt
+RUN pip install -r /requirements/requirements.txt
 
 COPY ./compose/django/entrypoint /entrypoint
 RUN sed -i 's/\r$//g' /entrypoint
